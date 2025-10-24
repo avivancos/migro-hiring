@@ -8,9 +8,8 @@ services:
     plan: free
     region: oregon
     
-    # Render detectará el Dockerfile automáticamente
-    # y usará el último stage (runner con nginx)
-    dockerfilePath: ./Dockerfile
+    # Usar Dockerfile específico para Render (solo producción)
+    dockerfilePath: ./Dockerfile.render
     dockerContext: ./
     
     # Variables de entorno para build
