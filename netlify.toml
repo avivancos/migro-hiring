@@ -1,0 +1,33 @@
+# Netlify configuration for Migro Hiring Frontend
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA redirect for client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://m.stripe.network; connect-src 'self' https://api.stripe.com https://api.migro.es; frame-src 'self' https://js.stripe.com https://hooks.stripe.com; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
+
+# Asset caching
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Build environment variables (configure in Netlify dashboard)
+# VITE_API_BASE_URL
+# VITE_STRIPE_PUBLISHABLE_KEY
+# VITE_APP_URL
+
