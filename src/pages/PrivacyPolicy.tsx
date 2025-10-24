@@ -377,6 +377,10 @@ export function PrivacyPolicy() {
                     <span className="text-gray-700">Email: privacidad@migro.com</span>
                   </div>
                   <div className="flex items-center gap-3">
+                    <Mail className="text-gray-500" size={18} />
+                    <span className="text-gray-700">Email general: info@migro.es</span>
+                  </div>
+                  <div className="flex items-center gap-3">
                     <MapPin className="text-gray-500" size={18} />
                     <span className="text-gray-700">Dirección: C/ Libreros 4, 1º - Salamanca, España</span>
                   </div>
