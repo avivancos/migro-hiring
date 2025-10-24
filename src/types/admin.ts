@@ -3,15 +3,15 @@
 export type ClientGrade = 'A' | 'B' | 'C';
 
 export interface CreateHiringRequest {
-  user_id: string; // UUID del usuario
-  catalog_item_id: string; // ID del servicio del catálogo
-  amount: number; // Monto del pago
-  currency: string; // Moneda (por defecto "EUR")
+  user_name: string; // Nombre completo del cliente
+  user_email: string; // Email del cliente
+  user_passport?: string; // Pasaporte del cliente
+  user_nie?: string; // NIE del cliente
+  user_address: string; // Dirección del cliente
+  user_city: string; // Ciudad del cliente
   grade: ClientGrade; // Grado del cliente ("A", "B", o "C")
-  client_passport?: string; // Pasaporte del cliente
-  client_nie?: string; // NIE del cliente
-  client_address?: string; // Dirección del cliente
-  client_city?: string; // Ciudad del cliente
+  service_name: string; // Nombre del servicio
+  notes?: string; // Notas adicionales
 }
 
 export interface HiringCodeResponse {
