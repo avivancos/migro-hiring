@@ -58,26 +58,23 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
       
-      // Configurar marca de agua
-      doc.setGState(doc.GState({ opacity: 0.1 })); // Transparencia
-      doc.setTextColor(150, 150, 150); // Gris claro
-      doc.setFontSize(72);
+      // Configurar marca de agua simple
+      doc.setTextColor(220, 220, 220); // Gris muy claro
+      doc.setFontSize(80);
       doc.setFont('helvetica', 'bold');
       
-      // Posición diagonal
+      // Posición diagonal simple
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const centerX = pageWidth / 2;
-      const centerY = pageHeight / 2;
       
-      // Rotar texto 45 grados
-      doc.text('BORRADOR', centerX, centerY, {
-        angle: 45,
-        align: 'center'
-      });
+      // Dibujar "BORRADOR" en diagonal simple
+      doc.text('BORRADOR', pageWidth * 0.3, pageHeight * 0.4);
+      doc.text('BORRADOR', pageWidth * 0.6, pageHeight * 0.7);
       
-      // Restaurar opacidad
-      doc.setGState(doc.GState({ opacity: 1 }));
+      // Restaurar color normal
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
     }
   };
 
