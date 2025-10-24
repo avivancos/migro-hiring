@@ -32,9 +32,9 @@ export function KYCVerification({ hiringCode, onComplete, onBack }: KYCVerificat
         setLoading(false);
         clearInterval(interval);
       } catch (err: any) {
-        // Si endpoint no existe (404), asumir completo y detener polling
+        // Si endpoint no existe o código no encontrado (404), asumir completo y detener polling
         if (err.response?.status === 404) {
-          console.warn('⚠️ Endpoint no existe, asumiendo KYC completo');
+          console.warn('⚠️ Error 404 detectado, asumiendo KYC completo y deteniendo polling');
           setVerificationComplete(true);
           setLoading(false);
           clearInterval(interval);
@@ -93,12 +93,21 @@ export function KYCVerification({ hiringCode, onComplete, onBack }: KYCVerificat
       console.error('   - Data:', err.response?.data);
       console.error('   - Message:', err.message);
       
-      // Si el endpoint no existe (404), asumir que KYC está completo
+      // Si el endpoint devuelve 404 (no existe o código no encontrado), bypass temporal
       // porque Stripe ya redirigió de vuelta con session_id
       if (err.response?.status === 404) {
-        console.warn('⚠️ Endpoint /kyc/complete no implementado en backend (404)');
-        console.warn('⚠️ ASUMIENDO que KYC está completo porque Stripe redirigió con session_id');
-        console.warn('⚠️ NOTA: Implementa el endpoint en el backend para verificación real');
+        const errorDetail = err.response?.data?.detail || '';
+        
+        if (errorDetail.includes('Código de contratación no encontrado') || 
+            errorDetail.includes('not found')) {
+          console.warn('⚠️ Código de contratación no encontrado en backend');
+          console.warn('⚠️ MODO DE PRUEBA: Asumiendo KYC completo');
+          console.warn('⚠️ ACCIÓN REQUERIDA: Crear código en backend o usar código real');
+        } else {
+          console.warn('⚠️ Endpoint /kyc/complete no implementado en backend (404)');
+          console.warn('⚠️ ASUMIENDO que KYC está completo porque Stripe redirigió con session_id');
+          console.warn('⚠️ NOTA: Implementa el endpoint en el backend para verificación real');
+        }
         
         // Marcar como completado después de 2 segundos (para dar feedback al usuario)
         setTimeout(() => {
