@@ -1,0 +1,7 @@
+# Ignorar Dockerfile en Render
+# Render debe hacer build estático, NO Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+docker/
+
