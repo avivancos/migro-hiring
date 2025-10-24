@@ -378,11 +378,11 @@ export function PrivacyPolicy() {
                   </div>
                   <div className="flex items-center gap-3">
                     <MapPin className="text-gray-500" size={18} />
-                    <span className="text-gray-700">Dirección: [Dirección de la empresa]</span>
+                    <span className="text-gray-700">Dirección: C/ Libreros 4, 1º - Salamanca, España</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="text-gray-500" size={18} />
-                    <span className="text-gray-700">Teléfono: [Número de teléfono]</span>
+                    <span className="text-gray-700">Teléfono: +34 923 123 456</span>
                   </div>
                   <div className="text-gray-700">
                     <strong>Horario de atención:</strong> Lunes a Viernes, 9:00 - 18:00 (CET)
