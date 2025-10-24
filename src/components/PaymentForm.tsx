@@ -57,8 +57,10 @@ function CheckoutForm({
         // Simular confirmación en el backend
         try {
           await hiringService.confirmPayment(hiringCode, paymentIntentId);
+          console.log('✅ Backend confirmó pago TEST exitosamente');
         } catch (backendError) {
           console.warn('⚠️ Backend no pudo confirmar pago TEST, continuando de todas formas');
+          console.warn('Error:', backendError);
         }
         
         setTimeout(() => onSuccess(), 1500);
@@ -189,7 +191,15 @@ export function PaymentForm(props: PaymentFormProps) {
         if (!clientSecret || clientSecret.length < 24) {
           console.warn('⚠️ Backend devolvió client_secret inválido, usando modo simulación para TEST');
           // Generar un client_secret simulado válido para Stripe Elements
-          clientSecret = `pi_test_${Date.now()}_secret_test_${Math.random().toString(36).substring(2, 15)}`;
+          // Formato requerido: pi_XXXXXXXXXXXXXXXXXXXX_secret_YYYYYYYYYYYYYYYYYYYY
+          const timestamp = Date.now().toString();
+          const randomId = Math.random().toString(36).substring(2, 15);
+          const randomSecret = Math.random().toString(36).substring(2, 15);
+          clientSecret = `pi_test_${timestamp}_${randomId}_secret_test_${randomSecret}`;
+          
+          // Almacenar en localStorage para debugging
+          localStorage.setItem('test_client_secret', clientSecret);
+          console.log('🔧 Client secret simulado generado:', clientSecret);
         }
         
         setClientSecret(clientSecret);
@@ -248,6 +258,11 @@ export function PaymentForm(props: PaymentFormProps) {
         borderRadius: '8px',
       },
     },
+    // Para códigos TEST, usar modo simulación
+    ...(props.hiringCode.startsWith('TEST') && {
+      mode: 'payment' as const,
+      payment_method_types: ['card'],
+    }),
   };
 
   return (
