@@ -9,7 +9,7 @@ import { ContractViewer } from '@/components/ContractViewer';
 import { generateContractPDF } from '@/utils/contractPdfGenerator';
 import { hiringService } from '@/services/hiringService';
 import type { HiringDetails } from '@/types/hiring';
-import { CheckCircle2, AlertCircle, FileText } from 'lucide-react';
+import { AlertCircle, FileText } from 'lucide-react';
 
 interface ConfirmDataProps {
   details: HiringDetails;
