@@ -70,17 +70,15 @@ export function AdminDashboard() {
       const amount = GRADE_PRICING[grade];
       
       const response = await adminService.createHiringCode({
-        user_name: userName,
-        user_email: userEmail,
-        user_passport: userPassport || undefined,
-        user_nie: userNie || undefined,
-        user_address: userAddress || undefined,
-        user_city: userCity || undefined,
-        service_name: serviceName,
-        service_description: serviceDescription,
-        grade: grade,
+        user_id: `user-${Date.now()}`, // Generar un ID temporal
+        catalog_item_id: `service-${Date.now()}`, // Generar un ID temporal
         amount: amount,
-        currency: 'eur',
+        currency: 'EUR',
+        grade: grade,
+        client_passport: userPassport || undefined,
+        client_nie: userNie || undefined,
+        client_address: userAddress || undefined,
+        client_city: userCity || undefined,
       });
 
       setGeneratedCode(response.hiring_code);
