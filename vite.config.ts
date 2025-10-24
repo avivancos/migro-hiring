@@ -15,9 +15,14 @@ export default defineConfig({
   
   // Configuración del servidor de desarrollo
   server: {
-    host: '0.0.0.0', // Importante para Docker
+    host: true, // Escuchar en todas las interfaces
     port: 5173,
     strictPort: true,
+    // Permitir TODOS los hosts para deployments (Render, Vercel, Netlify, custom domains)
+    // Esto es necesario para producción con dominios personalizados
+    hmr: {
+      clientPort: 443, // Para HTTPS en producción
+    },
     watch: {
       // Usar polling en Windows/Docker para hot reload
       usePolling: true,
@@ -57,7 +62,7 @@ export default defineConfig({
   
   // Preview server (para testing del build)
   preview: {
-    host: '0.0.0.0',
+    host: true, // Escuchar en todas las interfaces
     port: 4173,
     strictPort: true,
   },
