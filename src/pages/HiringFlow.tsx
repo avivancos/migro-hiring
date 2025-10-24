@@ -49,17 +49,22 @@ export function HiringFlow() {
     }
   }, [currentStep, setSearchParams, code]); // Removido searchParams de las dependencias
 
-  // Verificar expiración
-  useEffect(() => {
-    if (details) {
-      const expirationDate = new Date(details.expires_at);
-      const now = new Date();
-      
-      if (now > expirationDate) {
-        navigate('/expirado');
-      }
-    }
-  }, [details, navigate]);
+         // Verificar expiración y guardar detalles en localStorage
+         useEffect(() => {
+           if (details) {
+             const expirationDate = new Date(details.expires_at);
+             const now = new Date();
+             
+             if (now > expirationDate) {
+               navigate('/expirado');
+             } else {
+               // Guardar detalles en localStorage para uso en ContractSuccess
+               if (code) {
+                 localStorage.setItem(`hiring_details_${code}`, JSON.stringify(details));
+               }
+             }
+           }
+         }, [details, navigate, code]);
 
   // Handlers para navegación entre pasos
   const handleNext = () => {

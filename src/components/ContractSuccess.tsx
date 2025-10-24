@@ -21,6 +21,7 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
     setError(null);
 
     try {
+      // Intentar descargar desde el backend
       const blob = await hiringService.downloadContract(hiringCode);
       
       // Crear URL del blob y descargar
@@ -33,10 +34,52 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (err: any) {
-      setError(err.message || 'Error al descargar el contrato');
+      console.warn('⚠️ No se pudo descargar desde el backend, generando localmente:', err);
+      
+      // Si falla la descarga del backend, generar localmente
+      try {
+        await generateLocalContract();
+      } catch (localErr) {
+        setError('No se pudo generar el contrato. Por favor, contacta con soporte.');
+        console.error('Error generando contrato local:', localErr);
+      }
     } finally {
       setDownloading(false);
     }
+  };
+
+  const generateLocalContract = async () => {
+    // Importar dinámicamente para evitar problemas de bundle
+    const { generateContractPDF } = await import('@/utils/contractPdfGenerator');
+    
+    // Obtener datos del localStorage
+    const hiringDetails = localStorage.getItem(`hiring_details_${hiringCode}`);
+    const clientSignature = localStorage.getItem(`client_signature_${hiringCode}`);
+    
+    if (!hiringDetails) {
+      throw new Error('No se encontraron los detalles de contratación');
+    }
+    
+    const details = JSON.parse(hiringDetails);
+    
+    // Generar PDF localmente
+    const contractBlob = generateContractPDF(details, {
+      paymentIntentId: 'pi_local_generated',
+      stripeTransactionId: `local_${Date.now()}`,
+      paymentDate: new Date().toISOString(),
+      paymentMethod: 'Generado localmente',
+      clientSignature: clientSignature || undefined
+    });
+    
+    // Descargar el PDF generado
+    const url = window.URL.createObjectURL(contractBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `contrato-${serviceName.replace(/\s+/g, '-').toLowerCase()}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   };
 
   return (
@@ -129,7 +172,12 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
             </Button>
             
             {error && (
-              <p className="text-sm text-red-600 mt-2">{error}</p>
+              <div className="mt-4 bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg">
+                <p className="text-sm">{error}</p>
+                <p className="text-xs mt-2 text-red-600">
+                  El contrato ya fue enviado por email. Si necesitas una copia adicional, contacta con soporte.
+                </p>
+              </div>
             )}
           </div>
 
