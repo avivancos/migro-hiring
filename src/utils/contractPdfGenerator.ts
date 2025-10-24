@@ -60,17 +60,14 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
       
       // Configurar marca de agua diagonal
       doc.setTextColor(180, 180, 180); // Gris claro
-      doc.setFontSize(60);
+      doc.setFontSize(60); // Tamaño grande
       doc.setFont('helvetica', 'bold');
       
       // Dimensiones de página A4
       const pageWidth = doc.internal.pageSize.getWidth();  // ~210mm
       const pageHeight = doc.internal.pageSize.getHeight(); // ~297mm
       
-      // Dibujar "BORRADOR" múltiples veces en diagonal
       const text = 'BORRADOR';
-      const textWidth = doc.getTextWidth(text);
-      const spacing = textWidth + 30; // Espaciado entre repeticiones
       
       // Calcular posiciones diagonales desde esquina superior izquierda
       // hasta esquina inferior derecha
@@ -79,25 +76,36 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
       const endX = pageWidth - 15; // Margen derecho
       const endY = pageHeight - 15; // Margen inferior
       
-      // Dibujar texto en línea diagonal
-      let x = startX;
-      let y = startY;
-      const stepX = (endX - startX) / 8; // Dividir en 8 pasos
-      const stepY = (endY - startY) / 8;
+      // Dibujar múltiples líneas de "BORRADOR" en diagonal
+      // Usar coordenadas que simulen una línea diagonal
+      const steps = 12; // Número de repeticiones
       
-      for (let j = 0; j < 8; j++) {
+      for (let j = 0; j < steps; j++) {
+        const progress = j / (steps - 1);
+        
+        // Calcular posición en diagonal
+        const x = startX + (endX - startX) * progress;
+        const y = startY + (endY - startY) * progress;
+        
         // Dibujar texto en posición diagonal
         doc.text(text, x, y);
         
-        // Avanzar en diagonal
-        x += stepX;
-        y += stepY;
+        // Dibujar texto ligeramente desplazado para crear efecto diagonal
+        if (j < steps - 1) {
+          const nextProgress = (j + 0.5) / (steps - 1);
+          const nextX = startX + (endX - startX) * nextProgress;
+          const nextY = startY + (endY - startY) * nextProgress;
+          doc.text(text, nextX, nextY);
+        }
       }
       
-      // Dibujar texto adicional en el centro para mayor cobertura
+      // Dibujar texto adicional en posiciones estratégicas para mayor cobertura
+      doc.text(text, pageWidth * 0.2, pageHeight * 0.3);
       doc.text(text, pageWidth * 0.4, pageHeight * 0.5);
-      doc.text(text, pageWidth * 0.6, pageHeight * 0.3);
-      doc.text(text, pageWidth * 0.2, pageHeight * 0.7);
+      doc.text(text, pageWidth * 0.6, pageHeight * 0.7);
+      doc.text(text, pageWidth * 0.8, pageHeight * 0.4);
+      doc.text(text, pageWidth * 0.1, pageHeight * 0.6);
+      doc.text(text, pageWidth * 0.9, pageHeight * 0.8);
       
       // Restaurar configuración normal
       doc.setTextColor(0, 0, 0);
