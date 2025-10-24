@@ -7,6 +7,7 @@ import { NotFound } from '@/pages/NotFound';
 import { Expired } from '@/pages/Expired';
 import { AdminLogin } from '@/pages/AdminLogin';
 import { AdminDashboard } from '@/pages/AdminDashboard';
+import { PrivacyPolicy } from '@/pages/PrivacyPolicy';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 function App() {
@@ -20,6 +21,8 @@ function App() {
           <Route path="/hiring/:code" element={<HiringFlow />} /> {/* Alias en inglés */}
           <Route path="/expirado" element={<Expired />} />
           <Route path="/404" element={<NotFound />} />
+          <Route path="/privacidad" element={<PrivacyPolicy />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} /> {/* Alias en inglés */}
           
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
