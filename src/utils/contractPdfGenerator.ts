@@ -9,6 +9,7 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
   stripeTransactionId?: string;
   paymentDate?: string;
   paymentMethod?: string;
+  clientSignature?: string;
 }): Blob {
   const doc = new jsPDF({
     orientation: 'portrait',
@@ -48,6 +49,36 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
 
   const addSpace = (space: number) => {
     yPosition += space;
+  };
+
+  // Función para agregar marca de agua "BORRADOR"
+  const addWatermark = () => {
+    const totalPages = doc.getNumberOfPages();
+    
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      
+      // Configurar marca de agua
+      doc.setGState(doc.GState({ opacity: 0.1 })); // Transparencia
+      doc.setTextColor(150, 150, 150); // Gris claro
+      doc.setFontSize(72);
+      doc.setFont('helvetica', 'bold');
+      
+      // Posición diagonal
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const centerX = pageWidth / 2;
+      const centerY = pageHeight / 2;
+      
+      // Rotar texto 45 grados
+      doc.text('BORRADOR', centerX, centerY, {
+        angle: 45,
+        align: 'center'
+      });
+      
+      // Restaurar opacidad
+      doc.setGState(doc.GState({ opacity: 1 }));
+    }
   };
 
   // Header with logo placeholder
@@ -287,6 +318,31 @@ Estado: Pagado y confirmado`;
   addText(`Fecha de firma: ${new Date().toLocaleDateString('es-ES')}`, 9, false, 'left');
   yPosition += 1;
   addText(`IP de firma: [Registrada automáticamente]`, 9, false, 'left');
+  
+  // Firma incrustada del cliente
+  if (paymentData?.clientSignature) {
+    yPosition += 4;
+    addText('Firma del cliente:', 9, true, 'left');
+    yPosition += 2;
+    
+    // Crear una firma visual usando el nombre
+    const signatureText = paymentData.clientSignature;
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(0, 0, 0);
+    
+    // Dibujar línea de firma
+    doc.line(margin, yPosition, margin + 60, yPosition);
+    yPosition += 2;
+    
+    // Escribir nombre como firma
+    doc.text(signatureText, margin, yPosition);
+    yPosition += 5;
+    
+    // Restaurar fuente normal
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+  }
 
   // Footer
   const totalPages = doc.getNumberOfPages();
@@ -301,6 +357,9 @@ Estado: Pagado y confirmado`;
       { align: 'center' }
     );
   }
+
+  // Agregar marca de agua "BORRADOR" en todas las páginas
+  addWatermark();
 
   // Generate Blob
   return doc.output('blob');

@@ -10,7 +10,7 @@ import { PenTool, CheckCircle2, AlertCircle } from 'lucide-react';
 interface ContractSignatureProps {
   hiringCode: string;
   userName: string; // Nombre completo del usuario desde el backend
-  onComplete: () => void;
+  onComplete: (signature?: string) => void;
   onBack: () => void;
 }
 
@@ -58,7 +58,7 @@ export function ContractSignature({ userName, onComplete, onBack }: ContractSign
     }
 
     // Firma válida, continuar al siguiente paso
-    onComplete();
+    onComplete(signature);
   };
 
   return (

@@ -86,7 +86,11 @@ export function HiringFlow() {
   };
 
   // Handler para completar firma del contrato (Step 3)
-  const handleSignatureComplete = () => {
+  const handleSignatureComplete = (signature?: string) => {
+    // Guardar firma en localStorage para usar en el contrato definitivo
+    if (signature && code) {
+      localStorage.setItem(`client_signature_${code}`, signature);
+    }
     handleNext();
   };
 

@@ -55,8 +55,14 @@ function CheckoutForm({
     try {
       console.log('📄 Generando contrato definitivo con información de pago...');
       
-      // Generar PDF definitivo con datos del pago
-      const contractBlob = generateContractPDF(hiringDetails, paymentData);
+      // Obtener firma del cliente del localStorage
+      const clientSignature = localStorage.getItem(`client_signature_${hiringCode}`);
+      
+      // Generar PDF definitivo con datos del pago y firma
+      const contractBlob = generateContractPDF(hiringDetails, {
+        ...paymentData,
+        clientSignature: clientSignature || undefined
+      });
       
       // Crear FormData para enviar al backend
       const formData = new FormData();
@@ -251,8 +257,14 @@ export function PaymentForm(props: PaymentFormProps) {
     try {
       console.log('📄 Generando contrato definitivo con información de pago...');
       
-      // Generar PDF definitivo con datos del pago
-      const contractBlob = generateContractPDF(props.hiringDetails, paymentData);
+      // Obtener firma del cliente del localStorage
+      const clientSignature = localStorage.getItem(`client_signature_${props.hiringCode}`);
+      
+      // Generar PDF definitivo con datos del pago y firma
+      const contractBlob = generateContractPDF(props.hiringDetails, {
+        ...paymentData,
+        clientSignature: clientSignature || undefined
+      });
       
       // Crear FormData para enviar al backend
       const formData = new FormData();
