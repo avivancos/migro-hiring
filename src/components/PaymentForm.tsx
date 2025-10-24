@@ -179,35 +179,51 @@ export function PaymentForm(props: PaymentFormProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const handleTestPayment = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log('🧪 Simulando pago exitoso para código TEST');
+      
+      // Simular delay de procesamiento
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Intentar confirmar con el backend (puede fallar, pero no bloquea)
+      try {
+        await hiringService.confirmPayment(props.hiringCode, 'pi_test_simulated');
+        console.log('✅ Pago simulado confirmado en backend');
+      } catch (backendError) {
+        console.warn('⚠️ Backend no pudo confirmar pago simulado:', backendError);
+        // No lanzar error, continuar con el flujo
+      }
+      
+      props.onSuccess();
+    } catch (err: any) {
+      setError(err.message || 'Error al simular el pago');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Crear Payment Intent
     const createPayment = async () => {
       try {
         const response = await hiringService.createPayment(props.hiringCode);
         
-        // Para códigos TEST, usar un client_secret simulado válido
-        let clientSecret = response.client_secret;
+        // Detectar códigos TEST
+        const isTestCode = props.hiringCode.startsWith('TEST');
         
-        // Detectar códigos TEST por el formato del client_secret o por el código
-        const isTestCode = props.hiringCode.startsWith('TEST') || 
-                          (clientSecret && clientSecret.includes('pi_test_123456789'));
-        
-        if (isTestCode && (!clientSecret || clientSecret.includes('pi_test_123456789'))) {
-          console.warn('⚠️ Código TEST detectado, usando client_secret simulado');
-          // Generar un client_secret simulado válido para Stripe Elements
-          // Formato requerido: pi_XXXXXXXXXXXXXXXXXXXX_secret_YYYYYYYYYYYYYYYYYYYY
-          const timestamp = Date.now().toString();
-          const randomId = Math.random().toString(36).substring(2, 15);
-          const randomSecret = Math.random().toString(36).substring(2, 15);
-          clientSecret = `pi_test_${timestamp}_${randomId}_secret_test_${randomSecret}`;
-          
-          // Almacenar en localStorage para debugging
-          localStorage.setItem('test_client_secret', clientSecret);
-          console.log('🔧 Client secret simulado generado:', clientSecret);
+        if (isTestCode) {
+          console.log('🧪 Modo TEST activado - usando formulario simulado');
+          setClientSecret(null); // No usar Stripe Elements
+          setPaymentIntentId(response.payment_intent_id);
+        } else {
+          setClientSecret(response.client_secret);
+          setPaymentIntentId(response.payment_intent_id);
         }
-        
-        setClientSecret(clientSecret);
-        setPaymentIntentId(response.payment_intent_id);
       } catch (err: any) {
         setError(err.message || 'Error al inicializar el pago');
       } finally {
@@ -231,14 +247,139 @@ export function PaymentForm(props: PaymentFormProps) {
     );
   }
 
-  if (error || !clientSecret) {
+  if (error) {
     return (
       <div className="max-w-3xl mx-auto p-6">
         <Card className="shadow-lg">
           <CardContent className="py-12">
             <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center gap-2">
               <AlertCircle size={20} />
-              <p className="text-sm">{error || 'Error al cargar el formulario de pago'}</p>
+              <p className="text-sm">{error}</p>
+            </div>
+            <Button onClick={props.onBack} variant="outline" className="mt-4 w-full">
+              Volver
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Si no hay clientSecret, mostrar formulario simulado para códigos TEST
+  if (!clientSecret && props.hiringCode.startsWith('TEST')) {
+    return (
+      <div className="max-w-3xl mx-auto p-6">
+        <Card className="shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10">
+            <CardTitle className="text-2xl text-emphasis-900 flex items-center gap-2">
+              <CreditCard className="text-primary" size={28} />
+              Pago Simulado (Modo TEST)
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="pt-6">
+            {/* Indicador de modo TEST */}
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-lg mb-6">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                <p className="text-sm font-medium">
+                  Modo de Prueba: Este pago será simulado, no se cobrará dinero real.
+                </p>
+              </div>
+            </div>
+
+            {/* Formulario simulado */}
+            <form onSubmit={handleTestPayment} className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Número de Tarjeta
+                  </label>
+                  <input
+                    type="text"
+                    value="4242 4242 4242 4242"
+                    readOnly
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Fecha de Expiración
+                    </label>
+                    <input
+                      type="text"
+                      value="12/25"
+                      readOnly
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      CVC
+                    </label>
+                    <input
+                      type="text"
+                      value="123"
+                      readOnly
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombre del Titular
+                  </label>
+                  <input
+                    type="text"
+                    value="Juan Pérez"
+                    readOnly
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-600"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <Button
+                  onClick={props.onBack}
+                  variant="outline"
+                  className="flex-1"
+                  disabled={loading}
+                >
+                  Volver
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-primary hover:bg-primary-700 text-white"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 animate-spin" size={18} />
+                      Procesando...
+                    </>
+                  ) : (
+                    'Simular Pago'
+                  )}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!clientSecret) {
+    return (
+      <div className="max-w-3xl mx-auto p-6">
+        <Card className="shadow-lg">
+          <CardContent className="py-12">
+            <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center gap-2">
+              <AlertCircle size={20} />
+              <p className="text-sm">Error al cargar el formulario de pago</p>
             </div>
             <Button onClick={props.onBack} variant="outline" className="mt-4 w-full">
               Volver
