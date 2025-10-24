@@ -8,8 +8,6 @@ import { hiringService } from '@/services/hiringService';
 import { generateContractPDF } from '@/utils/contractPdfGenerator';
 import type { HiringDetails } from '@/types/hiring';
 
-const APP_URL = import.meta.env.VITE_APP_URL || 'https://contratacion.migro.es';
-
 interface PaymentFormProps {
   hiringCode: string;
   amount: number;

@@ -194,7 +194,6 @@ export function HiringFlow() {
             hiringCode={code}
             serviceName={details.service_name}
             userEmail={details.user_email}
-            onComplete={handleComplete}
           />
         )}
       </div>
