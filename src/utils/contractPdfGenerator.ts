@@ -117,28 +117,47 @@ Que ambas partes acuerdan celebrar el presente contrato de INTERMEDIACIÓN, en a
   // Cláusula TERCERA - CONTRAPRESTACIÓN
   addText('TERCERA.- CONTRAPRESTACIÓN.', 11, true);
   
-  // Calculate payment amounts (50% each)
-  const totalAmount = details.amount || 400;
+  // Convert amount from cents to euros
+  const totalAmountCents = details.amount || 40000; // Default 400 EUR = 40000 cents
+  const totalAmount = totalAmountCents / 100; // Convert to euros
   const firstPayment = totalAmount / 2;
   const secondPayment = totalAmount / 2;
   
   // Amount in words
   const amountInWords = totalAmount === 600 
     ? 'SEISCIENTOS (600)' 
-    : 'CUATROCIENTOS (400)';
+    : totalAmount === 400
+    ? 'CUATROCIENTOS (400)'
+    : totalAmount === 300
+    ? 'TRESCIENTOS (300)'
+    : totalAmount === 200
+    ? 'DOSCIENTOS (200)'
+    : `${Math.round(totalAmount)} (${Math.round(totalAmount)})`;
   
   const firstPaymentText = firstPayment === 300 
     ? 'TRESCIENTOS (300)' 
-    : 'DOSCIENTOS (200)';
+    : firstPayment === 200
+    ? 'DOSCIENTOS (200)'
+    : firstPayment === 150
+    ? 'CIENTO CINCUENTA (150)'
+    : firstPayment === 100
+    ? 'CIEN (100)'
+    : `${Math.round(firstPayment)} (${Math.round(firstPayment)})`;
   
   const secondPaymentText = secondPayment === 300 
     ? 'TRESCIENTOS (300)' 
-    : 'DOSCIENTOS (200)';
+    : secondPayment === 200
+    ? 'DOSCIENTOS (200)'
+    : secondPayment === 150
+    ? 'CIENTO CINCUENTA (150)'
+    : secondPayment === 100
+    ? 'CIEN (100)'
+    : `${Math.round(secondPayment)} (${Math.round(secondPayment)})`;
   
-  const amountText = `El precio del servicio contratado descrito en la cláusula primera se concreta correspondiente a la cantidad de ${amountInWords} EUROS (${totalAmount} €), IVA incluido. El CLIENTE abonará las siguientes cantidades mediante cargo en la tarjeta bancaria que éste autorizada de forma expresa y al efecto como medio de abono y garantía para la prestación del servicio.
+  const amountText = `El precio del servicio contratado descrito en la cláusula primera se concreta correspondiente a la cantidad de ${amountInWords} EUROS (${totalAmount.toFixed(2)} €), IVA incluido. El CLIENTE abonará las siguientes cantidades mediante cargo en la tarjeta bancaria que éste autorizada de forma expresa y al efecto como medio de abono y garantía para la prestación del servicio.
 
-• ${firstPaymentText} EUROS (${firstPayment} €) en el momento de la contratación.
-• Otros ${secondPaymentText} EUROS (${secondPayment}€) tras la comunicación de aprobación por parte de la administración.
+• ${firstPaymentText} EUROS (${firstPayment.toFixed(2)} €) en el momento de la contratación.
+• Otros ${secondPaymentText} EUROS (${secondPayment.toFixed(2)} €) tras la comunicación de aprobación por parte de la administración.
 
 En caso de no atenderse los pagos anteriores en el medio, plazo y forma autorizado al efecto, previo requerimiento de pago realizado por la AGENCIA en el medio designado para recibir notificaciones, el CLIENTE autoriza expresamente para que la AGENCIA proceda a desistir del expediente administrativo para el que se la ha contratado, así como a dejar sin efecto y anular la prestación del servicio.`;
   

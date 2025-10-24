@@ -166,7 +166,20 @@ export function PaymentForm(props: PaymentFormProps) {
     const createPayment = async () => {
       try {
         const response = await hiringService.createPayment(props.hiringCode);
-        setClientSecret(response.client_secret);
+        
+        // Validar que el clientSecret tenga el formato correcto
+        const clientSecret = response.client_secret;
+        
+        if (!clientSecret || clientSecret.length < 24) {
+          console.error('❌ Client secret inválido recibido del backend:', clientSecret);
+          throw new Error(
+            'El backend devolvió un client_secret inválido. ' +
+            'Este error ocurre con códigos TEST. ' +
+            'Por favor, usa un código de contratación real o contacta a soporte.'
+          );
+        }
+        
+        setClientSecret(clientSecret);
         setPaymentIntentId(response.payment_intent_id);
       } catch (err: any) {
         setError(err.message || 'Error al inicializar el pago');
