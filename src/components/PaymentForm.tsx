@@ -173,9 +173,9 @@ export function PaymentForm(props: PaymentFormProps) {
         if (!clientSecret || clientSecret.length < 24) {
           console.error('❌ Client secret inválido recibido del backend:', clientSecret);
           throw new Error(
-            'El backend devolvió un client_secret inválido. ' +
-            'Este error ocurre con códigos TEST. ' +
-            'Por favor, usa un código de contratación real o contacta a soporte.'
+            'Error de configuración de pago: El código TEST1 no puede procesar pagos reales. ' +
+            'Para probar el flujo completo, necesitas un código de contratación real. ' +
+            'Contacta a soporte@migro.es para obtener un código válido.'
           );
         }
         
