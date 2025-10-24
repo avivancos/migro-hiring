@@ -51,7 +51,7 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
     yPosition += space;
   };
 
-  // Función para agregar marca de agua "BORRADOR" en diagonal
+  // Función para agregar marca de agua "BORRADOR" - una sola palabra por página
   const addWatermark = () => {
     const totalPages = doc.getNumberOfPages();
     
@@ -59,8 +59,8 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
       doc.setPage(i);
       
       // Configurar marca de agua diagonal
-      doc.setTextColor(180, 180, 180); // Gris claro pero visible
-      doc.setFontSize(70); // Tamaño grande
+      doc.setTextColor(200, 200, 200); // Gris claro pero visible
+      doc.setFontSize(80); // Tamaño grande
       doc.setFont('helvetica', 'bold');
       
       // Dimensiones de página A4
@@ -69,52 +69,12 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
       
       const text = 'BORRADOR';
       
-      // Calcular posiciones diagonales desde esquina superior izquierda
-      // hasta esquina inferior derecha
-      const startX = 15; // Margen izquierdo
-      const startY = 25; // Margen superior
-      const endX = pageWidth - 15; // Margen derecho
-      const endY = pageHeight - 15; // Margen inferior
+      // Calcular posición central de la página
+      const centerX = pageWidth / 2;
+      const centerY = pageHeight / 2;
       
-      // Dibujar "BORRADOR" múltiples veces siguiendo una línea diagonal
-      const steps = 10; // Número de repeticiones
-      
-      for (let j = 0; j < steps; j++) {
-        const progress = j / (steps - 1);
-        
-        // Calcular posición en diagonal
-        const x = startX + (endX - startX) * progress;
-        const y = startY + (endY - startY) * progress;
-        
-        // Dibujar texto en posición diagonal
-        doc.text(text, x, y);
-        
-        // Dibujar texto ligeramente desplazado para crear efecto diagonal más denso
-        if (j < steps - 1) {
-          const nextProgress = (j + 0.3) / (steps - 1);
-          const nextX = startX + (endX - startX) * nextProgress;
-          const nextY = startY + (endY - startY) * nextProgress;
-          doc.text(text, nextX, nextY);
-        }
-        
-        // Dibujar texto con otro desplazamiento
-        if (j < steps - 1) {
-          const nextProgress = (j + 0.7) / (steps - 1);
-          const nextX = startX + (endX - startX) * nextProgress;
-          const nextY = startY + (endY - startY) * nextProgress;
-          doc.text(text, nextX, nextY);
-        }
-      }
-      
-      // Dibujar texto adicional en posiciones estratégicas para mayor cobertura
-      doc.text(text, pageWidth * 0.2, pageHeight * 0.3);
-      doc.text(text, pageWidth * 0.4, pageHeight * 0.5);
-      doc.text(text, pageWidth * 0.6, pageHeight * 0.7);
-      doc.text(text, pageWidth * 0.8, pageHeight * 0.4);
-      doc.text(text, pageWidth * 0.1, pageHeight * 0.6);
-      doc.text(text, pageWidth * 0.9, pageHeight * 0.8);
-      doc.text(text, pageWidth * 0.3, pageHeight * 0.2);
-      doc.text(text, pageWidth * 0.7, pageHeight * 0.9);
+      // Dibujar "BORRADOR" una sola vez en el centro de la página
+      doc.text(text, centerX, centerY, { align: 'center' });
       
       // Restaurar configuración normal
       doc.setTextColor(0, 0, 0);
