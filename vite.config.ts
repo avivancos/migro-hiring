@@ -15,11 +15,12 @@ export default defineConfig({
   
   // Configuración del servidor de desarrollo
   server: {
-    host: true, // Escuchar en todas las interfaces
+    host: '0.0.0.0', // Escuchar en todas las interfaces
     port: 5173,
     strictPort: true,
-    // Permitir TODOS los hosts para deployments (Render, Vercel, Netlify, custom domains)
-    // Esto es necesario para producción con dominios personalizados
+    // DESHABILITAR verificación de hosts completamente
+    // Esto permite cualquier dominio (necesario para Render, Vercel, dominios custom, etc.)
+    allowedHosts: 'all',
     hmr: {
       clientPort: 443, // Para HTTPS en producción
     },
@@ -62,8 +63,10 @@ export default defineConfig({
   
   // Preview server (para testing del build)
   preview: {
-    host: true, // Escuchar en todas las interfaces
+    host: '0.0.0.0', // Escuchar en todas las interfaces
     port: 4173,
     strictPort: true,
+    // DESHABILITAR verificación de hosts completamente
+    allowedHosts: 'all',
   },
 })
