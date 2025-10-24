@@ -51,27 +51,55 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
     yPosition += space;
   };
 
-  // Función para agregar marca de agua "BORRADOR"
+  // Función para agregar marca de agua "BORRADOR" en diagonal
   const addWatermark = () => {
     const totalPages = doc.getNumberOfPages();
     
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
       
-      // Configurar marca de agua simple
-      doc.setTextColor(220, 220, 220); // Gris muy claro
-      doc.setFontSize(80);
+      // Configurar marca de agua diagonal
+      doc.setTextColor(180, 180, 180); // Gris claro
+      doc.setFontSize(60);
       doc.setFont('helvetica', 'bold');
       
-      // Posición diagonal simple
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
+      // Dimensiones de página A4
+      const pageWidth = doc.internal.pageSize.getWidth();  // ~210mm
+      const pageHeight = doc.internal.pageSize.getHeight(); // ~297mm
       
-      // Dibujar "BORRADOR" en diagonal simple
-      doc.text('BORRADOR', pageWidth * 0.3, pageHeight * 0.4);
-      doc.text('BORRADOR', pageWidth * 0.6, pageHeight * 0.7);
+      // Dibujar "BORRADOR" múltiples veces en diagonal
+      const text = 'BORRADOR';
+      const textWidth = doc.getTextWidth(text);
+      const spacing = textWidth + 30; // Espaciado entre repeticiones
       
-      // Restaurar color normal
+      // Calcular posiciones diagonales desde esquina superior izquierda
+      // hasta esquina inferior derecha
+      const startX = 15; // Margen izquierdo
+      const startY = 25; // Margen superior
+      const endX = pageWidth - 15; // Margen derecho
+      const endY = pageHeight - 15; // Margen inferior
+      
+      // Dibujar texto en línea diagonal
+      let x = startX;
+      let y = startY;
+      const stepX = (endX - startX) / 8; // Dividir en 8 pasos
+      const stepY = (endY - startY) / 8;
+      
+      for (let j = 0; j < 8; j++) {
+        // Dibujar texto en posición diagonal
+        doc.text(text, x, y);
+        
+        // Avanzar en diagonal
+        x += stepX;
+        y += stepY;
+      }
+      
+      // Dibujar texto adicional en el centro para mayor cobertura
+      doc.text(text, pageWidth * 0.4, pageHeight * 0.5);
+      doc.text(text, pageWidth * 0.6, pageHeight * 0.3);
+      doc.text(text, pageWidth * 0.2, pageHeight * 0.7);
+      
+      // Restaurar configuración normal
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
