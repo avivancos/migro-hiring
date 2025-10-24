@@ -43,7 +43,7 @@ export const adminService = {
   async createHiringCode(request: CreateHiringRequest): Promise<HiringCodeResponse> {
     const { data } = await api.post<HiringCodeResponse>('/admin/hiring/create', request, {
       headers: {
-        'X-Admin-Token': localStorage.getItem('admin_token') || '',
+        'X-Admin-Password': 'Pomelo2005.1',
       },
     });
     return data;
@@ -55,7 +55,7 @@ export const adminService = {
   async getAllHiringCodes(): Promise<any[]> {
     const { data } = await api.get('/admin/hiring/list', {
       headers: {
-        'X-Admin-Token': localStorage.getItem('admin_token') || '',
+        'X-Admin-Password': 'Pomelo2005.1',
       },
     });
     return data;

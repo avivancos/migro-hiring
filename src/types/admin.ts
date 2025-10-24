@@ -3,31 +3,35 @@
 export type ClientGrade = 'A' | 'B' | 'C';
 
 export interface CreateHiringRequest {
-  user_name: string;
-  user_email: string;
-  user_passport?: string;
-  user_nie?: string;
-  user_address?: string;
-  user_city?: string;
-  service_name: string;
-  service_description: string;
-  grade: ClientGrade;
-  amount: number; // Se calcula automáticamente según el grade
-  currency: string;
+  user_id: string; // UUID del usuario
+  catalog_item_id: string; // ID del servicio del catálogo
+  amount: number; // Monto del pago
+  currency: string; // Moneda (por defecto "EUR")
+  grade: ClientGrade; // Grado del cliente ("A", "B", o "C")
+  client_passport?: string; // Pasaporte del cliente
+  client_nie?: string; // NIE del cliente
+  client_address?: string; // Dirección del cliente
+  client_city?: string; // Ciudad del cliente
 }
 
 export interface HiringCodeResponse {
+  id: string; // payment-uuid
   hiring_code: string;
-  short_url: string;
+  user_name: string;
+  user_email: string;
+  service_name: string;
+  service_description: string;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'paid' | 'completed';
+  kyc_status: null | 'pending' | 'verified' | 'failed';
   expires_at: string;
-  hiring_details: {
-    id: number;
-    user_name: string;
-    user_email: string;
-    service_name: string;
-    amount: number;
-    grade: ClientGrade;
-  };
+  short_url: string;
+  grade: ClientGrade;
+  client_passport?: string;
+  client_nie?: string;
+  client_address?: string;
+  client_city?: string;
 }
 
 export const GRADE_PRICING = {
