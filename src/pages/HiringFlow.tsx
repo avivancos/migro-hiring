@@ -1,7 +1,7 @@
 // Main Hiring Flow Page - Manages the 5-step process
 
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useHiringData } from '@/hooks/useHiringData';
 import { hiringService } from '@/services/hiringService';
 import { ServiceDetails } from '@/components/ServiceDetails';
@@ -17,8 +17,37 @@ type Step = 1 | 2 | 3 | 4 | 5;
 export function HiringFlow() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { details, loading, error } = useHiringData(code || '');
-  const [currentStep, setCurrentStep] = useState<Step>(1);
+  
+  // Obtener paso actual de la URL, localStorage o usar 1 por defecto
+  const stepFromUrl = parseInt(searchParams.get('step') || '1', 10);
+  const stepFromStorage = code ? parseInt(localStorage.getItem(`hiring_step_${code}`) || '1', 10) : 1;
+  const initialStep = (stepFromUrl >= 1 && stepFromUrl <= 5) ? stepFromUrl : 
+                     (stepFromStorage >= 1 && stepFromStorage <= 5) ? stepFromStorage : 1;
+  
+  const [currentStep, setCurrentStep] = useState<Step>(initialStep as Step);
+
+  // Sincronizar estado con URL
+  useEffect(() => {
+    const stepFromUrl = parseInt(searchParams.get('step') || '1', 10);
+    if (stepFromUrl >= 1 && stepFromUrl <= 5 && stepFromUrl !== currentStep) {
+      setCurrentStep(stepFromUrl as Step);
+    }
+  }, [searchParams, currentStep]);
+
+  // Actualizar URL y localStorage cuando cambie el paso
+  useEffect(() => {
+    const currentStepFromUrl = parseInt(searchParams.get('step') || '1', 10);
+    if (currentStep !== currentStepFromUrl) {
+      setSearchParams({ step: currentStep.toString() }, { replace: true });
+    }
+    
+    // Persistir paso en localStorage
+    if (code) {
+      localStorage.setItem(`hiring_step_${code}`, currentStep.toString());
+    }
+  }, [currentStep, searchParams, setSearchParams, code]);
 
   // Verificar expiración
   useEffect(() => {
@@ -64,6 +93,15 @@ export function HiringFlow() {
   // Handler para completar pago (Step 4)
   const handlePaymentSuccess = () => {
     handleNext();
+  };
+
+  // Handler para completar el proceso (Step 5) - Limpiar estado
+  const handleComplete = () => {
+    // Limpiar estado del localStorage cuando se complete el proceso
+    if (code) {
+      localStorage.removeItem(`hiring_step_${code}`);
+    }
+    console.log('Proceso completado - Estado limpiado');
   };
 
   // Loading state
@@ -152,6 +190,7 @@ export function HiringFlow() {
             hiringCode={code}
             serviceName={details.service_name}
             userEmail={details.user_email}
+            onComplete={handleComplete}
           />
         )}
       </div>
