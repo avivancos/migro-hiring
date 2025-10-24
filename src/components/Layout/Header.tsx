@@ -15,7 +15,7 @@ export function Header() {
           <div className="flex items-center">
             <a href="/" className="flex items-center gap-3">
               <img 
-                src="/assets/migro-logo.svg" 
+                src="/assets/migro-logo.png" 
                 alt="Migro" 
                 className="h-10"
               />
