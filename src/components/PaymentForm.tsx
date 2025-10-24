@@ -188,8 +188,12 @@ export function PaymentForm(props: PaymentFormProps) {
         // Para códigos TEST, usar un client_secret simulado válido
         let clientSecret = response.client_secret;
         
-        if (!clientSecret || clientSecret.length < 24) {
-          console.warn('⚠️ Backend devolvió client_secret inválido, usando modo simulación para TEST');
+        // Detectar códigos TEST por el formato del client_secret o por el código
+        const isTestCode = props.hiringCode.startsWith('TEST') || 
+                          (clientSecret && clientSecret.includes('pi_test_123456789'));
+        
+        if (isTestCode && (!clientSecret || clientSecret.includes('pi_test_123456789'))) {
+          console.warn('⚠️ Código TEST detectado, usando client_secret simulado');
           // Generar un client_secret simulado válido para Stripe Elements
           // Formato requerido: pi_XXXXXXXXXXXXXXXXXXXX_secret_YYYYYYYYYYYYYYYYYYYY
           const timestamp = Date.now().toString();
