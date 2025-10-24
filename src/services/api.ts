@@ -29,8 +29,20 @@ api.interceptors.request.use(
 
 // Response interceptor - Handle errors
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log successful responses for debugging
+    console.log(`✅ ${response.config.method?.toUpperCase()} ${response.config.url} → ${response.status}`);
+    return response;
+  },
   (error: AxiosError) => {
+    // Detailed error logging
+    console.error('❌ API Error Details:');
+    console.error('   URL:', error.config?.url);
+    console.error('   Method:', error.config?.method);
+    console.error('   Status:', error.response?.status);
+    console.error('   Response Data:', error.response?.data);
+    console.error('   Full Error:', error);
+    
     if (error.response) {
       const { status } = error.response;
       
@@ -64,6 +76,11 @@ api.interceptors.response.use(
       if (status >= 500) {
         console.error('Error del servidor');
       }
+    } else if (error.request) {
+      console.error('❌ No se recibió respuesta del servidor');
+      console.error('   Request:', error.request);
+    } else {
+      console.error('❌ Error al configurar request:', error.message);
     }
     
     return Promise.reject(error);

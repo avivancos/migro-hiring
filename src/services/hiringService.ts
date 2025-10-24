@@ -46,19 +46,40 @@ export const hiringService = {
     const baseUrl = window.location.origin;
     const defaultReturnUrl = `${baseUrl}/contratacion/${code}`;
     
-    const { data} = await api.post<KYCSession>(`/hiring/${code}/kyc/start`, {
+    console.log('🚀 Iniciando sesión KYC:');
+    console.log('   URL:', `/hiring/${code}/kyc/start`);
+    console.log('   Return URL:', returnUrl || defaultReturnUrl);
+    
+    const { data } = await api.post<KYCSession>(`/hiring/${code}/kyc/start`, {
       return_url: returnUrl || defaultReturnUrl,
     });
+    
+    console.log('📥 Respuesta de startKYC:');
+    console.log('   Session ID:', data.session_id);
+    console.log('   URL:', data.url);
+    console.log('   Data completa:', data);
+    
     return data;
   },
 
   /**
    * Step 3: Complete KYC verification
    */
-  async completeKYC(code: string, sessionId: string): Promise<void> {
-    await api.post(`/hiring/${code}/kyc/complete`, {
+  async completeKYC(code: string, sessionId: string): Promise<any> {
+    console.log('📡 Enviando request a API:');
+    console.log('   URL:', `/hiring/${code}/kyc/complete`);
+    console.log('   Body:', { session_id: sessionId });
+    
+    const response = await api.post(`/hiring/${code}/kyc/complete`, {
       session_id: sessionId,
     });
+    
+    console.log('📥 Respuesta recibida de API:');
+    console.log('   Status:', response.status);
+    console.log('   Data:', response.data);
+    console.log('   Headers:', response.headers);
+    
+    return response.data;
   },
 
   /**

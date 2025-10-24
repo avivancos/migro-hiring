@@ -250,13 +250,28 @@ export function KYCVerification({ hiringCode, onComplete, onBack }: KYCVerificat
               </p>
 
               {!loading && verificationUrl && (
-                <Button
-                  onClick={() => window.open(verificationUrl, '_blank', 'width=800,height=900')}
-                  variant="outline"
-                  className="mb-4"
-                >
-                  Reabrir Ventana de Verificación
-                </Button>
+                <div className="flex flex-col gap-2 mb-4">
+                  <Button
+                    onClick={() => window.open(verificationUrl, '_blank', 'width=800,height=900')}
+                    variant="outline"
+                  >
+                    Reabrir Ventana de Verificación
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      const sid = new URLSearchParams(window.location.search).get('session_id');
+                      if (sid) {
+                        console.log('🔄 Forzando verificación manual con session_id:', sid);
+                        verifySessionStatus(sid);
+                      } else {
+                        alert('No se encontró session_id en la URL');
+                      }
+                    }}
+                    variant="secondary"
+                  >
+                    🔧 Forzar Verificación Manual
+                  </Button>
+                </div>
               )}
 
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
