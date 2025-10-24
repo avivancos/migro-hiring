@@ -100,13 +100,14 @@ export function HiringFlow() {
   };
 
   // Handler para completar el proceso (Step 5) - Limpiar estado
-  const handleComplete = () => {
-    // Limpiar estado del localStorage cuando se complete el proceso
-    if (code) {
+  // Nota: Esta función se ejecuta automáticamente cuando se llega al paso 5
+  useEffect(() => {
+    if (currentStep === 5 && code) {
+      // Limpiar estado del localStorage cuando se complete el proceso
       localStorage.removeItem(`hiring_step_${code}`);
+      console.log('Proceso completado - Estado limpiado');
     }
-    console.log('Proceso completado - Estado limpiado');
-  };
+  }, [currentStep, code]);
 
   // Loading state
   if (loading) {
