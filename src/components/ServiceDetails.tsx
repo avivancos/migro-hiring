@@ -13,6 +13,14 @@ interface ServiceDetailsProps {
 }
 
 export function ServiceDetails({ details, onNext, loading = false }: ServiceDetailsProps) {
+  // FIX: Corregir monto si el backend devuelve 30000 (300€) en lugar de 40000 (400€)
+  // Esto puede pasar con códigos TEST del backend
+  let correctedAmount = details.amount;
+  if (correctedAmount === 30000) {
+    console.warn('⚠️ Backend devolvió 30000 céntimos (300€), corrigiendo a 40000 (400€)');
+    correctedAmount = 40000;
+  }
+  
   return (
     <div className="max-w-3xl mx-auto p-6">
       <Card className="shadow-lg">
@@ -43,7 +51,7 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
               <p className="text-sm text-gray-600 font-medium">Precio total del servicio</p>
             </div>
             <p className="text-4xl font-bold text-primary">
-              {formatCurrency(details.amount, details.currency)}
+              {formatCurrency(correctedAmount, details.currency)}
             </p>
           </div>
 

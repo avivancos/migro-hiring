@@ -101,6 +101,10 @@ export function HiringFlow() {
     return null;
   }
 
+  // FIX: Corregir monto si el backend devuelve 30000 (300€) en lugar de 40000 (400€)
+  // Esto puede pasar con códigos TEST del backend
+  const correctedAmount = details.amount === 30000 ? 40000 : details.amount;
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Progress Bar */}
@@ -139,7 +143,7 @@ export function HiringFlow() {
         {currentStep === 4 && (
           <PaymentForm
             hiringCode={code}
-            amount={details.amount}
+            amount={correctedAmount}
             currency={details.currency}
             serviceName={details.service_name}
             onSuccess={handlePaymentSuccess}

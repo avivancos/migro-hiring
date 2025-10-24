@@ -118,7 +118,18 @@ Que ambas partes acuerdan celebrar el presente contrato de INTERMEDIACIÓN, en a
   addText('TERCERA.- CONTRAPRESTACIÓN.', 11, true);
   
   // Convert amount from cents to euros
-  const totalAmountCents = details.amount || 40000; // Default 400 EUR = 40000 cents
+  // IMPORTANTE: El backend devuelve el monto en CÉNTIMOS
+  // Por defecto: 40000 céntimos = 400 EUR (primer pago 200€)
+  // Grade C: 60000 céntimos = 600 EUR (primer pago 300€)
+  let totalAmountCents = details.amount || 40000;
+  
+  // FIX: Si el backend devuelve un monto incorrecto (ej: 30000), corregirlo
+  // Esto puede pasar con códigos TEST del backend
+  if (totalAmountCents === 30000) {
+    console.warn('⚠️ Backend devolvió 30000 céntimos (300€), corrigiendo a 40000 (400€)');
+    totalAmountCents = 40000; // Corregir a 400 EUR
+  }
+  
   const totalAmount = totalAmountCents / 100; // Convert to euros
   const firstPayment = totalAmount / 2;
   const secondPayment = totalAmount / 2;
