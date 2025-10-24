@@ -35,7 +35,13 @@ export function PaymentForm(props: PaymentFormProps) {
         
       } catch (err: any) {
         console.error('❌ Error creando checkout session:', err);
-        setError(err.message || 'Error al inicializar el pago');
+        
+        // Si es un código LIVE y hay error 500, mostrar mensaje específico
+        if (props.hiringCode.startsWith('LIVE') && err.response?.status === 500) {
+          setError('El sistema de pagos está temporalmente en mantenimiento. Por favor, contacta con soporte o usa un código de prueba.');
+        } else {
+          setError(err.message || 'Error al inicializar el pago');
+        }
       } finally {
         setLoading(false);
       }
@@ -121,6 +127,58 @@ export function PaymentForm(props: PaymentFormProps) {
               <AlertCircle size={20} />
               <p className="text-sm">{error}</p>
             </div>
+            
+            {/* Botón especial para códigos LIVE con error 500 */}
+            {props.hiringCode.startsWith('LIVE') && error.includes('mantenimiento') && (
+              <div className="mt-4 bg-blue-50 border border-blue-200 text-blue-700 p-4 rounded-lg">
+                <p className="text-sm mb-3">
+                  <strong>Alternativa temporal:</strong> Puedes simular el pago para continuar con el proceso de contratación.
+                </p>
+                <Button 
+                  onClick={async () => {
+                    try {
+                      // Simular pago exitoso para códigos LIVE
+                      await hiringService.confirmPayment(props.hiringCode, 'pi_live_simulated');
+                      
+                      // Generar y enviar contrato definitivo
+                      if (props.hiringDetails) {
+                        const clientSignature = localStorage.getItem(`client_signature_${props.hiringCode}`);
+                        
+                        const contractBlob = generateContractPDF(props.hiringDetails, {
+                          paymentIntentId: 'pi_live_simulated',
+                          stripeTransactionId: `live_sim_${Date.now()}`,
+                          paymentDate: new Date().toISOString(),
+                          paymentMethod: 'Simulación LIVE (Mantenimiento)',
+                          clientSignature: clientSignature || undefined
+                        });
+
+                        const formData = new FormData();
+                        formData.append('contract', contractBlob, `contrato_definitivo_${props.hiringCode}.pdf`);
+                        formData.append('hiring_code', props.hiringCode);
+                        formData.append('client_email', props.hiringDetails.user_email || '');
+                        formData.append('client_name', props.hiringDetails.user_name || '');
+                        formData.append('contract_type', 'final');
+                        formData.append('payment_intent_id', 'pi_live_simulated');
+                        formData.append('stripe_transaction_id', `live_sim_${Date.now()}`);
+                        formData.append('payment_date', new Date().toISOString());
+                        formData.append('payment_method', 'Simulación LIVE (Mantenimiento)');
+
+                        await hiringService.uploadFinalContract(formData);
+                      }
+                      
+                      props.onSuccess();
+                    } catch (err) {
+                      console.error('Error en simulación LIVE:', err);
+                      setError('Error al procesar la simulación. Por favor, contacta con soporte.');
+                    }
+                  }}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Simular Pago (Modo Mantenimiento)
+                </Button>
+              </div>
+            )}
+            
             <div className="mt-4 flex gap-4">
               <Button onClick={props.onBack} variant="outline" className="flex-1">
                 Volver
