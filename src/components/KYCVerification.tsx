@@ -50,16 +50,20 @@ export function KYCVerification({ hiringCode, onComplete, onBack }: KYCVerificat
     
     if (sessionId) {
       console.log('🔍 Detectado session_id en URL:', sessionId);
+      console.log('📍 Hiring code actual:', hiringCode);
       
-      // Limpiar el query param de la URL
+      // Marcar como iniciado ANTES de limpiar
+      setVerificationStarted(true);
+      setLoading(true);
+      
+      // Limpiar el query param de la URL (no bloquea la ejecución)
       setSearchParams({}, { replace: true });
       
-      // Marcar como iniciado y verificar estado
-      setVerificationStarted(true);
+      // Verificar estado inmediatamente
       verifySessionStatus(sessionId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [searchParams, hiringCode]);
 
   // Verificar estado de la sesión KYC
   const verifySessionStatus = async (sessionId: string) => {
@@ -67,22 +71,29 @@ export function KYCVerification({ hiringCode, onComplete, onBack }: KYCVerificat
     
     try {
       console.log('🔄 Verificando estado de KYC...');
-      await hiringService.completeKYC(hiringCode, sessionId);
+      console.log('   - Hiring code:', hiringCode);
+      console.log('   - Session ID:', sessionId);
       
-      console.log('✅ KYC completado exitosamente');
+      const result = await hiringService.completeKYC(hiringCode, sessionId);
+      
+      console.log('✅ KYC completado exitosamente', result);
       setVerificationComplete(true);
+      setLoading(false);
     } catch (err: any) {
       console.error('❌ Error al verificar KYC:', err);
+      console.error('   - Status:', err.response?.status);
+      console.error('   - Data:', err.response?.data);
+      console.error('   - Message:', err.message);
       
       // Si el error es 404 o indica que aún no está completo, hacer polling
       if (err.response?.status === 404 || err.response?.status === 400) {
         console.log('⏳ KYC aún en proceso, iniciando polling...');
+        setLoading(true);
         startPolling(sessionId);
       } else {
-        setError('Error al verificar el estado de KYC. Por favor, contacta con soporte.');
+        setError(`Error al verificar KYC: ${err.response?.data?.detail || err.message}`);
+        setLoading(false);
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -251,11 +262,18 @@ export function KYCVerification({ hiringCode, onComplete, onBack }: KYCVerificat
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
                 <p>
                   {loading 
-                    ? '⏳ Procesando verificación con Stripe Identity...'
+                    ? '⏳ Procesando verificación con Stripe Identity... Por favor espera.'
                     : '💡 Si cerraste la ventana accidentalmente, puedes reabrirla usando el botón de arriba.'
                   }
                 </p>
               </div>
+
+              {error && (
+                <div className="mt-4 bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center gap-2">
+                  <AlertCircle size={20} />
+                  <p className="text-sm">{error}</p>
+                </div>
+              )}
             </div>
           )}
 
