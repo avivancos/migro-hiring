@@ -11,8 +11,9 @@ WORKDIR /app
 # Copiar archivos de dependencias
 COPY package.json package-lock.json* ./
 
-# Instalar dependencias
-RUN npm ci --legacy-peer-deps
+# Limpiar cache de npm y reinstalar
+RUN npm cache clean --force && \
+    npm ci --legacy-peer-deps --no-audit --no-fund
 
 # ==========================================
 # Stage 2: Builder (compilación)
@@ -28,16 +29,22 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Variables de entorno para build (pueden ser sobrescritas)
-ARG VITE_API_BASE_URL=http://localhost:8000/api/v1
-ARG VITE_STRIPE_PUBLISHABLE_KEY=pk_test_placeholder
-ARG VITE_APP_URL=http://localhost:5173
+ARG VITE_API_BASE_URL=https://api.migro.es/api
+ARG VITE_STRIPE_PUBLISHABLE_KEY
+ARG VITE_APP_URL=https://contratacion.migro.es
+ARG VITE_DEBUG_MODE=false
+ARG VITE_API_TIMEOUT=30000
 
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV VITE_STRIPE_PUBLISHABLE_KEY=$VITE_STRIPE_PUBLISHABLE_KEY
 ENV VITE_APP_URL=$VITE_APP_URL
+ENV VITE_DEBUG_MODE=$VITE_DEBUG_MODE
+ENV VITE_API_TIMEOUT=$VITE_API_TIMEOUT
 
-# Build de producción
-RUN npm run build
+# Build de producción con limpieza
+RUN rm -rf dist node_modules/.cache && \
+    npm run build && \
+    echo "✅ Build completado: $(ls -lh dist/index.html)"
 
 # ==========================================
 # Stage 3: Runner (producción con nginx)
