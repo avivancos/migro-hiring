@@ -67,8 +67,6 @@ export function AdminDashboard() {
     setGeneratedUrl(null);
 
     try {
-      const amount = GRADE_PRICING[grade];
-      
       const response = await adminService.createHiringCode({
         user_name: userName,
         user_email: userEmail,
