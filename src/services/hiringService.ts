@@ -112,6 +112,11 @@ export const hiringService = {
     return data;
   },
 
+  async createCheckoutSession(hiringCode: string): Promise<{ checkout_url: string }> {
+    const { data } = await api.post<{ checkout_url: string }>(`/hiring/${hiringCode}/checkout`, {});
+    return data;
+  },
+
   /**
    * Step 5: Download contract PDF by hiring code
    */
