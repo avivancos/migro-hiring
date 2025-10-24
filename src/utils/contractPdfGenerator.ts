@@ -59,8 +59,8 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
       doc.setPage(i);
       
       // Configurar marca de agua diagonal
-      doc.setTextColor(180, 180, 180); // Gris claro
-      doc.setFontSize(60); // Tamaño grande
+      doc.setTextColor(180, 180, 180); // Gris claro pero visible
+      doc.setFontSize(70); // Tamaño grande
       doc.setFont('helvetica', 'bold');
       
       // Dimensiones de página A4
@@ -76,9 +76,8 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
       const endX = pageWidth - 15; // Margen derecho
       const endY = pageHeight - 15; // Margen inferior
       
-      // Dibujar múltiples líneas de "BORRADOR" en diagonal
-      // Usar coordenadas que simulen una línea diagonal
-      const steps = 12; // Número de repeticiones
+      // Dibujar "BORRADOR" múltiples veces siguiendo una línea diagonal
+      const steps = 10; // Número de repeticiones
       
       for (let j = 0; j < steps; j++) {
         const progress = j / (steps - 1);
@@ -90,9 +89,17 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
         // Dibujar texto en posición diagonal
         doc.text(text, x, y);
         
-        // Dibujar texto ligeramente desplazado para crear efecto diagonal
+        // Dibujar texto ligeramente desplazado para crear efecto diagonal más denso
         if (j < steps - 1) {
-          const nextProgress = (j + 0.5) / (steps - 1);
+          const nextProgress = (j + 0.3) / (steps - 1);
+          const nextX = startX + (endX - startX) * nextProgress;
+          const nextY = startY + (endY - startY) * nextProgress;
+          doc.text(text, nextX, nextY);
+        }
+        
+        // Dibujar texto con otro desplazamiento
+        if (j < steps - 1) {
+          const nextProgress = (j + 0.7) / (steps - 1);
           const nextX = startX + (endX - startX) * nextProgress;
           const nextY = startY + (endY - startY) * nextProgress;
           doc.text(text, nextX, nextY);
@@ -106,6 +113,8 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
       doc.text(text, pageWidth * 0.8, pageHeight * 0.4);
       doc.text(text, pageWidth * 0.1, pageHeight * 0.6);
       doc.text(text, pageWidth * 0.9, pageHeight * 0.8);
+      doc.text(text, pageWidth * 0.3, pageHeight * 0.2);
+      doc.text(text, pageWidth * 0.7, pageHeight * 0.9);
       
       // Restaurar configuración normal
       doc.setTextColor(0, 0, 0);
@@ -114,31 +123,72 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
     }
   };
 
-  // Header with logo placeholder
+  // Header mejorado con diseño profesional
   doc.setFillColor(22, 163, 74); // #16a34a - Migro green
-  doc.rect(margin, yPosition, contentWidth, 15, 'F');
+  doc.rect(margin, yPosition, contentWidth, 20, 'F');
   
   doc.setTextColor(255, 255, 255);
-  doc.setFontSize(18);
+  doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('MIGRO SERVICIOS Y REMESAS SL', pageWidth / 2, yPosition + 10, { align: 'center' });
+  doc.text('MIGRO SERVICIOS Y REMESAS SL', pageWidth / 2, yPosition + 12, { align: 'center' });
   
-  yPosition += 20;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('CIF: B22759765 | C/ Libreros 4, 1º - Salamanca', pageWidth / 2, yPosition + 18, { align: 'center' });
+  
+  yPosition += 25;
   doc.setTextColor(0, 0, 0);
 
-  // Title
-  addSpace(5);
-  addText('CONTRATO DE PRESTACIÓN DE SERVICIOS', 16, true, 'center');
-  addSpace(3);
+  // Título principal con mejor diseño
+  addSpace(8);
+  doc.setFillColor(240, 240, 240); // Fondo gris claro
+  doc.rect(margin, yPosition, contentWidth, 8, 'F');
+  yPosition += 2;
+  
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 0, 0);
+  doc.text('CONTRATO DE PRESTACIÓN DE SERVICIOS', pageWidth / 2, yPosition + 5, { align: 'center' });
+  yPosition += 10;
+  
+  // Restaurar configuración normal
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
 
-  // Date
+  // Fecha con mejor formato
   const today = new Date();
   const dateStr = `En Salamanca, a ${today.getDate()} de ${today.toLocaleString('es-ES', { month: 'long' })} de ${today.getFullYear()}`;
-  addText(dateStr, 11, false, 'left');
+  
+  // Fondo para la fecha
+  doc.setFillColor(250, 250, 250);
+  doc.rect(margin, yPosition, contentWidth, 6, 'F');
+  yPosition += 1;
+  
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 0, 0);
+  doc.text(dateStr, pageWidth / 2, yPosition + 4, { align: 'center' });
+  yPosition += 8;
+  
+  // Restaurar configuración
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
   addSpace(5);
 
-  // REUNIDOS
-  addText('REUNIDOS', 12, true);
+  // REUNIDOS con mejor diseño
+  doc.setFillColor(220, 220, 220);
+  doc.rect(margin, yPosition, contentWidth, 6, 'F');
+  yPosition += 1;
+  
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 0, 0);
+  doc.text('REUNIDOS', margin + 5, yPosition + 4);
+  yPosition += 8;
+  
+  // Restaurar configuración
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
   addSpace(3);
 
   const reunidosText = `De una parte, D. ${details.user_name || '____________________'}, mayor de edad, con correo electrónico ${details.user_email || '____________________'}${details.user_passport ? `, Pasaporte nº ${details.user_passport}` : ''}${details.user_nie ? ` y/o NIE ${details.user_nie}` : ''}, en lo sucesivo denominada EL CLIENTE y,
