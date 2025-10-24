@@ -4,7 +4,12 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import type { HiringDetails } from '@/types/hiring';
 
-export function generateContractPDF(details: HiringDetails): Blob {
+export function generateContractPDF(details: HiringDetails, paymentData?: {
+  paymentIntentId?: string;
+  stripeTransactionId?: string;
+  paymentDate?: string;
+  paymentMethod?: string;
+}): Blob {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -243,7 +248,25 @@ Esta garantía no resultará aplicable en los supuestos de desistimiento volunta
   addText('Las Partes, con renuncia expresa a cualquier otro fuero que le pudiera corresponder, someten a la jurisdicción de los Juzgados y Tribunales de Salamanca para la resolución de controversias que pudiera surgir en la interpretación, ejecución o cumplimiento.', 10, false);
   addSpace(8);
 
+  // Información del Pago (si está disponible)
+  if (paymentData) {
+    addSpace(5);
+    addText('INFORMACIÓN DEL PAGO:', 12, true);
+    addSpace(2);
+    
+    const paymentInfo = `Fecha de pago: ${paymentData.paymentDate || new Date().toLocaleDateString('es-ES')}
+Método de pago: ${paymentData.paymentMethod || 'Tarjeta bancaria'}
+ID de transacción: ${paymentData.paymentIntentId || paymentData.stripeTransactionId || 'N/A'}
+Estado: Pagado y confirmado`;
+    
+    addText(paymentInfo, 10, false);
+    addSpace(5);
+  }
+
   // Firmas
+  addText('FIRMAS:', 12, true);
+  addSpace(3);
+  
   doc.setDrawColor(0);
   doc.line(margin, yPosition, margin + 60, yPosition);
   doc.line(pageWidth - margin - 60, yPosition, pageWidth - margin, yPosition);
@@ -254,6 +277,16 @@ Esta garantía no resultará aplicable en los supuestos de desistimiento volunta
   yPosition += 3;
   addText(details.user_name || '', 9, false, 'left');
   doc.text('CIF B22759765', pageWidth - margin - 30, yPosition - 3);
+  
+  // Firma digital del cliente
+  yPosition += 8;
+  addText('Firma digital del cliente:', 9, true, 'left');
+  yPosition += 2;
+  addText(`Nombre completo: ${details.user_name || ''}`, 9, false, 'left');
+  yPosition += 1;
+  addText(`Fecha de firma: ${new Date().toLocaleDateString('es-ES')}`, 9, false, 'left');
+  yPosition += 1;
+  addText(`IP de firma: [Registrada automáticamente]`, 9, false, 'left');
 
   // Footer
   const totalPages = doc.getNumberOfPages();

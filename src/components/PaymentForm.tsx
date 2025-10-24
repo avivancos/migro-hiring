@@ -9,6 +9,8 @@ import { CreditCard, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { STRIPE_PUBLISHABLE_KEY, APP_URL } from '@/config/constants';
 import { formatCurrency } from '@/utils/formatters';
 import { hiringService } from '@/services/hiringService';
+import { generateContractPDF } from '@/utils/contractPdfGenerator';
+import type { HiringDetails } from '@/types/hiring';
 
 const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
@@ -17,6 +19,7 @@ interface PaymentFormProps {
   amount: number;
   currency: string;
   serviceName: string;
+  hiringDetails?: HiringDetails;
   onSuccess: () => void;
   onBack: () => void;
 }
@@ -30,12 +33,57 @@ function CheckoutForm({
   onSuccess, 
   onBack,
   paymentIntentId,
+  hiringDetails,
 }: PaymentFormProps & { paymentIntentId: string }) {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  const generateAndSendFinalContract = async (paymentData?: {
+    paymentIntentId?: string;
+    stripeTransactionId?: string;
+    paymentDate?: string;
+    paymentMethod?: string;
+  }) => {
+    if (!hiringDetails) {
+      console.warn('⚠️ No hay detalles de contratación para generar contrato definitivo');
+      return;
+    }
+
+    try {
+      console.log('📄 Generando contrato definitivo con información de pago...');
+      
+      // Generar PDF definitivo con datos del pago
+      const contractBlob = generateContractPDF(hiringDetails, paymentData);
+      
+      // Crear FormData para enviar al backend
+      const formData = new FormData();
+      formData.append('contract', contractBlob, `contrato_definitivo_${hiringCode}.pdf`);
+      formData.append('hiring_code', hiringCode);
+      formData.append('client_email', hiringDetails.user_email || '');
+      formData.append('client_name', hiringDetails.user_name || '');
+      formData.append('contract_type', 'final');
+      
+      // Agregar información del pago
+      if (paymentData) {
+        formData.append('payment_intent_id', paymentData.paymentIntentId || '');
+        formData.append('stripe_transaction_id', paymentData.stripeTransactionId || '');
+        formData.append('payment_date', paymentData.paymentDate || new Date().toISOString());
+        formData.append('payment_method', paymentData.paymentMethod || 'Tarjeta bancaria');
+      }
+      
+      // Enviar contrato definitivo al backend
+      await hiringService.uploadFinalContract(formData);
+      
+      console.log('✅ Contrato definitivo generado y enviado por email');
+      
+    } catch (error) {
+      console.error('❌ Error al generar/enviar contrato definitivo:', error);
+      // No bloquear el flujo si falla el envío
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +136,16 @@ function CheckoutForm({
 
       // Confirmar pago en el backend
       await hiringService.confirmPayment(hiringCode, paymentIntentId);
+
+      // Generar y enviar contrato definitivo con datos reales de Stripe
+      if (hiringDetails) {
+        await generateAndSendFinalContract({
+          paymentIntentId: paymentIntentId,
+          stripeTransactionId: paymentIntentId,
+          paymentDate: new Date().toISOString(),
+          paymentMethod: 'Tarjeta bancaria (Stripe)'
+        });
+      }
 
       // Pago exitoso
       setMessage('¡Pago procesado correctamente!');
@@ -179,6 +237,50 @@ export function PaymentForm(props: PaymentFormProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const generateAndSendFinalContract = async (paymentData?: {
+    paymentIntentId?: string;
+    stripeTransactionId?: string;
+    paymentDate?: string;
+    paymentMethod?: string;
+  }) => {
+    if (!props.hiringDetails) {
+      console.warn('⚠️ No hay detalles de contratación para generar contrato definitivo');
+      return;
+    }
+
+    try {
+      console.log('📄 Generando contrato definitivo con información de pago...');
+      
+      // Generar PDF definitivo con datos del pago
+      const contractBlob = generateContractPDF(props.hiringDetails, paymentData);
+      
+      // Crear FormData para enviar al backend
+      const formData = new FormData();
+      formData.append('contract', contractBlob, `contrato_definitivo_${props.hiringCode}.pdf`);
+      formData.append('hiring_code', props.hiringCode);
+      formData.append('client_email', props.hiringDetails.user_email || '');
+      formData.append('client_name', props.hiringDetails.user_name || '');
+      formData.append('contract_type', 'final');
+      
+      // Agregar información del pago
+      if (paymentData) {
+        formData.append('payment_intent_id', paymentData.paymentIntentId || '');
+        formData.append('stripe_transaction_id', paymentData.stripeTransactionId || '');
+        formData.append('payment_date', paymentData.paymentDate || new Date().toISOString());
+        formData.append('payment_method', paymentData.paymentMethod || 'Tarjeta bancaria');
+      }
+      
+      // Enviar contrato definitivo al backend
+      await hiringService.uploadFinalContract(formData);
+      
+      console.log('✅ Contrato definitivo generado y enviado por email');
+      
+    } catch (error) {
+      console.error('❌ Error al generar/enviar contrato definitivo:', error);
+      // No bloquear el flujo si falla el envío
+    }
+  };
+
   const handleTestPayment = async (ev: React.FormEvent) => {
     ev.preventDefault();
     setLoading(true);
@@ -198,6 +300,14 @@ export function PaymentForm(props: PaymentFormProps) {
         console.warn('⚠️ Backend no pudo confirmar pago simulado:', backendError);
         // No lanzar error, continuar con el flujo
       }
+      
+      // Generar y enviar contrato definitivo con datos del pago simulado
+      await generateAndSendFinalContract({
+        paymentIntentId: 'pi_test_simulated',
+        stripeTransactionId: `test_${Date.now()}`,
+        paymentDate: new Date().toISOString(),
+        paymentMethod: 'Simulación TEST'
+      });
       
       props.onSuccess();
     } catch (err: any) {
@@ -429,7 +539,7 @@ export function PaymentForm(props: PaymentFormProps) {
           )}
           
           <Elements stripe={stripePromise} options={options}>
-            <CheckoutForm {...props} paymentIntentId={paymentIntentId} />
+            <CheckoutForm {...props} paymentIntentId={paymentIntentId} hiringDetails={props.hiringDetails} />
           </Elements>
         </CardContent>
       </Card>

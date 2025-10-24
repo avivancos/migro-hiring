@@ -101,6 +101,18 @@ export const hiringService = {
   },
 
   /**
+   * Step 5: Upload final contract and trigger email sending
+   */
+  async uploadFinalContract(formData: FormData): Promise<{ status: string; message: string }> {
+    const { data } = await api.post<{ status: string; message: string }>(`/hiring/final-contract/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  },
+
+  /**
    * Step 5: Download contract PDF by hiring code
    */
   async downloadContract(code: string): Promise<Blob> {
