@@ -36,6 +36,29 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
             </p>
           </div>
 
+          {/* Nota/Calificación del Estudio */}
+          {details.grade && (
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 p-6 rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">{details.grade}</span>
+                </div>
+                <p className="text-sm text-gray-600 font-medium">Calificación del Estudio Migro</p>
+              </div>
+              <p className="text-lg font-semibold text-gray-900 mb-2">
+                Nota {details.grade} - {details.grade === 'A' ? 'Excelente' : details.grade === 'B' ? 'Buena' : 'Aceptable'}
+              </p>
+              <p className="text-sm text-gray-600">
+                {details.grade === 'A' 
+                  ? 'Tu perfil tiene una alta probabilidad de éxito en el proceso administrativo.'
+                  : details.grade === 'B'
+                  ? 'Tu perfil tiene buenas posibilidades de éxito con algunos requisitos adicionales.'
+                  : 'Tu perfil es aceptable pero puede requerir documentación adicional o tiempo extra.'
+                }
+              </p>
+            </div>
+          )}
+
           {/* Precio */}
           <div className="bg-primary/5 border-2 border-primary/20 p-6 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
@@ -45,6 +68,14 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
             <p className="text-4xl font-bold text-primary">
               {formatCurrency(details.amount, details.currency)}
             </p>
+            {details.grade && (
+              <p className="text-sm text-gray-600 mt-2">
+                {details.grade === 'C' 
+                  ? 'Precio especial para casos complejos (600€)'
+                  : 'Precio estándar (400€)'
+                }
+              </p>
+            )}
           </div>
 
           {/* Datos del usuario */}
