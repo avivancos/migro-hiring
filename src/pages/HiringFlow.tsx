@@ -28,13 +28,13 @@ export function HiringFlow() {
   
   const [currentStep, setCurrentStep] = useState<Step>(initialStep as Step);
 
-  // Sincronizar estado con URL
+  // Sincronizar estado con URL (solo cuando cambia searchParams)
   useEffect(() => {
     const stepFromUrl = parseInt(searchParams.get('step') || '1', 10);
     if (stepFromUrl >= 1 && stepFromUrl <= 5 && stepFromUrl !== currentStep) {
       setCurrentStep(stepFromUrl as Step);
     }
-  }, [searchParams, currentStep]);
+  }, [searchParams]); // Removido currentStep de las dependencias
 
   // Actualizar URL y localStorage cuando cambie el paso
   useEffect(() => {
@@ -47,7 +47,7 @@ export function HiringFlow() {
     if (code) {
       localStorage.setItem(`hiring_step_${code}`, currentStep.toString());
     }
-  }, [currentStep, searchParams, setSearchParams, code]);
+  }, [currentStep, setSearchParams, code]); // Removido searchParams de las dependencias
 
   // Verificar expiración
   useEffect(() => {
