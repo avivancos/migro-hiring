@@ -35,13 +35,15 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
       document.body.removeChild(a);
     } catch (err: any) {
       console.warn('⚠️ No se pudo descargar desde el backend, generando localmente:', err);
+      console.log('🔧 Iniciando generación local de contrato...');
       
       // Si falla la descarga del backend, generar localmente
       try {
         await generateLocalContract();
+        console.log('✅ Contrato generado localmente exitosamente');
       } catch (localErr) {
+        console.error('❌ Error generando contrato local:', localErr);
         setError('No se pudo generar el contrato. Por favor, contacta con soporte.');
-        console.error('Error generando contrato local:', localErr);
       }
     } finally {
       setDownloading(false);
@@ -49,20 +51,30 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
   };
 
   const generateLocalContract = async () => {
+    console.log('🔧 Iniciando generateLocalContract...');
+    
     // Importar dinámicamente para evitar problemas de bundle
     const { generateContractPDF } = await import('@/utils/contractPdfGenerator');
+    console.log('✅ generateContractPDF importado correctamente');
     
     // Obtener datos del localStorage
     const hiringDetails = localStorage.getItem(`hiring_details_${hiringCode}`);
     const clientSignature = localStorage.getItem(`client_signature_${hiringCode}`);
+    
+    console.log('📋 Datos del localStorage:', {
+      hiringDetails: hiringDetails ? 'Encontrado' : 'No encontrado',
+      clientSignature: clientSignature ? 'Encontrado' : 'No encontrado'
+    });
     
     if (!hiringDetails) {
       throw new Error('No se encontraron los detalles de contratación');
     }
     
     const details = JSON.parse(hiringDetails);
+    console.log('📄 Detalles parseados:', details);
     
     // Generar PDF localmente
+    console.log('🔄 Generando PDF localmente...');
     const contractBlob = generateContractPDF(details, {
       paymentIntentId: 'pi_local_generated',
       stripeTransactionId: `local_${Date.now()}`,
@@ -70,8 +82,10 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
       paymentMethod: 'Generado localmente',
       clientSignature: clientSignature || undefined
     });
+    console.log('✅ PDF generado, tamaño:', contractBlob.size, 'bytes');
     
     // Descargar el PDF generado
+    console.log('⬇️ Iniciando descarga...');
     const url = window.URL.createObjectURL(contractBlob);
     const a = document.createElement('a');
     a.href = url;
@@ -80,6 +94,7 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
     a.click();
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
+    console.log('✅ Descarga completada');
   };
 
   return (
