@@ -8,8 +8,8 @@ services:
     plan: free
     region: oregon
     
-    # Usar Dockerfile específico para Render (solo producción)
-    dockerfilePath: ./Dockerfile.render
+    # Dockerfile con solo producción (Nginx)
+    dockerfilePath: ./Dockerfile
     dockerContext: ./
     
     # Variables de entorno para build

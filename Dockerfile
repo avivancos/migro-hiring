@@ -67,28 +67,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Iniciar nginx
 CMD ["nginx", "-g", "daemon off;"]
 
-# ==========================================
-# Stage: Development (para desarrollo local)
-# ==========================================
-FROM node:20-alpine AS development
-
-WORKDIR /app
-
-# Instalar dependencias de desarrollo
-RUN apk add --no-cache git
-
-# Copiar archivos de dependencias
-COPY package.json package-lock.json* ./
-
-# Instalar todas las dependencias (incluidas dev)
-RUN npm install --legacy-peer-deps
-
-# Copiar código fuente
-COPY . .
-
-# Exponer puerto de Vite
-EXPOSE 5173
-
-# Comando de desarrollo con hot reload
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# NOTA: Stage "development" eliminado
+# Para desarrollo local, usar: npm run dev directamente
+# Docker se usa solo para producción con Nginx
 

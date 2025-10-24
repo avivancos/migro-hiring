@@ -3,33 +3,9 @@
 services:
   # ==========================================
   # Servicio de Desarrollo
+  # NOTA: Para desarrollo, ejecuta directamente: npm run dev
+  # Este servicio Docker dev ha sido eliminado
   # ==========================================
-  dev:
-    container_name: migro-hiring-dev
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: development
-    ports:
-      - "5173:5173"
-    volumes:
-      # Montar código fuente para hot reload
-      - .:/app
-      # Usar volumen para node_modules (mejor performance)
-      - node_modules:/app/node_modules
-    env_file:
-      - .env
-    environment:
-      - NODE_ENV=development
-    networks:
-      - migro-network
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5173"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
   # ==========================================
   # Servicio de Producción (nginx)
@@ -39,9 +15,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: runner
+      # El Dockerfile solo tiene 2 stages: deps, builder, y runner (nginx)
+      # Docker usa el último por defecto (runner)
       args:
-        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-https://api.migro.es/api/v1}
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-https://api.migro.es/api}
         - VITE_STRIPE_PUBLISHABLE_KEY=${VITE_STRIPE_PUBLISHABLE_KEY}
         - VITE_APP_URL=${VITE_APP_URL:-https://contratacion.migro.es}
     ports:
@@ -68,9 +45,6 @@ services:
     profiles:
       - mock
     restart: unless-stopped
-
-volumes:
-  node_modules:
 
 networks:
   migro-network:
