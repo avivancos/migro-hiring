@@ -10,7 +10,7 @@ export const adminService = {
   async login(password: string): Promise<{ success: boolean; token?: string }> {
     // For now, hardcoded password validation
     // In production, this should be a proper API call
-    const ADMIN_PASSWORD = 'Pomelo2005.1@';
+    const ADMIN_PASSWORD = 'Pomelo2005.1';
     
     if (password === ADMIN_PASSWORD) {
       // Generate a simple token (in production, this comes from backend)
@@ -43,7 +43,7 @@ export const adminService = {
   async createHiringCode(request: CreateHiringRequest): Promise<HiringCodeResponse> {
     const { data } = await api.post<HiringCodeResponse>('/admin/hiring/create', request, {
       headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
+        'X-Admin-Password': 'Pomelo2005.1',
       },
     });
     return data;
@@ -55,7 +55,7 @@ export const adminService = {
   async getAllHiringCodes(): Promise<any[]> {
     const { data } = await api.get('/admin/hiring/list', {
       headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
+        'X-Admin-Password': 'Pomelo2005.1',
       },
     });
     return data;
