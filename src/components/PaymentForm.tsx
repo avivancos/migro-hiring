@@ -258,11 +258,6 @@ export function PaymentForm(props: PaymentFormProps) {
         borderRadius: '8px',
       },
     },
-    // Para códigos TEST, usar modo simulación
-    ...(props.hiringCode.startsWith('TEST') && {
-      mode: 'payment' as const,
-      payment_method_types: ['card'],
-    }),
   };
 
   return (
