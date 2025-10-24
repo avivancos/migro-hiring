@@ -78,7 +78,7 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
               </div>
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="text-green-600 flex-shrink-0" size={20} />
-                <span className="text-gray-700">Identidad verificada con Stripe Identity</span>
+                <span className="text-gray-700">Contrato firmado digitalmente</span>
               </div>
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="text-green-600 flex-shrink-0" size={20} />

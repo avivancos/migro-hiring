@@ -6,7 +6,7 @@ import { useHiringData } from '@/hooks/useHiringData';
 import { hiringService } from '@/services/hiringService';
 import { ServiceDetails } from '@/components/ServiceDetails';
 import { ConfirmData } from '@/components/ConfirmData';
-import { KYCVerification } from '@/components/KYCVerification';
+import { ContractSignature } from '@/components/ContractSignature';
 import { PaymentForm } from '@/components/PaymentForm';
 import { ContractSuccess } from '@/components/ContractSuccess';
 import { ProgressBar } from '@/components/Layout/ProgressBar';
@@ -56,8 +56,8 @@ export function HiringFlow() {
     handleNext();
   };
 
-  // Handler para completar KYC (Step 3)
-  const handleKYCComplete = () => {
+  // Handler para completar firma del contrato (Step 3)
+  const handleSignatureComplete = () => {
     handleNext();
   };
 
@@ -128,9 +128,10 @@ export function HiringFlow() {
         )}
 
         {currentStep === 3 && (
-          <KYCVerification
+          <ContractSignature
             hiringCode={code}
-            onComplete={handleKYCComplete}
+            userName={details.user_name}
+            onComplete={handleSignatureComplete}
             onBack={handleBack}
           />
         )}

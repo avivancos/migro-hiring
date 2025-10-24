@@ -10,9 +10,9 @@ export const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 export const HIRING_STEPS = [
   { id: 1, name: 'Detalles', description: 'Información del servicio' },
   { id: 2, name: 'Confirmar', description: 'Datos personales' },
-  { id: 3, name: 'Verificación', description: 'KYC Identity' },
-  { id: 4, name: 'Pago', description: 'Stripe' },
-  { id: 5, name: 'Contrato', description: 'Descarga' },
+  { id: 3, name: 'Firma', description: 'Firma del contrato' },
+  { id: 4, name: 'Pago', description: 'Pago inicial' },
+  { id: 5, name: 'Finalizado', description: 'Confirmación' },
 ] as const;
 
 export const COLORS = {
