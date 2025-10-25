@@ -8,6 +8,7 @@ import { Expired } from '@/pages/Expired';
 import { AdminLogin } from '@/pages/AdminLogin';
 import { AdminDashboard } from '@/pages/AdminDashboard';
 import { PrivacyPolicy } from '@/pages/PrivacyPolicy';
+import { BorradorPDF } from '@/pages/BorradorPDF';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path="/404" element={<NotFound />} />
           <Route path="/privacidad" element={<PrivacyPolicy />} />
           <Route path="/privacy" element={<PrivacyPolicy />} /> {/* Alias en inglés */}
+          <Route path="/borrador" element={<BorradorPDF />} />
           
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
