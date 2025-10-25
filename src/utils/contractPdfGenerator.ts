@@ -108,7 +108,7 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  doc.text('CONTRATO DE PRESTACIÓN DE SERVICIOS', pageWidth / 2, yPosition + 5, { align: 'center' });
+  doc.text('BORRADOR DE CONTRATO DE PRESTACIÓN DE SERVICIOS', pageWidth / 2, yPosition + 5, { align: 'center' });
   yPosition += 10;
   
   // Restaurar configuración normal
