@@ -5,8 +5,8 @@ export type ClientGrade = 'A' | 'B' | 'C';
 export interface HiringDetails {
   id: number;
   hiring_code: string;
-  user_name: string;
-  user_email: string;
+  client_name: string; // Cambiado de user_name a client_name
+  client_email: string; // Cambiado de user_email a client_email
   service_name: string;
   service_description: string;
   amount: number;

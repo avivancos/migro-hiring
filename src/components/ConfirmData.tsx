@@ -101,12 +101,12 @@ export function ConfirmData({ details, onConfirm, onBack }: ConfirmDataProps) {
             
             <div className="border-b border-gray-200 pb-3">
               <p className="text-sm text-gray-500 mb-1">Nombre completo</p>
-              <p className="text-lg font-semibold text-gray-900">{details.user_name}</p>
+              <p className="text-lg font-semibold text-gray-900">{details.client_name}</p>
             </div>
 
             <div className="border-b border-gray-200 pb-3">
               <p className="text-sm text-gray-500 mb-1">Correo electrónico</p>
-              <p className="text-lg font-semibold text-gray-900">{details.user_email}</p>
+              <p className="text-lg font-semibold text-gray-900">{details.client_email}</p>
             </div>
 
             <div>

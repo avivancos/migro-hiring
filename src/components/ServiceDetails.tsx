@@ -86,14 +86,14 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
                 <User className="text-gray-500" size={18} />
                 <div>
                   <p className="text-xs text-gray-500">Nombre completo</p>
-                  <p className="font-medium text-gray-900">{details.user_name}</p>
+                  <p className="font-medium text-gray-900">{details.client_name}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="text-gray-500" size={18} />
                 <div>
                   <p className="text-xs text-gray-500">Email</p>
-                  <p className="font-medium text-gray-900">{details.user_email}</p>
+                  <p className="font-medium text-gray-900">{details.client_email}</p>
                 </div>
               </div>
             </div>

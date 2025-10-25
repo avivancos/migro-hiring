@@ -166,7 +166,7 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
     clientAddress += ', España';
   }
 
-  const reunidosText = `De una parte, D. ${details.user_name || '____________________'}, mayor de edad, con correo electrónico ${details.user_email || '____________________'}${details.user_passport ? `, Pasaporte nº ${details.user_passport}` : ''}${details.user_nie ? ` y/o NIE ${details.user_nie}` : ''}${clientAddress ? `, con domicilio en ${clientAddress}` : ''}, en lo sucesivo denominada EL CLIENTE y,
+  const reunidosText = `De una parte, D. ${details.client_name || '____________________'}, mayor de edad, con correo electrónico ${details.client_email || '____________________'}${details.user_passport ? `, Pasaporte nº ${details.user_passport}` : ''}${details.user_nie ? ` y/o NIE ${details.user_nie}` : ''}${clientAddress ? `, con domicilio en ${clientAddress}` : ''}, en lo sucesivo denominada EL CLIENTE y,
 
 De la otra parte, la entidad MIGRO SERVICIOS Y REMESAS SL, con CIF B22759765, con domicilio social en C/ Libreros, 54, 1º de Salamanca – España, debidamente representada en función de la escritura de constitución social de fecha 15 de julio de 2025 y protocolo 940/25 otorgada ante el Notario de Huelva, Dª María Gómez – Rodulfo García de Castro, en lo sucesivo denominada LA PRESTADORA DEL SERVICIO o AGENCIA.`;
   
@@ -364,14 +364,14 @@ Estado: Pagado y confirmado`;
   addText('EL CLIENTE', 10, true, 'left');
   doc.text('LA AGENCIA', pageWidth - margin - 30, yPosition - 5);
   yPosition += 3;
-  addText(details.user_name || '', 9, false, 'left');
+  addText(details.client_name || '', 9, false, 'left');
   doc.text('CIF B22759765', pageWidth - margin - 30, yPosition - 3);
   
   // Firma digital del cliente
   yPosition += 8;
   addText('Firma digital del cliente:', 9, true, 'left');
   yPosition += 2;
-  addText(`Nombre completo: ${details.user_name || ''}`, 9, false, 'left');
+  addText(`Nombre completo: ${details.client_name || ''}`, 9, false, 'left');
   yPosition += 1;
   addText(`Fecha de firma: ${new Date().toLocaleDateString('es-ES')}`, 9, false, 'left');
   yPosition += 1;

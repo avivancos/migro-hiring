@@ -178,7 +178,7 @@ export function HiringFlow() {
         {currentStep === 3 && (
           <ContractSignature
             hiringCode={code}
-            userName={details.user_name}
+            userName={details.client_name}
             onComplete={handleSignatureComplete}
             onBack={handleBack}
           />
@@ -199,7 +199,7 @@ export function HiringFlow() {
           <ContractSuccess
             hiringCode={code}
             serviceName={details.service_name}
-            userEmail={details.user_email}
+            userEmail={details.client_email}
           />
         )}
       </div>

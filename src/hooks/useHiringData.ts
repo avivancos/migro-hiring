@@ -26,8 +26,8 @@ export function useHiringData(code: string) {
       console.log('📊 Datos recibidos del backend:', data);
       console.log('📊 Service name:', data.service_name);
       console.log('📊 Service description:', data.service_description);
-      console.log('📊 User name:', data.user_name);
-      console.log('📊 User email:', data.user_email);
+      console.log('📊 Client name:', data.client_name);
+      console.log('📊 Client email:', data.client_email);
       console.log('📊 Client passport:', data.user_passport);
       console.log('📊 Client NIE:', data.user_nie);
       console.log('📊 Client address:', data.user_address);
