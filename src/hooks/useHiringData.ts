@@ -28,6 +28,13 @@ export function useHiringData(code: string) {
       console.log('📊 Service description:', data.service_description);
       console.log('📊 User name:', data.user_name);
       console.log('📊 User email:', data.user_email);
+      console.log('📊 Client passport:', data.user_passport);
+      console.log('📊 Client NIE:', data.user_nie);
+      console.log('📊 Client address:', data.user_address);
+      console.log('📊 Client city:', data.user_city);
+      console.log('📊 Client province:', data.user_province);
+      console.log('📊 Client postal code:', data.user_postal_code);
+      console.log('📊 OBJETO COMPLETO:', JSON.stringify(data, null, 2));
       setDetails(data);
     } catch (err) {
       const message = getErrorMessage(err);
