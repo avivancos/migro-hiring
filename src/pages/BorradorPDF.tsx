@@ -15,6 +15,7 @@ export function BorradorPDF() {
 
   // Datos de ejemplo para el borrador
   const exampleDetails: HiringDetails = {
+    id: 999999, // ID de ejemplo
     hiring_code: 'EJEMPLO',
     user_name: 'Juan Pérez García',
     user_email: 'juan.perez@ejemplo.com',
