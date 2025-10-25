@@ -71,6 +71,9 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
             <p className="text-sm text-gray-600 mt-2">
               <span className="font-bold">200€ ahora</span> y 200€ con la comunicación favorable del expediente
             </p>
+            <p className="text-xs text-gray-500 mt-1">
+              IVA incluido
+            </p>
           </div>
 
           {/* Datos del usuario */}
