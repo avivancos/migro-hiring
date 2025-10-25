@@ -83,8 +83,8 @@ export function PaymentForm(props: PaymentFormProps) {
         const formData = new FormData();
         formData.append('contract', contractBlob, `contrato_definitivo_${props.hiringCode}.pdf`);
         formData.append('hiring_code', props.hiringCode);
-        formData.append('client_email', props.hiringDetails.user_email || '');
-        formData.append('client_name', props.hiringDetails.user_name || '');
+        formData.append('client_email', props.hiringDetails.client_email || '');
+        formData.append('client_name', props.hiringDetails.client_name || '');
         formData.append('contract_type', 'final');
         formData.append('payment_intent_id', 'pi_test_simulated');
         formData.append('stripe_transaction_id', `test_${Date.now()}`);
@@ -155,8 +155,8 @@ export function PaymentForm(props: PaymentFormProps) {
                         const formData = new FormData();
                         formData.append('contract', contractBlob, `contrato_definitivo_${props.hiringCode}.pdf`);
                         formData.append('hiring_code', props.hiringCode);
-                        formData.append('client_email', props.hiringDetails.user_email || '');
-                        formData.append('client_name', props.hiringDetails.user_name || '');
+                        formData.append('client_email', props.hiringDetails.client_email || '');
+                        formData.append('client_name', props.hiringDetails.client_name || '');
                         formData.append('contract_type', 'final');
                         formData.append('payment_intent_id', 'pi_live_simulated');
                         formData.append('stripe_transaction_id', `live_sim_${Date.now()}`);
