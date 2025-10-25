@@ -108,7 +108,9 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(0, 0, 0);
-  doc.text('BORRADOR DE CONTRATO DE PRESTACIÓN DE SERVICIOS', pageWidth / 2, yPosition + 5, { align: 'center' });
+  // Título cambia según si es borrador o definitivo
+  const title = isDraft ? 'BORRADOR DE CONTRATO DE PRESTACIÓN DE SERVICIOS' : 'CONTRATO DE PRESTACIÓN DE SERVICIOS';
+  doc.text(title, pageWidth / 2, yPosition + 5, { align: 'center' });
   yPosition += 10;
   
   // Restaurar configuración normal
