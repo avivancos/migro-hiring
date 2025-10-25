@@ -71,8 +71,8 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
             {details.grade && (
               <p className="text-sm text-gray-600 mt-2">
                 {details.grade === 'C' 
-                  ? 'Precio especial para casos complejos (600€)'
-                  : 'Precio estándar (400€)'
+                  ? '300€ ahora y 300€ con la comunicación favorable del expediente'
+                  : '200€ ahora y 200€ con la comunicación favorable del expediente'
                 }
               </p>
             )}
