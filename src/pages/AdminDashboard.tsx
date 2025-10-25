@@ -84,9 +84,32 @@ export function AdminDashboard() {
         notes: `Código creado por administrador - Grado ${grade}`,
       });
 
-      setGeneratedCode(response.hiring_code);
-      setGeneratedUrl(response.short_url);
-      setSuccess(`¡Código de contratación creado exitosamente!`);
+      console.log('✅ Respuesta del backend:', response);
+
+      // Manejar diferentes estructuras de respuesta
+      const hiringCode = response.hiring_code || response.code || response.hiringCode;
+      const shortUrl = response.short_url || response.url || response.shortUrl;
+
+      console.log('📝 Código extraído:', hiringCode);
+      console.log('🔗 URL extraída:', shortUrl);
+
+      if (hiringCode) {
+        setGeneratedCode(hiringCode);
+        setSuccess(`¡Código de contratación creado exitosamente!`);
+      } else {
+        console.warn('⚠️ No se encontró código de contratación en la respuesta');
+        setError('Código creado pero no se pudo extraer de la respuesta');
+        return;
+      }
+
+      if (shortUrl) {
+        setGeneratedUrl(shortUrl);
+      } else {
+        // Generar URL manualmente si no viene en la respuesta
+        const manualUrl = `https://contratacion.migro.es/${hiringCode}`;
+        setGeneratedUrl(manualUrl);
+        console.log('🔗 URL generada manualmente:', manualUrl);
+      }
       
       // Clear form
       setUserName('');
