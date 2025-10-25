@@ -71,21 +71,20 @@ export function AdminDashboard() {
     try {
       const response = await adminService.createHiringCode({
         contract_template: "standard", // Campo requerido
-        user_name: userName,
-        user_email: userEmail,
-        user_passport: userPassport || undefined,
-        user_nie: userNie || undefined,
-        user_address: userAddress,
-        user_city: userCity,
-        user_province: userProvince || undefined,
-        user_postal_code: userPostalCode || undefined,
-        grade: grade,
         service_name: serviceName,
         service_description: serviceDescription,
         amount: GRADE_PRICING[grade] * 100, // Convertir a centavos
         currency: "EUR",
+        grade: grade,
         expires_in_days: 30,
         notes: `Código creado por administrador - Grado ${grade}`,
+        // Datos del cliente (usando nombres correctos del backend)
+        client_passport: userPassport || undefined,
+        client_nie: userNie || undefined,
+        client_address: userAddress || undefined,
+        client_city: userCity || undefined,
+        client_province: userProvince || undefined,
+        client_postal_code: userPostalCode || undefined,
       });
 
       console.log('✅ Respuesta del backend:', response);

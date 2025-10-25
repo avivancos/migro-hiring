@@ -4,21 +4,20 @@ export type ClientGrade = 'A' | 'B' | 'C';
 
 export interface CreateHiringRequest {
   contract_template: string; // Template del contrato (requerido)
-  user_name: string; // Nombre completo del cliente
-  user_email: string; // Email del cliente
-  user_passport?: string; // Pasaporte del cliente
-  user_nie?: string; // NIE del cliente
-  user_address: string; // Dirección del cliente
-  user_city: string; // Ciudad del cliente
-  user_province?: string; // Provincia del cliente
-  user_postal_code?: string; // Código postal del cliente
-  grade: ClientGrade; // Grado del cliente ("A", "B", o "C")
   service_name: string; // Nombre del servicio
   service_description?: string; // Descripción del servicio
   amount?: number; // Monto en centavos
   currency?: string; // Moneda
+  grade: ClientGrade; // Grado del cliente ("A", "B", o "C")
   expires_in_days?: number; // Días de expiración
   notes?: string; // Notas adicionales
+  // Datos del cliente (usando nombres correctos del backend)
+  client_passport?: string; // Pasaporte del cliente
+  client_nie?: string; // NIE del cliente
+  client_address?: string; // Dirección del cliente
+  client_city?: string; // Ciudad del cliente
+  client_province?: string; // Provincia del cliente
+  client_postal_code?: string; // Código postal del cliente
 }
 
 export interface HiringCodeResponse {
