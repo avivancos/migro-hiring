@@ -21,7 +21,13 @@ export function useHiringData(code: string) {
       setLoading(true);
       setError(null);
 
+      console.log('🔍 Obteniendo detalles para código:', code);
       const data = await hiringService.getDetails(code);
+      console.log('📊 Datos recibidos del backend:', data);
+      console.log('📊 Service name:', data.service_name);
+      console.log('📊 Service description:', data.service_description);
+      console.log('📊 User name:', data.user_name);
+      console.log('📊 User email:', data.user_email);
       setDetails(data);
     } catch (err) {
       const message = getErrorMessage(err);
