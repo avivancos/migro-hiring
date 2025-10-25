@@ -68,14 +68,9 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
             <p className="text-4xl font-bold text-primary">
               {formatCurrency(details.amount, details.currency)}
             </p>
-            {details.grade && (
-              <p className="text-sm text-gray-600 mt-2">
-                {details.grade === 'C' 
-                  ? '300€ ahora y 300€ con la comunicación favorable del expediente'
-                  : '200€ ahora y 200€ con la comunicación favorable del expediente'
-                }
-              </p>
-            )}
+            <p className="text-sm text-gray-600 mt-2">
+              200€ ahora y 200€ con la comunicación favorable del expediente
+            </p>
           </div>
 
           {/* Datos del usuario */}
