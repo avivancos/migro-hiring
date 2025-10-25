@@ -10,6 +10,8 @@ export interface CreateHiringRequest {
   user_nie?: string; // NIE del cliente
   user_address: string; // Dirección del cliente
   user_city: string; // Ciudad del cliente
+  user_province?: string; // Provincia del cliente
+  user_postal_code?: string; // Código postal del cliente
   grade: ClientGrade; // Grado del cliente ("A", "B", o "C")
   service_name: string; // Nombre del servicio
   service_description?: string; // Descripción del servicio

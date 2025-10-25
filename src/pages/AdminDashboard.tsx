@@ -25,6 +25,8 @@ export function AdminDashboard() {
   const [userNie, setUserNie] = useState('');
   const [userAddress, setUserAddress] = useState('');
   const [userCity, setUserCity] = useState('');
+  const [userProvince, setUserProvince] = useState('');
+  const [userPostalCode, setUserPostalCode] = useState('');
   const [serviceName, setServiceName] = useState('Residencia Legal en España');
   const [serviceDescription, setServiceDescription] = useState('Tramitación de expediente para obtención de residencia legal');
   const [grade, setGrade] = useState<ClientGrade>('B');
@@ -75,6 +77,8 @@ export function AdminDashboard() {
         user_nie: userNie || undefined,
         user_address: userAddress,
         user_city: userCity,
+        user_province: userProvince || undefined,
+        user_postal_code: userPostalCode || undefined,
         grade: grade,
         service_name: serviceName,
         service_description: serviceDescription,
@@ -118,6 +122,8 @@ export function AdminDashboard() {
       setUserNie('');
       setUserAddress('');
       setUserCity('');
+      setUserProvince('');
+      setUserPostalCode('');
       setGrade('B');
     } catch (err: any) {
       setError(err.message || 'Error al crear el código de contratación');
@@ -293,6 +299,29 @@ export function AdminDashboard() {
                       value={userCity}
                       onChange={(e) => setUserCity(e.target.value)}
                       placeholder="Salamanca"
+                    />
+                  </div>
+                </div>
+
+                {/* Provincia y Código Postal */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="userProvince">Provincia (opcional)</Label>
+                    <Input
+                      id="userProvince"
+                      value={userProvince}
+                      onChange={(e) => setUserProvince(e.target.value)}
+                      placeholder="Salamanca"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="userPostalCode">Código Postal (opcional)</Label>
+                    <Input
+                      id="userPostalCode"
+                      value={userPostalCode}
+                      onChange={(e) => setUserPostalCode(e.target.value)}
+                      placeholder="37001"
                     />
                   </div>
                 </div>
