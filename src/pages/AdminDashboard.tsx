@@ -78,9 +78,9 @@ export function AdminDashboard() {
         grade: grade,
         expires_in_days: 30,
         notes: `Código creado por administrador - Grado ${grade}`,
-        // Datos del usuario (información de contacto principal) - REQUERIDOS
-        user_name: userName,
-        user_email: userEmail,
+        // Datos del cliente (información de contacto principal) - REQUERIDOS
+        client_name: userName,
+        client_email: userEmail,
         // Datos del cliente (información adicional del documento)
         client_passport: userPassport || undefined,
         client_nie: userNie || undefined,

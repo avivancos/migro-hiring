@@ -11,9 +11,9 @@ export interface CreateHiringRequest {
   grade: ClientGrade; // Grado del cliente ("A", "B", o "C")
   expires_in_days?: number; // Días de expiración
   notes?: string; // Notas adicionales
-  // Datos del usuario (información de contacto principal)
-  user_name: string; // Nombre completo del usuario (requerido)
-  user_email: string; // Email del usuario (requerido)
+  // Datos del cliente (información de contacto principal)
+  client_name: string; // Nombre completo del cliente (requerido)
+  client_email: string; // Email del cliente (requerido)
   // Datos del cliente (información adicional del documento)
   client_passport?: string; // Pasaporte del cliente
   client_nie?: string; // NIE del cliente
