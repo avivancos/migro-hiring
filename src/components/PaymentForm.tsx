@@ -23,6 +23,20 @@ export function PaymentForm(props: PaymentFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
 
+  // Calcular el monto del primer pago según el grado
+  const getFirstPaymentAmount = (): string => {
+    const grade = props.hiringDetails?.grade;
+    
+    if (grade === 'T') {
+      return '0.50';
+    } else if (grade === 'C') {
+      return '300.00';
+    } else {
+      // Grados A y B
+      return '200.00';
+    }
+  };
+
   useEffect(() => {
     const createCheckoutSession = async () => {
       try {
@@ -244,8 +258,8 @@ export function PaymentForm(props: PaymentFormProps) {
                   Detalles del Pago:
                 </h4>
                 <div className="space-y-2 text-sm">
-                  <p><strong>Servicio:</strong> {props.serviceName}</p>
-                  <p><strong>Monto:</strong> €{(props.amount / 100).toFixed(2)}</p>
+                  <p><strong>Servicio:</strong> {props.serviceName} - Primer Pago</p>
+                  <p><strong>Monto:</strong> €{getFirstPaymentAmount()}</p>
                   <p><strong>Código:</strong> {props.hiringCode}</p>
                   <p><strong>Estado:</strong> Simulación</p>
                 </div>
@@ -307,8 +321,8 @@ export function PaymentForm(props: PaymentFormProps) {
                 Detalles del Pago:
               </h4>
               <div className="space-y-2 text-sm">
-                <p><strong>Servicio:</strong> {props.serviceName}</p>
-                <p><strong>Monto:</strong> €{(props.amount / 100).toFixed(2)}</p>
+                <p><strong>Servicio:</strong> {props.serviceName} - Primer Pago</p>
+                <p><strong>Monto:</strong> €{getFirstPaymentAmount()}</p>
                 <p><strong>Código:</strong> {props.hiringCode}</p>
                 <p><strong>Método:</strong> Stripe Checkout</p>
               </div>
