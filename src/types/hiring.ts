@@ -20,6 +20,8 @@ export interface HiringDetails {
   user_nie?: string;
   user_address?: string;
   user_city?: string;
+  user_province?: string;
+  user_postal_code?: string;
   contract_date?: string;
   contract_accepted?: boolean;
   contract_accepted_at?: string;

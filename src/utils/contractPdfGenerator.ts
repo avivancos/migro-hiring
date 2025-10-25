@@ -151,7 +151,22 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
   doc.setFont('helvetica', 'normal');
   addSpace(3);
 
-  const reunidosText = `De una parte, D. ${details.user_name || '____________________'}, mayor de edad, con correo electrónico ${details.user_email || '____________________'}${details.user_passport ? `, Pasaporte nº ${details.user_passport}` : ''}${details.user_nie ? ` y/o NIE ${details.user_nie}` : ''}, en lo sucesivo denominada EL CLIENTE y,
+  // Construir dirección completa del cliente
+  let clientAddress = details.user_address || '';
+  if (details.user_city) {
+    clientAddress += clientAddress ? `, ${details.user_city}` : details.user_city;
+  }
+  if (details.user_province) {
+    clientAddress += clientAddress ? `, ${details.user_province}` : details.user_province;
+  }
+  if (details.user_postal_code) {
+    clientAddress += clientAddress ? `, ${details.user_postal_code}` : details.user_postal_code;
+  }
+  if (clientAddress) {
+    clientAddress += ', España';
+  }
+
+  const reunidosText = `De una parte, D. ${details.user_name || '____________________'}, mayor de edad, con correo electrónico ${details.user_email || '____________________'}${details.user_passport ? `, Pasaporte nº ${details.user_passport}` : ''}${details.user_nie ? ` y/o NIE ${details.user_nie}` : ''}${clientAddress ? `, con domicilio en ${clientAddress}` : ''}, en lo sucesivo denominada EL CLIENTE y,
 
 De la otra parte, la entidad MIGRO SERVICIOS Y REMESAS SL, con CIF B22759765, con domicilio social en C/ Libreros, 54, 1º de Salamanca – España, debidamente representada en función de la escritura de constitución social de fecha 15 de julio de 2025 y protocolo 940/25 otorgada ante el Notario de Huelva, Dª María Gómez – Rodulfo García de Castro, en lo sucesivo denominada LA PRESTADORA DEL SERVICIO o AGENCIA.`;
   
