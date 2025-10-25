@@ -52,7 +52,7 @@ export const GRADE_PRICING = {
 
 export const GRADE_DESCRIPTIONS = {
   A: 'Excelente - Alta probabilidad de éxito (400€)',
-  B: 'Bueno - Probabilidad media de éxito (400€)',
+  B: 'Bueno - Probabilidad buena de éxito (400€)',
   C: 'Complejo - Requiere estudio adicional (600€)',
   T: 'Testing - Solo para pruebas internas (1€)',
 } as const;

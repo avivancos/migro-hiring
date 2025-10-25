@@ -384,7 +384,7 @@ export function AdminDashboard() {
                   </p>
                   <ul className="text-sm text-blue-700 space-y-1">
                     <li><strong>Nota A:</strong> Excelente - Alta probabilidad de éxito (400€)</li>
-                    <li><strong>Nota B:</strong> Bueno - Probabilidad media de éxito (400€)</li>
+                    <li><strong>Nota B:</strong> Bueno - Probabilidad buena de éxito (400€)</li>
                     <li><strong>Nota C:</strong> Complejo - Requiere estudio adicional (600€)</li>
                     <li><strong>Nota T:</strong> Testing - Solo para pruebas internas (1€)</li>
                   </ul>
