@@ -360,7 +360,7 @@ Estado: Pagado y confirmado`;
   yPosition += 1;
   addText(`Fecha de firma: ${new Date().toLocaleDateString('es-ES')}`, 9, false, 'left');
   yPosition += 1;
-  addText(`IP de firma: [Registrada automáticamente]`, 9, false, 'left');
+  addText(`ID de transacción: ${paymentData?.stripeTransactionId || 'Generado localmente'}`, 9, false, 'left');
   
   // Firma incrustada del cliente
   if (paymentData?.clientSignature) {
@@ -370,8 +370,8 @@ Estado: Pagado y confirmado`;
     
     // Crear una firma visual usando el nombre
     const signatureText = paymentData.clientSignature;
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold'); // Cambiar de italic a bold
     doc.setTextColor(0, 0, 0);
     
     // Dibujar línea de firma
