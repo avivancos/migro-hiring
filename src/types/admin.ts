@@ -3,6 +3,7 @@
 export type ClientGrade = 'A' | 'B' | 'C';
 
 export interface CreateHiringRequest {
+  contract_template: string; // Template del contrato (requerido)
   user_name: string; // Nombre completo del cliente
   user_email: string; // Email del cliente
   user_passport?: string; // Pasaporte del cliente
@@ -11,6 +12,10 @@ export interface CreateHiringRequest {
   user_city: string; // Ciudad del cliente
   grade: ClientGrade; // Grado del cliente ("A", "B", o "C")
   service_name: string; // Nombre del servicio
+  service_description?: string; // Descripción del servicio
+  amount?: number; // Monto en centavos
+  currency?: string; // Moneda
+  expires_in_days?: number; // Días de expiración
   notes?: string; // Notas adicionales
 }
 

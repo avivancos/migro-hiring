@@ -68,6 +68,7 @@ export function AdminDashboard() {
 
     try {
       const response = await adminService.createHiringCode({
+        contract_template: "standard", // Campo requerido
         user_name: userName,
         user_email: userEmail,
         user_passport: userPassport || undefined,
@@ -76,6 +77,10 @@ export function AdminDashboard() {
         user_city: userCity,
         grade: grade,
         service_name: serviceName,
+        service_description: serviceDescription,
+        amount: GRADE_PRICING[grade] * 100, // Convertir a centavos
+        currency: "EUR",
+        expires_in_days: 30,
         notes: `Código creado por administrador - Grado ${grade}`,
       });
 
