@@ -90,9 +90,9 @@ export function AdminDashboard() {
 
       console.log('✅ Respuesta del backend:', response);
 
-      // Manejar diferentes estructuras de respuesta
-      const hiringCode = response.hiring_code || response.code || response.hiringCode;
-      const shortUrl = response.short_url || response.url || response.shortUrl;
+      // Extraer código y URL de la respuesta
+      const hiringCode = response.hiring_code;
+      const shortUrl = response.short_url;
 
       console.log('📝 Código extraído:', hiringCode);
       console.log('🔗 URL extraída:', shortUrl);
