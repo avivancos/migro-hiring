@@ -1,6 +1,6 @@
 // Types for Hiring Flow
 
-export type ClientGrade = 'A' | 'B' | 'C';
+export type ClientGrade = 'A' | 'B' | 'C' | 'T';
 
 export interface HiringDetails {
   id: number;

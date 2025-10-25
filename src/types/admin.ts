@@ -1,6 +1,6 @@
 // Types for Admin Panel
 
-export type ClientGrade = 'A' | 'B' | 'C';
+export type ClientGrade = 'A' | 'B' | 'C' | 'T';
 
 export interface CreateHiringRequest {
   contract_template: string; // Template del contrato (requerido)
@@ -8,7 +8,7 @@ export interface CreateHiringRequest {
   service_description?: string; // Descripción del servicio
   amount?: number; // Monto en centavos
   currency?: string; // Moneda
-  grade: ClientGrade; // Grado del cliente ("A", "B", o "C")
+  grade: ClientGrade; // Grado del cliente ("A", "B", "C", o "T" para testing)
   expires_in_days?: number; // Días de expiración
   notes?: string; // Notas adicionales
   // Datos del cliente (información de contacto principal)
@@ -47,11 +47,13 @@ export const GRADE_PRICING = {
   A: 400,
   B: 400,
   C: 600,
+  T: 1, // Testing - Solo 1€ para pruebas internas
 } as const;
 
 export const GRADE_DESCRIPTIONS = {
   A: 'Excelente - Alta probabilidad de éxito (400€)',
   B: 'Bueno - Probabilidad media de éxito (400€)',
   C: 'Complejo - Requiere estudio adicional (600€)',
+  T: 'Testing - Solo para pruebas internas (1€)',
 } as const;
 

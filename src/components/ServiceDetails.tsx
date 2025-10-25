@@ -69,7 +69,11 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
               {formatCurrency(details.amount, details.currency)}
             </p>
             <p className="text-sm text-gray-600 mt-2">
-              <span className="font-bold">200€ ahora</span> y 200€ con la comunicación favorable del expediente
+              {details.grade === 'T' ? (
+                <><span className="font-bold">0,50€ ahora</span> y 0,50€ con la comunicación favorable del expediente</>
+              ) : (
+                <><span className="font-bold">200€ ahora</span> y 200€ con la comunicación favorable del expediente</>
+              )}
             </p>
             <p className="text-xs text-gray-500 mt-1">
               IVA incluido

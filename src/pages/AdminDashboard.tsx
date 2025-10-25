@@ -147,8 +147,19 @@ export function AdminDashboard() {
 
   const getPaymentInfo = () => {
     const totalAmount = GRADE_PRICING[grade];
-    const firstPayment = grade === 'C' ? 300 : 200;
-    const secondPayment = grade === 'C' ? 300 : 200;
+    let firstPayment, secondPayment;
+    
+    if (grade === 'T') {
+      // Para testing: 1€ total (0.50€ ahora + 0.50€ después)
+      firstPayment = 0.5;
+      secondPayment = 0.5;
+    } else if (grade === 'C') {
+      firstPayment = 300;
+      secondPayment = 300;
+    } else {
+      firstPayment = 200;
+      secondPayment = 200;
+    }
     
     return {
       total: totalAmount,
@@ -375,18 +386,19 @@ export function AdminDashboard() {
                     <li><strong>Nota A:</strong> Excelente - Alta probabilidad de éxito (400€)</li>
                     <li><strong>Nota B:</strong> Bueno - Probabilidad media de éxito (400€)</li>
                     <li><strong>Nota C:</strong> Complejo - Requiere estudio adicional (600€)</li>
+                    <li><strong>Nota T:</strong> Testing - Solo para pruebas internas (1€)</li>
                   </ul>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {(['A', 'B', 'C'] as ClientGrade[]).map((g) => (
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {(['A', 'B', 'C', 'T'] as ClientGrade[]).map((g) => (
                     <button
                       key={g}
                       type="button"
                       onClick={() => setGrade(g)}
                       className={`p-4 rounded-lg border-2 transition-all ${
                         grade === g
-                          ? 'border-primary bg-primary text-white'
+                          ? (g === 'T' ? 'border-yellow-500 bg-yellow-500 text-white' : 'border-primary bg-primary text-white')
                           : 'border-gray-300 bg-white hover:border-primary'
                       }`}
                     >
