@@ -152,21 +152,30 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
   addSpace(3);
 
   // Construir dirección completa del cliente
-  let clientAddress = details.user_address || '';
-  if (details.user_city) {
-    clientAddress += clientAddress ? `, ${details.user_city}` : details.user_city;
+  // El backend ahora devuelve client_address, client_city, etc. (con prefijo client_)
+  // pero también mantenemos compatibilidad con user_address por si acaso
+  let clientAddress = details.client_address || details.user_address || '';
+  const city = details.client_city || details.user_city;
+  const province = details.client_province || details.user_province;
+  const postalCode = details.client_postal_code || details.user_postal_code;
+  
+  if (city) {
+    clientAddress += clientAddress ? `, ${city}` : city;
   }
-  if (details.user_province) {
-    clientAddress += clientAddress ? `, ${details.user_province}` : details.user_province;
+  if (province) {
+    clientAddress += clientAddress ? `, ${province}` : province;
   }
-  if (details.user_postal_code) {
-    clientAddress += clientAddress ? `, ${details.user_postal_code}` : details.user_postal_code;
+  if (postalCode) {
+    clientAddress += clientAddress ? `, ${postalCode}` : postalCode;
   }
   if (clientAddress) {
     clientAddress += ', España';
   }
 
-  const reunidosText = `De una parte, D. ${details.client_name || '____________________'}, mayor de edad, con correo electrónico ${details.client_email || '____________________'}${details.user_passport ? `, Pasaporte nº ${details.user_passport}` : ''}${details.user_nie ? ` y/o NIE ${details.user_nie}` : ''}${clientAddress ? `, con domicilio en ${clientAddress}` : ''}, en lo sucesivo denominada EL CLIENTE y,
+  const passport = details.client_passport || details.user_passport;
+  const nie = details.client_nie || details.user_nie;
+
+  const reunidosText = `De una parte, D. ${details.client_name || '____________________'}, mayor de edad, con correo electrónico ${details.client_email || '____________________'}${passport ? `, Pasaporte nº ${passport}` : ''}${nie ? ` y/o NIE ${nie}` : ''}${clientAddress ? `, con domicilio en ${clientAddress}` : ''}, en lo sucesivo denominada EL CLIENTE y,
 
 De la otra parte, la entidad MIGRO SERVICIOS Y REMESAS SL, con CIF B22759765, con domicilio social en C/ Libreros, 54, 1º de Salamanca – España, debidamente representada en función de la escritura de constitución social de fecha 15 de julio de 2025 y protocolo 940/25 otorgada ante el Notario de Huelva, Dª María Gómez – Rodulfo García de Castro, en lo sucesivo denominada LA PRESTADORA DEL SERVICIO o AGENCIA.`;
   

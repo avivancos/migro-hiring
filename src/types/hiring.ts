@@ -15,13 +15,20 @@ export interface HiringDetails {
   kyc_status: null | 'pending' | 'verified' | 'failed';
   expires_at: string;
   short_url: string;
-  // Additional fields for contract
+  // Additional fields for contract (mantenemos compatibilidad con ambos formatos)
   user_passport?: string;
   user_nie?: string;
   user_address?: string;
   user_city?: string;
   user_province?: string;
   user_postal_code?: string;
+  // Nuevos campos con prefijo client_ (devueltos por el backend)
+  client_passport?: string;
+  client_nie?: string;
+  client_address?: string;
+  client_city?: string;
+  client_province?: string;
+  client_postal_code?: string;
   contract_date?: string;
   contract_accepted?: boolean;
   contract_accepted_at?: string;
