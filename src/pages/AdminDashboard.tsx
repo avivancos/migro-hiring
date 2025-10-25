@@ -69,7 +69,7 @@ export function AdminDashboard() {
     setGeneratedUrl(null);
 
     try {
-      const response = await adminService.createHiringCode({
+      const requestBody = {
         contract_template: "standard", // Campo requerido
         service_name: serviceName,
         service_description: serviceDescription,
@@ -88,7 +88,13 @@ export function AdminDashboard() {
         client_city: userCity || undefined,
         client_province: userProvince || undefined,
         client_postal_code: userPostalCode || undefined,
-      });
+      };
+
+      console.log('📤 REQUEST COMPLETO A ENVIAR:', JSON.stringify(requestBody, null, 2));
+      console.log('📤 client_name:', requestBody.client_name);
+      console.log('📤 client_email:', requestBody.client_email);
+
+      const response = await adminService.createHiringCode(requestBody);
 
       console.log('✅ Respuesta del backend:', response);
 
