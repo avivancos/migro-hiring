@@ -51,36 +51,35 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
     yPosition += space;
   };
 
-  // Función para agregar marca de agua "BORRADOR" - una sola palabra por página
+  // Función para agregar marca de agua "BORRADOR" - solo en la última página
   const addWatermark = () => {
     const totalPages = doc.getNumberOfPages();
     
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i);
-      
-      // Configurar marca de agua diagonal
-      doc.setTextColor(200, 200, 200); // Gris claro pero visible
-      doc.setFontSize(80); // Tamaño grande
-      doc.setFont('helvetica', 'bold');
-      
-      // Dimensiones de página A4
-      const pageWidth = doc.internal.pageSize.getWidth();  // ~210mm
-      const pageHeight = doc.internal.pageSize.getHeight(); // ~297mm
-      
-      const text = 'BORRADOR';
-      
-      // Calcular posición central de la página
-      const centerX = pageWidth / 2;
-      const centerY = pageHeight / 2;
-      
-      // Dibujar "BORRADOR" una sola vez en el centro de la página
-      doc.text(text, centerX, centerY, { align: 'center' });
-      
-      // Restaurar configuración normal
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-    }
+    // Solo agregar marca de agua en la última página
+    doc.setPage(totalPages);
+    
+    // Configurar marca de agua
+    doc.setTextColor(200, 200, 200); // Gris claro pero visible
+    doc.setFontSize(80); // Tamaño grande
+    doc.setFont('helvetica', 'bold');
+    
+    // Dimensiones de página A4
+    const pageWidth = doc.internal.pageSize.getWidth();  // ~210mm
+    const pageHeight = doc.internal.pageSize.getHeight(); // ~297mm
+    
+    const text = 'BORRADOR';
+    
+    // Calcular posición central de la página
+    const centerX = pageWidth / 2;
+    const centerY = pageHeight / 2;
+    
+    // Dibujar "BORRADOR" una sola vez en el centro de la última página
+    doc.text(text, centerX, centerY, { align: 'center' });
+    
+    // Restaurar configuración normal
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
   };
 
   // Header mejorado con diseño profesional
