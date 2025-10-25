@@ -81,7 +81,7 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
       paymentDate: new Date().toISOString(),
       paymentMethod: 'Generado localmente',
       clientSignature: clientSignature || undefined
-    });
+    }, false); // isDraft = false (contrato final sin marca de agua)
     console.log('✅ PDF generado, tamaño:', contractBlob.size, 'bytes');
     
     // Descargar el PDF generado

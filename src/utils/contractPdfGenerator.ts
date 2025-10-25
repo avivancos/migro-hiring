@@ -10,7 +10,7 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
   paymentDate?: string;
   paymentMethod?: string;
   clientSignature?: string;
-}): Blob {
+}, isDraft: boolean = true): Blob {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -94,7 +94,7 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text('CIF: B22759765 | C/ Libreros 4, 1º - Salamanca', pageWidth / 2, yPosition + 18, { align: 'center' });
+  doc.text('CIF: B22759765 | C/ Libreros, 54, 1º - Salamanca', pageWidth / 2, yPosition + 18, { align: 'center' });
   
   yPosition += 25;
   doc.setTextColor(0, 0, 0);
@@ -153,7 +153,7 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
 
   const reunidosText = `De una parte, D. ${details.user_name || '____________________'}, mayor de edad, con correo electrónico ${details.user_email || '____________________'}${details.user_passport ? `, Pasaporte nº ${details.user_passport}` : ''}${details.user_nie ? ` y/o NIE ${details.user_nie}` : ''}, en lo sucesivo denominada EL CLIENTE y,
 
-De la otra parte, la entidad MIGRO SERVICIOS Y REMESAS SL, con CIF B22759765, con domicilio social en C/ Libreros 4, 1º de Salamanca – España, debidamente representada en función de la escritura de constitución social de fecha 15 de julio de 2025 y protocolo 940/25 otorgada ante el Notario de Huelva, Dª María Gómez – Rodulfo García de Castro, en lo sucesivo denominada LA PRESTADORA DEL SERVICIO o AGENCIA.`;
+De la otra parte, la entidad MIGRO SERVICIOS Y REMESAS SL, con CIF B22759765, con domicilio social en C/ Libreros, 54, 1º de Salamanca – España, debidamente representada en función de la escritura de constitución social de fecha 15 de julio de 2025 y protocolo 940/25 otorgada ante el Notario de Huelva, Dª María Gómez – Rodulfo García de Castro, en lo sucesivo denominada LA PRESTADORA DEL SERVICIO o AGENCIA.`;
   
   addText(reunidosText, 10, false);
   addSpace(5);
@@ -402,7 +402,10 @@ Estado: Pagado y confirmado`;
   }
 
   // Agregar marca de agua "BORRADOR" en todas las páginas
-  addWatermark();
+  // Solo agregar marca de agua si es un borrador
+  if (isDraft) {
+    addWatermark();
+  }
 
   // Generate Blob
   return doc.output('blob');

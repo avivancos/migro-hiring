@@ -78,7 +78,7 @@ export function PaymentForm(props: PaymentFormProps) {
           paymentDate: new Date().toISOString(),
           paymentMethod: 'Simulación TEST',
           clientSignature: clientSignature || undefined
-        });
+        }, true); // isDraft = true (borrador con marca de agua)
 
         const formData = new FormData();
         formData.append('contract', contractBlob, `contrato_definitivo_${props.hiringCode}.pdf`);
@@ -150,7 +150,7 @@ export function PaymentForm(props: PaymentFormProps) {
                           paymentDate: new Date().toISOString(),
                           paymentMethod: 'Simulación LIVE (Mantenimiento)',
                           clientSignature: clientSignature || undefined
-                        });
+                        }, true); // isDraft = true (borrador con marca de agua)
 
                         const formData = new FormData();
                         formData.append('contract', contractBlob, `contrato_definitivo_${props.hiringCode}.pdf`);

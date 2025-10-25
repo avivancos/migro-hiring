@@ -27,7 +27,7 @@ export function ConfirmData({ details, onConfirm, onBack }: ConfirmDataProps) {
   // Generate contract PDF on mount
   useEffect(() => {
     try {
-      const blob = generateContractPDF(details);
+      const blob = generateContractPDF(details, undefined, true); // isDraft = true (vista previa con marca de agua)
       setContractBlob(blob);
     } catch (err) {
       console.error('Error generating contract PDF:', err);
