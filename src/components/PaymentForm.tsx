@@ -48,17 +48,10 @@ export function PaymentForm(props: PaymentFormProps) {
         setCheckoutUrl(response.checkout_url);
         
       } catch (err: any) {
-        console.error('❌ Error creando checkout session:', err);
-        console.error('❌ Error response:', err.response);
-        console.error('❌ Error data:', err.response?.data);
-        console.error('❌ Error status:', err.response?.status);
-        console.error('❌ Error message:', err.message);
-        
         // Mostrar el mensaje de error del backend si está disponible
         const backendMessage = err.response?.data?.detail || err.response?.data?.message;
         
         if (backendMessage) {
-          console.error('❌ Backend error message:', backendMessage);
           setError(`Error del servidor: ${backendMessage}`);
         } else if (props.hiringCode.startsWith('LIVE') && err.response?.status === 500) {
           setError('El sistema de pagos está temporalmente en mantenimiento. Por favor, contacta con soporte o usa un código de prueba.');

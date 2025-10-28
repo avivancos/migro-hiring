@@ -283,8 +283,54 @@ Archivos de referencia creados:
 - `RENDER_DOCKER.md` - Configuración Docker para Render
 - `SECURITY.md` - Guía de seguridad Stripe
 - `RENDER_CHECKLIST.md` - Checklist de deployment
+- `BACKEND_DAILY_REPORT_AND_TEST.md` - Reporte diario y test de contratos
 
 ---
+
+## 🔴 URGENTE - Problemas de Render Backend
+
+### **1. Emails de Informe de Cola** 📧
+**Problema:** Llegan muchos correos de informe de cola.  
+**✅ SOLUCIÓN:** Ver `Solución Inmediata a Emails.md` ⚡  
+**⚠️ IMPORTANTE:** Los emails vienen del **BACKEND**, NO del frontend (este repo).
+
+### **2. Servicio migrofast excedió límite de memoria** 💾
+**Problema:** Web Service migrofast excedió su límite de memoria en Render.  
+**✅ SOLUCIÓN INMEDIATA:** Ver `ELIMINAR_CELERY_Y_CRON.md` 🗑️  
+**⚠️ ACCIÓN:** Eliminar/comentar TODO el código de Celery y cron jobs.  
+**Alternativa:** Ver `SOLUCION_MEMORIA_RENDER.md` para optimización.
+
+---
+
+## 🎯 Tareas Backend Pendientes
+
+### Tareas Priorizadas (Frontend ✅ COMPLETADAS - Backend pendiente)
+
+- [✅] Documentación de reporte diario de contratos por email
+  - [✅] Documentación completa creada
+  - [✅] Cron job diario automático (9:00 AM) especificado
+  - [✅] Envío a agustin@migro.es e info@migro.es documentado
+  - [✅] Ver: `backend_implementation/IMPLEMENTACION_COMPLETA.md`
+  - [⏳] PENDIENTE: Implementar en backend
+
+- [✅] Documentación de endpoint de test para enviar contratos específicos
+  - [✅] Endpoint `/admin/test/send-contracts` documentado
+  - [✅] Búsqueda por nombre (antonio alaejos, ebert) especificada
+  - [✅] Descarga desde Cloudinary documentada
+  - [✅] Ver: `backend_implementation/IMPLEMENTACION_COMPLETA.md`
+  - [⏳] PENDIENTE: Implementar en backend
+
+- [✅] Documentación de emails con agustin@migro.es
+  - [✅] Función `send_contract_emails()` documentada con cambios
+  - [✅] Manejo de errores especificado
+  - [✅] Ver: `backend_implementation/IMPLEMENTACION_COMPLETA.md`
+  - [⏳] PENDIENTE: Implementar en backend
+
+- [✅] Documentación de URLs de contrato y naming
+  - [✅] Eliminar contract_url de `/hiring/{code}/confirm` documentado
+  - [✅] Naming correcto en `/hiring/final-contract/upload` especificado
+  - [✅] Ver: `backend_implementation/IMPLEMENTACION_COMPLETA.md`
+  - [⏳] PENDIENTE: Implementar en backend
 
 ## 🎯 Próximos Pasos (Opcional)
 
@@ -296,11 +342,10 @@ Archivos de referencia creados:
 - [ ] Agregar error tracking (Sentry)
 - [ ] Optimizar SEO
 - [ ] PWA support
-- [ ] Notificaciones por email
 - [ ] Multi-idioma (i18n)
 
 ---
 
-**Última actualización:** 24 de Octubre de 2025  
-**Estado:** ✅ Proyecto 100% Funcional y en Producción
+**Última actualización:** 28 de Octubre de 2025  
+**Estado:** ✅ Frontend 100% Funcional - ⏳ Backend pendiente implementar reportes
 
