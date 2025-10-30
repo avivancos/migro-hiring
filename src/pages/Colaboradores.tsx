@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { generateCollabAgreementPdfFromMd } from '@/utils/collabAgreementPdfFromMd';
+import { generateCollabAgreementPdfFromMd } from '@/utils/collabAgreementPdfFromMd.ts';
 // @ts-ignore - Vite raw import
 import agreementMd from '@/legal/colab_agreement.md?raw';
 
