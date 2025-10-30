@@ -1,8 +1,6 @@
 import jsPDF from 'jspdf';
-// Importa el markdown como texto crudo (Vite soporta ?raw)
-// Asegúrate de que el archivo exista en src/legal/
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// Import MD crudo (Vite ?raw)
+// @ts-ignore – Vite raw import
 import agreementMd from '@/legal/colab_agreement.md?raw';
 
 export function generateCollabAgreementPdfFromMd(): Blob {
@@ -13,9 +11,9 @@ export function generateCollabAgreementPdfFromMd(): Blob {
   const contentWidth = pageWidth - 2 * margin;
   let y = margin;
 
-  const addText = (text: string, size = 10, bold = false, align: 'left' | 'center' | 'right' = 'left') => {
+  const addText = (text: string, size = 10, align: 'left' | 'center' | 'right' = 'left') => {
     doc.setFontSize(size);
-    doc.setFont('helvetica', bold ? 'bold' : 'normal');
+    doc.setFont('helvetica', 'normal');
     const lines = doc.splitTextToSize(text, contentWidth);
     const lineHeight = size / 2.5;
     if (y + lines.length * lineHeight > pageHeight - margin) {
@@ -43,25 +41,29 @@ export function generateCollabAgreementPdfFromMd(): Blob {
   doc.setTextColor(0, 0, 0);
   y += 24;
 
-  // Título fijo
-  addText('CONVENIO MARCO DE COLABORACIÓN ENTRE DESPACHO COLABORADOR Y MIGRO SERVICIOS Y REMESAS S.L.', 12, true, 'center');
+  // Título fijo (sin negritas)
+  addText('CONVENIO MARCO DE COLABORACIÓN ENTRE DESPACHO COLABORADOR Y MIGRO SERVICIOS Y REMESAS S.L.', 12, 'center');
   addSpace(2);
 
-  // Render del markdown como texto plano con separadores de secciones visuales
-  const lines = agreementMd.split(/\r?\n/);
+  // Preprocesar contenido: eliminar título MD duplicado y normalizar caracteres problemáticos
+  let cleaned = agreementMd
+    .replace(/^#\s.*$/m, '') // eliminar línea título MD
+    .replace(/\u00b7/g, '-')   // · -> -
+    .replace(/\u2013|\u2014/g, '-') // – — -> -
+    .replace(/\u25cf/g, '-') // ● -> -
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/\t+/g, ' ')
+    .replace(/\s+$/gm, '')
+    .trim();
+
+  // Render plain text, sin negritas automáticas
+  const lines = cleaned.split(/\r?\n/);
   lines.forEach((line) => {
-    // Encabezados simples por patrón
-    if (/^#\s/.test(line)) {
-      addSpace(2);
-      addText(line.replace(/^#\s*/, ''), 12, true, 'center');
-      addSpace(2);
-    } else if (/^\d+\./.test(line) || /^[A-ZÁÉÍÓÚÑ]+\.-/.test(line)) {
-      addSpace(1);
-      addText(line, 11, true);
-    } else if (/^\s*$/.test(line)) {
+    if (/^\s*$/.test(line)) {
       addSpace(2);
     } else {
-      addText(line, 10, false);
+      addText(line, 10);
     }
   });
 
