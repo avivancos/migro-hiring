@@ -51,7 +51,7 @@ CLÁUSULAS
 - Nota A: Excelente – Alta probabilidad de éxito (400 € IVA incluido).
 - Nota B: Bueno – Probabilidad buena de éxito (400 € IVA incluido).
 - Nota C: Complejo – Requiere estudio adicional (600 € IVA incluido).
-4.3. MIGRO podrá modificar estos importes previa notificación escrita al DESPACHO con al menos 10 días naturales de antelación, aplicable a Leads nuevos a partir de dicha fecha.
+4.3. Revisión de precios. MIGRO podrá incrementar estos importes previa notificación escrita al DESPACHO con al menos 10 días naturales de antelación, aplicable a Leads nuevos a partir de dicha fecha. En ningún caso MIGRO reducirá los importes fijados en la presente cláusula respecto a expedientes del mismo Grado.
 
 5. COMISIONES AL DESPACHO
 5.1. Por cada venta efectiva (contratación cerrada con pago inicial del cliente a MIGRO), MIGRO abonará al DESPACHO una comisión (IVA incluido) conforme a la siguiente escala:

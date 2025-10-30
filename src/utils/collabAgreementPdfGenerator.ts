@@ -71,6 +71,7 @@ export function generateCollabAgreementPDF(): Blob {
   addText('— Nota A: Excelente – Alta probabilidad de éxito (400 € IVA incl.).');
   addText('— Nota B: Bueno – Probabilidad buena de éxito (400 € IVA incl.).');
   addText('— Nota C: Complejo – Requiere estudio adicional (600 € IVA incl.).');
+  addText('Revisión: MIGRO podrá incrementar precios con previo aviso; no podrá reducirlos para un mismo grado.');
   addSpace();
 
   addText('5. COMISIONES DEL DESPACHO');
