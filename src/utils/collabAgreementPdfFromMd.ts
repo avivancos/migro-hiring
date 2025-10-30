@@ -13,9 +13,9 @@ export function generateCollabAgreementPdfFromMd(): Blob {
 
   const addText = (text: string, size = 10, align: 'left' | 'center' | 'right' = 'left') => {
     doc.setFontSize(size);
-    doc.setFont('times', 'normal');
+    doc.setFont('courier', 'normal');
     const lines = doc.splitTextToSize(text, contentWidth);
-    const lineHeight = size / 2.5;
+    const lineHeight = size / 2.0; // más aire para evitar solapes
     if (y + lines.length * lineHeight > pageHeight - margin) {
       doc.addPage();
       y = margin;
@@ -61,6 +61,7 @@ export function generateCollabAgreementPdfFromMd(): Blob {
   cleaned = cleaned
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '') // eliminar diacríticos
+    .replace(/[^\x09\x0A\x0D\x20-\x7E]/g, ' ') // restringir a ASCII visible
     .replace(/\s{2,}/g, ' ');
 
   // Render plain text, sin negritas automáticas
