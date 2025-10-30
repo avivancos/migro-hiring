@@ -13,7 +13,7 @@ export function generateCollabAgreementPdfFromMd(): Blob {
 
   const addText = (text: string, size = 10, align: 'left' | 'center' | 'right' = 'left') => {
     doc.setFontSize(size);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont('times', 'normal');
     const lines = doc.splitTextToSize(text, contentWidth);
     const lineHeight = size / 2.5;
     if (y + lines.length * lineHeight > pageHeight - margin) {
@@ -32,11 +32,11 @@ export function generateCollabAgreementPdfFromMd(): Blob {
   doc.setFillColor(22, 163, 74);
   doc.rect(margin, y, contentWidth, 18, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold');
+  doc.setFont('times', 'bold');
   doc.setFontSize(16);
   doc.text('MIGRO SERVICIOS Y REMESAS S.L.', pageWidth / 2, y + 7, { align: 'center' });
   doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
+  doc.setFont('times', 'normal');
   doc.text('CIF: B22759765 · C/ Libreros, 4, 1º, 37008 Salamanca', pageWidth / 2, y + 13, { align: 'center' });
   doc.setTextColor(0, 0, 0);
   y += 24;
@@ -56,6 +56,12 @@ export function generateCollabAgreementPdfFromMd(): Blob {
     .replace(/\t+/g, ' ')
     .replace(/\s+$/gm, '')
     .trim();
+
+  // Normalizar a ASCII para evitar glifos incompatibles en algunos lectores PDF
+  cleaned = cleaned
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '') // eliminar diacríticos
+    .replace(/\s{2,}/g, ' ');
 
   // Render plain text, sin negritas automáticas
   const lines = cleaned.split(/\r?\n/);
