@@ -81,7 +81,7 @@ CLÁUSULAS
 9.2. El servicio prestado por EL DESPACHO es un arrendamiento de servicios; no se garantiza un resultado concreto. La responsabilidad de EL DESPACHO quedará limitada a los daños directos causados por dolo o culpa grave, dentro de los límites de su póliza de RC y la normativa aplicable.
 
 10. VIGENCIA, MODIFICACIÓN Y RESOLUCIÓN
-10.1. Vigencia inicial de doce (12) meses desde la firma, renovable tácitamente por períodos anuales, salvo preaviso por cualquiera de las partes con quince (15) días naturales de antelación.
+10.1. Vigencia inicial de un (1) año desde la firma, renovable tácitamente por períodos anuales, salvo preaviso por cualquiera de las partes con treinta (30) días naturales de antelación.
 10.2. Cualquiera de las partes podrá resolver anticipadamente el Convenio en caso de incumplimiento grave de la otra parte, previa comunicación escrita y, en su caso, otorgando un plazo razonable de subsanación.
 
 11. COMUNICACIONES Y REPORTING
