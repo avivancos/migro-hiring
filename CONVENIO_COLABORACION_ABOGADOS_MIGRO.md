@@ -57,7 +57,7 @@ CLÁUSULAS
 5.1. Por cada venta efectiva (contratación cerrada con pago inicial del cliente a MIGRO), MIGRO abonará al DESPACHO una comisión conforme a la siguiente escala:
 - Primeras 3 ventas acumuladas: 150 € (IVA incluido) por venta.
 - Desde la 4ª venta (inclusive): 200 € (IVA incluido) por venta.
-5.2. La comisión se abonará en dos pagos (“dos plazos”) por cada venta: (i) el 50% a la semana siguiente de la comunicación de la venta; y (ii) el 50% dentro de los cinco (5) días hábiles siguientes a la aprobación del expediente por la Administración competente (resolución o comprobante equivalente), una vez recibida la factura correspondiente.
+5.2. La comisión se abonará en dos pagos ("dos plazos") por cada venta: (i) el 50% a la semana siguiente de la comunicación de la venta, previa recepción de la factura correspondiente al primer plazo; y (ii) el 50% dentro de los cinco (5) días hábiles siguientes a la aprobación del expediente por la Administración competente (resolución o comprobante equivalente), previa recepción de la factura correspondiente al segundo plazo.
 5.3. Riesgo asumido por MIGRO: Con independencia del cobro del segundo pago por parte del cliente final, MIGRO asumirá el riesgo comercial y abonará igualmente al DESPACHO la comisión íntegra pactada para esa venta, conforme al hito de aprobación administrativa indicado en la cláusula 5.2.
 5.4. A efectos del presente Convenio, “venta” equivale a la contratación cerrada y cobrada por MIGRO al menos en su primer pago.
 
