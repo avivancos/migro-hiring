@@ -33,10 +33,10 @@ CLÁUSULAS
 2.4. Ámbito y excepción. La obligación de no competencia no impide que EL DESPACHO capte y atienda a clientes obtenidos por sus propios medios fuera del esquema de app/plataforma de MIGRO, siempre que no se trate de clientes o Leads de MIGRO ni se utilicen activos, información confidencial o recursos de MIGRO.
 
 3. FLUJO OPERATIVO, CONTACTOS Y NIVEL DE SERVICIO (SLA)
-3.1. MIGRO podrá suministrar hasta treinta (30) contactos diarios (“Leads”) al DESPACHO.
+3.1. MIGRO podrá suministrar hasta veinte (20) contactos diarios ("Leads") al DESPACHO.
 3.2. EL DESPACHO atenderá y ejecutará un mínimo de cinco (5) llamadas concertadas diarias con Leads facilitados por MIGRO. La concertación se entenderá cumplida cuando el Lead conteste y se produzca una conversación cualificada con identificación del caso.
 3.3. A partir de la cuarta (4ª) venta efectiva acumulada (a nivel general, no mensual), el número máximo de contactos diarios podrá duplicarse a petición del DESPACHO.
-3.4. EL DESPACHO se compromete a dar respuesta a cada Lead dentro del mismo día laborable o, en su defecto, dentro de las primeras 24 horas laborables.
+3.4. EL DESPACHO se compromete a dar respuesta a cada Lead dentro de un plazo máximo de setenta y dos (72) horas hábiles.
 3.5. En caso de que el cliente manifieste disposición o interés en contratar, será MIGRO quien realice la segunda llamada al cliente, basándose en la información recabada previamente por EL DESPACHO durante la primera atención.
 3.6. El cobro al cliente será gestionado exclusivamente por MIGRO a través de su plataforma online de contratación o mediante su aplicación móvil. EL DESPACHO nunca recaudará importes del cliente bajo ninguna circunstancia.
 
@@ -54,9 +54,9 @@ CLÁUSULAS
 4.3. Revisión de precios. MIGRO podrá incrementar estos importes previa notificación escrita al DESPACHO con al menos 10 días naturales de antelación, aplicable a Leads nuevos a partir de dicha fecha. En ningún caso MIGRO reducirá los importes fijados en la presente cláusula respecto a expedientes del mismo Grado.
 
 5. COMISIONES AL DESPACHO
-5.1. Por cada venta efectiva (contratación cerrada con pago inicial del cliente a MIGRO), MIGRO abonará al DESPACHO una comisión (IVA incluido) conforme a la siguiente escala:
+5.1. Por cada venta efectiva (contratación cerrada con pago inicial del cliente a MIGRO), MIGRO abonará al DESPACHO una comisión conforme a la siguiente escala:
 - Primeras 3 ventas acumuladas: 150 € (IVA incluido) por venta.
-- Desde la 4ª venta (inclusive): 200 € (IVA incluido) por venta.
+- Desde la 4ª venta (inclusive): 200 € + IVA por venta.
 5.2. La comisión se abonará en dos pagos (“dos plazos”) por cada venta: (i) el 50% a la semana siguiente de la comunicación de la venta; y (ii) el 50% dentro de los cinco (5) días hábiles siguientes a la aprobación del expediente por la Administración competente (resolución o comprobante equivalente), una vez recibida la factura correspondiente.
 5.3. Riesgo asumido por MIGRO: Con independencia del cobro del segundo pago por parte del cliente final, MIGRO asumirá el riesgo comercial y abonará igualmente al DESPACHO la comisión íntegra pactada para esa venta, conforme al hito de aprobación administrativa indicado en la cláusula 5.2.
 5.4. A efectos del presente Convenio, “venta” equivale a la contratación cerrada y cobrada por MIGRO al menos en su primer pago.
@@ -64,7 +64,7 @@ CLÁUSULAS
 6. FACTURACIÓN, LIQUIDACIONES Y PAGO
 6.1. EL DESPACHO emitirá factura semanal a MIGRO por las comisiones devengadas en la semana anterior, con detalle de: código/ID de Lead o expediente, fecha de venta y grado asignado.
 6.2. MIGRO abonará la liquidación en un plazo máximo de cinco (5) días hábiles desde la recepción de la factura correcta, mediante transferencia a la cuenta IBAN designada por EL DESPACHO.
-6.3. Todos los importes de comisiones establecidos en este Convenio se entienden IVA incluido. La factura desglosará, cuando proceda, base imponible y el IVA correspondiente conforme a la normativa vigente.
+6.3. Los importes de comisiones establecidos en este Convenio: (i) las primeras 3 ventas se entienden IVA incluido; (ii) a partir de la 4ª venta (inclusive), el importe es 200 € + IVA. La factura desglosará, cuando proceda, base imponible y el IVA correspondiente conforme a la normativa vigente.
 6.4. El cobro de importes al cliente final por los servicios contratados con MIGRO será realizado por MIGRO a través de su plataforma online de contratación o aplicación móvil, de conformidad con la cláusula 3.6.
 
 7. TRÁMITES POSTERIORES Y DERECHO DE PARTICIPACIÓN
