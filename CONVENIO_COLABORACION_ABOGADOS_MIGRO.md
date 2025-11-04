@@ -56,7 +56,7 @@ CLÁUSULAS
 5. COMISIONES AL DESPACHO
 5.1. Por cada venta efectiva (contratación cerrada con pago inicial del cliente a MIGRO), MIGRO abonará al DESPACHO una comisión conforme a la siguiente escala:
 - Primeras 3 ventas acumuladas: 150 € (IVA incluido) por venta.
-- Desde la 4ª venta (inclusive): 200 € + IVA por venta.
+- Desde la 4ª venta (inclusive): 200 € (IVA incluido) por venta.
 5.2. La comisión se abonará en dos pagos (“dos plazos”) por cada venta: (i) el 50% a la semana siguiente de la comunicación de la venta; y (ii) el 50% dentro de los cinco (5) días hábiles siguientes a la aprobación del expediente por la Administración competente (resolución o comprobante equivalente), una vez recibida la factura correspondiente.
 5.3. Riesgo asumido por MIGRO: Con independencia del cobro del segundo pago por parte del cliente final, MIGRO asumirá el riesgo comercial y abonará igualmente al DESPACHO la comisión íntegra pactada para esa venta, conforme al hito de aprobación administrativa indicado en la cláusula 5.2.
 5.4. A efectos del presente Convenio, “venta” equivale a la contratación cerrada y cobrada por MIGRO al menos en su primer pago.
@@ -64,7 +64,7 @@ CLÁUSULAS
 6. FACTURACIÓN, LIQUIDACIONES Y PAGO
 6.1. EL DESPACHO emitirá factura semanal a MIGRO por las comisiones devengadas en la semana anterior, con detalle de: código/ID de Lead o expediente, fecha de venta y grado asignado.
 6.2. MIGRO abonará la liquidación en un plazo máximo de cinco (5) días hábiles desde la recepción de la factura correcta, mediante transferencia a la cuenta IBAN designada por EL DESPACHO.
-6.3. Los importes de comisiones establecidos en este Convenio: (i) las primeras 3 ventas se entienden IVA incluido; (ii) a partir de la 4ª venta (inclusive), el importe es 200 € + IVA. La factura desglosará, cuando proceda, base imponible y el IVA correspondiente conforme a la normativa vigente.
+6.3. Todos los importes de comisiones establecidos en este Convenio se entienden IVA incluido. La factura desglosará, cuando proceda, base imponible y el IVA correspondiente conforme a la normativa vigente.
 6.4. El cobro de importes al cliente final por los servicios contratados con MIGRO será realizado por MIGRO a través de su plataforma online de contratación o aplicación móvil, de conformidad con la cláusula 3.6.
 
 7. TRÁMITES POSTERIORES Y DERECHO DE PARTICIPACIÓN
