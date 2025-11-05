@@ -12,6 +12,11 @@ import { BorradorPDF } from '@/pages/BorradorPDF';
 import { Colaboradores } from '@/pages/Colaboradores';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
+// CRM Pages
+import { CRMDashboard } from '@/pages/CRMDashboard';
+import { CRMLeads } from '@/pages/CRMLeads';
+import { LeadDetail } from '@/pages/LeadDetail';
+
 function App() {
   return (
     <ErrorBoundary>
@@ -28,10 +33,15 @@ function App() {
           <Route path="/borrador" element={<BorradorPDF />} />
           <Route path="/colaboradores" element={<Colaboradores />} />
           
-          {/* Admin routes */}
+          {/* Admin routes - Original */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin" element={<AdminLogin />} />
+          
+          {/* CRM routes - New */}
+          <Route path="/admin/crm" element={<CRMDashboard />} />
+          <Route path="/admin/crm/leads" element={<CRMLeads />} />
+          <Route path="/admin/crm/leads/:id" element={<LeadDetail />} />
           
           {/* Client login (futuro) */}
           <Route path="/login" element={<Login />} />
