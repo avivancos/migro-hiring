@@ -20,7 +20,7 @@ export const adminService = {
   /**
    * Admin login with email and password
    */
-  async login(email: string, password: string): Promise<{ success: boolean; token?: string; user?: any }> {
+  async login(email: string, password: string): Promise<{ success: boolean; token?: string; user?: any; error?: string }> {
     try {
       const { data } = await api.post<LoginResponse>('/auth/login', {
         email,
@@ -40,7 +40,38 @@ export const adminService = {
       };
     } catch (error: any) {
       console.error('Login error:', error);
-      return { success: false };
+      
+      // Extraer mensaje de error más detallado
+      let errorMessage = 'Error al iniciar sesión';
+      
+      if (error.response) {
+        // El servidor respondió con un código de estado fuera del rango 2xx
+        const status = error.response.status;
+        const detail = error.response.data?.detail || error.response.data?.message;
+        
+        if (status === 401) {
+          errorMessage = detail || 'Credenciales incorrectas. Verifica tu email y contraseña.';
+        } else if (status === 403) {
+          errorMessage = detail || 'No tienes permisos para acceder.';
+        } else if (status === 404) {
+          errorMessage = 'Usuario no encontrado.';
+        } else if (status >= 500) {
+          errorMessage = 'Error del servidor. Por favor intenta más tarde.';
+        } else {
+          errorMessage = detail || `Error ${status}: ${error.response.statusText}`;
+        }
+      } else if (error.request) {
+        // La solicitud fue hecha pero no se recibió respuesta
+        errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión a internet.';
+      } else {
+        // Algo pasó al configurar la solicitud
+        errorMessage = error.message || 'Error al configurar la solicitud de login.';
+      }
+      
+      return { 
+        success: false,
+        error: errorMessage
+      };
     }
   },
 

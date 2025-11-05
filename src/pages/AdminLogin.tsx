@@ -32,18 +32,18 @@ export function AdminLogin() {
       
       if (result.success && result.user) {
         // Verificar que el usuario sea admin
-        if (result.user.is_admin || result.user.role === 'admin') {
+        if (result.user.is_admin || result.user.role === 'admin' || result.user.role === 'superuser') {
           navigate('/admin/crm');
         } else {
           setError('No tienes permisos de administrador');
           adminService.logout();
         }
       } else {
-        setError('Credenciales incorrectas');
+        setError(result.error || 'Credenciales incorrectas. Verifica tu email y contraseña.');
       }
     } catch (err: any) {
       console.error('Error login:', err);
-      setError(err.response?.data?.detail || 'Error al iniciar sesión. Verifica tus credenciales.');
+      setError(err?.response?.data?.detail || err?.message || 'Error al iniciar sesión. Verifica tus credenciales.');
     } finally {
       setLoading(false);
     }
@@ -74,7 +74,7 @@ export function AdminLogin() {
                   setEmail(e.target.value);
                   setError(null);
                 }}
-                placeholder="admin@migro.es"
+                placeholder="agusvc@gmail.com"
                 className="mt-1"
                 autoFocus
               />
