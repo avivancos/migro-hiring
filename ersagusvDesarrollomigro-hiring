@@ -1,0 +1,352 @@
+[1mdiff --git a/CONVENIO_COLABORACION_ABOGADOS_MIGRO.md b/CONVENIO_COLABORACION_ABOGADOS_MIGRO.md[m
+[1mindex 4f791f5..d2c57a7 100644[m
+[1m--- a/CONVENIO_COLABORACION_ABOGADOS_MIGRO.md[m
+[1m+++ b/CONVENIO_COLABORACION_ABOGADOS_MIGRO.md[m
+[36m@@ -102,6 +102,9 @@[m [mCLÁUSULAS[m
+ 14.4. No ingeniería inversa. EL DESPACHO no realizará ni permitirá realizar ingeniería inversa, descompilación, desensamblaje o cualquier forma de obtención del código fuente, lógica, arquitectura o estructuras de datos de la app o plataforma de MIGRO, ni creará obras derivadas basadas en ellas.[m
+ 14.5. Medidas y remedios. En caso de infracción de esta cláusula, MIGRO podrá exigir el cese inmediato, la adopción de medidas cautelares y la indemnización íntegra de daños y perjuicios, sin perjuicio de otras acciones que en Derecho procedan.[m
+ [m
+[32m+[m[32m15. FUERO ESPECÍFICO[m
+[32m+[m[32m15.1. Las partes acuerdan de forma expresa que, para cualquier controversia derivada de la interpretación, ejecución o cumplimiento del presente Convenio, serán exclusivamente competentes los Juzgados y Tribunales de Salamanca capital. Esta cláusula se entenderá sin perjuicio de lo dispuesto en la cláusula 12.2 respecto al sometimiento previo a negociación amistosa.[m
+[32m+[m
+ Y en prueba de conformidad, firman el presente Convenio, por duplicado y a un solo efecto, en el lugar y fecha indicados en el encabezamiento.[m
+ [m
+ [m
+[36m@@ -111,3 +114,5 @@[m [mNombre: ___________________________                     Nombre: ________________[m
+ DNI/NIE: ___________________________                    DNI/NIE: ___________________________[m
+ Cargo: ____________________________                     Cargo: ____________________________[m
+ Firma: ____________________________                     Firma: ____________________________[m
+[32m+[m
+[32m+[m[32mCódigo de contratación colaborador: ____________________________[m
+[1mdiff --git a/src/legal/colab_agreement.md b/src/legal/colab_agreement.md[m
+[1mindex a262b53..c7f5974 100644[m
+[1m--- a/src/legal/colab_agreement.md[m
+[1m+++ b/src/legal/colab_agreement.md[m
+[36m@@ -102,6 +102,9 @@[m [mCLÁUSULAS[m
+ 14.4. No ingeniería inversa. EL DESPACHO no realizará ni permitirá realizar ingeniería inversa, descompilación, desensamblaje o cualquier forma de obtención del código fuente, lógica, arquitectura o estructuras de datos de la app o plataforma de MIGRO, ni creará obras derivadas basadas en ellas.[m
+ 14.5. Medidas y remedios. En caso de infracción de esta cláusula, MIGRO podrá exigir el cese inmediato, la adopción de medidas cautelares y la indemnización íntegra de daños y perjuicios, sin perjuicio de otras acciones que en Derecho procedan.[m
+ [m
+[32m+[m[32m15. FUERO ESPECÍFICO[m
+[32m+[m[32m15.1. Las partes acuerdan de forma expresa que, para cualquier controversia derivada de la interpretación, ejecución o cumplimiento del presente Convenio, serán exclusivamente competentes los Juzgados y Tribunales de Salamanca capital. Esta cláusula se entenderá sin perjuicio de lo dispuesto en la cláusula 12.2 respecto al sometimiento previo a negociación amistosa.[m
+[32m+[m
+ Y en prueba de conformidad, firman el presente Convenio, por duplicado y a un solo efecto, en el lugar y fecha indicados en el encabezamiento.[m
+ [m
+ [m
+[36m@@ -111,3 +114,5 @@[m [mNombre: ___________________________                     Nombre: ________________[m
+ DNI/NIE: ___________________________                    DNI/NIE: ___________________________[m
+ Cargo: ____________________________                     Cargo: ____________________________[m
+ Firma: ____________________________                     Firma: ____________________________[m
+[32m+[m
+[32m+[m[32mCódigo de contratación colaborador: ____________________________[m
+[1mdiff --git a/src/pages/Colaboradores.tsx b/src/pages/Colaboradores.tsx[m
+[1mindex 2abebe6..f05f2e0 100644[m
+[1m--- a/src/pages/Colaboradores.tsx[m
+[1m+++ b/src/pages/Colaboradores.tsx[m
+[36m@@ -1,11 +1,101 @@[m
+[31m-import { useState } from 'react';[m
+[32m+[m[32mimport { FormEvent, useMemo, useState } from 'react';[m
+[32m+[m[32mimport { format } from 'date-fns';[m
+ import { Button } from '@/components/ui/button';[m
+[31m-import { generateCollabAgreementPdfFromMd } from '@/utils/collabAgreementPdfFromMd.ts';[m
+[32m+[m[32mimport { Input } from '@/components/ui/input';[m
+[32m+[m[32mimport { Label } from '@/components/ui/label';[m
+[32m+[m[32mimport {[m
+[32m+[m[32m  generateCollabAgreementPdfFromMd,[m
+[32m+[m[32m  generateCollabAgreementPdfFromText,[m
+[32m+[m[32m} from '@/utils/collabAgreementPdfFromMd.ts';[m
+[32m+[m[32mimport { buildCollaboratorAgreementText } from '@/utils/collabAgreementTemplate';[m
+ // @ts-ignore - Vite raw import[m
+ import agreementMd from '@/legal/colab_agreement.md?raw';[m
+ [m
+ export function Colaboradores() {[m
+   const [downloading, setDownloading] = useState(false);[m
+[32m+[m[32m  const [customDownloading, setCustomDownloading] = useState(false);[m
+[32m+[m[32m  const [password, setPassword] = useState('');[m
+[32m+[m[32m  const [isAuthorized, setIsAuthorized] = useState(false);[m
+[32m+[m[32m  const [passwordError, setPasswordError] = useState('');[m
+[32m+[m
+[32m+[m[32m  const [collaboratorName, setCollaboratorName] = useState('');[m
+[32m+[m[32m  const [collaboratorAddress, setCollaboratorAddress] = useState('');[m
+[32m+[m[32m  const [collaboratorCity, setCollaboratorCity] = useState('');[m
+[32m+[m[32m  const [collaboratorProvince, setCollaboratorProvince] = useState('');[m
+[32m+[m[32m  const [collaboratorDni, setCollaboratorDni] = useState('');[m
+[32m+[m[32m  const [signatureCity, setSignatureCity] = useState('Salamanca');[m
+[32m+[m[32m  const todayIso = useMemo(() => format(new Date(), 'yyyy-MM-dd'), []);[m
+[32m+[m[32m  const [signatureDateIso, setSignatureDateIso] = useState(todayIso);[m
+[32m+[m[32m  const [collaborationCode, setCollaborationCode] = useState('');[m
+[32m+[m[32m  const [customAgreementText, setCustomAgreementText] = useState('');[m
+[32m+[m[32m  const [formError, setFormError] = useState('');[m
+[32m+[m
+[32m+[m[32m  const resetCustomSection = () => {[m
+[32m+[m[32m    setCollaborationCode('');[m
+[32m+[m[32m    setCustomAgreementText('');[m
+[32m+[m[32m  };[m
+[32m+[m
+[32m+[m[32m  const handlePasswordSubmit = (event: FormEvent) => {[m
+[32m+[m[32m    event.preventDefault();[m
+[32m+[m[32m    if (password === 'Pomelo2005.1@') {[m
+[32m+[m[32m      setIsAuthorized(true);[m
+[32m+[m[32m      setPasswordError('');[m
+[32m+[m[32m    } else {[m
+[32m+[m[32m      setPasswordError('Contraseña incorrecta.');[m
+[32m+[m[32m    }[m
+[32m+[m[32m  };[m
+[32m+[m
+[32m+[m[32m  const generateCollaborationCode = () => {[m
+[32m+[m[32m    const timestamp = Date.now().toString(36).toUpperCase();[m
+[32m+[m[32m    const random = Math.random().toString(36).substring(2, 6).toUpperCase();[m
+[32m+[m[32m    return `COL-${timestamp}-${random}`;[m
+[32m+[m[32m  };[m
+[32m+[m
+[32m+[m[32m  const handleGenerateContract = (event: FormEvent) => {[m
+[32m+[m[32m    event.preventDefault();[m
+[32m+[m[32m    if (!collaboratorName || !collaboratorAddress || !collaboratorCity || !collaboratorProvince || !collaboratorDni) {[m
+[32m+[m[32m      setFormError('Completa todos los campos obligatorios.');[m
+[32m+[m[32m      return;[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    setFormError('');[m
+[32m+[m[32m    const code = generateCollaborationCode();[m
+[32m+[m[32m    const contractText = buildCollaboratorAgreementText({[m
+[32m+[m[32m      collaboratorName,[m
+[32m+[m[32m      collaboratorAddress,[m
+[32m+[m[32m      collaboratorCity,[m
+[32m+[m[32m      collaboratorProvince,[m
+[32m+[m[32m      collaboratorDni,[m
+[32m+[m[32m      signatureCity,[m
+[32m+[m[32m      signatureDateIso,[m
+[32m+[m[32m      collaborationCode: code,[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    setCollaborationCode(code);[m
+[32m+[m[32m    setCustomAgreementText(contractText);[m
+[32m+[m[32m  };[m
+[32m+[m
+[32m+[m[32m  const handleCustomDownload = () => {[m
+[32m+[m[32m    if (!customAgreementText.trim()) {[m
+[32m+[m[32m      setFormError('Genera el contrato antes de intentar descargarlo.');[m
+[32m+[m[32m      return;[m
+[32m+[m[32m    }[m
+[32m+[m[32m    setCustomDownloading(true);[m
+[32m+[m[32m    try {[m
+[32m+[m[32m      const blob = generateCollabAgreementPdfFromText(customAgreementText);[m
+[32m+[m[32m      const url = URL.createObjectURL(blob);[m
+[32m+[m[32m      const a = document.createElement('a');[m
+[32m+[m[32m      a.href = url;[m
+[32m+[m[32m      const safeName = collaboratorName || 'Colaborador';[m
+[32m+[m[32m      a.download = `Contrato_Colaborador_${safeName.replace(/\s+/g, '_')}.pdf`;[m
+[32m+[m[32m      document.body.appendChild(a);[m
+[32m+[m[32m      a.click();[m
+[32m+[m[32m      document.body.removeChild(a);[m
+[32m+[m[32m      URL.revokeObjectURL(url);[m
+[32m+[m[32m    } finally {[m
+[32m+[m[32m      setTimeout(() => setCustomDownloading(false), 300);[m
+[32m+[m[32m    }[m
+[32m+[m[32m  };[m
+ [m
+   const handleDownload = () => {[m
+     setDownloading(true);[m
+[36m@@ -32,30 +122,251 @@[m [mexport function Colaboradores() {[m
+   };[m
+ [m
+   return ([m
+[31m-    <div className="max-w-3xl mx-auto p-6">[m
+[31m-      <h1 className="text-2xl font-bold text-green-600 mb-2">Convenio de Colaboración</h1>[m
+[31m-      <p className="text-sm text-gray-600 mb-6">[m
+[32m+[m[32m    <div className="max-w-5xl mx-auto p-6 space-y-10">[m
+[32m+[m[32m      <section>[m
+[32m+[m[32m        <h1 className="text-2xl font-bold text-green-600 mb-2">Convenio de Colaboración</h1>[m
+[32m+[m[32m        <p className="text-sm text-gray-600 mb-6">[m
+         Visualiza o descarga el convenio marco de colaboración entre despachos colaboradores y MIGRO.[m
+[31m-      </p>[m
+[31m-      <div className="flex gap-3">[m
+[31m-        <Button onClick={handlePreview} variant="default" className="bg-green-600 hover:bg-green-700">[m
+[31m-          Ver en el navegador[m
+[31m-        </Button>[m
+[31m-        <Button onClick={handleDownload} disabled={downloading} variant="outline">[m
+[31m-          {downloading ? 'Generando…' : 'Descargar PDF'}[m
+[31m-        </Button>[m
+[31m-      </div>[m
+[31m-[m
+[31m-      <div className="mt-8">[m
+[31m-        <div className="rounded-md border border-gray-200">[m
+[31m-          <div className="bg-green-600 text-white px-4 py-2 text-sm font-semibold">[m
+[31m-            Vista previa (texto íntegro)[m
+[31m-          </div>[m
+[31m-          <div className="p-4 whitespace-pre-wrap text-sm leading-6 font-serif">[m
+[31m-            {agreementMd as unknown as string}[m
+[32m+[m[32m        </p>[m
+[32m+[m[32m        <div className="flex gap-3">[m
+[32m+[m[32m          <Button onClick={handlePreview} variant="default" className="bg-green-600 hover:bg-green-700">[m
+[32m+[m[32m            Ver en el navegador[m
+[32m+[m[32m          </Button>[m
+[32m+[m[32m          <Button onClick={handleDownload} disabled={downloading} variant="outline">[m
+[32m+[m[32m            {downloading ? 'Generando…' : 'Descargar PDF'}[m
+[32m+[m[32m          </Button>[m
+[32m+[m[32m        </div>[m
+[32m+[m
+[32m+[m[32m        <div className="mt-8">[m
+[32m+[m[32m          <div className="rounded-md border border-gray-200">[m
+[32m+[m[32m            <div className="bg-green-600 text-white px-4 py-2 text-sm font-semibold">[m
+[32m+[m[32m              Vista previa (texto íntegro)[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m            <div className="p-4 whitespace-pre-wrap text-sm leading-6 font-serif">[m
+[32m+[m[32m              {agreementMd as unknown as string}[m
+[32m+[m[32m            </div>[m
+           </div>[m
+         </div>[m
+[31m-      </div>[m
+[32m+[m[32m      </section>[m
+[32m+[m
+[32m+[m[32m      <section>[m
+[32m+[m[32m        <h2 className="text-xl font-semibold text-green-600 mb-4">Generador de contrato personalizado</h2>[m
+[32m+[m[32m        {!isAuthorized ? ([m
+[32m+[m[32m          <form[m
+[32m+[m[32m            onSubmit={handlePasswordSubmit}[m
+[32m+[m[32m            className="max-w-md border border-gray-200 rounded-lg p-6 bg-white shadow-sm"[m
+[32m+[m[32m          >[m
+[32m+[m[32m            <h3 className="text-base font-medium mb-4">Acceso restringido</h3>[m
+[32m+[m[32m            <Label htmlFor="wizard-password" className="text-sm font-medium">[m
+[32m+[m[32m              Introduce la contraseña de acceso[m
+[32m+[m[32m            </Label>[m
+[32m+[m[32m            <Input[m
+[32m+[m[32m              id="wizard-password"[m
+[32m+[m[32m              type="password"[m
+[32m+[m[32m              autoComplete="current-password"[m
+[32m+[m[32m              value={password}[m
+[32m+[m[32m              onChange={(e) => setPassword(e.target.value)}[m
+[32m+[m[32m              className="mt-2"[m
+[32m+[m[32m            />[m
+[32m+[m[32m            {passwordError && <p className="text-red-600 text-sm mt-2">{passwordError}</p>}[m
+[32m+[m[32m            <Button type="submit" className="mt-4 bg-green-600 hover:bg-green-700">[m
+[32m+[m[32m              Desbloquear generador[m
+[32m+[m[32m            </Button>[m
+[32m+[m[32m          </form>[m
+[32m+[m[32m        ) : ([m
+[32m+[m[32m          <div className="space-y-8">[m
+[32m+[m[32m            <form[m
+[32m+[m[32m              onSubmit={handleGenerateContract}[m
+[32m+[m[32m              className="grid gap-4 md:grid-cols-2 border border-gray-200 rounded-lg p-6 bg-white shadow-sm"[m
+[32m+[m[32m            >[m
+[32m+[m[32m              <div className="md:col-span-2">[m
+[32m+[m[32m                <h3 className="text-base font-semibold mb-2">Datos del despacho colaborador</h3>[m
+[32m+[m[32m                <p className="text-sm text-gray-600">[m
+[32m+[m[32m                  Completa la información. Los campos son obligatorios.[m
+[32m+[m[32m                </p>[m
+[32m+[m[32m              </div>[m
+[32m+[m
+[32m+[m[32m              <div className="md:col-span-2">[m
+[32m+[m[32m                <Label htmlFor="collaborator-name">Nombre completo</Label>[m
+[32m+[m[32m                <Input[m
+[32m+[m[32m                  id="collaborator-name"[m
+[32m+[m[32m                  value={collaboratorName}[m
+[32m+[m[32m                  onChange={(e) => {[m
+[32m+[m[32m                    setCollaboratorName(e.target.value);[m
+[32m+[m[32m                    resetCustomSection();[m
+[32m+[m[32m                  }}[m
+[32m+[m[32m                />[m
+[32m+[m[32m              </div>[m
+[32m+[m
+[32m+[m[32m              <div className="md:col-span-2">[m
+[32m+[m[32m                <Label htmlFor="collaborator-address">Dirección</Label>[m
+[32m+[m[32m                <Input[m
+[32m+[m[32m                  id="collaborator-address"[m
+[32m+[m[32m                  value={collaboratorAddress}[m
+[32m+[m[32m                  onChange={(e) => {[m
+[32m+[m[32m                    setCollaboratorAddress(e.target.value);[m
+[32m+[m[32m                    resetCustomSection();[m
+[32m+[m[32m                  }}[m
+[32m+[m[32m                />[m
+[32m+[m[32m              </div>[m
+[32m+[m
+[32m+[m[32m              <div>[m
+[32m+[m[32m                <Label htmlFor="collaborator-city">Ciudad</Label>[m
+[32m+[m[32m                <Input[m
+[32m+[m[32m                  id="collaborator-city"[m
+[32m+[m[32m                  value={collaboratorCity}[m
+[32m+[m[32m                  onChange={(e) => {[m
+[32m+[m[32m                    setCollaboratorCity(e.target.value);[m
+[32m+[m[32m                    resetCustomSection();[m
+[32m+[m[32m                  }}[m
+[32m+[m[32m                />[m
+[32m+[m[32m              </div>[m
+[32m+[m
+[32m+[m[32m              <div>[m
+[32m+[m[32m                <Label htmlFor="collaborator-province">Provincia</Label>[m
+[32m+[m[32m                <Input[m
+[32m+[m[32m                  id="collaborator-province"[m
+[32m+[m[32m                  value={collaboratorProvince}[m
+[32m+[m[32m                  onChange={(e) => {[m
+[32m+[m[32m                    setCollaboratorProvince(e.target.value);[m
+[32m+[m[32m                    resetCustomSection();[m
+[32m+[m[32m                  }}[m
+[32m+[m[32m                />[m
+[32m+[m[32m              </div>[m
+[32m+[m
+[32m+[m[32m              <div>[m
+[32m+[m[32m                <Label htmlFor="collaborator-dni">DNI / NIF</Label>[m
+[32m+[m[32m                <Input[m
+[32m+[m[32m                  id="collaborator-dni"[m
+[32m+[m[32m                  value={collaboratorDni}[m
+[32m+[m[32m                  onChange={(e) => {[m
+[32m+[m[32m                    setCollaboratorDni(e.target.value);[m
+[32m+[m[32m                    resetCustomSection();[m
+[32m+[m[32m                  }}[m
+[32m+[m[32m                />[m
+[32m+[m[32m              </div>[m
+[32m+[m
+[32m+[m[32m              <div>[m
+[32m+[m[32m                <Label htmlFor="signature-city">Ciudad de firma</Label>[m
+[32m+[m[32m                <Input[m
+[32m+[m[32m                  id="signature-city"[m
+[32m+[m[32m                  value={signatureCity}[m
+[32m+[m[32m                  onChange={(e) => {[m
+[32m+[m[32m                    setSignatureCity(e.target.value);[m
+[32m+[m[32m                    resetCustomSection();[m
+[32m+[m[32m                  }}[m
+[32m+[m[32m                />[m
+[32m+[m[32m              </div>[m
+[32m+[m
+[32m+[m[32m              <div>[m
+[32m+[m[32m                <Label htmlFor="signature-date">Fecha de firma</Label>[m
+[32m+[m[32m                <Input[m
+[32m+[m[32m                  id="signature-date"[m
+[32m+[m[32m                  type="date"[m
+[32m+[m[32m                  value={signatureDateIso}[m
+[32m+[m[32m                  onChange={(e) => {[m
+[32m+[m[32m                    setSignatureDateIso(e.target.value);[m
+[32m+[m[32m                    resetCustomSection();[m
+[32m+[m[32m                  }}[m
+[32m+[m[32m                />[m
+[32m+[m[32m              </div>[m
+[32m+[m
+[32m+[m[32m              <div className="md:col-span-2 flex items-center gap-3">[m
+[32m+[m[32m                <Button type="submit" className="bg-green-600 hover:bg-green-700">[m
+[32m+[m[32m                  Generar contrato personalizado[m
+[32m+[m[32m                </Button>[m
+[32m+[m[32m                <Button type="button" variant="outline" onClick={resetCustomSection}>[m
+[32m+[m[32m                  Limpiar borrador[m
+[32m+[m[32m                </Button>[m
+[32m+[m[32m              </div>[m
+[32m+[m
+[32m+[m[32m              {formError && ([m
+[32m+[m[32m                <div className="md:col-span-2">[m
+[32m+[m[32m                  <p className="text-red-600 text-sm">{formError}</p>[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m              )}[m
+[32m+[m[32m            </form>[m
+[32m+[m
+[32m+[m[32m            {customAgreementText && ([m
+[32m+[m[32m              <div className="space-y-4">[m
+[32m+[m[32m                <div className="flex flex-wrap items-center gap-3 justify-between">[m
+[32m+[m[32m                  <div>[m
+[32m+[m[32m                    <p className="text-sm text-gray-600">Código de contratación generado:</p>[m
+[32m+[m[32m                    <p className="font-mono text-green-700 text-base">{collaborationCode}</p>[m
+[32m+[m[32m                  </div>[m
+[32m+[m[32m                  <Button[m
+[32m+[m[32m                    type="button"[m
+[32m+[m[32m                    variant="outline"[m
+[32m+[m[32m                    onClick={() => {[m
+[32m+[m[32m                      const newCode = generateCollaborationCode();[m
+[32m+[m[32m                      const regenerated = buildCollaboratorAgreementText({[m
+[32
