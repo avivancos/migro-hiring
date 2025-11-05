@@ -38,9 +38,6 @@ export const crmService = {
   async getLeads(filters?: LeadFilters): Promise<LeadsListResponse> {
     const { data } = await api.get<LeadsListResponse>('/crm/leads', {
       params: filters,
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
     });
     return data;
   },
@@ -49,11 +46,7 @@ export const crmService = {
    * Obtener un lead por ID
    */
   async getLead(id: number): Promise<KommoLead> {
-    const { data } = await api.get<KommoLead>(`/crm/leads/${id}`, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.get<KommoLead>(`/crm/leads/${id}`);
     return data;
   },
 
@@ -61,11 +54,7 @@ export const crmService = {
    * Crear un nuevo lead
    */
   async createLead(lead: LeadCreateRequest): Promise<KommoLead> {
-    const { data } = await api.post<KommoLead>('/crm/leads', lead, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.post<KommoLead>('/crm/leads', lead);
     return data;
   },
 
@@ -73,11 +62,7 @@ export const crmService = {
    * Actualizar un lead
    */
   async updateLead(id: number, updates: LeadUpdateRequest): Promise<KommoLead> {
-    const { data } = await api.patch<KommoLead>(`/crm/leads/${id}`, updates, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.patch<KommoLead>(`/crm/leads/${id}`, updates);
     return data;
   },
 
@@ -85,11 +70,7 @@ export const crmService = {
    * Eliminar un lead (soft delete)
    */
   async deleteLead(id: number): Promise<void> {
-    await api.delete(`/crm/leads/${id}`, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    await api.delete(`/crm/leads/${id}`);
   },
 
   // ===== CONTACTS =====
@@ -100,9 +81,6 @@ export const crmService = {
   async getContacts(filters?: ContactFilters): Promise<ContactsListResponse> {
     const { data } = await api.get<ContactsListResponse>('/crm/contacts', {
       params: filters,
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
     });
     return data;
   },
@@ -111,11 +89,7 @@ export const crmService = {
    * Obtener un contacto por ID
    */
   async getContact(id: number): Promise<KommoContact> {
-    const { data } = await api.get<KommoContact>(`/crm/contacts/${id}`, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.get<KommoContact>(`/crm/contacts/${id}`);
     return data;
   },
 
@@ -123,11 +97,7 @@ export const crmService = {
    * Crear un nuevo contacto
    */
   async createContact(contact: ContactCreateRequest): Promise<KommoContact> {
-    const { data } = await api.post<KommoContact>('/crm/contacts', contact, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.post<KommoContact>('/crm/contacts', contact);
     return data;
   },
 
@@ -135,11 +105,7 @@ export const crmService = {
    * Actualizar un contacto
    */
   async updateContact(id: number, updates: Partial<ContactCreateRequest>): Promise<KommoContact> {
-    const { data } = await api.patch<KommoContact>(`/crm/contacts/${id}`, updates, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.patch<KommoContact>(`/crm/contacts/${id}`, updates);
     return data;
   },
 
@@ -147,11 +113,7 @@ export const crmService = {
    * Eliminar un contacto
    */
   async deleteContact(id: number): Promise<void> {
-    await api.delete(`/crm/contacts/${id}`, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    await api.delete(`/crm/contacts/${id}`);
   },
 
   // ===== COMPANIES =====
@@ -162,9 +124,6 @@ export const crmService = {
   async getCompanies(filters?: { query?: string; page?: number; limit?: number }): Promise<CompaniesListResponse> {
     const { data } = await api.get<CompaniesListResponse>('/crm/companies', {
       params: filters,
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
     });
     return data;
   },
@@ -173,11 +132,7 @@ export const crmService = {
    * Obtener una empresa por ID
    */
   async getCompany(id: number): Promise<KommoCompany> {
-    const { data } = await api.get<KommoCompany>(`/crm/companies/${id}`, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.get<KommoCompany>(`/crm/companies/${id}`);
     return data;
   },
 
@@ -187,11 +142,7 @@ export const crmService = {
    * Obtener lista de pipelines
    */
   async getPipelines(): Promise<Pipeline[]> {
-    const { data } = await api.get<Pipeline[]>('/crm/pipelines', {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.get<Pipeline[]>('/crm/pipelines');
     return data;
   },
 
@@ -199,11 +150,7 @@ export const crmService = {
    * Obtener un pipeline por ID
    */
   async getPipeline(id: number): Promise<Pipeline> {
-    const { data } = await api.get<Pipeline>(`/crm/pipelines/${id}`, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.get<Pipeline>(`/crm/pipelines/${id}`);
     return data;
   },
 
@@ -211,11 +158,7 @@ export const crmService = {
    * Obtener estados de un pipeline
    */
   async getPipelineStages(pipelineId: number): Promise<PipelineStatus[]> {
-    const { data } = await api.get<PipelineStatus[]>(`/crm/pipelines/${pipelineId}/stages`, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.get<PipelineStatus[]>(`/crm/pipelines/${pipelineId}/stages`);
     return data;
   },
 
@@ -225,11 +168,8 @@ export const crmService = {
    * Obtener lista de tareas
    */
   async getTasks(filters?: TaskFilters): Promise<TasksListResponse> {
-    const { data} = await api.get<TasksListResponse>('/crm/tasks', {
+    const { data } = await api.get<TasksListResponse>('/crm/tasks', {
       params: filters,
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
     });
     return data;
   },
@@ -238,11 +178,7 @@ export const crmService = {
    * Obtener una tarea por ID
    */
   async getTask(id: number): Promise<Task> {
-    const { data } = await api.get<Task>(`/crm/tasks/${id}`, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.get<Task>(`/crm/tasks/${id}`);
     return data;
   },
 
@@ -250,11 +186,7 @@ export const crmService = {
    * Crear una nueva tarea
    */
   async createTask(task: TaskCreateRequest): Promise<Task> {
-    const { data } = await api.post<Task>('/crm/tasks', task, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.post<Task>('/crm/tasks', task);
     return data;
   },
 
@@ -262,11 +194,7 @@ export const crmService = {
    * Actualizar una tarea
    */
   async updateTask(id: number, updates: Partial<TaskCreateRequest> & { is_completed?: boolean }): Promise<Task> {
-    const { data } = await api.patch<Task>(`/crm/tasks/${id}`, updates, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.patch<Task>(`/crm/tasks/${id}`, updates);
     return data;
   },
 
@@ -274,11 +202,7 @@ export const crmService = {
    * Eliminar una tarea
    */
   async deleteTask(id: number): Promise<void> {
-    await api.delete(`/crm/tasks/${id}`, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    await api.delete(`/crm/tasks/${id}`);
   },
 
   /**
@@ -302,9 +226,6 @@ export const crmService = {
         entity_type: entityType,
         entity_id: entityId,
       },
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
     });
     return data;
   },
@@ -313,11 +234,7 @@ export const crmService = {
    * Crear una nota
    */
   async createNote(note: NoteCreateRequest): Promise<Note> {
-    const { data } = await api.post<Note>('/crm/notes', note, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.post<Note>('/crm/notes', note);
     return data;
   },
 
@@ -325,11 +242,7 @@ export const crmService = {
    * Actualizar una nota
    */
   async updateNote(id: number, updates: Partial<NoteCreateRequest>): Promise<Note> {
-    const { data } = await api.patch<Note>(`/crm/notes/${id}`, updates, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.patch<Note>(`/crm/notes/${id}`, updates);
     return data;
   },
 
@@ -337,11 +250,7 @@ export const crmService = {
    * Eliminar una nota
    */
   async deleteNote(id: number): Promise<void> {
-    await api.delete(`/crm/notes/${id}`, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    await api.delete(`/crm/notes/${id}`);
   },
 
   // ===== CALLS =====
@@ -352,9 +261,6 @@ export const crmService = {
   async getCalls(filters?: CallFilters): Promise<Call[]> {
     const { data } = await api.get<Call[]>('/crm/calls', {
       params: filters,
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
     });
     return data;
   },
@@ -363,11 +269,7 @@ export const crmService = {
    * Obtener una llamada por ID
    */
   async getCall(id: number): Promise<Call> {
-    const { data } = await api.get<Call>(`/crm/calls/${id}`, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.get<Call>(`/crm/calls/${id}`);
     return data;
   },
 
@@ -375,11 +277,7 @@ export const crmService = {
    * Registrar una llamada
    */
   async createCall(call: CallCreateRequest): Promise<Call> {
-    const { data } = await api.post<Call>('/crm/calls', call, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.post<Call>('/crm/calls', call);
     return data;
   },
 
@@ -391,9 +289,6 @@ export const crmService = {
   async getUsers(isActive?: boolean): Promise<CRMUser[]> {
     const { data } = await api.get<CRMUser[]>('/crm/users', {
       params: { is_active: isActive },
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
     });
     return data;
   },
@@ -402,11 +297,7 @@ export const crmService = {
    * Obtener un usuario CRM por ID
    */
   async getUser(id: number): Promise<CRMUser> {
-    const { data } = await api.get<CRMUser>(`/crm/users/${id}`, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.get<CRMUser>(`/crm/users/${id}`);
     return data;
   },
 
@@ -416,11 +307,7 @@ export const crmService = {
    * Obtener estadísticas del dashboard
    */
   async getDashboardStats(): Promise<DashboardStats> {
-    const { data } = await api.get<DashboardStats>('/crm/dashboard/stats', {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
-    });
+    const { data } = await api.get<DashboardStats>('/crm/dashboard/stats');
     return data;
   },
 
@@ -430,9 +317,6 @@ export const crmService = {
   async getPipelineStats(pipelineId?: number): Promise<any> {
     const { data } = await api.get('/crm/dashboard/pipeline-stats', {
       params: { pipeline_id: pipelineId },
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1@',
-      },
     });
     return data;
   },

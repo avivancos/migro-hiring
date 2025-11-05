@@ -11,6 +11,7 @@ import { Lock, AlertCircle } from 'lucide-react';
 
 export function AdminLogin() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -18,8 +19,8 @@ export function AdminLogin() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!password) {
-      setError('Por favor, ingresa la contraseña');
+    if (!email || !password) {
+      setError('Por favor, ingresa email y contraseña');
       return;
     }
 
@@ -27,15 +28,22 @@ export function AdminLogin() {
     setError(null);
 
     try {
-      const result = await adminService.login(password);
+      const result = await adminService.login(email, password);
       
-      if (result.success) {
-        navigate('/admin/dashboard');
+      if (result.success && result.user) {
+        // Verificar que el usuario sea admin
+        if (result.user.is_admin || result.user.role === 'admin') {
+          navigate('/admin/crm');
+        } else {
+          setError('No tienes permisos de administrador');
+          adminService.logout();
+        }
       } else {
-        setError('Contraseña incorrecta');
+        setError('Credenciales incorrectas');
       }
-    } catch (err) {
-      setError('Error al iniciar sesión');
+    } catch (err: any) {
+      console.error('Error login:', err);
+      setError(err.response?.data?.detail || 'Error al iniciar sesión. Verifica tus credenciales.');
     } finally {
       setLoading(false);
     }
@@ -57,6 +65,22 @@ export function AdminLogin() {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError(null);
+                }}
+                placeholder="admin@migro.es"
+                className="mt-1"
+                autoFocus
+              />
+            </div>
+
+            <div>
               <Label htmlFor="password">Contraseña</Label>
               <Input
                 id="password"
@@ -66,9 +90,8 @@ export function AdminLogin() {
                   setPassword(e.target.value);
                   setError(null);
                 }}
-                placeholder="Ingresa la contraseña de administrador"
+                placeholder="Ingresa tu contraseña"
                 className="mt-1"
-                autoFocus
               />
             </div>
 
