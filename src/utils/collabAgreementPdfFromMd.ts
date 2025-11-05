@@ -3,7 +3,7 @@ import jsPDF from 'jspdf';
 // @ts-ignore – Vite raw import
 import agreementMd from '@/legal/colab_agreement.md?raw';
 
-export function generateCollabAgreementPdfFromMd(): Blob {
+function renderCollabAgreementPdf(rawContent: string): Blob {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -46,7 +46,7 @@ export function generateCollabAgreementPdfFromMd(): Blob {
   addSpace(2);
 
   // Preprocesar contenido: eliminar título MD duplicado y normalizar caracteres problemáticos
-  let cleaned = agreementMd
+  let cleaned = rawContent
     .replace(/^#\s.*$/m, '') // eliminar línea título MD
     .replace(/\u00b7/g, '-')   // · -> -
     .replace(/\u2013|\u2014/g, '-') // – — -> -
@@ -84,6 +84,15 @@ export function generateCollabAgreementPdfFromMd(): Blob {
   }
 
   return doc.output('blob');
+}
+
+export function generateCollabAgreementPdfFromMd(contentOverride?: string): Blob {
+  const raw = contentOverride ?? (agreementMd as unknown as string);
+  return renderCollabAgreementPdf(raw);
+}
+
+export function generateCollabAgreementPdfFromText(rawText: string): Blob {
+  return renderCollabAgreementPdf(rawText);
 }
 
 

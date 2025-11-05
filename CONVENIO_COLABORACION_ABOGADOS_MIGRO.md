@@ -102,6 +102,9 @@ CLÁUSULAS
 14.4. No ingeniería inversa. EL DESPACHO no realizará ni permitirá realizar ingeniería inversa, descompilación, desensamblaje o cualquier forma de obtención del código fuente, lógica, arquitectura o estructuras de datos de la app o plataforma de MIGRO, ni creará obras derivadas basadas en ellas.
 14.5. Medidas y remedios. En caso de infracción de esta cláusula, MIGRO podrá exigir el cese inmediato, la adopción de medidas cautelares y la indemnización íntegra de daños y perjuicios, sin perjuicio de otras acciones que en Derecho procedan.
 
+15. FUERO ESPECÍFICO
+15.1. Las partes acuerdan de forma expresa que, para cualquier controversia derivada de la interpretación, ejecución o cumplimiento del presente Convenio, serán exclusivamente competentes los Juzgados y Tribunales de Salamanca capital. Esta cláusula se entenderá sin perjuicio de lo dispuesto en la cláusula 12.2 respecto al sometimiento previo a negociación amistosa.
+
 Y en prueba de conformidad, firman el presente Convenio, por duplicado y a un solo efecto, en el lugar y fecha indicados en el encabezamiento.
 
 
@@ -111,3 +114,5 @@ Nombre: ___________________________                     Nombre: ________________
 DNI/NIE: ___________________________                    DNI/NIE: ___________________________
 Cargo: ____________________________                     Cargo: ____________________________
 Firma: ____________________________                     Firma: ____________________________
+
+Código de contratación colaborador: ____________________________

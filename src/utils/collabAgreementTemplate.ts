@@ -1,10 +1,46 @@
-# CONVENIO MARCO DE COLABORACIÓN ENTRE DESPACHO COLABORADOR Y MIGRO SERVICIOS Y REMESAS S.L.
+import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 
-En [Ciudad], a [fecha].
+export interface CollaboratorAgreementData {
+  collaboratorName: string;
+  collaboratorAddress: string;
+  collaboratorCity: string;
+  collaboratorProvince: string;
+  collaboratorDni: string;
+  signatureCity?: string;
+  signatureDateIso: string; // formato YYYY-MM-DD
+  collaborationCode: string;
+}
+
+function formatDateSpanish(isoDate: string): string {
+  const parsed = new Date(isoDate);
+  if (Number.isNaN(parsed.getTime())) {
+    return isoDate;
+  }
+  return format(parsed, "d 'de' MMMM 'de' yyyy", { locale: es });
+}
+
+export function buildCollaboratorAgreementText(data: CollaboratorAgreementData): string {
+  const {
+    collaboratorName,
+    collaboratorAddress,
+    collaboratorCity,
+    collaboratorProvince,
+    collaboratorDni,
+    signatureCity = 'Salamanca',
+    signatureDateIso,
+    collaborationCode,
+  } = data;
+
+  const formattedDate = formatDateSpanish(signatureDateIso);
+
+  return `# CONVENIO MARCO DE COLABORACIÓN ENTRE ${collaboratorName} Y MIGRO SERVICIOS Y REMESAS S.L.
+
+En ${signatureCity}, a ${formattedDate}.
 
 REUNIDOS
 
-De una parte, [DESPACHO COLABORADOR], en adelante “EL DESPACHO”, con CIF [●], domicilio en [●], y representación de [Nombre y Apellidos del representante], con NIF [●], en su calidad de [cargo].
+De una parte, ${collaboratorName}, en adelante “EL DESPACHO”, con CIF/NIF ${collaboratorDni}, domicilio en ${collaboratorAddress}, ${collaboratorCity}, ${collaboratorProvince}, actuando en su propio nombre y representación.
 
 Y de otra, MIGRO SERVICIOS Y REMESAS S.L., en adelante “MIGRO”, con CIF B22759765, domicilio en C/ Libreros, nº 4, 1º, 37008, Salamanca, actuando en su nombre y representación [Nombre y Apellidos del representante], con NIF [●], en su calidad de [cargo].
 
@@ -33,7 +69,7 @@ CLÁUSULAS
 2.4. Ámbito y excepción. La obligación de no competencia no impide que EL DESPACHO capte y atienda a clientes obtenidos por sus propios medios fuera del esquema de app/plataforma de MIGRO, siempre que no se trate de clientes o Leads de MIGRO ni se utilicen activos, información confidencial o recursos de MIGRO.
 
 3. FLUJO OPERATIVO, CONTACTOS Y NIVEL DE SERVICIO (SLA)
-3.1. MIGRO podrá suministrar hasta veinte (20) contactos diarios ("Leads") al DESPACHO.
+3.1. MIGRO podrá suministrar hasta veinte (20) contactos diarios (“Leads”) al DESPACHO.
 3.2. EL DESPACHO atenderá y ejecutará un mínimo de cinco (5) llamadas concertadas diarias con Leads facilitados por MIGRO. La concertación se entenderá cumplida cuando el Lead conteste y se produzca una conversación cualificada con identificación del caso.
 3.3. A partir de la cuarta (4ª) venta efectiva acumulada (a nivel general, no mensual), el número máximo de contactos diarios podrá duplicarse a petición del DESPACHO.
 3.4. EL DESPACHO se compromete a dar respuesta a cada Lead dentro de un plazo máximo de setenta y dos (72) horas hábiles.
@@ -46,7 +82,6 @@ CLÁUSULAS
 - Grado A: 400 € (IVA incluido).
 - Grado B: 400 € (IVA incluido).
 - Grado C: 600 € (IVA incluido).
-
 4.4. Sistema de Calificación (informativo):
 - Nota A: Excelente – Alta probabilidad de éxito (400 € IVA incluido).
 - Nota B: Bueno – Probabilidad buena de éxito (400 € IVA incluido).
@@ -55,7 +90,7 @@ CLÁUSULAS
 
 5. COMISIONES AL DESPACHO
 5.1. Por cada venta efectiva (contratación cerrada con pago inicial del cliente a MIGRO), MIGRO abonará al DESPACHO una comisión de 200 € (IVA incluido) por venta.
-5.2. La comisión se abonará en dos pagos ("dos plazos") por cada venta: (i) el 50% a la semana siguiente de la comunicación de la venta, previa recepción de la factura correspondiente al primer plazo; y (ii) el 50% dentro de los cinco (5) días hábiles siguientes a la aprobación del expediente por la Administración competente (resolución o comprobante equivalente), previa recepción de la factura correspondiente al segundo plazo.
+5.2. La comisión se abonará en dos pagos (“dos plazos”) por cada venta: (i) el 50% a la semana siguiente de la comunicación de la venta, previa recepción de la factura correspondiente al primer plazo; y (ii) el 50% dentro de los cinco (5) días hábiles siguientes a la aprobación del expediente por la Administración competente (resolución o comprobante equivalente), previa recepción de la factura correspondiente al segundo plazo.
 5.3. Riesgo asumido por MIGRO: Con independencia del cobro del segundo pago por parte del cliente final, MIGRO asumirá el riesgo comercial y abonará igualmente al DESPACHO la comisión íntegra pactada para esa venta, conforme al hito de aprobación administrativa indicado en la cláusula 5.2.
 5.4. A efectos del presente Convenio, “venta” equivale a la contratación cerrada y cobrada por MIGRO al menos en su primer pago.
 
@@ -95,10 +130,10 @@ CLÁUSULAS
 13.2. La obligación de no competencia y de abstención de actos de competencia desleal prevista en esta cláusula se aplicará durante la vigencia del Convenio y por cinco (5) años adicionales desde su terminación por cualquier causa, sin perjuicio de las acciones de daños y perjuicios que puedan corresponder a MIGRO.
 13.3. Delimitación del alcance. La no competencia se circunscribe al modelo de negocio digital de MIGRO (app y plataforma online de ayuda a migrantes) y a los clientes/Leads gestionados por MIGRO. No quedarán afectados los servicios que EL DESPACHO preste a clientes propios captados fuera de dicho esquema y sin uso de activos o información de MIGRO.
 
-14. PROPIEDAD INTELECTUAL, KNOW‑HOW Y RESTRICCIONES
-14.1. Titularidad. Todos los derechos de propiedad intelectual e industrial, know‑how, metodologías, diseños, interfaces, flujos operativos, especificaciones funcionales/técnicas, modelos de datos, documentación, bases de datos, listados de precios, estrategias comerciales, listas de clientes/Leads y, en general, la plataforma, la app y cualquier desarrollo o mejora asociados al modelo de negocio de MIGRO son y seguirán siendo titularidad exclusiva de MIGRO.
+14. PROPIEDAD INTELECTUAL, KNOW-HOW Y RESTRICCIONES
+14.1. Titularidad. Todos los derechos de propiedad intelectual e industrial, know-how, metodologías, diseños, interfaces, flujos operativos, especificaciones funcionales/técnicas, modelos de datos, documentación, bases de datos, listados de precios, estrategias comerciales, listas de clientes/Leads y, en general, la plataforma, la app y cualquier desarrollo o mejora asociados al modelo de negocio de MIGRO son y seguirán siendo titularidad exclusiva de MIGRO.
 14.2. Uso limitado. EL DESPACHO únicamente podrá utilizar la información y materiales facilitados por MIGRO para la ejecución del presente Convenio, quedando prohibido cualquier uso distinto, incluida su copia, cesión, sublicencia, publicación o divulgación a terceros, salvo autorización previa y por escrito de MIGRO.
-14.3. Prohibición de replicar el modelo. EL DESPACHO se abstendrá de crear, promover, desarrollar o participar directa o indirectamente (por sí o a través de terceros) en aplicaciones, plataformas, marketplaces o servicios digitales que repliquen, emulen o resulten sustancialmente equivalentes al modelo de MIGRO dirigidos al mismo público objetivo, especialmente cuando se base, derive o aproveche información confidencial o know‑how de MIGRO, durante la vigencia del Convenio y por un plazo adicional de cinco (5) años desde su terminación.
+14.3. Prohibición de replicar el modelo. EL DESPACHO se abstendrá de crear, promover, desarrollar o participar directa o indirectamente (por sí o a través de terceros) en aplicaciones, plataformas, marketplaces o servicios digitales que repliquen, emulen o resulten sustancialmente equivalentes al modelo de MIGRO dirigidos al mismo público objetivo, especialmente cuando se base, derive o aproveche información confidencial o know-how de MIGRO, durante la vigencia del Convenio y por un plazo adicional de cinco (5) años desde su terminación.
 14.4. No ingeniería inversa. EL DESPACHO no realizará ni permitirá realizar ingeniería inversa, descompilación, desensamblaje o cualquier forma de obtención del código fuente, lógica, arquitectura o estructuras de datos de la app o plataforma de MIGRO, ni creará obras derivadas basadas en ellas.
 14.5. Medidas y remedios. En caso de infracción de esta cláusula, MIGRO podrá exigir el cese inmediato, la adopción de medidas cautelares y la indemnización íntegra de daños y perjuicios, sin perjuicio de otras acciones que en Derecho procedan.
 
@@ -110,9 +145,12 @@ Y en prueba de conformidad, firman el presente Convenio, por duplicado y a un so
 
 Por EL DESPACHO                                         Por MIGRO SERVICIOS Y REMESAS S.L.
 
-Nombre: ___________________________                     Nombre: ___________________________
-DNI/NIE: ___________________________                    DNI/NIE: ___________________________
-Cargo: ____________________________                     Cargo: ____________________________
+Nombre: ${collaboratorName}                           Nombre: [Nombre representante MIGRO]
+DNI/NIE: ${collaboratorDni}                             DNI/NIE: [NIF representante MIGRO]
+Cargo: [Cargo del colaborador]                          Cargo: [Cargo representante MIGRO]
 Firma: ____________________________                     Firma: ____________________________
 
-Código de contratación colaborador: ____________________________
+Código de contratación colaborador: ${collaborationCode}
+`;
+}
+
