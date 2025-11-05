@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -31,7 +31,6 @@ export function CRMContacts() {
     limit: 20,
   });
   const [showFilters, setShowFilters] = useState(false);
-  const [showCreateForm, setShowCreateForm] = useState(false);
 
   useEffect(() => {
     if (!adminService.isAuthenticated()) {
@@ -90,7 +89,7 @@ export function CRMContacts() {
               Filtros
             </Button>
             <Button
-              onClick={() => setShowCreateForm(true)}
+              onClick={() => navigate('/admin/crm/contacts/new')}
               className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
             >
               <Plus size={18} />
@@ -192,12 +191,6 @@ export function CRMContacts() {
                   <Card>
                     <CardContent className="py-12 text-center">
                       <p className="text-gray-500">No se encontraron contactos</p>
-                      <Button
-                        onClick={() => setShowCreateForm(true)}
-                        className="mt-4"
-                      >
-                        Crear primer contacto
-                      </Button>
                     </CardContent>
                   </Card>
                 </div>

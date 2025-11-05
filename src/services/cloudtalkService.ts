@@ -1,19 +1,19 @@
 // CloudTalk Service - Integration with CloudTalk API
 
-import { CallCreateRequest } from '@/types/crm';
+import type { CallCreateRequest } from '@/types/crm';
 import { crmService } from './crmService';
 
 export const cloudtalkService = {
   /**
    * Iniciar una llamada (click-to-call) con CloudTalk
    */
-  async makeCall(phoneNumber: string, entityType: 'lead' | 'contact', entityId: number): Promise<void> {
+  async makeCall(phoneNumber: string): Promise<void> {
     // CloudTalk Click-to-call via Widget API
     // Referencia: https://www.cloudtalk.io/developers/widget-api
     
-    if (window.CloudTalk && window.CloudTalk.makeCall) {
+    if (typeof window !== 'undefined' && (window as any).CloudTalk && (window as any).CloudTalk.makeCall) {
       try {
-        await window.CloudTalk.makeCall(phoneNumber);
+        await (window as any).CloudTalk.makeCall(phoneNumber);
         console.log(`✅ Llamada iniciada a ${phoneNumber}`);
       } catch (error) {
         console.error('Error iniciando llamada con CloudTalk:', error);

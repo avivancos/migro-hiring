@@ -19,7 +19,6 @@ import {
   BarChart3,
   Building2,
   UserCircle,
-  Kanban,
 } from 'lucide-react';
 
 export function CRMDashboard() {

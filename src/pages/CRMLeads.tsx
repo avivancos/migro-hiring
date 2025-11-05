@@ -2,21 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { adminService } from '@/services/adminService';
 import { crmService } from '@/services/crmService';
-import type { KommoLead, Pipeline, PipelineStatus, CRMUser, LeadFilters } from '@/types/crm';
+import type { KommoLead, Pipeline, CRMUser, LeadFilters } from '@/types/crm';
 import {
   Search,
   Filter,
   Plus,
   ArrowLeft,
   Phone,
-  Mail,
-  DollarSign,
   Calendar,
   User,
   Building2,

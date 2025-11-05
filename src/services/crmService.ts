@@ -15,7 +15,6 @@ import type {
   ContactsListResponse,
   CompaniesListResponse,
   TasksListResponse,
-  PipelinesListResponse,
   DashboardStats,
   LeadCreateRequest,
   LeadUpdateRequest,

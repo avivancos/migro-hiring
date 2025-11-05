@@ -16,7 +16,6 @@ import {
   MapPin,
   Building2,
   Edit,
-  User,
   Briefcase,
 } from 'lucide-react';
 

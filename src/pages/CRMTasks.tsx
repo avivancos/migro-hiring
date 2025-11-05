@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { adminService } from '@/services/adminService';
 import { crmService } from '@/services/crmService';
-import type { Task, CRMUser } from '@/types/crm';
+import type { Task } from '@/types/crm';
 import {
   ArrowLeft,
   CheckSquare,
@@ -22,7 +22,6 @@ export function CRMTasks() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [users, setUsers] = useState<CRMUser[]>([]);
   const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('pending');
 
   useEffect(() => {
@@ -37,17 +36,13 @@ export function CRMTasks() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [tasksResponse, usersData] = await Promise.all([
-        crmService.getTasks({
-          is_completed: filter === 'pending' ? false : filter === 'completed' ? true : undefined,
-          page: 1,
-          limit: 100,
-        }),
-        crmService.getUsers(true),
-      ]);
+      const tasksResponse = await crmService.getTasks({
+        is_completed: filter === 'pending' ? false : filter === 'completed' ? true : undefined,
+        page: 1,
+        limit: 100,
+      });
       
       setTasks(tasksResponse._embedded.tasks);
-      setUsers(usersData);
     } catch (err) {
       console.error('Error loading tasks:', err);
     } finally {

@@ -100,6 +100,10 @@ export interface KommoCompany {
   updated_at: string;
   closest_task_at?: string;
   is_deleted: boolean;
+}
+
+// Alias para compatibilidad
+export type Company = KommoCompany;
   
   custom_fields?: Record<string, any>;
   
@@ -362,6 +366,8 @@ export interface LeadFilters {
   pipeline_id?: number;
   status_id?: number;
   responsible_user_id?: number;
+  contact_id?: number;
+  company_id?: number;
   query?: string;
   page?: number;
   limit?: number;

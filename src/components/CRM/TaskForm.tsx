@@ -112,7 +112,7 @@ export function TaskForm({
             <Textarea
               id="text"
               value={formData.text}
-              onChange={(e) => handleChange('text', e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange('text', e.target.value)}
               placeholder="Ej: Llamar al cliente para confirmar cita"
               rows={3}
               required
@@ -220,7 +220,7 @@ export function TaskForm({
               <Textarea
                 id="result_text"
                 value={formData.result_text}
-                onChange={(e) => handleChange('result_text', e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange('result_text', e.target.value)}
                 placeholder="Resultado de la tarea..."
                 rows={2}
               />
