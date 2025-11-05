@@ -17,6 +17,9 @@ import {
   Activity,
   LogOut,
   BarChart3,
+  Building2,
+  UserCircle,
+  Kanban,
 } from 'lucide-react';
 
 export function CRMDashboard() {
@@ -143,6 +146,42 @@ export function CRMDashboard() {
             </CardContent>
           </Card>
         )}
+
+        {/* Quick Access Navigation */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Button
+            onClick={() => navigate('/admin/crm/leads')}
+            variant="outline"
+            className="h-24 flex flex-col items-center justify-center gap-2 hover:bg-blue-50 hover:border-blue-500"
+          >
+            <Users className="text-blue-600" size={28} />
+            <span className="font-semibold">Leads</span>
+          </Button>
+          <Button
+            onClick={() => navigate('/admin/crm/contacts')}
+            variant="outline"
+            className="h-24 flex flex-col items-center justify-center gap-2 hover:bg-green-50 hover:border-green-500"
+          >
+            <UserCircle className="text-green-600" size={28} />
+            <span className="font-semibold">Contactos</span>
+          </Button>
+          <Button
+            onClick={() => navigate('/admin/crm/companies')}
+            variant="outline"
+            className="h-24 flex flex-col items-center justify-center gap-2 hover:bg-purple-50 hover:border-purple-500"
+          >
+            <Building2 className="text-purple-600" size={28} />
+            <span className="font-semibold">Empresas</span>
+          </Button>
+          <Button
+            onClick={() => navigate('/admin/crm/tasks')}
+            variant="outline"
+            className="h-24 flex flex-col items-center justify-center gap-2 hover:bg-orange-50 hover:border-orange-500"
+          >
+            <CheckSquare className="text-orange-600" size={28} />
+            <span className="font-semibold">Tareas</span>
+          </Button>
+        </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
