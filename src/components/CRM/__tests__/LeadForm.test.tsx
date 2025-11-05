@@ -1,13 +1,51 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LeadForm } from '@/components/CRM/LeadForm';
-import { mockCrmService, mockPipeline, mockCRMUser, mockCompanies } from '../test/mockData';
 
-// Mock de servicios
-vi.mock('@/services/crmService', () => ({
-  crmService: mockCrmService,
-}));
+// Mock de servicios usando factory function
+vi.mock('@/services/crmService', () => {
+  return {
+    crmService: {
+      getPipelines: vi.fn(),
+      getUsers: vi.fn(),
+      getCompanies: vi.fn(),
+      createLead: vi.fn(),
+      updateLead: vi.fn(),
+    },
+  };
+});
+
+import { crmService } from '@/services/crmService';
+
+const mockPipeline = {
+  id: 1,
+  name: 'Pipeline Principal',
+  description: 'Pipeline por defecto',
+  is_main: true,
+  statuses: [
+    { id: 1, name: 'Nuevo Lead', sort: 1, color: '#94A3B8', type: 0 },
+    { id: 2, name: 'Contactado', sort: 2, color: '#3B82F6', type: 0 },
+    { id: 3, name: 'Cliente', sort: 3, color: '#10B981', type: 1 },
+  ],
+};
+
+const mockCRMUser = {
+  id: 1,
+  name: 'Admin Test',
+  email: 'admin@test.com',
+  role: 'admin',
+  is_admin: true,
+};
+
+const mockCompanies = [
+  {
+    id: 1,
+    name: 'Empresa Test',
+    email: 'empresa@test.com',
+    phone: '+34123456789',
+  },
+];
 
 describe('LeadForm - Tests de Integración', () => {
   const mockOnSubmit = vi.fn();
@@ -15,9 +53,9 @@ describe('LeadForm - Tests de Integración', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCrmService.getPipelines.mockResolvedValue([mockPipeline]);
-    mockCrmService.getUsers.mockResolvedValue([mockCRMUser]);
-    mockCrmService.getCompanies.mockResolvedValue({ _embedded: { companies: mockCompanies } });
+    vi.mocked(crmService.getPipelines).mockResolvedValue([mockPipeline]);
+    vi.mocked(crmService.getUsers).mockResolvedValue([mockCRMUser]);
+    vi.mocked(crmService.getCompanies).mockResolvedValue({ _embedded: { companies: mockCompanies } });
   });
 
   describe('Crear nuevo Lead', () => {
@@ -37,8 +75,8 @@ describe('LeadForm - Tests de Integración', () => {
       render(<LeadForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
       await waitFor(() => {
-        expect(mockCrmService.getPipelines).toHaveBeenCalled();
-        expect(mockCrmService.getUsers).toHaveBeenCalled();
+        expect(crmService.getPipelines).toHaveBeenCalled();
+        expect(crmService.getUsers).toHaveBeenCalled();
       });
     });
 

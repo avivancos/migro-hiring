@@ -2,13 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AdminLogin } from '@/pages/AdminLogin';
-import { mockAdminService } from '../../test/mockData';
+import { mockAdminService } from '@/test/mockData';
 import { BrowserRouter } from 'react-router-dom';
-
-// Mock de servicios
-vi.mock('@/services/adminService', () => ({
-  adminService: mockAdminService,
-}));
 
 // Mock de navigate
 const mockNavigate = vi.fn();
@@ -19,6 +14,11 @@ vi.mock('react-router-dom', async () => {
     useNavigate: () => mockNavigate,
   };
 });
+
+// Mock de servicios
+vi.mock('@/services/adminService', () => ({
+  adminService: mockAdminService,
+}));
 
 describe('AdminLogin - Tests de Integración', () => {
   beforeEach(() => {

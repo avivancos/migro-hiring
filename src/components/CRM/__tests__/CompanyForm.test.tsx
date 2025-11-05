@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CompanyForm } from '@/components/CRM/CompanyForm';
-import { mockCrmService, mockCompanies, mockCRMUser } from '../../test/mockData';
+import { mockCrmService, mockCompanies, mockCRMUser } from '@/test/mockData';
 
 vi.mock('@/services/crmService', () => ({
   crmService: mockCrmService,
