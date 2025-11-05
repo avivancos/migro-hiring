@@ -382,7 +382,7 @@ export function PrivacyPolicy() {
                   </div>
                   <div className="flex items-center gap-3">
                     <MapPin className="text-gray-500" size={18} />
-                    <span className="text-gray-700">Dirección: C/ Libreros, 54, 1º - Salamanca, España</span>
+                    <span className="text-gray-700">Dirección: C/ Libreros, nº 4, 1º - Salamanca, España</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="text-gray-500" size={18} />
