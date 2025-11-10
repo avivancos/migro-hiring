@@ -1,106 +1,46 @@
 // Privacy Policy Page Component
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Shield, Eye, Lock, Mail, Phone, MapPin } from 'lucide-react';
+import { Shield, Mail, MapPin, FileText } from 'lucide-react';
 
 export function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto p-6">
+      <div className="max-w-4xl mx-auto p-6 py-12">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
+            <Shield className="text-primary" size={36} />
             Política de Privacidad
           </h1>
-          <div className="flex justify-center gap-2 mb-4">
-            <Badge variant="outline" className="text-sm">
-              Español
-            </Badge>
-            <Badge variant="secondary" className="text-sm">
-              English
-            </Badge>
-          </div>
-          <p className="text-gray-600">
-            Última actualización: 19 de octubre de 2025
+          <p className="text-gray-600 text-lg">
+            Última actualización: 1 de octubre de 2025
           </p>
         </div>
-
-        {/* Disclaimer */}
-        <Card className="mb-8 border-red-200 bg-red-50">
-          <CardHeader>
-            <CardTitle className="text-red-800 flex items-center gap-2">
-              <AlertTriangle className="text-red-600" size={24} />
-              RENUNCIA DE RESPONSABILIDAD IMPORTANTE
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-red-700">
-            <p className="mb-4 font-semibold">
-              Migro NO es una entidad gubernamental ni está afiliada, patrocinada o autorizada por ninguna institución pública o gubernamental.
-            </p>
-            <p className="mb-4">
-              Nuestra aplicación es un servicio privado de asesoría migratoria que proporciona información general y orientación. Toda la información gubernamental compartida en nuestra aplicación proviene de fuentes oficiales públicas y se proporciona únicamente con fines informativos.
-            </p>
-            
-            <div className="mb-4">
-              <h4 className="font-semibold mb-2">Fuentes oficiales utilizadas:</h4>
-              <ul className="list-disc list-inside space-y-1 text-sm">
-                <li>Ministerio del Interior de España (www.interior.gob.es)</li>
-                <li>Ministerio de Asuntos Exteriores, Unión Europea y Cooperación (www.exteriores.gob.es)</li>
-                <li>Oficina de Asilo y Refugio (OAR)</li>
-                <li>Boletín Oficial del Estado (BOE)</li>
-                <li>Páginas web oficiales de embajadas y consulados</li>
-              </ul>
-            </div>
-            
-            <p className="font-semibold">
-              Importante: Siempre consulte directamente con las autoridades competentes para obtener información oficial y actualizada sobre procedimientos migratorios específicos.
-            </p>
-          </CardContent>
-        </Card>
 
         {/* Main Content */}
         <div className="space-y-8">
           {/* Section 1 */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="text-primary" size={24} />
-                1. Información que Recopilamos
-              </CardTitle>
+              <CardTitle className="text-2xl">1. ¿QUIÉN ES EL RESPONSABLE DE LOS DATOS?</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4 text-gray-700">
               <div>
-                <h3 className="font-semibold text-lg mb-3">1.1 Información Personal</h3>
-                <p className="mb-3">Recopilamos la siguiente información personal cuando te registras y utilizas nuestra aplicación:</p>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li><strong>Datos de identificación:</strong> Nombre completo, dirección de correo electrónico, número de teléfono</li>
-                  <li><strong>Información de perfil:</strong> Foto de perfil (avatar), biografía personal</li>
-                  <li><strong>Datos de autenticación:</strong> Contraseña (encriptada), identificadores de servicios de terceros (Google, Facebook, Apple)</li>
-                  <li><strong>Información de cuenta:</strong> Estado de verificación, rol de usuario, fecha de último acceso</li>
-                </ul>
+                <p><strong>Titular:</strong> Migro Servicios y Remesas S.L. (en adelante, "MIGRO").</p>
               </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">1.2 Información de Uso</h3>
-                <p className="mb-3">Recopilamos automáticamente información sobre cómo utilizas nuestra aplicación:</p>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li>Datos de uso de la aplicación y funcionalidades utilizadas</li>
-                  <li>Información de dispositivos (tipo de dispositivo, sistema operativo, versión de la aplicación)</li>
-                  <li>Datos de conectividad y rendimiento</li>
-                  <li>Información de errores y crashes para mejorar la aplicación</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">1.3 Información de Servicios Migratorios</h3>
-                <p className="mb-3">Para proporcionar nuestros servicios de asesoría migratoria, podemos recopilar:</p>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li>Documentos migratorios que nos proporciones</li>
-                  <li>Información sobre tu situación migratoria</li>
-                  <li>Historial de consultas y servicios utilizados</li>
-                  <li>Comunicaciones entre tú y nuestros asesores</li>
-                </ul>
+              <div className="space-y-2">
+                <p><strong>NIF:</strong> B-22759765.</p>
+                <p><strong>Domicilio social:</strong> Calle Libreros 54, 1º A, 37008, Salamanca</p>
+                <p><strong>Registro Público:</strong> inscrita en el Registro Mercantil de Salamanca, al Hoja SA-20228 IRUS: 1000455152568, Inscripción 1ª.</p>
+                <div className="flex items-center gap-2 mt-4">
+                  <Mail className="text-gray-500" size={18} />
+                  <p><strong>Correo electrónico:</strong> hola@MIGRO.es</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail className="text-gray-500" size={18} />
+                  <p><strong>DPO:</strong> dpo@MIGRO.es</p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -108,93 +48,151 @@ export function PrivacyPolicy() {
           {/* Section 2 */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Eye className="text-primary" size={24} />
-                2. Cómo Utilizamos tu Información
-              </CardTitle>
+              <CardTitle className="text-2xl">2. INFORMACIÓN</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-3">2.1 Prestación de Servicios</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li>Proporcionar servicios de asesoría migratoria</li>
-                  <li>Gestionar tu cuenta y perfil de usuario</li>
-                  <li>Facilitar la comunicación con nuestros asesores especializados</li>
-                  <li>Procesar pagos y transacciones</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">2.2 Mejora de Servicios</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li>Analizar el uso de la aplicación para mejorar la experiencia del usuario</li>
-                  <li>Desarrollar nuevas funcionalidades y servicios</li>
-                  <li>Corregir errores y optimizar el rendimiento</li>
-                  <li>Realizar investigaciones y análisis estadísticos</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">2.3 Comunicación</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li>Enviar notificaciones importantes sobre tu cuenta</li>
-                  <li>Proporcionar actualizaciones sobre el estado de tus trámites</li>
-                  <li>Enviar información relevante sobre cambios legislativos migratorios</li>
-                  <li>Responder a tus consultas y solicitudes de soporte</li>
-                </ul>
-              </div>
+            <CardContent className="text-gray-700 space-y-4">
+              <p>
+                Mediante la presente Política de Privacidad, el usuario (en adelante, el "Usuario" o, cuando corresponda, los "Usuarios") queda informado de que los datos personales que facilite a través de la plataforma online (en adelante, la "Plataforma") disponible en la página web ubicada en la URL www.MIGRO.es y en la aplicación para dispositivos móviles, serán tratados por MIGRO, así como los datos que MIGRO obtenga de la Agencia Estatal de Administración Tributaria (en adelante "AEAT") o de cualquier otra Administración Pública (en todo caso, previa autorización expresa y por escrito del Usuario), los datos derivados de la navegación del Usuario y aquellos otros datos que éste pueda facilitar en un futuro.
+              </p>
+              <p>
+                El Usuario debe leer con atención esta Política de Privacidad, que ha sido redactada de forma clara y sencilla, para facilitar su comprensión, pudiendo el Usuario determinar, de forma libre y voluntaria si desea o no, facilitar sus datos personales a MIGRO.
+              </p>
             </CardContent>
           </Card>
 
           {/* Section 3 */}
           <Card>
             <CardHeader>
-              <CardTitle>3. Base Legal para el Procesamiento</CardTitle>
+              <CardTitle className="text-2xl">3. OBLIGATORIEDAD DE FACILITAR LOS DATOS</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="mb-4">Procesamos tu información personal basándonos en las siguientes bases legales:</p>
-              <ul className="list-disc list-inside space-y-2 text-gray-700">
-                <li><strong>Consentimiento:</strong> Cuando nos das tu consentimiento explícito</li>
-                <li><strong>Ejecución de contrato:</strong> Para proporcionar los servicios que has solicitado</li>
-                <li><strong>Interés legítimo:</strong> Para mejorar nuestros servicios y prevenir fraudes</li>
-                <li><strong>Cumplimiento legal:</strong> Cuando sea requerido por la legislación aplicable</li>
-              </ul>
+            <CardContent className="text-gray-700">
+              <p>
+                Los datos solicitados en los formularios de la Plataforma son con carácter general, obligatorios (salvo que en el campo requerido se especifique lo contrario) para cumplir con las finalidades para las que están siendo recabados. Por lo tanto, si no se facilitan los mismos o no se facilitan correctamente no podrán atenderse las solicitudes del Usuario, sin perjuicio de que podrá visualizar libremente ciertos contenidos de la Plataforma.
+              </p>
             </CardContent>
           </Card>
 
           {/* Section 4 */}
           <Card>
             <CardHeader>
-              <CardTitle>4. Compartir Información</CardTitle>
+              <CardTitle className="text-2xl">4. ¿CON QUÉ FINALIDAD TRATARÁ Y QUÉ CATEGORÍAS DE DATOS TRATARÁ MIGRO?</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-3">4.1 No Vendemos tu Información</h3>
-                <p className="text-gray-700">
-                  No vendemos, alquilamos ni compartimos tu información personal con terceros para fines comerciales.
-                </p>
-              </div>
+            <CardContent className="text-gray-700 space-y-6">
+              <p>
+                En general e independientemente del plan contratado por el Usuario, las siguientes categorías de datos personales serán tratadas por MIGRO conforme a las siguientes finalidades y sobre las siguientes bases de legitimación:
+              </p>
 
-              <div>
-                <h3 className="font-semibold text-lg mb-3">4.2 Compartir con Proveedores de Servicios</h3>
-                <p className="mb-3">Podemos compartir información con proveedores de servicios de confianza que nos ayudan a operar nuestra aplicación:</p>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li><strong>Firebase (Google):</strong> Para autenticación, almacenamiento y análisis</li>
-                  <li><strong>Stripe:</strong> Para procesamiento de pagos</li>
-                  <li><strong>Proveedores de hosting:</strong> Para almacenamiento seguro de datos</li>
-                  <li><strong>Servicios de comunicación:</strong> Para enviar notificaciones</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">4.3 Requerimientos Legales</h3>
-                <p className="mb-3">Podemos divulgar tu información cuando sea requerido por ley o para:</p>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li>Cumplir con órdenes judiciales o citaciones</li>
-                  <li>Proteger nuestros derechos legales</li>
-                  <li>Prevenir fraudes o actividades ilegales</li>
-                  <li>Proteger la seguridad de nuestros usuarios</li>
-                </ul>
+              <div className="overflow-x-auto">
+                <table className="min-w-full border-collapse border border-gray-300 text-sm">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border border-gray-300 p-3 text-left font-semibold">Finalidad</th>
+                      <th className="border border-gray-300 p-3 text-left font-semibold">Categorías de datos personales</th>
+                      <th className="border border-gray-300 p-3 text-left font-semibold">Base de legitimación</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Gestión de la relación contractual con el Usuario por la contratación de servicios de MIGRO. Gestionar el alta y baja del Usuario registrado en la Plataforma. Contactar al Usuario para recordarle y/o ayudarle cuando no haya finalizado el proceso de registro. Ejecutar los servicios contratados por el Usuario. Para los usuarios que hayan contratado el respectivo Plan o servicio, gestionar el cobro de los servicios contratados por el Usuario a través de la Plataforma. Prevención y control de la utilización de la Plataforma con fines ilegales o no autorizados, con o sin finalidad económica. Enviar comunicaciones transaccionales sobre la cuenta del Usuario en la Plataforma o la disponibilidad de la misma.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Datos identificativos: nombre, apellidos, NIF o NIE. Asimismo, para poder prestar los Servicios objeto de estos Términos y Condiciones, MIGRO solicitará al Usuario todos aquellos datos necesarios para obtener la información del Usuario disponible en el portal web de la Agencia Tributaria u otras fuentes oficiales. Datos de contacto: dirección de correo electrónico, número de teléfono y dirección de correo postal. Datos de características personales: estado civil, datos de familia, fecha de nacimiento, lugar de nacimiento, edad, sexo y nacionalidad. Datos relativos a circunstancias sociales: características de alojamiento, vivienda, situación familiar, propiedades, posesiones, pertenencias a fundaciones y asociaciones. Datos profesionales: pertenencia a colegios o asociaciones profesionales. Datos de información comercial: actividades y negocios. Datos económicos, financieros y de seguros: ingresos, rentas, inversiones, bienes, créditos, préstamos, datos bancarios, planes de pensiones, jubilación, nómina, deducciones impositivas, seguros, hipotecas, tarjetas de crédito, etc. Datos de transacciones de bienes y servicios: bienes y servicios recibidos por el afectado. Datos de navegación en la Plataforma.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Ejecución del contrato.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Controlar, asegurar y reclamar los problemas, incidencias o ilícitos. Monitorizar la actividad del Usuario por motivos de seguridad y control sobre los servicios proporcionados al Usuario. Analizar, gestionar y tramitar incidencias relacionadas con la prestación de los servicios proporcionados por MIGRO al Usuario. Dar cumplimiento a las obligaciones legalmente establecidas y a los requerimientos de información por parte de las autoridades competentes.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Datos identificativos: nombre, apellidos y DNI. Datos de contacto: dirección de correo electrónico, número de teléfono y dirección de correo postal. Otros datos: cualquier dato que pueda facilitar el Usuario.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        El tratamiento de datos derivado de esta finalidad tendrá como base de legitimación el interés legítimo, reconocido a MIGRO por la normativa o, en su caso, el cumplimiento de una obligación legal. El interés legítimo mencionado se basa en asegurar que los servicios de MIGRO no se utilizan con fines ilícitos y, en el caso de producirse, gestionar, tramitar y dar solución a las conductas ilegales llevadas a cabo por el Usuario.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Responder a las cuestiones planteadas por el Usuario a través de los canales de contacto habilitados: Gestionar, tramitar y dar respuesta a las peticiones, solicitudes, incidencias, reclamaciones o consultas del Usuario realizadas a través de los distintos canales de comunicación puestos a disposición del mismo.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Datos identificativos: nombre, apellidos y DNI. Datos de contacto: dirección de correo electrónico, número de teléfono y dirección de correo postal. Otros datos: cualquier dato que pueda facilitar el Usuario.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Interés legítimo de MIGRO en dar respuesta a las cuestiones planteadas a través de los canales de contacto habilitados.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Elaboración de informes, estadísticas y análisis internos para mejorar los servicios de la Plataforma: Analizar, gestionar y elaborar informes internos y estadísticas sobre las conductas de los Usuarios para implementar mejoras en la Plataforma, en todo caso, utilizando información agregada.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Información agregada del Usuario.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Todos los tratamientos derivados de esta finalidad tendrán como base de legitimación el interés legítimo, reconocido al responsable del tratamiento por la normativa de protección de datos. Este interés legítimo está basado en poder ofrecer a los Usuarios los servicios de MIGRO con la mayor calidad y mejor experiencia posible.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Envío de comunicaciones relacionadas con el servicio que pueden incluir información sobre el estado de servicio, problemas técnicos, newsletters no promocionales, recordatorios sobre obligaciones fiscales y similares.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Datos identificativos: nombre y apellidos. Datos de contacto: dirección de correo electrónico, número de teléfono.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        La base de legitimación es la ejecución de un contrato y/o el interés legítimo de MIGRO en ofrecer un servicio de calidad.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Envío de comunicaciones comerciales al Usuario sobre productos y servicios de MIGRO, por medios electrónicos y/o convencionales, siempre que el Usuario no haya manifestado su oposición al respecto. Eventualmente, también podrán remitirse comunicaciones comerciales al Usuario sobre productos y servicios de terceros con los que MIGRO tenga acuerdos de partnership por medios electrónicos y/o convencionales, siempre que el Usuario haya dado su consentimiento.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Datos identificativos: nombre y apellidos. Datos de contacto: dirección de correo electrónico, número de teléfono.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        En caso de que las comunicaciones estén dirigidas a clientes de MIGRO e incluyan productos/servicios similares a los contratados, dicho tratamiento estará amparado en el interés legítimo que tiene MIGRO en garantizar el buen curso del negocio, siempre y cuando la normativa aplicable lo habilite. Por otra parte, el envío de comunicaciones comerciales al Usuario sobre productos y servicios de terceras entidades, cuando no existe una relación contractual entre MIGRO y el Usuario o cuando las comunicaciones sean sobre productos/servicios no similares a los contratados, el tratamiento está amparado en el consentimiento que el Usuario ha otorgado previamente y que podrá retirar en cualquier momento.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Elaboración de perfiles: Elaborar perfiles con los datos del Usuario de que dispone MIGRO con la finalidad de analizar las tendencias en cuanto a contratación de los servicios y, eventualmente, para ofrecer al Usuario productos y servicios de acuerdo con sus intereses, recurriendo a fuentes propias y de terceros, si el Usuario lo autoriza marcando la casilla habilitada al efecto. Por ejemplo, acceso a financiación, acceso a ofertas de nuestros Partners o acceso a nuevos productos.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Datos identificativos: nombre, apellidos y DNI. Datos de contacto: dirección de correo electrónico, número de teléfono y dirección de correo postal. Datos de características personales: estado civil, datos de familia, fecha de nacimiento, lugar de nacimiento, edad, sexo y nacionalidad. Datos relativos a circunstancias sociales: características de alojamiento, vivienda, situación familiar, propiedades, posesiones, pertenencias a clubes y asociaciones, licencias, permisos y autorizaciones. Datos profesionales: pertenencia a colegios o asociaciones profesionales. Datos de detalles de empleo: puesto de trabajo. Datos de información comercial: actividades y negocios, licencias comerciales, suscripciones a publicaciones o medios de comunicación, creaciones artísticas, literarias, etc. Datos económicos, financieros y de seguros: ingresos, rentas, inversiones, bienes, créditos, préstamos, datos bancarios, planes de pensiones, jubilación, nómina, deducciones impositivas, seguros, hipotecas, tarjetas de crédito, etc. Datos de transacciones de bienes y servicios: bienes y servicios recibidos por el afectado. Datos de navegación en la Plataforma.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        El tratamiento de datos derivado de esta finalidad es el legítimo interés de MIGRO en garantizar el buen curso del negocio. En base a esto, MIGRO también podrá anonimizar la información que tiene sobre el Usuario con la finalidad de utilizarla con finalidades distintas de las aquí previstas y respecto de las cuales no aplica la normativa en materia de protección de datos.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Dar cumplimiento a las obligaciones legalmente establecidas: Cuando el tratamiento sea necesario para dar cumplimiento a una obligación legal derivada del derecho español o del derecho de la Unión Europa y que pueda resultar aplicable a MIGRO.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Cualquier dato que pueda ser requerido legalmente. Cuando el Usuario facilite datos de terceros (datos de su cónyuge, personas dependientes, etc.), manifiesta contar con el consentimiento de los mismos y/o legitimación suficiente y se compromete a trasladarles la información contenida en la Política de Privacidad, eximiendo a MIGRO de cualquier responsabilidad en este sentido. No obstante, MIGRO podrá llevar a cabo las verificaciones oportunas para constatar este hecho, adoptando las medidas de diligencia debida que correspondan, conforme a la normativa de protección de datos.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Todos los tratamientos derivados de esta finalidad tendrán como base el cumplimiento de una obligación legal.
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Analizar los hábitos de comportamiento de los Usuarios en relación con el uso de la Plataforma: Dar cumplimiento a las obligaciones legalmente establecidas: ello, a través del uso de cookies y otras tecnologías similares. Puede obtener más información sobre el uso de estas tecnologías en la Plataforma en nuestra Política de Cookies.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        Datos sobre los hábitos de navegación y comportamiento de los Usuarios en la Plataforma.
+                      </td>
+                      <td className="border border-gray-300 p-3 align-top">
+                        La base de legitimación es el consentimiento (con respecto al uso de cookies y tecnologías similares) y el interés legítimo de MIGRO en garantizar el buen curso del negocio. De haberlos, los consentimientos obtenidos para las finalidades mencionadas son independientes por lo que el Usuario podrá revocar solo uno de ellos no afectando a los demás.
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </CardContent>
           </Card>
@@ -202,49 +200,29 @@ export function PrivacyPolicy() {
           {/* Section 5 */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lock className="text-primary" size={24} />
-                5. Seguridad de Datos
-              </CardTitle>
+              <CardTitle className="text-2xl">5. CONSERVACIÓN DE LOS DATOS</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold text-lg mb-3">5.1 Medidas de Seguridad Técnicas</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li>Encriptación de datos en tránsito y en reposo</li>
-                  <li>Autenticación de dos factores cuando sea posible</li>
-                  <li>Monitoreo continuo de seguridad</li>
-                  <li>Copias de seguridad regulares y seguras</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">5.2 Medidas de Seguridad Organizativas</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li>Acceso limitado a información personal solo al personal autorizado</li>
-                  <li>Capacitación regular del personal en protección de datos</li>
-                  <li>Políticas estrictas de confidencialidad</li>
-                  <li>Auditorías regulares de seguridad</li>
-                </ul>
-              </div>
+            <CardContent className="text-gray-700">
+              <p>
+                Los datos personales del Usuario serán conservados por MIGRO durante la relación contractual y, una vez finalizada la misma, durante el plazo de prescripción de las acciones legales que se puedan derivar de la misma. Adicionalmente, los datos utilizados para el envío de comunicaciones comerciales serán tratados conforme a dicha finalidad hasta que el Usuario se oponga al tratamiento de sus datos o hasta que revoque el consentimiento otorgado.
+              </p>
             </CardContent>
           </Card>
 
           {/* Section 6 */}
           <Card>
             <CardHeader>
-              <CardTitle>6. Retención de Datos</CardTitle>
+              <CardTitle className="text-2xl">6. ¿CON QUÉ DESTINATARIOS SE COMPARTIRÁN LOS DATOS DEL USUARIO?</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="mb-4">Conservamos tu información personal durante el tiempo necesario para:</p>
-              <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
-                <li>Proporcionar los servicios que has solicitado</li>
-                <li>Cumplir con obligaciones legales y regulatorias</li>
-                <li>Resolver disputas y hacer cumplir nuestros acuerdos</li>
-                <li>Mejorar nuestros servicios</li>
+            <CardContent className="text-gray-700 space-y-4">
+              <p>Los datos personales del Usuario podrán ser comunicados a:</p>
+              <ul className="list-disc list-inside space-y-2 ml-4">
+                <li><strong>Administraciones Públicas,</strong> en los casos previstos en la ley, en base al cumplimiento de una obligación legal.</li>
+                <li><strong>Juzgados y Tribunales,</strong> en los casos previstos en la ley, en base al cumplimiento de una obligación legal.</li>
+                <li><strong>Bancos y entidades financieras</strong> para el cobro de los servicios ofrecidos por MIGRO, para dar cumplimiento a la relación contractual.</li>
               </ul>
-              <p className="text-gray-700">
-                Los datos de cuenta inactiva se eliminarán después de 3 años de inactividad, salvo que la ley requiera un período de retención más largo.
+              <p>
+                Asimismo, en aquellos casos en los que el servicio prestado por MIGRO a los Usuarios, esté subvencionado, tenga un beneficio, o un descuento, por parte de algún socio comercial, como por ejemplo bancos o empleadores, MIGRO compartirá con dichos socios comerciales un listado de aquellos Usuarios que hayan contratado el servicio con MIGRO. El listado únicamente comprenderá el número de identificación fiscal, en ningún caso llevará acompañada información sobre el producto contratado o cualquier otro dato adicional. Este listado simplemente se utilizará para garantizar el buen funcionamiento de la colaboración.
               </p>
             </CardContent>
           </Card>
@@ -252,59 +230,23 @@ export function PrivacyPolicy() {
           {/* Section 7 */}
           <Card>
             <CardHeader>
-              <CardTitle>7. Tus Derechos</CardTitle>
+              <CardTitle className="text-2xl">7. TRANSFERENCIAS INTERNACIONALES DE DATOS</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <p className="text-gray-700">
-                Bajo el Reglamento General de Protección de Datos (RGPD) y otras leyes aplicables, tienes los siguientes derechos:
+            <CardContent className="text-gray-700">
+              <p>
+                El Usuario queda informado de que MIGRO tiene contratados los servicios de diversas entidades que pueden encontrarse ubicados fuera del Unión Europea, encontrándose en debidamente legitimadas las transferencias internacionales de datos. En concreto, los datos pueden ser transferidos a Estados Unidos. No existe decisión de adecuación emitida por la Comisión Europea con respecto a transferencias internacionales a Estados Unidos, por lo que, como alternativa, adoptamos garantías adecuadas, como las cláusulas contractuales tipo correspondientes aprobadas por la Comisión Europea. Si deseas obtener más información al respecto o copia de dichas garantías, por favor escríbenos utilizando las direcciones indicadas al principio de esta Política de Privacidad.
               </p>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">7.1 Derechos de Acceso y Control</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li><strong>Acceso:</strong> Solicitar una copia de la información personal que tenemos sobre ti</li>
-                  <li><strong>Rectificación:</strong> Corregir información inexacta o incompleta</li>
-                  <li><strong>Eliminación:</strong> Solicitar la eliminación de tu información personal</li>
-                  <li><strong>Limitación:</strong> Restringir el procesamiento de tu información</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">7.2 Derechos de Portabilidad y Objeción</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li><strong>Portabilidad:</strong> Recibir tu información en un formato estructurado y legible</li>
-                  <li><strong>Objeción:</strong> Oponerte al procesamiento de tu información para ciertos fines</li>
-                  <li><strong>Retiro de consentimiento:</strong> Retirar tu consentimiento en cualquier momento</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-semibold text-lg mb-3">7.3 Cómo Ejercer tus Derechos</h3>
-                <p className="mb-3">Para ejercer cualquiera de estos derechos, puedes:</p>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  <li>Contactarnos a través de la información de contacto proporcionada al final de esta política</li>
-                  <li>Utilizar las configuraciones de privacidad en la aplicación</li>
-                  <li>Enviar una solicitud por escrito a nuestra dirección</li>
-                </ul>
-              </div>
             </CardContent>
           </Card>
 
           {/* Section 8 */}
           <Card>
             <CardHeader>
-              <CardTitle>8. Cookies y Tecnologías Similares</CardTitle>
+              <CardTitle className="text-2xl">8. COMUNICACIONES COMERCIALES Y PROMOCIONALES</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="mb-4">Nuestra aplicación puede utilizar cookies y tecnologías similares para:</p>
-              <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
-                <li>Recordar tus preferencias y configuraciones</li>
-                <li>Analizar el uso de la aplicación</li>
-                <li>Mejorar la funcionalidad y rendimiento</li>
-                <li>Proporcionar contenido personalizado</li>
-              </ul>
-              <p className="text-gray-700">
-                Puedes controlar el uso de cookies a través de la configuración de tu dispositivo.
+            <CardContent className="text-gray-700">
+              <p>
+                Una de las finalidades para las que MIGRO trata los datos personales proporcionados por parte de los Usuarios es para remitirles comunicaciones comerciales con información relativa a productos, servicios, promociones, ofertas, eventos o noticias, relevantes para los Usuarios y siempre relacionadas con los servicios de MIGRO. En caso de que el Usuario desee dejar de recibir comunicaciones comerciales o promocionales por parte de MIGRO puede solicitar la baja del servicio enviando un email a la siguiente dirección de correo electrónico: dpo@MIGRO.es, clicando en el enlace que le aparecerá en la parte inferior de las comunicaciones comerciales remitidas.
               </p>
             </CardContent>
           </Card>
@@ -312,113 +254,100 @@ export function PrivacyPolicy() {
           {/* Section 9 */}
           <Card>
             <CardHeader>
-              <CardTitle>9. Transferencias Internacionales</CardTitle>
+              <CardTitle className="text-2xl">9. RESPONSABILIDAD DEL USUARIO</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="mb-4">
-                Algunos de nuestros proveedores de servicios pueden estar ubicados fuera del Espacio Económico Europeo (EEE). Cuando transferimos información personal a estos países, nos aseguramos de que:
+            <CardContent className="text-gray-700">
+              <p>
+                El Usuario garantiza que es mayor de catorce años (14) años y que los datos que facilita a MIGRO son verdaderos, exactos, completos y actualizados. A estos efectos, el Usuario responde de la veracidad de todos los datos que comunique y mantendrá convenientemente actualizada la información facilitada, de tal forma que responda a su situación real. Del mismo modo, garantiza que ha informado a los terceros de los que facilite sus datos, en caso de hacerlo, de los aspectos contenidos en este documento. Asimismo, garantiza que ha obtenido su autorización para facilitar sus datos a MIGRO para los fines señalados. En todo caso, el Usuario será responsable de las informaciones falsas o inexactas que proporcione a través de la Plataforma y de los daños y perjuicios, directos o indirectos, que ello cause a MIGRO o a terceros.
               </p>
-              <ul className="list-disc list-inside space-y-2 text-gray-700">
-                <li>Existan salvaguardas adecuadas para proteger tu información</li>
-                <li>Se cumplan las garantías de protección de datos apropiadas</li>
-                <li>Se respeten los estándares internacionales de privacidad</li>
-              </ul>
             </CardContent>
           </Card>
 
           {/* Section 10 */}
           <Card>
             <CardHeader>
-              <CardTitle>10. Menores de Edad</CardTitle>
+              <CardTitle className="text-2xl">10. EJERCICIO DE DERECHOS</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-gray-700">
-                Nuestros servicios están dirigidos a personas mayores de 16 años. No recopilamos intencionalmente información personal de menores de 16 años sin el consentimiento verificable de sus padres o tutores legales.
+            <CardContent className="text-gray-700 space-y-4">
+              <p>
+                Como titular de los datos, el Usuario puede enviar un escrito a MIGRO, a la dirección indicada en el encabezado de la presente Política de Privacidad, o bien por medio de un correo electrónico a la dirección: dpo@MIGRO.es, adjuntando copia de documento acreditativo de identidad, en cualquier momento y de manera gratuita, para ejercer los siguientes derechos:
               </p>
+              <div className="space-y-3">
+                <div>
+                  <p><strong>a) Derecho de Acceso:</strong> Tendrá derecho a que MIGRO le informe sobre si está tratando o no sus datos personales y, en tal caso, poder acceder a dichos datos y recibir información sobre los fines para los que son tratados, las categorías de datos afectados por el tratamiento, los destinatarios a los que se comunicaron sus datos personales y el plazo previsto de conservación de los datos, entre otra información.</p>
+                </div>
+                <div>
+                  <p><strong>b) Derecho de Rectificación:</strong> Tendrá derecho a solicitar la rectificación de los datos inexactos que le conciernan.</p>
+                </div>
+                <div>
+                  <p><strong>c) Derecho de Supresión:</strong> Tendrá derecho a solicitar la supresión de sus datos personales, siempre que proceda de conformidad con la legislación aplicable.</p>
+                </div>
+                <div>
+                  <p><strong>d) Oposición:</strong> Tendrá derecho, en los casos previstos en la normativa aplicable, a objetar al tratamiento de sus datos personales para determinadas finalidades, incluyendo la posibilidad de oponerse a que se traten sus datos personales con el fin de tomar decisiones individuales automatizadas.</p>
+                </div>
+                <div>
+                  <p><strong>e) Limitación del tratamiento:</strong> En determinadas circunstancias (por ejemplo, en caso de que el solicitante impugne la exactitud de sus datos, mientras se verifica la exactitud de los mismos), podrá solicitar que se limite el tratamiento de sus datos personales.</p>
+                </div>
+                <div>
+                  <p><strong>f) Portabilidad de sus datos:</strong> Tendrá derecho a recibir los datos personales que haya facilitado MIGRO en un formato estructurado, común y de lectura mecánica, y a poder transmitirlos a otro responsable del tratamiento sin que el responsable al que se los hubiera facilitado se lo impida, en los supuestos legalmente previstos a estos efectos.</p>
+                </div>
+                <div>
+                  <p><strong>g) Revocación del consentimiento:</strong> cuando el tratamiento de sus datos personales se ampare en su consentimiento, tendrá derecho a revocar dicho consentimiento y que sus datos personales dejen de ser tratados, salvo que otra base de legitimación lo permita.</p>
+                </div>
+                <div>
+                  <p><strong>h) Otros:</strong> Asimismo, podrá interponer una reclamación relativa a la protección de sus datos personales ante la Agencia Española de Protección de Datos en la dirección C/ Jorge Juan, 6, 28001 –Madrid o a través de su página web (http://www.aepd.es/) o ante cualquier otra autoridad de protección de datos que resulte competente, cuando el interesado considere que MIGRO ha vulnerado los derechos que le son reconocidos por la normativa aplicable en protección de datos.</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
           {/* Section 11 */}
           <Card>
             <CardHeader>
-              <CardTitle>11. Cambios a esta Política</CardTitle>
+              <CardTitle className="text-2xl">11. MEDIDAS DE SEGURIDAD</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="mb-4">Podemos actualizar esta Política de Privacidad ocasionalmente. Te notificaremos sobre cambios significativos a través de:</p>
-              <ul className="list-disc list-inside space-y-2 text-gray-700 mb-4">
-                <li>Notificaciones en la aplicación</li>
-                <li>Correo electrónico a la dirección registrada</li>
-                <li>Actualización de la fecha de "última modificación" en esta página</li>
-              </ul>
-              <p className="text-gray-700">
-                Te recomendamos revisar esta política periódicamente para mantenerte informado sobre cómo protegemos tu información.
+            <CardContent className="text-gray-700">
+              <p>
+                MIGRO tratará los datos del Usuario en todo momento de forma absolutamente confidencial y guardando el preceptivo deber de secreto respecto de los mismos, de conformidad con lo previsto en la normativa de aplicación, adoptando al efecto las medidas de índole técnica y organizativas necesarias que garanticen la seguridad de sus datos y eviten su alteración, pérdida, tratamiento o acceso no autorizado, habida cuenta del estado de la tecnología, la naturaleza de los datos almacenados y los riesgos a que están expuestos.
               </p>
             </CardContent>
           </Card>
 
-          {/* Section 12 - Contact */}
+          {/* Section 12 */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="text-2xl">12. CAMBIOS</CardTitle>
+            </CardHeader>
+            <CardContent className="text-gray-700">
+              <p>
+                MIGRO se reserva el derecho de revisar su Política de Privacidad en el momento que lo considere oportuno, en cuyo caso se comunicará a los Usuarios. Por esta razón, le rogamos que compruebe de forma regular esta declaración de privacidad para leer la versión más reciente de la Política de Privacidad de MIGRO.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Contact Section */}
+          <Card className="bg-gray-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-2xl">
                 <Mail className="text-primary" size={24} />
-                12. Contacto
+                Información de Contacto
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <p className="text-gray-700">
-                Si tienes preguntas, inquietudes o solicitudes relacionadas con esta Política de Privacidad o el manejo de tu información personal, puedes contactarnos:
-              </p>
-
-              <div className="bg-gray-50 p-6 rounded-lg">
-                <h3 className="font-semibold text-lg mb-4">Información de Contacto:</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Mail className="text-gray-500" size={18} />
-                    <span className="text-gray-700">Email: privacidad@migro.com</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Mail className="text-gray-500" size={18} />
-                    <span className="text-gray-700">Email general: info@migro.es</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <MapPin className="text-gray-500" size={18} />
-                    <span className="text-gray-700">Dirección: C/ Libreros, nº 4, 1º - Salamanca, España</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Phone className="text-gray-500" size={18} />
-                    <span className="text-gray-700">Teléfono: +34 923 123 456</span>
-                  </div>
-                  <div className="text-gray-700">
-                    <strong>Horario de atención:</strong> Lunes a Viernes, 9:00 - 18:00 (CET)
+            <CardContent className="space-y-4">
+              <div className="space-y-3 text-gray-700">
+                <div className="flex items-start gap-3">
+                  <MapPin className="text-gray-500 mt-1" size={18} />
+                  <div>
+                    <p><strong>Dirección:</strong> Calle Libreros 54, 1º A, 37008, Salamanca</p>
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-blue-50 p-6 rounded-lg">
-                <h3 className="font-semibold text-lg mb-3">Delegado de Protección de Datos (DPO):</h3>
-                <p className="text-gray-700">
-                  Si tienes consultas específicas sobre protección de datos, puedes contactar a nuestro Delegado de Protección de Datos en: dpo@migro.com
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Section 13 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>13. Autoridad de Control</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-4 text-gray-700">
-                Si consideras que el procesamiento de tu información personal no cumple con la legislación aplicable, tienes derecho a presentar una reclamación ante la autoridad de control de protección de datos competente en tu jurisdicción.
-              </p>
-              
-              <div className="bg-yellow-50 p-6 rounded-lg">
-                <h3 className="font-semibold text-lg mb-3">En España, la autoridad de control es la Agencia Española de Protección de Datos (AEPD):</h3>
-                <div className="space-y-2 text-gray-700">
-                  <div><strong>Sitio web:</strong> www.aepd.es</div>
-                  <div><strong>Dirección:</strong> C/ Jorge Juan, 6, 28001 Madrid</div>
-                  <div><strong>Teléfono:</strong> 901 100 099</div>
+                <div className="flex items-center gap-3">
+                  <Mail className="text-gray-500" size={18} />
+                  <p><strong>Correo electrónico:</strong> hola@MIGRO.es</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Mail className="text-gray-500" size={18} />
+                  <p><strong>DPO:</strong> dpo@MIGRO.es</p>
                 </div>
               </div>
             </CardContent>
@@ -428,7 +357,7 @@ export function PrivacyPolicy() {
         {/* Footer */}
         <div className="text-center mt-12 p-6 bg-gray-100 rounded-lg">
           <p className="text-gray-600 mb-2">
-            <strong>Última actualización:</strong> 19 de octubre de 2025
+            <strong>Última actualización:</strong> 1 de octubre de 2025
           </p>
           <p className="text-gray-600">
             Esta Política de Privacidad es efectiva a partir de la fecha de última actualización indicada arriba.

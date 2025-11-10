@@ -2,28 +2,18 @@
 # Multi-stage build para optimizar tamaño y performance
 
 # ==========================================
-# Stage 1: Dependencies (instalación)
-# ==========================================
-FROM node:20-alpine AS deps
-
-WORKDIR /app
-
-# Copiar archivos de dependencias
-COPY package.json package-lock.json* ./
-
-# Limpiar cache de npm y reinstalar
-RUN npm cache clean --force && \
-    npm ci --legacy-peer-deps --no-audit --no-fund
-
-# ==========================================
-# Stage 2: Builder (compilación)
+# Stage 1: Builder (compilación)
 # ==========================================
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copiar dependencias del stage anterior
-COPY --from=deps /app/node_modules ./node_modules
+# Copiar archivos de dependencias primero (para mejor cache)
+COPY package.json package-lock.json* ./
+
+# Instalar dependencias
+RUN npm cache clean --force && \
+    npm ci --legacy-peer-deps --no-audit --no-fund
 
 # Copiar código fuente
 COPY . .
@@ -47,7 +37,7 @@ RUN rm -rf dist node_modules/.cache && \
     echo "✅ Build completado: $(ls -lh dist/index.html)"
 
 # ==========================================
-# Stage 3: Runner (producción con nginx)
+# Stage 2: Runner (producción con nginx)
 # ==========================================
 FROM nginx:alpine AS runner
 
