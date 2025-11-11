@@ -11,10 +11,14 @@ WORKDIR /app
 # Copiar archivos de dependencias primero (para mejor cache)
 COPY package.json package-lock.json* ./
 
-# Instalar dependencias (incluyendo devDependencies para el build)
+# Instalar dependencias desde package-lock.json
+# Usar npm install en lugar de npm ci porque package.json no tiene dependencias listadas
+# npm install leerá package-lock.json e instalará todas las dependencias correctamente
 RUN npm cache clean --force && \
-    npm ci --legacy-peer-deps --no-audit --no-fund && \
-    ls -la node_modules/.bin/tsc || echo "Verificando tsc..."
+    npm install --legacy-peer-deps --no-audit --no-fund && \
+    echo "Verificando instalación de TypeScript..." && \
+    (test -f node_modules/.bin/tsc && echo "✅ TypeScript encontrado" || echo "⚠️ TypeScript no encontrado") && \
+    (test -f node_modules/.bin/vite && echo "✅ Vite encontrado" || echo "⚠️ Vite no encontrado")
 
 # Copiar código fuente
 COPY . .
@@ -33,10 +37,9 @@ ENV VITE_DEBUG_MODE=$VITE_DEBUG_MODE
 ENV VITE_API_TIMEOUT=$VITE_API_TIMEOUT
 
 # Build de producción con limpieza
-# Usar npx para ejecutar los comandos directamente (más confiable en Docker)
+# npm run build automáticamente resuelve los binarios desde node_modules/.bin
 RUN rm -rf dist node_modules/.cache && \
-    npx tsc -b && \
-    npx vite build && \
+    npm run build && \
     echo "✅ Build completado: $(ls -lh dist/index.html)"
 
 # ==========================================
