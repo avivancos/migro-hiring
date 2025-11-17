@@ -12,14 +12,9 @@ import { BorradorPDF } from '@/pages/BorradorPDF';
 import { Colaboradores } from '@/pages/Colaboradores';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-// CRM Pages
+// CRM Pages (simplificado - solo leads)
 import { CRMDashboard } from '@/pages/CRMDashboard';
 import { CRMLeads } from '@/pages/CRMLeads';
-import { LeadDetail } from '@/pages/LeadDetail';
-import { CRMContacts } from '@/pages/CRMContacts';
-import { ContactDetail } from '@/pages/ContactDetail';
-import { CRMCompanies } from '@/pages/CRMCompanies';
-import { CRMTasks } from '@/pages/CRMTasks';
 
 function App() {
   return (
@@ -42,15 +37,9 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin" element={<AdminLogin />} />
           
-          {/* CRM routes - New */}
+          {/* CRM routes - Simplificado (solo leads) */}
           <Route path="/admin/crm" element={<CRMDashboard />} />
           <Route path="/admin/crm/leads" element={<CRMLeads />} />
-          <Route path="/admin/crm/leads/:id" element={<LeadDetail />} />
-          <Route path="/admin/crm/contacts" element={<CRMContacts />} />
-          <Route path="/admin/crm/contacts/:id" element={<ContactDetail />} />
-          <Route path="/admin/crm/companies" element={<CRMCompanies />} />
-          <Route path="/admin/crm/tasks" element={<CRMTasks />} />
-          <Route path="/admin/crm/pipeline" element={<CRMLeads />} /> {/* Vista Kanban */}
           
           {/* Client login (futuro) */}
           <Route path="/login" element={<Login />} />
