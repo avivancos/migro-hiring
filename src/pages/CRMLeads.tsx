@@ -12,7 +12,6 @@ import {
   ArrowLeft,
   Phone,
   Calendar,
-  User,
   Building2,
 } from 'lucide-react';
 

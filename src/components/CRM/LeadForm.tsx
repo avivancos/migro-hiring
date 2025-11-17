@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { crmService } from '@/services/crmService';
-import type { KommoLead, Pipeline, CRMUser, LeadCreateRequest } from '@/types/crm';
+import type { KommoLead, CRMUser, LeadCreateRequest } from '@/types/crm';
 import { Save, X } from 'lucide-react';
 
 interface LeadFormProps {
