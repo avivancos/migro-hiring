@@ -100,10 +100,6 @@ export interface KommoCompany {
   updated_at: string;
   closest_task_at?: string;
   is_deleted: boolean;
-}
-
-// Alias para compatibilidad
-export type Company = KommoCompany;
   
   custom_fields?: Record<string, any>;
   
@@ -113,6 +109,9 @@ export type Company = KommoCompany;
     leads?: KommoLead[];
   };
 }
+
+// Alias para compatibilidad
+export type Company = KommoCompany;
 
 export interface Pipeline {
   id: number;
