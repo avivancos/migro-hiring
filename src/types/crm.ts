@@ -1,4 +1,4 @@
-// CRM Types - Compatible con Kommo API
+// CRM Types - Compatible con Kommo API (desactivado - usando base de datos propia)
 
 export interface KommoLead {
   id: number;

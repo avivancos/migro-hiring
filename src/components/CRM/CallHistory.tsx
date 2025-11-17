@@ -5,7 +5,6 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { Call } from '@/types/crm';
 import { crmService } from '@/services/crmService';
-import { cloudtalkService } from '@/services/cloudtalkService';
 import {
   Phone,
   PhoneIncoming,

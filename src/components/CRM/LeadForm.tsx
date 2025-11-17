@@ -17,7 +17,6 @@ interface LeadFormProps {
 
 export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
   const [loading, setLoading] = useState(false);
-  const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   const [users, setUsers] = useState<CRMUser[]>([]);
   const [formData, setFormData] = useState<LeadCreateRequest>({
     name: lead?.name || '',
@@ -43,7 +42,6 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
         crmService.getPipelines(),
         crmService.getUsers(true),
       ]);
-      setPipelines(pipelinesData);
       setUsers(usersData);
 
       // Set default pipeline and status if creating new lead
