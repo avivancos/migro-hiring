@@ -12,10 +12,9 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 
 # Instalar dependencias desde package-lock.json
-# Usar npm install en lugar de npm ci porque package.json no tiene dependencias listadas
-# npm install leerá package-lock.json e instalará todas las dependencias correctamente
+# npm ci instala exactamente lo que está en package-lock.json, ideal para CI/CD
 RUN npm cache clean --force && \
-    npm install --legacy-peer-deps --no-audit --no-fund && \
+    npm ci --legacy-peer-deps --no-audit --no-fund && \
     echo "Verificando instalación de TypeScript..." && \
     (test -f node_modules/.bin/tsc && echo "✅ TypeScript encontrado" || echo "⚠️ TypeScript no encontrado") && \
     (test -f node_modules/.bin/vite && echo "✅ Vite encontrado" || echo "⚠️ Vite no encontrado")
