@@ -1,4 +1,5 @@
 // Mock data para tests de formularios CRM
+import { vi } from 'vitest';
 
 export const mockPipeline: any = {
   id: 1,

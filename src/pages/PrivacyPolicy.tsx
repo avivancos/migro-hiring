@@ -1,7 +1,7 @@
 // Privacy Policy Page Component
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Shield, Mail, MapPin, FileText } from 'lucide-react';
+import { Shield, Mail, MapPin } from 'lucide-react';
 
 export function PrivacyPolicy() {
   return (

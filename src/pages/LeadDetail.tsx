@@ -61,7 +61,7 @@ export function LeadDetail() {
       return;
     }
 
-    await cloudtalkService.makeCall(lead.contact.phone, 'lead', lead.id);
+    await cloudtalkService.makeCall(lead.contact.phone);
   };
 
   const handleDelete = async () => {
