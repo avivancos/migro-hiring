@@ -12,9 +12,19 @@ import { BorradorPDF } from '@/pages/BorradorPDF';
 import { Colaboradores } from '@/pages/Colaboradores';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-// CRM Pages (simplificado - solo leads)
+// CRM Pages
 import { CRMDashboard } from '@/pages/CRMDashboard';
 import { CRMLeads } from '@/pages/CRMLeads';
+import { CRMDashboardPage } from '@/pages/CRMDashboardPage';
+import { CRMContactList } from '@/pages/CRMContactList';
+import { CRMContactDetail } from '@/pages/CRMContactDetail';
+import { CRMLeadList } from '@/pages/CRMLeadList';
+import { CRMLeadDetail } from '@/pages/CRMLeadDetail';
+import { CRMTaskCalendar } from '@/pages/CRMTaskCalendar';
+import { CRMSettings } from '@/pages/CRMSettings';
+import { CRMTaskTemplatesSettings } from '@/pages/CRMTaskTemplatesSettings';
+import { CRMActions } from '@/pages/CRMActions';
+import { CRMExpedientes } from '@/pages/CRMExpedientes';
 
 function App() {
   return (
@@ -40,6 +50,28 @@ function App() {
           {/* CRM routes - Simplificado (solo leads) */}
           <Route path="/admin/crm" element={<CRMDashboard />} />
           <Route path="/admin/crm/leads" element={<CRMLeads />} />
+          
+          {/* CRM Dashboard - Nuevo dashboard completo */}
+          <Route path="/crm" element={<CRMDashboardPage />} />
+          
+          {/* CRM Contacts */}
+          <Route path="/crm/contacts" element={<CRMContactList />} />
+          <Route path="/crm/contacts/:id" element={<CRMContactDetail />} />
+          
+          {/* CRM Leads */}
+          <Route path="/crm/leads" element={<CRMLeadList />} />
+          <Route path="/crm/leads/:id" element={<CRMLeadDetail />} />
+          
+          {/* CRM Calendar */}
+          <Route path="/crm/calendar" element={<CRMTaskCalendar />} />
+          
+          {/* CRM Actions & Expedientes */}
+          <Route path="/crm/actions" element={<CRMActions />} />
+          <Route path="/crm/expedientes" element={<CRMExpedientes />} />
+          
+          {/* CRM Settings */}
+          <Route path="/crm/settings" element={<CRMSettings />} />
+          <Route path="/crm/settings/task-templates" element={<CRMTaskTemplatesSettings />} />
           
           {/* Client login (futuro) */}
           <Route path="/login" element={<Login />} />

@@ -39,10 +39,13 @@ export function TaskForm({
   const [formData, setFormData] = useState({
     text: task?.text || '',
     task_type: task?.task_type || 'call',
-    entity_type: task?.entity_type || defaultEntityType || 'lead',
-    entity_id: task?.entity_id || defaultEntityId || 0,
-    responsible_user_id: task?.responsible_user_id || 0,
-    due_date: task?.due_date ? new Date(task.due_date).toISOString().slice(0, 16) : getDefaultDueDate(),
+    entity_type: task?.entity_type || defaultEntityType || 'leads',
+    entity_id: task?.entity_id || defaultEntityId || '',
+    responsible_user_id: task?.responsible_user_id || '',
+    complete_till: task?.complete_till 
+      ? new Date(task.complete_till).toISOString().slice(0, 16) 
+      : getDefaultDueDate(),
+    task_template_id: task?.task_template_id || '',
     result_text: task?.result_text || '',
   });
 
@@ -69,11 +72,21 @@ export function TaskForm({
     setLoading(true);
 
     try {
-      // Convertir fecha a ISO string completo
-      const submitData = {
-        ...formData,
-        due_date: new Date(formData.due_date).toISOString(),
+      // Convertir fecha a ISO string completo y normalizar entity_type
+      const submitData: any = {
+        text: formData.text,
+        task_type: formData.task_type,
+        entity_type: formData.entity_type === 'contact' ? 'contacts' : 
+                     formData.entity_type === 'lead' ? 'leads' : 
+                     formData.entity_type,
+        entity_id: formData.entity_id,
+        responsible_user_id: formData.responsible_user_id,
+        complete_till: new Date(formData.complete_till).toISOString(),
       };
+      
+      if (formData.task_template_id) {
+        submitData.task_template_id = formData.task_template_id;
+      }
       
       await onSubmit(submitData);
     } catch (err) {
@@ -154,7 +167,7 @@ export function TaskForm({
               >
                 <option value="">Seleccionar...</option>
                 {users.map(user => (
-                  <option key={user.id} value={user.id}>
+                  <option key={user.id} value={String(user.id)}>
                     {user.name}
                   </option>
                 ))}
@@ -163,14 +176,14 @@ export function TaskForm({
 
             {/* Fecha de vencimiento */}
             <div>
-              <Label htmlFor="due_date">
+              <Label htmlFor="complete_till">
                 Fecha de Vencimiento <span className="text-red-500">*</span>
               </Label>
               <Input
-                id="due_date"
+                id="complete_till"
                 type="datetime-local"
-                value={formData.due_date}
-                onChange={(e) => handleChange('due_date', e.target.value)}
+                value={formData.complete_till}
+                onChange={(e) => handleChange('complete_till', e.target.value)}
                 required
               />
             </div>
@@ -188,9 +201,8 @@ export function TaskForm({
                 required
                 disabled={!!defaultEntityType}
               >
-                <option value="lead">Lead</option>
-                <option value="contact">Contacto</option>
-                <option value="company">Empresa</option>
+                <option value="leads">Lead</option>
+                <option value="contacts">Contacto</option>
               </select>
             </div>
 
@@ -198,15 +210,15 @@ export function TaskForm({
             {!defaultEntityId && (
               <div className="md:col-span-2">
                 <Label htmlFor="entity_id">
-                  ID de {formData.entity_type === 'lead' ? 'Lead' : formData.entity_type === 'contact' ? 'Contacto' : 'Empresa'}
+                  ID de {formData.entity_type === 'leads' ? 'Lead' : 'Contacto'}
                   <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="entity_id"
-                  type="number"
+                  type="text"
                   value={formData.entity_id}
-                  onChange={(e) => handleChange('entity_id', parseInt(e.target.value))}
-                  placeholder="ID"
+                  onChange={(e) => handleChange('entity_id', e.target.value)}
+                  placeholder="UUID"
                   required
                 />
               </div>

@@ -20,6 +20,7 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
   const [loading, setLoading] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [formData, setFormData] = useState({
+    name: contact?.name || '',
     first_name: contact?.first_name || '',
     last_name: contact?.last_name || '',
     email: contact?.email || '',
@@ -27,10 +28,24 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
     mobile: contact?.mobile || '',
     address: contact?.address || '',
     city: contact?.city || '',
+    state: contact?.state || '',
+    postal_code: contact?.postal_code || '',
     country: contact?.country || 'España',
+    company: contact?.company || '',
     company_id: contact?.company_id || undefined,
     position: contact?.position || '',
     notes: contact?.notes || '',
+    // Campos Migro específicos
+    grading_llamada: contact?.grading_llamada || '',
+    grading_situacion: contact?.grading_situacion || '',
+    nacionalidad: contact?.nacionalidad || '',
+    tiempo_espana: contact?.tiempo_espana || '',
+    empadronado: contact?.empadronado ?? undefined,
+    lugar_residencia: contact?.lugar_residencia || '',
+    tiene_ingresos: contact?.tiene_ingresos ?? undefined,
+    trabaja_b: contact?.trabaja_b ?? undefined,
+    edad: contact?.edad || '',
+    tiene_familiares_espana: contact?.tiene_familiares_espana ?? undefined,
   });
 
   useEffect(() => {
@@ -73,17 +88,28 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Nombre completo (requerido) */}
+            <div>
+              <Label htmlFor="name">
+                Nombre Completo <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                placeholder="Juan Pérez"
+                required
+              />
+            </div>
+
             {/* Nombre */}
             <div>
-              <Label htmlFor="first_name">
-                Nombre <span className="text-red-500">*</span>
-              </Label>
+              <Label htmlFor="first_name">Nombre</Label>
               <Input
                 id="first_name"
                 value={formData.first_name}
                 onChange={(e) => handleChange('first_name', e.target.value)}
                 placeholder="Juan"
-                required
               />
             </div>
 
@@ -206,6 +232,128 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
                 placeholder="Información adicional sobre el contacto..."
                 rows={4}
               />
+            </div>
+          </div>
+
+          {/* Campos Migro Específicos */}
+          <div className="border-t pt-6 mt-6">
+            <h3 className="text-lg font-semibold mb-4">Información Migro</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Grading Llamada */}
+              <div>
+                <Label htmlFor="grading_llamada">Grading Llamada</Label>
+                <select
+                  id="grading_llamada"
+                  value={formData.grading_llamada}
+                  onChange={(e) => handleChange('grading_llamada', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Seleccionar...</option>
+                  <option value="A">A</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="C">C</option>
+                </select>
+              </div>
+
+              {/* Grading Situación */}
+              <div>
+                <Label htmlFor="grading_situacion">Grading Situación</Label>
+                <select
+                  id="grading_situacion"
+                  value={formData.grading_situacion}
+                  onChange={(e) => handleChange('grading_situacion', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Seleccionar...</option>
+                  <option value="A">A</option>
+                  <option value="B+">B+</option>
+                  <option value="B-">B-</option>
+                  <option value="C">C</option>
+                </select>
+              </div>
+
+              {/* Nacionalidad */}
+              <div>
+                <Label htmlFor="nacionalidad">Nacionalidad</Label>
+                <Input
+                  id="nacionalidad"
+                  value={formData.nacionalidad}
+                  onChange={(e) => handleChange('nacionalidad', e.target.value)}
+                  placeholder="España"
+                />
+              </div>
+
+              {/* Tiempo en España */}
+              <div>
+                <Label htmlFor="tiempo_espana">Tiempo en España</Label>
+                <Input
+                  id="tiempo_espana"
+                  value={formData.tiempo_espana}
+                  onChange={(e) => handleChange('tiempo_espana', e.target.value)}
+                  placeholder="2 años"
+                />
+              </div>
+
+              {/* Edad */}
+              <div>
+                <Label htmlFor="edad">Edad</Label>
+                <Input
+                  id="edad"
+                  type="number"
+                  value={formData.edad}
+                  onChange={(e) => handleChange('edad', e.target.value ? parseInt(e.target.value) : '')}
+                  placeholder="30"
+                  min="0"
+                />
+              </div>
+
+              {/* Lugar de Residencia */}
+              <div>
+                <Label htmlFor="lugar_residencia">Lugar de Residencia</Label>
+                <Input
+                  id="lugar_residencia"
+                  value={formData.lugar_residencia}
+                  onChange={(e) => handleChange('lugar_residencia', e.target.value)}
+                  placeholder="Madrid"
+                />
+              </div>
+
+              {/* Checkboxes */}
+              <div className="md:col-span-2 space-y-2">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.empadronado ?? false}
+                    onChange={(e) => handleChange('empadronado', e.target.checked || undefined)}
+                  />
+                  <span>Empadronado</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.tiene_ingresos ?? false}
+                    onChange={(e) => handleChange('tiene_ingresos', e.target.checked || undefined)}
+                  />
+                  <span>Tiene Ingresos</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.trabaja_b ?? false}
+                    onChange={(e) => handleChange('trabaja_b', e.target.checked || undefined)}
+                  />
+                  <span>Trabaja en B (trabajo en negro)</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.tiene_familiares_espana ?? false}
+                    onChange={(e) => handleChange('tiene_familiares_espana', e.target.checked || undefined)}
+                  />
+                  <span>Tiene Familiares en España</span>
+                </label>
+              </div>
             </div>
           </div>
 
