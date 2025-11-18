@@ -50,7 +50,7 @@ export function CRMTasks() {
     }
   };
 
-  const handleCompleteTask = async (taskId: number) => {
+  const handleCompleteTask = async (taskId: string) => {
     try {
       await crmService.completeTask(taskId);
       await loadData();
@@ -72,7 +72,8 @@ export function CRMTasks() {
     }
   };
 
-  const formatDate = (dateString: string): string => {
+  const formatDate = (dateString: string | undefined): string => {
+    if (!dateString) return 'Sin fecha';
     const date = new Date(dateString);
     const now = new Date();
     const diff = date.getTime() - now.getTime();
@@ -84,7 +85,8 @@ export function CRMTasks() {
     return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
   };
 
-  const isOverdue = (dueDate: string): boolean => {
+  const isOverdue = (dueDate: string | undefined): boolean => {
+    if (!dueDate) return false;
     return new Date(dueDate) < new Date();
   };
 
@@ -94,9 +96,10 @@ export function CRMTasks() {
     const overdue: Task[] = [];
 
     tasks.forEach(task => {
-      if (isOverdue(task.due_date) && !task.is_completed) {
+      const dueDate = task.complete_till || task.due_date;
+      if (isOverdue(dueDate) && !task.is_completed) {
         overdue.push(task);
-      } else if (formatDate(task.due_date) === 'Hoy') {
+      } else if (formatDate(dueDate) === 'Hoy') {
         today.push(task);
       } else {
         upcoming.push(task);
@@ -190,7 +193,7 @@ export function CRMTasks() {
                               <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
                                 <span className="flex items-center gap-1">
                                   <Clock size={14} />
-                                  {formatDate(task.due_date)}
+                                  {formatDate(task.complete_till || task.due_date)}
                                 </span>
                                 <span>{task.task_type}</span>
                                 <span>{task.entity_type} #{task.entity_id}</span>
@@ -275,7 +278,7 @@ export function CRMTasks() {
                               <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
                                 <span className="flex items-center gap-1">
                                   <Calendar size={14} />
-                                  {formatDate(task.due_date)}
+                                  {formatDate(task.complete_till || task.due_date)}
                                 </span>
                                 <span>{task.task_type}</span>
                                 <span>{task.entity_type} #{task.entity_id}</span>

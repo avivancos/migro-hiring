@@ -46,12 +46,12 @@ export function ContactDetail() {
     setLoading(true);
     try {
       const [contactData, leadsResponse] = await Promise.all([
-        crmService.getContact(parseInt(id)),
-        crmService.getLeads({ contact_id: parseInt(id) }),
+        crmService.getContact(id),
+        crmService.getLeads({ contact_id: id }),
       ]);
 
       setContact(contactData);
-      setRelatedLeads(leadsResponse._embedded.leads);
+      setRelatedLeads(leadsResponse.items || []);
     } catch (err) {
       console.error('Error loading contact:', err);
     } finally {
@@ -183,7 +183,11 @@ export function ContactDetail() {
                     <Building2 className="text-gray-400 mt-1" size={18} />
                     <div>
                       <p className="text-sm text-gray-500">Empresa</p>
-                      <p className="text-gray-900">{contact.company.name}</p>
+                      <p className="text-gray-900">
+                        {typeof contact.company === 'string' 
+                          ? contact.company 
+                          : contact.company.name}
+                      </p>
                     </div>
                   </div>
                 )}
@@ -239,9 +243,9 @@ export function ContactDetail() {
                       <p className="font-medium text-gray-900 text-sm">
                         {lead.name}
                       </p>
-                      {lead.status && (
+                      {lead.pipeline_status && (
                         <p className="text-xs text-gray-500 mt-1">
-                          {lead.status.name}
+                          {lead.pipeline_status.name}
                         </p>
                       )}
                       {lead.price && (
@@ -261,8 +265,8 @@ export function ContactDetail() {
 
           {/* Activity and Calls */}
           <div className="lg:col-span-2 space-y-6">
-            <CallHistory entityType="contact" entityId={parseInt(id!)} />
-            <ActivityTimeline entityType="contact" entityId={parseInt(id!)} />
+            <CallHistory entityType="contact" entityId={id!} />
+            <ActivityTimeline entityType="contact" entityId={id!} />
           </div>
         </div>
       </div>

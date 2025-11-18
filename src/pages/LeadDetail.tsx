@@ -46,7 +46,7 @@ export function LeadDetail() {
 
     setLoading(true);
     try {
-      const leadData = await crmService.getLead(parseInt(id));
+      const leadData = await crmService.getLead(id);
       setLead(leadData);
     } catch (err) {
       console.error('Error loading lead:', err);
@@ -150,7 +150,7 @@ export function LeadDetail() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{lead.name}</h1>
               <p className="text-gray-600 mt-1">
-                {lead.service_type || 'Sin servicio'} • {lead.status?.name || 'Sin estado'}
+                {lead.service_type || 'Sin servicio'} • {lead.pipeline_status?.name || lead.status || 'Sin estado'}
               </p>
             </div>
           </div>

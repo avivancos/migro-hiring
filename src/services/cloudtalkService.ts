@@ -1,6 +1,6 @@
 // CloudTalk Service - Integration with CloudTalk API
 
-import type { CallCreateRequest } from '@/types/crm';
+import type { CallCreateRequest, Call } from '@/types/crm';
 import { crmService } from './crmService';
 
 export const cloudtalkService = {
@@ -33,9 +33,9 @@ export const cloudtalkService = {
     try {
       // Esta función debería llamar a la API de CloudTalk si tienes acceso directo
       // Por ahora, la grabación se guarda cuando CloudTalk envía el webhook
-      const call = await crmService.getCalls({ entity_type: 'lead' });
-      const matchingCall = call.find(c => c.cloudtalk_id === callId);
-      return matchingCall?.recording_url || null;
+      const callsResponse = await crmService.getCalls({ entity_type: 'lead' });
+      const matchingCall = callsResponse.items.find((c: Call) => c.cloudtalk_id === callId);
+      return matchingCall?.recording_url || matchingCall?.record_url || null;
     } catch (error) {
       console.error('Error obteniendo grabación:', error);
       return null;

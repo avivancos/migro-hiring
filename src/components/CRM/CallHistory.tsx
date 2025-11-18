@@ -18,7 +18,7 @@ import {
 
 interface CallHistoryProps {
   entityType: 'lead' | 'contact';
-  entityId: number;
+  entityId: string;
 }
 
 export function CallHistory({ entityType, entityId }: CallHistoryProps) {
