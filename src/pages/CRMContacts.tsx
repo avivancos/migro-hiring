@@ -27,7 +27,7 @@ export function CRMContacts() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filters, setFilters] = useState<ContactFilters>({
-    page: 1,
+    skip: 0,
     limit: 20,
   });
   const [showFilters, setShowFilters] = useState(false);
@@ -45,9 +45,10 @@ export function CRMContacts() {
     setLoading(true);
     try {
       const response = await crmService.getContacts(filters);
-      setContacts(response._embedded.contacts);
-      setPage(response._page.page);
-      setTotalPages(Math.ceil(response._page.total / response._page.limit));
+      setContacts(response.items || []);
+      const currentPage = Math.floor((response.skip || 0) / (response.limit || 20)) + 1;
+      setPage(currentPage);
+      setTotalPages(Math.ceil((response.total || 0) / (response.limit || 20)));
     } catch (err) {
       console.error('Error loading contacts:', err);
     } finally {
@@ -56,7 +57,7 @@ export function CRMContacts() {
   };
 
   const handleSearch = (query: string) => {
-    setFilters({ ...filters, query, page: 1 });
+      setFilters({ ...filters, name: query, skip: 0 });
   };
 
   return (
@@ -201,7 +202,7 @@ export function CRMContacts() {
             {totalPages > 1 && (
               <div className="flex justify-center gap-2 mt-6">
                 <Button
-                  onClick={() => setFilters({ ...filters, page: page - 1 })}
+                  onClick={() => setFilters({ ...filters, skip: Math.max(0, (page - 2) * (filters.limit || 20)) })}
                   disabled={page === 1}
                   variant="outline"
                 >
@@ -211,7 +212,7 @@ export function CRMContacts() {
                   Página {page} de {totalPages}
                 </span>
                 <Button
-                  onClick={() => setFilters({ ...filters, page: page + 1 })}
+                  onClick={() => setFilters({ ...filters, skip: page * (filters.limit || 20) })}
                   disabled={page === totalPages}
                   variant="outline"
                 >

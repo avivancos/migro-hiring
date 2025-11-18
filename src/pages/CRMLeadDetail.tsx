@@ -32,9 +32,9 @@ export function CRMLeadDetail() {
     try {
       const [leadData, tasksData, callsData, notesData] = await Promise.all([
         crmService.getLead(id),
-        crmService.getContactTasks(id, { entity_type: 'leads', limit: 50 }),
-        crmService.getContactCalls(id, { entity_type: 'leads', limit: 50 }),
-        crmService.getContactNotes(id, { entity_type: 'leads', limit: 50 }),
+        crmService.getTasks({ entity_id: id, entity_type: 'leads', limit: 50 }),
+        crmService.getCalls({ entity_id: id, entity_type: 'leads', limit: 50 }),
+        crmService.getNotes({ entity_id: id, entity_type: 'leads', limit: 50 }),
       ]);
       setLead(leadData);
       setTasks(tasksData.items || []);

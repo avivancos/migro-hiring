@@ -47,10 +47,11 @@ export function PipelineKanban({ pipelineId, onLeadClick }: PipelineKanbanProps)
       });
 
       // Agrupar leads por stage
-      const grouped: Record<number, KommoLead[]> = {};
+      const grouped: Record<string, KommoLead[]> = {};
       stagesData.forEach(stage => {
-        grouped[stage.id] = leadsResponse._embedded.leads.filter(
-          lead => lead.status_id === stage.id
+        grouped[stage.id] = (leadsResponse.items || []).filter(
+          lead => lead.status === stage.name?.toLowerCase() || 
+                  String(lead.status_id) === String(stage.id)
         );
       });
 
@@ -70,28 +71,35 @@ export function PipelineKanban({ pipelineId, onLeadClick }: PipelineKanbanProps)
     e.preventDefault();
   };
 
-  const handleDrop = async (targetStatusId: number) => {
-    if (!draggedLead || draggedLead.status_id === targetStatusId) {
+  const handleDrop = async (targetStatusId: string) => {
+    if (!draggedLead || String(draggedLead.status_id) === String(targetStatusId)) {
       setDraggedLead(null);
       return;
     }
 
     try {
+      // Encontrar el stage target para obtener el nombre del status
+      const targetStage = stages.find(s => s.id === targetStatusId);
+      const newStatus = targetStage?.name?.toLowerCase() || draggedLead.status;
+
       // Actualizar lead en backend
       await crmService.updateLead(draggedLead.id, {
-        status_id: targetStatusId,
+        status: newStatus,
       });
 
       // Actualizar UI localmente
       const newLeadsByStage = { ...leadsByStage };
+      const oldStatusId = String(draggedLead.status_id || '');
       
       // Remover del stage anterior
-      newLeadsByStage[draggedLead.status_id] = newLeadsByStage[draggedLead.status_id].filter(
-        l => l.id !== draggedLead.id
-      );
+      if (newLeadsByStage[oldStatusId]) {
+        newLeadsByStage[oldStatusId] = newLeadsByStage[oldStatusId].filter(
+          l => l.id !== draggedLead.id
+        );
+      }
 
       // Agregar al nuevo stage
-      const updatedLead = { ...draggedLead, status_id: targetStatusId };
+      const updatedLead = { ...draggedLead, status: newStatus, status_id: targetStatusId };
       newLeadsByStage[targetStatusId] = [...(newLeadsByStage[targetStatusId] || []), updatedLead];
 
       setLeadsByStage(newLeadsByStage);

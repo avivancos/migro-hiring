@@ -2,23 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   FileText, 
   Search, 
-  Filter, 
   Calendar, 
   User, 
   DollarSign,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  Phone,
-  Mail
+  Clock
 } from 'lucide-react';
 import type { KommoLead, KommoContact, Task, Call, Note } from '@/types/crm';
 import { crmService } from '@/services/crmService';
@@ -41,7 +35,6 @@ export function CRMExpedientes() {
   const [filteredExpedientes, setFilteredExpedientes] = useState<ExpedienteData[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [view, setView] = useState<'list' | 'kanban'>('list');
 
   useEffect(() => {
     loadExpedientes();
@@ -61,9 +54,9 @@ export function CRMExpedientes() {
         if (lead.status === 'lost') continue; // Excluir leads perdidos
 
         const [tasks, calls, notes] = await Promise.all([
-          crmService.getContactTasks(lead.id, { entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
-          crmService.getContactCalls(lead.id, { entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
-          crmService.getContactNotes(lead.id, { entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
+          crmService.getTasks({ entity_id: lead.id, entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
+          crmService.getCalls({ entity_id: lead.id, entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
+          crmService.getNotes({ entity_id: lead.id, entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
         ]);
 
         // Determinar estado del expediente

@@ -38,7 +38,7 @@ export interface KommoLead {
   // Embedded relations
   contact?: KommoContact;
   company?: KommoCompany;
-  status?: PipelineStatus;
+  pipeline_status?: PipelineStatus; // Renombrado para evitar conflicto con status: string
   responsible_user?: CRMUser;
   _embedded?: {
     tags?: Tag[];
@@ -60,7 +60,7 @@ export interface KommoContact {
   state?: string;
   postal_code?: string;
   country?: string;
-  company?: string;
+  company_name?: string; // Renombrado para evitar conflicto con company?: KommoCompany
   position?: string;
   
   company_id?: string; // UUID
@@ -458,12 +458,14 @@ export interface ContactFilters {
   skip?: number;
   limit?: number;
   name?: string; // Búsqueda parcial por nombre
+  search?: string; // Búsqueda general (nombre, email, teléfono)
   email?: string;
   phone?: string;
   nacionalidad?: string;
   grading_llamada?: 'A' | 'B+' | 'B-' | 'C';
   grading_situacion?: 'A' | 'B+' | 'B-' | 'C';
   responsible_user_id?: string; // UUID
+  company_id?: string; // UUID
   sort_by?: string; // 'name', 'created_at', 'grading_llamada'
   sort_order?: 'asc' | 'desc';
   // Campos adicionales opcionales
@@ -478,7 +480,7 @@ export interface TaskFilters {
   task_type?: string; // 'call', 'meeting', 'email', 'reminder'
   is_completed?: boolean;
   entity_id?: string; // UUID
-  entity_type?: string; // 'contacts', 'leads'
+  entity_type?: 'contacts' | 'leads' | 'companies' | string; // 'contacts', 'leads'
   responsible_user_id?: string; // UUID
   complete_till_from?: string; // ISO datetime
   complete_till_to?: string; // ISO datetime

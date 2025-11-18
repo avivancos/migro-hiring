@@ -24,7 +24,7 @@ interface CallHistoryProps {
 export function CallHistory({ entityType, entityId }: CallHistoryProps) {
   const [calls, setCalls] = useState<Call[]>([]);
   const [loading, setLoading] = useState(true);
-  const [playingCallId, setPlayingCallId] = useState<number | null>(null);
+  const [playingCallId, setPlayingCallId] = useState<string | null>(null);
 
   useEffect(() => {
     loadCalls();
@@ -37,7 +37,7 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
         entity_type: entityType,
         entity_id: entityId,
       });
-      setCalls(callsData);
+      setCalls(callsData.items || []);
     } catch (err) {
       console.error('Error loading calls:', err);
     } finally {

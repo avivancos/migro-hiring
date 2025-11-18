@@ -38,11 +38,11 @@ export function CRMTasks() {
     try {
       const tasksResponse = await crmService.getTasks({
         is_completed: filter === 'pending' ? false : filter === 'completed' ? true : undefined,
-        page: 1,
+        skip: 0,
         limit: 100,
       });
       
-      setTasks(tasksResponse._embedded.tasks);
+      setTasks(tasksResponse.items || []);
     } catch (err) {
       console.error('Error loading tasks:', err);
     } finally {

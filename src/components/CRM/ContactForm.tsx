@@ -55,7 +55,7 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
   const loadCompanies = async () => {
     try {
       const response = await crmService.getCompanies({ limit: 100 });
-      setCompanies(response._embedded.companies);
+      setCompanies(response.items || []);
     } catch (err) {
       console.error('Error loading companies:', err);
     }

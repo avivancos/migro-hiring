@@ -16,7 +16,7 @@ import {
 
 interface ActivityTimelineProps {
   entityType: 'lead' | 'contact' | 'company';
-  entityId: number;
+  entityId: string;
 }
 
 export function ActivityTimeline({ entityType, entityId }: ActivityTimelineProps) {
@@ -32,8 +32,8 @@ export function ActivityTimeline({ entityType, entityId }: ActivityTimelineProps
   const loadNotes = async () => {
     setLoading(true);
     try {
-      const notesData = await crmService.getNotes(entityType, entityId);
-      setNotes(notesData);
+      const notesData = await crmService.getNotes({ entity_type: entityType, entity_id: entityId, limit: 50 });
+      setNotes(notesData.items || []);
     } catch (err) {
       console.error('Error loading notes:', err);
     } finally {
