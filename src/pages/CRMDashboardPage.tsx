@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { adminService } from '@/services/adminService';
 import { crmService } from '@/services/crmService';
-import type { KommoLead, PipelineStatus, DashboardStats, Pipeline } from '@/types/crm';
+import type { KommoLead, PipelineStatus, DashboardStats } from '@/types/crm';
 import {
   Users,
   LogOut,
@@ -253,7 +253,7 @@ export function CRMDashboardPage() {
   const [leads, setLeads] = useState<KommoLead[]>([]);
   const [stats, setStats] = useState<DashboardStats>(mockStats);
   const [stages, setStages] = useState<PipelineStatus[]>([]);
-  const [pipelines, setPipelines] = useState<Pipeline[]>([]);
+  // const [pipelines, setPipelines] = useState<Pipeline[]>([]); // No usado actualmente
   const user = adminService.getUser();
 
   useEffect(() => {

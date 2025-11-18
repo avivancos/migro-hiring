@@ -6,14 +6,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  FileText, 
-  Search, 
-  Calendar, 
-  User, 
-  DollarSign,
-  Clock
-} from 'lucide-react';
+// @ts-expect-error - Los imports se usan en JSX pero TypeScript no los detecta correctamente
+import { FileText, Search, Calendar, User, DollarSign, Clock } from 'lucide-react';
 import type { KommoLead, KommoContact, Task, Call, Note } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 

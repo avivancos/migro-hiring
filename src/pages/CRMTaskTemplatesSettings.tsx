@@ -65,7 +65,6 @@ export function CRMTaskTemplatesSettings() {
     }
   };
 
-
   if (loading) {
     return (
       <div className="p-6">

@@ -8,7 +8,7 @@ import { crmService } from '@/services/crmService';
 import { DollarSign, User, Calendar, Phone } from 'lucide-react';
 
 interface PipelineKanbanProps {
-  pipelineId?: number;
+  pipelineId?: string;
   onLeadClick?: (lead: KommoLead) => void;
 }
 
@@ -16,7 +16,7 @@ export function PipelineKanban({ pipelineId, onLeadClick }: PipelineKanbanProps)
   const [loading, setLoading] = useState(true);
   const [pipeline, setPipeline] = useState<Pipeline | null>(null);
   const [stages, setStages] = useState<PipelineStatus[]>([]);
-  const [leadsByStage, setLeadsByStage] = useState<Record<number, KommoLead[]>>({});
+  const [leadsByStage, setLeadsByStage] = useState<Record<string, KommoLead[]>>({});
   const [draggedLead, setDraggedLead] = useState<KommoLead | null>(null);
 
   useEffect(() => {
@@ -119,7 +119,7 @@ export function PipelineKanban({ pipelineId, onLeadClick }: PipelineKanbanProps)
     }).format(amount);
   };
 
-  const getStageTotal = (stageId: number): number => {
+  const getStageTotal = (stageId: string): number => {
     return (leadsByStage[stageId] || []).reduce((sum, lead) => sum + (lead.price || 0), 0);
   };
 

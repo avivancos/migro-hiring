@@ -20,9 +20,9 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
     name: lead?.name || '',
     price: lead?.price || 0,
     currency: lead?.currency || 'EUR',
-    pipeline_id: lead?.pipeline_id || 1,
-    status_id: lead?.status_id || 1,
-    responsible_user_id: lead?.responsible_user_id || 1,
+    status: lead?.status || 'new',
+    pipeline_id: lead?.pipeline_id || '1',
+    responsible_user_id: lead?.responsible_user_id || '1',
     priority: lead?.priority || 'medium',
     service_type: lead?.service_type || '',
     service_description: lead?.service_description || '',
@@ -39,11 +39,11 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
       const savedLead: KommoLead = {
         ...lead!,
         ...formData,
-        id: lead?.id || Date.now(),
+        id: lead?.id || String(Date.now()),
         created_at: lead?.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        created_by: lead?.created_by || 1,
-        updated_by: lead?.updated_by || 1,
+        created_by: lead?.created_by || '1',
+        updated_by: lead?.updated_by || '1',
         is_deleted: false,
       };
       onSave(savedLead);
@@ -128,9 +128,8 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
               <Label htmlFor="responsible_user_id">Responsable</Label>
               <Input
                 id="responsible_user_id"
-                type="number"
                 value={formData.responsible_user_id}
-                onChange={(e) => setFormData({ ...formData, responsible_user_id: parseInt(e.target.value) })}
+                onChange={(e) => setFormData({ ...formData, responsible_user_id: e.target.value })}
                 placeholder="ID del responsable"
                 required
               />

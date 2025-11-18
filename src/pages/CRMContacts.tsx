@@ -119,7 +119,7 @@ export function CRMContacts() {
                   <Label>Empresa</Label>
                   <Input
                     placeholder="Filtrar por empresa..."
-                    onChange={(e) => setFilters({ ...filters, company_id: parseInt(e.target.value) || undefined })}
+                    onChange={(e) => setFilters({ ...filters, company_id: e.target.value || undefined })}
                   />
                 </div>
               </div>

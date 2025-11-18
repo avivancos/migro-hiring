@@ -86,7 +86,8 @@ export function CRMContactDetail() {
     }
   };
 
-  const formatDate = (dateString: string): string => {
+  const formatDate = (dateString: string | undefined): string => {
+    if (!dateString) return 'Sin fecha';
     return new Date(dateString).toLocaleDateString('es-ES', {
       day: '2-digit',
       month: 'short',
@@ -405,7 +406,7 @@ export function CRMContactDetail() {
                             </h4>
                           </div>
                           <p className="text-sm text-gray-600">
-                            {formatDate(task.due_date)}
+                            {formatDate(task.complete_till || task.due_date)}
                           </p>
                         </div>
                       </div>
