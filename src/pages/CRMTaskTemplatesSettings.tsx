@@ -65,15 +65,6 @@ export function CRMTaskTemplatesSettings() {
     }
   };
 
-  const handleReorder = async (newOrder: { id: string; sort_order: number }[]) => {
-    try {
-      await crmService.reorderTaskTemplates(newOrder);
-      await loadTemplates();
-    } catch (err) {
-      console.error('Error reordering templates:', err);
-      alert('Error al reordenar las plantillas');
-    }
-  };
 
   if (loading) {
     return (
@@ -120,7 +111,7 @@ export function CRMTaskTemplatesSettings() {
         <CardContent>
           {templates.length > 0 ? (
             <div className="space-y-3">
-              {templates.map((template, index) => (
+              {templates.map((template) => (
                 <div
                   key={template.id}
                   className="border rounded-lg p-4 flex justify-between items-start"

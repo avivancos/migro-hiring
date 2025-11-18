@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Edit, DollarSign, User, Calendar, Phone, Mail, MapPin, Building } from 'lucide-react';
+import { ArrowLeft, Edit, User, Phone } from 'lucide-react';
 import type { KommoLead, Task, Call, Note } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { LeadForm } from '@/components/CRM/LeadForm';
@@ -19,6 +19,7 @@ export function CRMLeadDetail() {
   const [calls, setCalls] = useState<Call[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [editing, setEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState('info');
 
   useEffect(() => {
     if (id) {
@@ -174,7 +175,7 @@ export function CRMLeadDetail() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="info" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="info">Información</TabsTrigger>
           <TabsTrigger value="tasks">Tareas ({tasks.length})</TabsTrigger>
