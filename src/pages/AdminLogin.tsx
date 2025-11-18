@@ -33,7 +33,8 @@ export function AdminLogin() {
       if (result.success && result.user) {
         // Verificar que el usuario sea admin
         if (result.user.is_admin || result.user.role === 'admin' || result.user.role === 'superuser') {
-          navigate('/admin/crm');
+          // Navegar al nuevo dashboard CRM
+          navigate('/crm');
         } else {
           setError('No tienes permisos de administrador');
           adminService.logout();
