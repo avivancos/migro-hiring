@@ -5,10 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// @ts-ignore - Los imports se usan en JSX pero TypeScript no los detecta (líneas 174, 230, 243, 249, 254, 264)
-import { FileText, Search, Calendar, User, DollarSign, Clock } from 'lucide-react';
+import { 
+  FileText, 
+  Search, 
+  Calendar, 
+  User, 
+  DollarSign,
+  Clock 
+} from 'lucide-react';
 import type { KommoLead, KommoContact, Task, Call, Note } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 
