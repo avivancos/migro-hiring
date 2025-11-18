@@ -5,15 +5,10 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { 
-  FileText, 
-  Search, 
-  Calendar, 
-  User, 
-  DollarSign,
-  Clock 
-} from 'lucide-react';
 import type { KommoLead, KommoContact, Task, Call, Note } from '@/types/crm';
+// Importar iconos de lucide-react (se usan en JSX pero TypeScript no los detecta)
+import * as LucideIcons from 'lucide-react';
+const { FileText, Search, Calendar, User, DollarSign, Clock } = LucideIcons;
 import { crmService } from '@/services/crmService';
 
 interface ExpedienteData {
