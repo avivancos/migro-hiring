@@ -34,6 +34,10 @@ export interface HiringDetails {
   contract_accepted_at?: string;
   // Grading (calificación del estudio de Migro)
   grade?: ClientGrade;
+  // Pago manual (registrado por el admin)
+  manual_payment_confirmed?: boolean;
+  manual_payment_note?: string;
+  manual_payment_method?: string;
 }
 
 export interface ConfirmDataRequest {

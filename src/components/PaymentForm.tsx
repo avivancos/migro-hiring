@@ -26,8 +26,13 @@ export function PaymentForm(props: PaymentFormProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
-  const [manualPaymentMode, setManualPaymentMode] = useState(false);
-  const [manualPaymentNote, setManualPaymentNote] = useState('');
+  
+  // Si el código viene con manual_payment_confirmed del backend, activar modo manual automáticamente
+  const adminManualPayment = props.hiringDetails?.manual_payment_confirmed || false;
+  const adminManualNote = props.hiringDetails?.manual_payment_note || '';
+  
+  const [manualPaymentMode, setManualPaymentMode] = useState(adminManualPayment);
+  const [manualPaymentNote, setManualPaymentNote] = useState(adminManualNote);
   const [manualProcessing, setManualProcessing] = useState(false);
   const [manualError, setManualError] = useState<string | null>(null);
   const [manualSuccess, setManualSuccess] = useState<string | null>(null);
@@ -157,72 +162,100 @@ export function PaymentForm(props: PaymentFormProps) {
     }
   };
 
-  const renderManualCard = () => (
-    <Card className="shadow-lg border border-yellow-200 bg-yellow-50">
-      <CardContent className="space-y-4">
-        <div className="flex items-start gap-3">
-          <Checkbox
-            id="manual-payment-toggle"
-            checked={manualPaymentMode}
-            onCheckedChange={(checked) => {
-              const isChecked = checked === true;
-              setManualPaymentMode(isChecked);
-              setManualError(null);
-              setManualSuccess(null);
-              if (!isChecked) {
-                setManualPaymentNote('');
-              }
-            }}
-          />
-          <div>
-            <p className="text-lg font-semibold text-gray-900">Pago ya abonado</p>
-            <p className="text-sm text-gray-600">
-              Activa esta opción si el cliente ya pagó por transferencia, efectivo u otro medio. Podrás describir la forma de pago y continuar directamente con la firma del contrato.
-            </p>
-          </div>
-        </div>
-
-        {manualPaymentMode && (
-          <div className="space-y-3">
-            <Label htmlFor="manualPaymentNote" className="text-sm font-semibold">
-              Nota de pago
-            </Label>
-            <Textarea
-              id="manualPaymentNote"
-              value={manualPaymentNote}
-              onChange={(e) => {
-                setManualPaymentNote(e.target.value);
-                setManualError(null);
-              }}
-              placeholder="Transferencia 24/11/2025 - Banco X - Referencia 123456"
-            />
-            {manualError && (
-              <p className="text-sm text-red-600">{manualError}</p>
-            )}
-            <Button
-              onClick={handleManualPayment}
-              disabled={manualProcessing || !manualPaymentNote.trim()}
-              className="w-full bg-primary hover:bg-primary-700 text-white"
-            >
-              {manualProcessing ? (
-                <>
-                  <Loader2 className="mr-2 animate-spin" size={16} />
-                  Registrando pago manual...
-                </>
-              ) : (
-                'Registrar pago manual y continuar'
-              )}
-            </Button>
-            {manualSuccess && (
-              <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
-                {manualSuccess}
+  const renderManualCard = () => {
+    // Si el pago manual fue confirmado por el admin, mostrarlo en modo lectura
+    if (adminManualPayment) {
+      return (
+        <Card className="shadow-lg border border-green-200 bg-green-50">
+          <CardContent className="space-y-4 pt-6">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="text-green-600 mt-1" size={24} />
+              <div className="flex-1">
+                <p className="text-lg font-semibold text-green-900">Pago ya registrado</p>
+                <p className="text-sm text-green-700 mt-1">
+                  El administrador confirmó que el pago ya se realizó. Puedes continuar directamente con la firma del contrato.
+                </p>
+                {adminManualNote && (
+                  <div className="mt-3 bg-white border border-green-200 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-gray-700 mb-1">Forma de pago registrada:</p>
+                    <p className="text-sm text-gray-900">{adminManualNote}</p>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+
+    // Si no, mostrar el control editable (solo para códigos antiguos o sin manual_payment_confirmed)
+    return (
+      <Card className="shadow-lg border border-yellow-200 bg-yellow-50">
+        <CardContent className="space-y-4">
+          <div className="flex items-start gap-3">
+            <Checkbox
+              id="manual-payment-toggle"
+              checked={manualPaymentMode}
+              onCheckedChange={(checked) => {
+                const isChecked = checked === true;
+                setManualPaymentMode(isChecked);
+                setManualError(null);
+                setManualSuccess(null);
+                if (!isChecked) {
+                  setManualPaymentNote('');
+                }
+              }}
+            />
+            <div>
+              <p className="text-lg font-semibold text-gray-900">Pago ya abonado</p>
+              <p className="text-sm text-gray-600">
+                Activa esta opción si el cliente ya pagó por transferencia, efectivo u otro medio. Podrás describir la forma de pago y continuar directamente con la firma del contrato.
+              </p>
+            </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
-  );
+
+          {manualPaymentMode && (
+            <div className="space-y-3">
+              <Label htmlFor="manualPaymentNote" className="text-sm font-semibold">
+                Nota de pago
+              </Label>
+              <Textarea
+                id="manualPaymentNote"
+                value={manualPaymentNote}
+                onChange={(e) => {
+                  setManualPaymentNote(e.target.value);
+                  setManualError(null);
+                }}
+                placeholder="Transferencia 24/11/2025 - Banco X - Referencia 123456"
+              />
+              {manualError && (
+                <p className="text-sm text-red-600">{manualError}</p>
+              )}
+              <Button
+                onClick={handleManualPayment}
+                disabled={manualProcessing || !manualPaymentNote.trim()}
+                className="w-full bg-primary hover:bg-primary-700 text-white"
+              >
+                {manualProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 animate-spin" size={16} />
+                    Registrando pago manual...
+                  </>
+                ) : (
+                  'Registrar pago manual y continuar'
+                )}
+              </Button>
+              {manualSuccess && (
+                <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
+                  {manualSuccess}
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
 
   const manualCard = renderManualCard();
 
@@ -230,14 +263,36 @@ export function PaymentForm(props: PaymentFormProps) {
 
   if (manualPaymentMode) {
     mainContent = (
-      <Card className="border border-yellow-200 bg-yellow-50 shadow-lg">
-        <CardContent>
-          <p className="text-sm text-yellow-900">
-            Al registrar el pago manual, se omitirá Stripe y se continuará directamente con la generación y firma del contrato.
-          </p>
-          <p className="text-xs text-yellow-700">
-            Puedes desactivar esta opción en cualquier momento para volver a usar Stripe.
-          </p>
+      <Card className="border border-green-200 bg-green-50 shadow-lg">
+        <CardContent className="pt-6">
+          {adminManualPayment ? (
+            <>
+              <p className="text-sm text-green-900 mb-2">
+                El administrador confirmó que el pago ya fue realizado. No necesitas utilizar Stripe.
+              </p>
+              <p className="text-xs text-green-700">
+                Puedes continuar directamente con la firma del contrato haciendo clic en el botón de abajo.
+              </p>
+              <div className="mt-4">
+                <Button
+                  onClick={() => props.onSuccess()}
+                  className="w-full bg-primary hover:bg-primary-700 text-white"
+                >
+                  <CheckCircle2 className="mr-2" size={18} />
+                  Continuar con la firma del contrato
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-yellow-900">
+                Al registrar el pago manual, se omitirá Stripe y se continuará directamente con la generación y firma del contrato.
+              </p>
+              <p className="text-xs text-yellow-700">
+                Puedes desactivar esta opción en cualquier momento para volver a usar Stripe.
+              </p>
+            </>
+          )}
         </CardContent>
       </Card>
     );

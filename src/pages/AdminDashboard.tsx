@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { adminService } from '@/services/adminService';
 import { GRADE_PRICING, GRADE_DESCRIPTIONS, type ClientGrade } from '@/types/admin';
 import { UserPlus, LogOut, CheckCircle, Copy, AlertCircle } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 
 export function AdminDashboard() {
   const navigate = useNavigate();
@@ -30,6 +32,8 @@ export function AdminDashboard() {
   const [serviceName, setServiceName] = useState('Residencia Legal en España');
   const [serviceDescription, setServiceDescription] = useState('Tramitación de expediente para obtención de residencia legal');
   const [grade, setGrade] = useState<ClientGrade>('B');
+  const [manualPaymentMode, setManualPaymentMode] = useState(false);
+  const [manualPaymentNote, setManualPaymentNote] = useState('');
 
   useEffect(() => {
     // Check authentication
@@ -62,6 +66,11 @@ export function AdminDashboard() {
       return;
     }
 
+    if (manualPaymentMode && !manualPaymentNote.trim()) {
+      setError('Debes describir cómo se realizó el pago previo');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setSuccess(null);
@@ -88,6 +97,10 @@ export function AdminDashboard() {
         client_city: userCity || undefined,
         client_province: userProvince || undefined,
         client_postal_code: userPostalCode || undefined,
+        // Pago manual (si el admin lo marca)
+        manual_payment_confirmed: manualPaymentMode,
+        manual_payment_note: manualPaymentMode ? manualPaymentNote : undefined,
+        manual_payment_method: manualPaymentMode ? `Pago previo registrado: ${manualPaymentNote}` : undefined,
       };
 
       console.log('📤 REQUEST COMPLETO A ENVIAR:', JSON.stringify(requestBody, null, 2));
@@ -133,6 +146,8 @@ export function AdminDashboard() {
       setUserProvince('');
       setUserPostalCode('');
       setGrade('B');
+      setManualPaymentMode(false);
+      setManualPaymentNote('');
     } catch (err: any) {
       setError(err.message || 'Error al crear el código de contratación');
     } finally {
@@ -427,6 +442,56 @@ export function AdminDashboard() {
                       <span className="font-semibold">{paymentInfo.second}€</span>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Pago Manual */}
+              <div>
+                <h3 className="font-semibold text-lg mb-4 text-gray-900">
+                  Pago Manual (Opcional)
+                </h3>
+                
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="manual-payment-admin"
+                      checked={manualPaymentMode}
+                      onCheckedChange={(checked) => {
+                        const isChecked = checked === true;
+                        setManualPaymentMode(isChecked);
+                        if (!isChecked) {
+                          setManualPaymentNote('');
+                        }
+                      }}
+                    />
+                    <div className="flex-1">
+                      <Label htmlFor="manual-payment-admin" className="text-base font-semibold text-gray-900 cursor-pointer">
+                        El cliente ya pagó por otro medio
+                      </Label>
+                      <p className="text-sm text-gray-700 mt-1">
+                        Activa esta opción si el cliente abonó por transferencia, efectivo u otro método. 
+                        El código generado omitirá el paso de Stripe y permitirá firmar directamente el contrato.
+                      </p>
+                    </div>
+                  </div>
+
+                  {manualPaymentMode && (
+                    <div className="mt-4 space-y-2">
+                      <Label htmlFor="manual-payment-note" className="text-sm font-semibold">
+                        Describe cómo se realizó el pago
+                      </Label>
+                      <Textarea
+                        id="manual-payment-note"
+                        value={manualPaymentNote}
+                        onChange={(e) => setManualPaymentNote(e.target.value)}
+                        placeholder="Ej: Transferencia bancaria del 24/11/2025 - Referencia 123456"
+                        rows={3}
+                      />
+                      <p className="text-xs text-gray-600">
+                        Esta nota se incluirá en el contrato y será visible para el cliente.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
 
