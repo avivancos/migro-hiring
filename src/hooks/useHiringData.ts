@@ -34,6 +34,9 @@ export function useHiringData(code: string) {
       console.log('📊 Client city:', data.user_city);
       console.log('📊 Client province:', data.user_province);
       console.log('📊 Client postal code:', data.user_postal_code);
+      console.log('💰 Manual payment confirmed:', data.manual_payment_confirmed);
+      console.log('💰 Manual payment note:', data.manual_payment_note);
+      console.log('💰 Manual payment method:', data.manual_payment_method);
       console.log('📊 OBJETO COMPLETO:', JSON.stringify(data, null, 2));
       setDetails(data);
     } catch (err) {

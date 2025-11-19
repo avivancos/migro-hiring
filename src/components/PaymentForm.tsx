@@ -4,9 +4,6 @@ import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { CreditCard, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { hiringService } from '@/services/hiringService';
 import { generateContractPDF } from '@/utils/contractPdfGenerator';
@@ -31,11 +28,13 @@ export function PaymentForm(props: PaymentFormProps) {
   const adminManualPayment = props.hiringDetails?.manual_payment_confirmed || false;
   const adminManualNote = props.hiringDetails?.manual_payment_note || '';
   
-  const [manualPaymentMode, setManualPaymentMode] = useState(adminManualPayment);
-  const [manualPaymentNote, setManualPaymentNote] = useState(adminManualNote);
-  const [manualProcessing, setManualProcessing] = useState(false);
-  const [manualError, setManualError] = useState<string | null>(null);
-  const [manualSuccess, setManualSuccess] = useState<string | null>(null);
+  console.log('💰 PaymentForm - hiringDetails recibidos:', props.hiringDetails);
+  console.log('💰 PaymentForm - manual_payment_confirmed:', adminManualPayment);
+  console.log('💰 PaymentForm - manual_payment_note:', adminManualNote);
+  
+  // Estados para pago manual solo si el admin lo confirmó (solo para renderizado, no editable)
+  const manualPaymentMode = adminManualPayment;
+  const manualPaymentNote = adminManualNote;
 
   // Calcular el monto del primer pago según el grado
   const getFirstPaymentAmount = (): string => {
@@ -138,31 +137,6 @@ export function PaymentForm(props: PaymentFormProps) {
     }
   };
 
-  const handleManualPayment = () => {
-    setManualError(null);
-    const note = manualPaymentNote.trim();
-
-    if (!note) {
-      setManualError('Describe brevemente la forma de pago que ya se realizó.');
-      return;
-    }
-
-    setManualProcessing(true);
-    try {
-      const timestamp = new Date().toISOString();
-      localStorage.setItem(`manual_payment_note_${props.hiringCode}`, note);
-      localStorage.setItem(`manual_payment_date_${props.hiringCode}`, timestamp);
-      localStorage.setItem(`manual_payment_method_${props.hiringCode}`, `Pago previo registrado: ${note}`);
-      localStorage.setItem(`manual_payment_flag_${props.hiringCode}`, 'true');
-      setManualSuccess('Pago manual registrado. Avanzando al contrato...');
-      props.onSuccess();
-    } catch (err) {
-      console.error('Error registrando pago manual:', err);
-      setManualError('No se pudo registrar el pago. Intenta nuevamente.');
-    } finally {
-      setManualProcessing(false);
-    }
-  };
 
   const renderManualCard = () => {
     // Si el pago manual fue confirmado por el admin, mostrarlo en modo lectura CON botón para continuar
@@ -216,115 +190,16 @@ export function PaymentForm(props: PaymentFormProps) {
       );
     }
 
-    // Si no, mostrar el control editable (solo para códigos antiguos o sin manual_payment_confirmed)
-    return (
-      <Card className="shadow-lg border border-yellow-200 bg-yellow-50">
-        <CardContent className="space-y-4">
-          <div className="flex items-start gap-3">
-            <Checkbox
-              id="manual-payment-toggle"
-              checked={manualPaymentMode}
-              onCheckedChange={(checked) => {
-                const isChecked = checked === true;
-                setManualPaymentMode(isChecked);
-                setManualError(null);
-                setManualSuccess(null);
-                if (!isChecked) {
-                  setManualPaymentNote('');
-                }
-              }}
-            />
-            <div>
-              <p className="text-lg font-semibold text-gray-900">Pago ya abonado</p>
-              <p className="text-sm text-gray-600">
-                Activa esta opción si el cliente ya pagó por transferencia, efectivo u otro medio. Podrás describir la forma de pago y continuar directamente con la firma del contrato.
-              </p>
-            </div>
-          </div>
-
-          {manualPaymentMode && (
-            <div className="space-y-3">
-              <Label htmlFor="manualPaymentNote" className="text-sm font-semibold">
-                Nota de pago
-              </Label>
-              <Textarea
-                id="manualPaymentNote"
-                value={manualPaymentNote}
-                onChange={(e) => {
-                  setManualPaymentNote(e.target.value);
-                  setManualError(null);
-                }}
-                placeholder="Transferencia 24/11/2025 - Banco X - Referencia 123456"
-              />
-              {manualError && (
-                <p className="text-sm text-red-600">{manualError}</p>
-              )}
-              <Button
-                onClick={handleManualPayment}
-                disabled={manualProcessing || !manualPaymentNote.trim()}
-                className="w-full bg-primary hover:bg-primary-700 text-white"
-              >
-                {manualProcessing ? (
-                  <>
-                    <Loader2 className="mr-2 animate-spin" size={16} />
-                    Registrando pago manual...
-                  </>
-                ) : (
-                  'Registrar pago manual y continuar'
-                )}
-              </Button>
-              {manualSuccess && (
-                <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-900">
-                  {manualSuccess}
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    );
+    // Si no hay pago confirmado por admin, NO mostrar ninguna tarjeta editable
+    // El cliente NUNCA debe tener la opción de marcar pago manual
+    return null;
   };
 
   const manualCard = renderManualCard();
 
   let mainContent: ReactNode;
 
-  if (manualPaymentMode) {
-    mainContent = (
-      <Card className="border border-green-200 bg-green-50 shadow-lg">
-        <CardContent className="pt-6">
-          {adminManualPayment ? (
-            <>
-              <p className="text-sm text-green-900 mb-2">
-                El administrador confirmó que el pago ya fue realizado. No necesitas utilizar Stripe.
-              </p>
-              <p className="text-xs text-green-700">
-                Puedes continuar directamente con la firma del contrato haciendo clic en el botón de abajo.
-              </p>
-              <div className="mt-4">
-                <Button
-                  onClick={() => props.onSuccess()}
-                  className="w-full bg-primary hover:bg-primary-700 text-white"
-                >
-                  <CheckCircle2 className="mr-2" size={18} />
-                  Continuar con la firma del contrato
-                </Button>
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="text-sm text-yellow-900">
-                Al registrar el pago manual, se omitirá Stripe y se continuará directamente con la generación y firma del contrato.
-              </p>
-              <p className="text-xs text-yellow-700">
-                Puedes desactivar esta opción en cualquier momento para volver a usar Stripe.
-              </p>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    );
-  } else if (loading) {
+  if (loading) {
     mainContent = (
       <Card className="shadow-lg">
         <CardContent className="pt-6">
