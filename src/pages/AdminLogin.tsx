@@ -46,7 +46,7 @@ export function AdminLogin() {
         if (isAdmin) {
           console.log('✅ Usuario es admin, navegando a /crm');
           // Navegar al nuevo dashboard CRM
-          navigate('/crm');
+        navigate('/contrato/dashboard');
         } else {
           console.warn('⚠️ Usuario no es admin:', result.user);
           setError('No tienes permisos de administrador');
