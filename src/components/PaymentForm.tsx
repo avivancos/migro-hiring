@@ -137,6 +137,63 @@ export function PaymentForm(props: PaymentFormProps) {
   };
 
 
+  const handleManualPaymentContinue = async () => {
+    if (!props.hiringDetails) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      console.log('🔄 Generando y subiendo contrato definitivo con pago manual...');
+      
+      // Obtener firma del cliente
+      const clientSignature = localStorage.getItem(`client_signature_${props.hiringCode}`);
+      
+      // Generar PDF definitivo CON firma (isDraft = false)
+      const contractBlob = generateContractPDF(props.hiringDetails, {
+        paymentIntentId: 'manual_payment',
+        stripeTransactionId: `manual_${Date.now()}`,
+        paymentDate: new Date().toISOString(),
+        paymentMethod: props.hiringDetails.manual_payment_method || 'Pago manual',
+        paymentNote: props.hiringDetails.manual_payment_note,
+        clientSignature: clientSignature || undefined
+      }, false); // isDraft = false (contrato final SIN marca de agua)
+      
+      console.log('📄 Contrato definitivo generado con firma, tamaño:', contractBlob.size);
+      
+      // Preparar FormData para subir al backend
+      const formData = new FormData();
+      formData.append('contract', contractBlob, `contrato_definitivo_${props.hiringCode}.pdf`);
+      formData.append('hiring_code', props.hiringCode);
+      formData.append('client_email', props.hiringDetails.client_email || '');
+      formData.append('client_name', props.hiringDetails.client_name || '');
+      formData.append('contract_type', 'final');
+      formData.append('payment_intent_id', 'manual_payment');
+      formData.append('stripe_transaction_id', `manual_${Date.now()}`);
+      formData.append('payment_date', new Date().toISOString());
+      formData.append('payment_method', props.hiringDetails.manual_payment_method || 'Pago manual');
+      if (props.hiringDetails.manual_payment_note) {
+        formData.append('payment_note', props.hiringDetails.manual_payment_note);
+      }
+      
+      // Subir contrato definitivo al backend
+      await hiringService.uploadFinalContract(formData);
+      console.log('✅ Contrato definitivo con pago manual subido exitosamente');
+      
+      // Marcar como subido
+      localStorage.setItem(`contract_uploaded_${props.hiringCode}`, 'true');
+      
+      // Continuar al siguiente paso
+      props.onSuccess();
+      
+    } catch (err: any) {
+      console.error('❌ Error subiendo contrato definitivo:', err);
+      setError('Error al procesar el contrato. Por favor, intenta nuevamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderManualCard = () => {
     // Si el pago manual fue confirmado por el admin, mostrarlo en modo lectura CON botón para continuar
     if (adminManualPayment) {
@@ -168,20 +225,38 @@ export function PaymentForm(props: PaymentFormProps) {
               </p>
             </div>
 
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center gap-2">
+                <AlertCircle size={20} />
+                <p className="text-sm">{error}</p>
+              </div>
+            )}
+
             <div className="flex gap-4">
               <Button
                 onClick={props.onBack}
                 variant="outline"
                 className="flex-1"
+                disabled={loading}
               >
                 Volver
               </Button>
               <Button
-                onClick={() => props.onSuccess()}
+                onClick={handleManualPaymentContinue}
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                disabled={loading}
               >
-                <CheckCircle2 className="mr-2" size={18} />
-                Continuar con la firma
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 animate-spin" size={18} />
+                    Procesando...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="mr-2" size={18} />
+                    Continuar con la firma
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>

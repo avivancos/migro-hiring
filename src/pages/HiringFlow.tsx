@@ -11,6 +11,7 @@ import { PaymentForm } from '@/components/PaymentForm';
 import { ContractSuccess } from '@/components/ContractSuccess';
 import { ProgressBar } from '@/components/Layout/ProgressBar';
 import { Loader2 } from 'lucide-react';
+import { generateContractPDF } from '@/utils/contractPdfGenerator';
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -65,6 +66,83 @@ export function HiringFlow() {
              }
            }
          }, [details, navigate, code]);
+
+  // Detectar retorno de Stripe Checkout y subir contrato definitivo
+  useEffect(() => {
+    const sessionId = searchParams.get('session_id');
+    const paymentIntent = searchParams.get('payment_intent');
+    
+    // Si viene de Stripe Checkout (con session_id o payment_intent)
+    if ((sessionId || paymentIntent) && code && details) {
+      const uploadedFlag = localStorage.getItem(`contract_uploaded_${code}`);
+      
+      // Evitar subir múltiples veces
+      if (uploadedFlag === 'true') {
+        console.log('✅ Contrato definitivo ya fue subido anteriormente');
+        // Avanzar al paso 5
+        setCurrentStep(5);
+        // Limpiar parámetros de URL
+        setSearchParams({ step: '5' }, { replace: true });
+        return;
+      }
+      
+      console.log('🔄 Retorno de Stripe detectado, subiendo contrato definitivo...');
+      
+      const uploadFinalContract = async () => {
+        try {
+          // Obtener firma del cliente
+          const clientSignature = localStorage.getItem(`client_signature_${code}`);
+          
+          // Obtener payment_intent del query param o usar sessionId
+          const paymentIntentId = paymentIntent || sessionId || 'stripe_checkout';
+          
+          // Generar PDF definitivo CON firma (isDraft = false)
+          const contractBlob = generateContractPDF(details, {
+            paymentIntentId,
+            stripeTransactionId: paymentIntentId,
+            paymentDate: new Date().toISOString(),
+            paymentMethod: 'Stripe Checkout',
+            clientSignature: clientSignature || undefined
+          }, false); // isDraft = false (contrato final SIN marca de agua)
+          
+          console.log('📄 Contrato definitivo generado con firma, tamaño:', contractBlob.size);
+          
+          // Preparar FormData para subir al backend
+          const formData = new FormData();
+          formData.append('contract', contractBlob, `contrato_definitivo_${code}.pdf`);
+          formData.append('hiring_code', code);
+          formData.append('client_email', details.client_email || '');
+          formData.append('client_name', details.client_name || '');
+          formData.append('contract_type', 'final');
+          formData.append('payment_intent_id', paymentIntentId);
+          formData.append('stripe_transaction_id', paymentIntentId);
+          formData.append('payment_date', new Date().toISOString());
+          formData.append('payment_method', 'Stripe Checkout');
+          
+          // Subir contrato definitivo al backend
+          await hiringService.uploadFinalContract(formData);
+          console.log('✅ Contrato definitivo subido exitosamente al backend');
+          
+          // Marcar como subido
+          localStorage.setItem(`contract_uploaded_${code}`, 'true');
+          
+          // Avanzar al paso 5
+          setCurrentStep(5);
+          
+          // Limpiar parámetros de URL
+          setSearchParams({ step: '5' }, { replace: true });
+          
+        } catch (error) {
+          console.error('❌ Error subiendo contrato definitivo:', error);
+          // Continuar al paso 5 de todos modos
+          setCurrentStep(5);
+          setSearchParams({ step: '5' }, { replace: true });
+        }
+      };
+      
+      uploadFinalContract();
+    }
+  }, [searchParams, code, details, setSearchParams]);
 
   // Handlers para navegación entre pasos
   const handleNext = () => {
