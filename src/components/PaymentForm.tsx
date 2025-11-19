@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { CreditCard, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { hiringService } from '@/services/hiringService';
 import { generateContractPDF } from '@/utils/contractPdfGenerator';
