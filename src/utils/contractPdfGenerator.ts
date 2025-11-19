@@ -176,8 +176,9 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
 
   const passport = details.client_passport || details.user_passport;
   const nie = details.client_nie || details.user_nie;
+  const nationality = details.client_nationality;
 
-  const reunidosText = `De una parte, D. ${details.client_name || '____________________'}, mayor de edad, con correo electrónico ${details.client_email || '____________________'}${passport ? `, Pasaporte nº ${passport}` : ''}${nie ? ` y/o NIE ${nie}` : ''}${clientAddress ? `, con domicilio en ${clientAddress}` : ''}, en lo sucesivo denominada EL CLIENTE y,
+  const reunidosText = `De una parte, D. ${details.client_name || '____________________'}, mayor de edad, con correo electrónico ${details.client_email || '____________________'}${passport ? `, Pasaporte nº ${passport}` : ''}${nie ? ` y/o NIE ${nie}` : ''}${nationality ? `, de nacionalidad ${nationality}` : ''}${clientAddress ? `, con domicilio en ${clientAddress}` : ''}, en lo sucesivo denominada EL CLIENTE y,
 
 De la otra parte, la entidad MIGRO SERVICIOS Y REMESAS SL, con CIF B22759765, con domicilio social en C/ Libreros, nº 4, 1º de Salamanca – España, debidamente representada en función de la escritura de constitución social de fecha 15 de julio de 2025 y protocolo 940/25 otorgada ante el Notario de Huelva, Dª María Gómez – Rodulfo García de Castro, en lo sucesivo denominada LA PRESTADORA DEL SERVICIO o AGENCIA.`;
   

@@ -320,6 +320,17 @@ export function AdminDashboard() {
                   </div>
 
                   <div>
+                    <Label htmlFor="userNationality">Nacionalidad</Label>
+                    <Input
+                      id="userNationality"
+                      value={userNationality}
+                      onChange={(e) => setUserNationality(e.target.value)}
+                      placeholder="Ej: Venezolana, Colombiana, Española..."
+                      maxLength={100}
+                    />
+                  </div>
+
+                  <div>
                     <Label htmlFor="userAddress">Dirección</Label>
                     <Input
                       id="userAddress"
