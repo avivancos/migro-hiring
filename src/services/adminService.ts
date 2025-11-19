@@ -67,18 +67,28 @@ export const adminService = {
         try {
           // Usar el token recién guardado para obtener el usuario
           const userResponse = await api.get('/users/me');
-          user = userResponse.data;
-          console.log('✅ Usuario obtenido:', user);
+          const userData = userResponse.data;
+          console.log('✅ Usuario obtenido de API:', userData);
+          
+          // Mapear la respuesta de la API a la estructura esperada
+          user = {
+            id: userData.id,
+            email: userData.email,
+            name: userData.full_name || userData.email,
+            is_admin: userData.is_superuser || userData.role === 'admin' || userData.role === 'superuser',
+            role: userData.role || 'user'
+          };
+          console.log('✅ Usuario mapeado:', user);
         } catch (userError: any) {
           console.error('❌ Error obteniendo usuario:', userError);
           // Si falla, intentar decodificar el token JWT
           try {
             const tokenPayload = JSON.parse(atob(data.access_token.split('.')[1]));
             user = {
-              id: tokenPayload.sub,
+              id: tokenPayload.sub || tokenPayload.user_id,
               email: tokenPayload.email || email,
-              name: tokenPayload.name || tokenPayload.email || email,
-              is_admin: tokenPayload.is_admin || tokenPayload.role === 'admin',
+              name: tokenPayload.name || tokenPayload.full_name || email,
+              is_admin: tokenPayload.is_superuser || tokenPayload.is_admin || tokenPayload.role === 'admin' || tokenPayload.role === 'superuser',
               role: tokenPayload.role || 'user'
             };
             console.log('✅ Usuario obtenido del token JWT:', user);
@@ -144,7 +154,13 @@ export const adminService = {
   isAuthenticated(): boolean {
     const token = localStorage.getItem('admin_token');
     const user = this.getUser();
-    return !!token && !!user && (user.is_admin || user.role === 'admin');
+    if (!token || !user) return false;
+    
+    // Verificar si es admin o superuser
+    return user.is_admin || 
+           user.is_superuser || 
+           user.role === 'admin' || 
+           user.role === 'superuser';
   },
 
   /**

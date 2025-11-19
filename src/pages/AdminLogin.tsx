@@ -37,8 +37,13 @@ export function AdminLogin() {
       console.log('🔑 Token:', result.token ? 'Presente' : 'Ausente');
       
       if (result.success && result.user) {
-        // Verificar que el usuario sea admin
-        if (result.user.is_admin || result.user.role === 'admin' || result.user.role === 'superuser') {
+        // Verificar que el usuario sea admin o superuser
+        const isAdmin = result.user.is_admin || 
+                       result.user.is_superuser || 
+                       result.user.role === 'admin' || 
+                       result.user.role === 'superuser';
+        
+        if (isAdmin) {
           console.log('✅ Usuario es admin, navegando a /crm');
           // Navegar al nuevo dashboard CRM
           navigate('/crm');
