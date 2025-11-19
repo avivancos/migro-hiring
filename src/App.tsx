@@ -13,8 +13,6 @@ import { Colaboradores } from '@/pages/Colaboradores';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // CRM Pages
-import { CRMDashboard } from '@/pages/CRMDashboard';
-import { CRMLeads } from '@/pages/CRMLeads';
 import { CRMDashboardPage } from '@/pages/CRMDashboardPage';
 import { CRMContactList } from '@/pages/CRMContactList';
 import { CRMContactDetail } from '@/pages/CRMContactDetail';
@@ -42,14 +40,10 @@ function App() {
           <Route path="/borrador" element={<BorradorPDF />} />
           <Route path="/colaboradores" element={<Colaboradores />} />
           
-          {/* Admin routes - Original */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin" element={<AdminLogin />} />
-          
-          {/* CRM routes - Simplificado (solo leads) */}
-          <Route path="/admin/crm" element={<CRMDashboard />} />
-          <Route path="/admin/crm/leads" element={<CRMLeads />} />
+          {/* Servicio de contratación y firma */}
+          <Route path="/contrato/login" element={<AdminLogin />} />
+          <Route path="/contrato/dashboard" element={<AdminDashboard />} />
+          <Route path="/contrato" element={<AdminLogin />} />
           
           {/* CRM Dashboard - Nuevo dashboard completo */}
           <Route path="/crm" element={<CRMDashboardPage />} />

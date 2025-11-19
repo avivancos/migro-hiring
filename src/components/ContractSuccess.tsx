@@ -15,6 +15,9 @@ interface ContractSuccessProps {
 export function ContractSuccess({ hiringCode, serviceName, userEmail }: ContractSuccessProps) {
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isBrowser = typeof window !== 'undefined';
+  const manualPaymentNote = isBrowser ? localStorage.getItem(`manual_payment_note_${hiringCode}`) : null;
+  const manualPaymentDate = isBrowser ? localStorage.getItem(`manual_payment_date_${hiringCode}`) : null;
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -73,13 +76,18 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
     const details = JSON.parse(hiringDetails);
     console.log('📄 Detalles parseados:', details);
     
+    const manualPaymentNote = localStorage.getItem(`manual_payment_note_${hiringCode}`);
+    const manualPaymentDate = localStorage.getItem(`manual_payment_date_${hiringCode}`);
+    const manualPaymentMethod = localStorage.getItem(`manual_payment_method_${hiringCode}`);
+
     // Generar PDF localmente
     console.log('🔄 Generando PDF localmente...');
     const contractBlob = generateContractPDF(details, {
-      paymentIntentId: 'pi_local_generated',
-      stripeTransactionId: `local_${Date.now()}`,
-      paymentDate: new Date().toISOString(),
-      paymentMethod: 'Generado localmente',
+      paymentIntentId: manualPaymentNote ? 'manual_payment' : 'pi_local_generated',
+      stripeTransactionId: manualPaymentNote ? `manual_${Date.now()}` : `local_${Date.now()}`,
+      paymentDate: manualPaymentDate || new Date().toISOString(),
+      paymentMethod: manualPaymentMethod || 'Generado localmente',
+      paymentNote: manualPaymentNote || undefined,
       clientSignature: clientSignature || undefined
     }, false); // isDraft = false (contrato final sin marca de agua)
     console.log('✅ PDF generado, tamaño:', contractBlob.size, 'bytes');
@@ -164,6 +172,19 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
               </div>
             </div>
           </div>
+
+          {manualPaymentNote && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm text-yellow-900 space-y-1">
+              <p>
+                <strong>Pago registrado manualmente:</strong> {manualPaymentNote}
+              </p>
+              {manualPaymentDate && (
+                <p className="text-xs text-yellow-800">
+                  Fecha registrada: {new Date(manualPaymentDate).toLocaleDateString('es-ES')}
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Botón de descarga */}
           <div className="text-center">

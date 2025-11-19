@@ -38,7 +38,7 @@ export function CRMContactDetail() {
 
   useEffect(() => {
     if (!adminService.isAuthenticated()) {
-      navigate('/admin/login');
+      navigate('/contrato/login');
       return;
     }
     if (id) {

@@ -32,7 +32,7 @@ export function CRMContactList() {
 
   useEffect(() => {
     if (!adminService.isAuthenticated()) {
-      navigate('/admin/login');
+      navigate('/contrato/login');
       return;
     }
     loadContacts();

@@ -258,7 +258,7 @@ export function CRMDashboardPage() {
 
   useEffect(() => {
     if (!adminService.isAuthenticated()) {
-      navigate('/admin/login');
+      navigate('/contrato/login');
       return;
     }
     loadDashboardData();
@@ -322,7 +322,7 @@ export function CRMDashboardPage() {
 
   const handleLogout = () => {
     adminService.logout();
-    navigate('/admin/login');
+    navigate('/contrato/login');
   };
 
   // Filtrar leads

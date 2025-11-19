@@ -87,7 +87,7 @@ describe('AdminLogin - Tests Automatizados', () => {
 
     await waitFor(() => {
       expect(adminService.login).toHaveBeenCalledWith('agusvc@gmail.com', 'pomelo2005');
-      expect(mockNavigate).toHaveBeenCalledWith('/admin/crm');
+      expect(mockNavigate).toHaveBeenCalledWith('/crm');
     });
   });
 

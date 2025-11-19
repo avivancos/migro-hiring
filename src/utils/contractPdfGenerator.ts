@@ -9,6 +9,7 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
   stripeTransactionId?: string;
   paymentDate?: string;
   paymentMethod?: string;
+  paymentNote?: string;
   clientSignature?: string;
 }, isDraft: boolean = true): Blob {
   const doc = new jsPDF({
@@ -353,12 +354,18 @@ Esta garantía no resultará aplicable en los supuestos de desistimiento volunta
     addText('INFORMACIÓN DEL PAGO:', 12, true);
     addSpace(2);
     
-    const paymentInfo = `Fecha de pago: ${paymentData.paymentDate || new Date().toLocaleDateString('es-ES')}
-Método de pago: ${paymentData.paymentMethod || 'Tarjeta bancaria'}
-ID de transacción: ${paymentData.paymentIntentId || paymentData.stripeTransactionId || 'N/A'}
-Estado: Pagado y confirmado`;
+    const paymentLines = [
+      `Fecha de pago: ${paymentData.paymentDate || new Date().toLocaleDateString('es-ES')}`,
+      `Método de pago: ${paymentData.paymentMethod || 'Tarjeta bancaria'}`,
+      `ID de transacción: ${paymentData.paymentIntentId || paymentData.stripeTransactionId || 'N/A'}`,
+      'Estado: Pagado y confirmado',
+    ];
+
+    if (paymentData.paymentNote) {
+      paymentLines.push(`Detalle: ${paymentData.paymentNote}`);
+    }
     
-    addText(paymentInfo, 10, false);
+    addText(paymentLines.join('\n'), 10, false);
     addSpace(5);
   }
 

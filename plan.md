@@ -399,6 +399,11 @@ Archivos de referencia creados:
 - [ ] Multi-idioma (i18n)
 - [ ] Integrar API real del CRM (actualmente usa datos mock)
 
+## 🔁 Cambios recientes (19 de Noviembre de 2025)
+
+- ✅ Renombrada la entrada a la administración de contratación (`/admin`) por la nueva ruta `/contrato`, incluyendo panel, login y redirecciones.
+- ✅ Añadida una opción de “pago ya abonado” que permite registrar la forma de pago previa, almacenar la nota y reflejarla tanto en el flujo como en el PDF final del contrato.
+
 ---
 
 **Última actualización:** 28 de Octubre de 2025  

@@ -34,13 +34,13 @@ export function AdminDashboard() {
   useEffect(() => {
     // Check authentication
     if (!adminService.isAuthenticated()) {
-      navigate('/admin/login');
+      navigate('/contrato/login');
     }
   }, [navigate]);
 
   const handleLogout = () => {
     adminService.logout();
-    navigate('/admin/login');
+    navigate('/contrato/login');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
