@@ -478,17 +478,18 @@ export function AdminDashboard() {
                   {manualPaymentMode && (
                     <div className="mt-4 space-y-2">
                       <Label htmlFor="manual-payment-note" className="text-sm font-semibold">
-                        Describe cómo se realizó el pago
+                        Describe cómo se realizó el pago *
                       </Label>
                       <Textarea
                         id="manual-payment-note"
                         value={manualPaymentNote}
                         onChange={(e) => setManualPaymentNote(e.target.value)}
-                        placeholder="Ej: Transferencia bancaria del 24/11/2025 - Referencia 123456"
+                        placeholder="Ej: Pago recibido en efectivo el 19/11/2025"
                         rows={3}
+                        required={manualPaymentMode}
                       />
                       <p className="text-xs text-gray-600">
-                        Esta nota se incluirá en el contrato y será visible para el cliente.
+                        Esta nota se incluirá en el contrato. El código generado tendrá status "paid" automáticamente y NO requerirá Stripe.
                       </p>
                     </div>
                   )}
