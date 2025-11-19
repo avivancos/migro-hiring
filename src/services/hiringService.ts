@@ -119,9 +119,21 @@ export const hiringService = {
 
   /**
    * Step 5: Download contract PDF by hiring code
+   * NOTA: Este endpoint devuelve el contrato del paso 3 (con firma pero puede ser borrador)
+   * Para el contrato definitivo, usar downloadFinalContract()
    */
   async downloadContract(code: string): Promise<Blob> {
     const { data } = await api.get<Blob>(`/hiring/${code}/contract/download`, {
+      responseType: 'blob',
+    });
+    return data;
+  },
+
+  /**
+   * Download final contract PDF (contrato definitivo sin marca de agua)
+   */
+  async downloadFinalContract(code: string): Promise<Blob> {
+    const { data } = await api.get<Blob>(`/hiring/${code}/final-contract/download`, {
       responseType: 'blob',
     });
     return data;

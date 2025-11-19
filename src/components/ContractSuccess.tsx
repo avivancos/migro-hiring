@@ -24,8 +24,19 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
     setError(null);
 
     try {
-      // Intentar descargar desde el backend
-      const blob = await hiringService.downloadContract(hiringCode);
+      console.log('📥 Intentando descargar contrato definitivo desde el backend...');
+      
+      // Primero intentar descargar el contrato DEFINITIVO (final-contract)
+      let blob: Blob;
+      try {
+        blob = await hiringService.downloadFinalContract(hiringCode);
+        console.log('✅ Contrato definitivo descargado desde /final-contract/download');
+      } catch (finalErr) {
+        console.warn('⚠️ No se pudo descargar contrato definitivo, intentando endpoint legacy...');
+        // Fallback al endpoint anterior (puede devolver el borrador)
+        blob = await hiringService.downloadContract(hiringCode);
+        console.log('✅ Contrato descargado desde /contract/download (legacy)');
+      }
       
       // Crear URL del blob y descargar
       const url = window.URL.createObjectURL(blob);
@@ -36,6 +47,7 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      console.log('✅ Descarga completada');
     } catch (err: any) {
       console.warn('⚠️ No se pudo descargar desde el backend, generando localmente:', err);
       console.log('🔧 Iniciando generación local de contrato...');
