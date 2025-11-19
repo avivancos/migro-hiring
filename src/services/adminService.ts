@@ -22,16 +22,53 @@ export const adminService = {
    */
   async login(email: string, password: string): Promise<{ success: boolean; token?: string; user?: any; error?: string }> {
     try {
-      const { data } = await api.post<LoginResponse>('/auth/login', {
+      const response = await api.post<LoginResponse>('/auth/login', {
         email,
         password,
       });
 
+      console.log('✅ Login response:', response);
+      console.log('✅ Response data:', response.data);
+      console.log('✅ Response status:', response.status);
+
+      const data = response.data;
+
+      // Validar que la respuesta tenga la estructura esperada
+      if (!data) {
+        console.error('❌ No hay datos en la respuesta');
+        return {
+          success: false,
+          error: 'La respuesta del servidor no contiene datos'
+        };
+      }
+
+      if (!data.access_token) {
+        console.error('❌ No hay access_token en la respuesta:', data);
+        return {
+          success: false,
+          error: 'La respuesta del servidor no contiene un token de acceso'
+        };
+      }
+
+      if (!data.user) {
+        console.error('❌ No hay user en la respuesta:', data);
+        return {
+          success: false,
+          error: 'La respuesta del servidor no contiene información del usuario'
+        };
+      }
+
       // Guardar tokens
       localStorage.setItem('admin_token', data.access_token);
       localStorage.setItem('access_token', data.access_token);
-      localStorage.setItem('refresh_token', data.refresh_token);
+      if (data.refresh_token) {
+        localStorage.setItem('refresh_token', data.refresh_token);
+      }
       localStorage.setItem('admin_user', JSON.stringify(data.user));
+
+      console.log('✅ Tokens guardados en localStorage');
+      console.log('✅ Token:', data.access_token.substring(0, 20) + '...');
+      console.log('✅ User:', data.user);
 
       return { 
         success: true, 

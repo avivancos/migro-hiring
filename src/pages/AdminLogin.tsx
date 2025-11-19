@@ -28,22 +28,33 @@ export function AdminLogin() {
     setError(null);
 
     try {
+      console.log('🔐 Iniciando login con:', { email });
       const result = await adminService.login(email, password);
+      
+      console.log('📋 Resultado del login:', result);
+      console.log('✅ Success:', result.success);
+      console.log('👤 User:', result.user);
+      console.log('🔑 Token:', result.token ? 'Presente' : 'Ausente');
       
       if (result.success && result.user) {
         // Verificar que el usuario sea admin
         if (result.user.is_admin || result.user.role === 'admin' || result.user.role === 'superuser') {
+          console.log('✅ Usuario es admin, navegando a /crm');
           // Navegar al nuevo dashboard CRM
           navigate('/crm');
         } else {
+          console.warn('⚠️ Usuario no es admin:', result.user);
           setError('No tienes permisos de administrador');
           adminService.logout();
         }
       } else {
+        console.error('❌ Login falló:', result.error);
         setError(result.error || 'Credenciales incorrectas. Verifica tu email y contraseña.');
       }
     } catch (err: any) {
-      console.error('Error login:', err);
+      console.error('❌ Error en login:', err);
+      console.error('❌ Error response:', err?.response);
+      console.error('❌ Error data:', err?.response?.data);
       setError(err?.response?.data?.detail || err?.message || 'Error al iniciar sesión. Verifica tus credenciales.');
     } finally {
       setLoading(false);
