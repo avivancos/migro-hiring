@@ -131,10 +131,12 @@ export const hiringService = {
 
   /**
    * Download final contract PDF (contrato definitivo sin marca de agua)
+   * NOTA: Este endpoint devuelve un redirect (302) a Cloudinary
    */
   async downloadFinalContract(code: string): Promise<Blob> {
     const { data } = await api.get<Blob>(`/hiring/${code}/final-contract/download`, {
       responseType: 'blob',
+      maxRedirects: 5, // Seguir redirecciones automáticamente
     });
     return data;
   },

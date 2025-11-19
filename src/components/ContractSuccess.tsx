@@ -31,9 +31,22 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
       try {
         blob = await hiringService.downloadFinalContract(hiringCode);
         console.log('✅ Contrato definitivo descargado desde /final-contract/download');
-      } catch (finalErr) {
-        console.warn('⚠️ No se pudo descargar contrato definitivo, intentando endpoint legacy...');
-        // Fallback al endpoint anterior (puede devolver el borrador)
+      } catch (finalErr: any) {
+        // Si es 404, significa que el contrato definitivo no existe aún
+        const is404 = finalErr?.response?.status === 404 || 
+                      finalErr?.message?.includes('404') ||
+                      finalErr?.message?.includes('no disponible');
+        
+        if (is404) {
+          console.warn('⚠️ Contrato definitivo no disponible (404), generando localmente...');
+          // Generar localmente si el contrato definitivo no existe
+          await generateLocalContract();
+          console.log('✅ Contrato generado localmente como fallback');
+          return; // Salir después de generar localmente
+        }
+        
+        // Si no es 404, intentar endpoint legacy
+        console.warn('⚠️ Error descargando contrato definitivo, intentando endpoint legacy...');
         blob = await hiringService.downloadContract(hiringCode);
         console.log('✅ Contrato descargado desde /contract/download (legacy)');
       }
