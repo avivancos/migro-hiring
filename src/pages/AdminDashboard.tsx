@@ -25,6 +25,7 @@ export function AdminDashboard() {
   const [userEmail, setUserEmail] = useState('');
   const [userPassport, setUserPassport] = useState('');
   const [userNie, setUserNie] = useState('');
+  const [userNationality, setUserNationality] = useState('');
   const [userAddress, setUserAddress] = useState('');
   const [userCity, setUserCity] = useState('');
   const [userProvince, setUserProvince] = useState('');
@@ -93,6 +94,7 @@ export function AdminDashboard() {
         // Datos del cliente (información adicional del documento)
         client_passport: userPassport || undefined,
         client_nie: userNie || undefined,
+        client_nationality: userNationality || undefined,
         client_address: userAddress || undefined,
         client_city: userCity || undefined,
         client_province: userProvince || undefined,
@@ -141,6 +143,7 @@ export function AdminDashboard() {
       setUserEmail('');
       setUserPassport('');
       setUserNie('');
+      setUserNationality('');
       setUserAddress('');
       setUserCity('');
       setUserProvince('');

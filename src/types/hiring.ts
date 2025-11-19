@@ -25,6 +25,7 @@ export interface HiringDetails {
   // Nuevos campos con prefijo client_ (devueltos por el backend)
   client_passport?: string;
   client_nie?: string;
+  client_nationality?: string; // Nacionalidad del cliente
   client_address?: string;
   client_city?: string;
   client_province?: string;
