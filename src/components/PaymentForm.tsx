@@ -32,9 +32,8 @@ export function PaymentForm(props: PaymentFormProps) {
   console.log('💰 PaymentForm - manual_payment_confirmed:', adminManualPayment);
   console.log('💰 PaymentForm - manual_payment_note:', adminManualNote);
   
-  // Estados para pago manual solo si el admin lo confirmó (solo para renderizado, no editable)
+  // Estado para pago manual solo si el admin lo confirmó (solo para renderizado, no editable)
   const manualPaymentMode = adminManualPayment;
-  const manualPaymentNote = adminManualNote;
 
   // Calcular el monto del primer pago según el grado
   const getFirstPaymentAmount = (): string => {
