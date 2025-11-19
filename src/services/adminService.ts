@@ -50,30 +50,56 @@ export const adminService = {
         };
       }
 
-      if (!data.user) {
-        console.error('❌ No hay user en la respuesta:', data);
-        return {
-          success: false,
-          error: 'La respuesta del servidor no contiene información del usuario'
-        };
-      }
-
-      // Guardar tokens
+      // Guardar tokens primero
       localStorage.setItem('admin_token', data.access_token);
       localStorage.setItem('access_token', data.access_token);
       if (data.refresh_token) {
         localStorage.setItem('refresh_token', data.refresh_token);
       }
-      localStorage.setItem('admin_user', JSON.stringify(data.user));
 
       console.log('✅ Tokens guardados en localStorage');
       console.log('✅ Token:', data.access_token.substring(0, 20) + '...');
-      console.log('✅ User:', data.user);
+
+      // Si no viene el user en la respuesta, obtenerlo del endpoint /users/me
+      let user = data.user;
+      if (!user) {
+        console.log('📡 Obteniendo información del usuario desde /users/me');
+        try {
+          // Usar el token recién guardado para obtener el usuario
+          const userResponse = await api.get('/users/me');
+          user = userResponse.data;
+          console.log('✅ Usuario obtenido:', user);
+        } catch (userError: any) {
+          console.error('❌ Error obteniendo usuario:', userError);
+          // Si falla, intentar decodificar el token JWT
+          try {
+            const tokenPayload = JSON.parse(atob(data.access_token.split('.')[1]));
+            user = {
+              id: tokenPayload.sub,
+              email: tokenPayload.email || email,
+              name: tokenPayload.name || tokenPayload.email || email,
+              is_admin: tokenPayload.is_admin || tokenPayload.role === 'admin',
+              role: tokenPayload.role || 'user'
+            };
+            console.log('✅ Usuario obtenido del token JWT:', user);
+          } catch (jwtError) {
+            console.error('❌ Error decodificando token:', jwtError);
+            return {
+              success: false,
+              error: 'No se pudo obtener la información del usuario'
+            };
+          }
+        }
+      }
+
+      // Guardar usuario
+      localStorage.setItem('admin_user', JSON.stringify(user));
+      console.log('✅ User guardado:', user);
 
       return { 
         success: true, 
         token: data.access_token,
-        user: data.user 
+        user: user 
       };
     } catch (error: any) {
       console.error('Login error:', error);
