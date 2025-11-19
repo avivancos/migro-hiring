@@ -190,6 +190,7 @@ export function HiringFlow() {
             amount={details.amount}
             currency={details.currency}
             serviceName={details.service_name}
+            hiringDetails={details}
             onSuccess={handlePaymentSuccess}
             onBack={handleBack}
           />
