@@ -52,7 +52,9 @@ export function PaymentForm(props: PaymentFormProps) {
   };
 
   useEffect(() => {
-    if (manualPaymentMode) {
+    // Si el pago ya fue confirmado por el admin O si está en modo manual, no crear checkout
+    if (manualPaymentMode || adminManualPayment) {
+      setLoading(false);
       return;
     }
     const createCheckoutSession = async () => {
@@ -81,7 +83,7 @@ export function PaymentForm(props: PaymentFormProps) {
     };
 
     createCheckoutSession();
-  }, [props.hiringCode, manualPaymentMode]);
+  }, [props.hiringCode, manualPaymentMode, adminManualPayment]);
 
   const handleStripeCheckout = () => {
     if (checkoutUrl) {
@@ -163,25 +165,51 @@ export function PaymentForm(props: PaymentFormProps) {
   };
 
   const renderManualCard = () => {
-    // Si el pago manual fue confirmado por el admin, mostrarlo en modo lectura
+    // Si el pago manual fue confirmado por el admin, mostrarlo en modo lectura CON botón para continuar
     if (adminManualPayment) {
       return (
-        <Card className="shadow-lg border border-green-200 bg-green-50">
-          <CardContent className="space-y-4 pt-6">
+        <Card className="shadow-lg border-2 border-green-300 bg-green-50">
+          <CardContent className="space-y-6 pt-6">
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="text-green-600 mt-1" size={24} />
+              <CheckCircle2 className="text-green-600 mt-1 flex-shrink-0" size={28} />
               <div className="flex-1">
-                <p className="text-lg font-semibold text-green-900">Pago ya registrado</p>
-                <p className="text-sm text-green-700 mt-1">
+                <p className="text-xl font-semibold text-green-900 mb-2">Pago ya registrado</p>
+                <p className="text-sm text-green-700">
                   El administrador confirmó que el pago ya se realizó. Puedes continuar directamente con la firma del contrato.
                 </p>
                 {adminManualNote && (
-                  <div className="mt-3 bg-white border border-green-200 rounded-lg p-3">
-                    <p className="text-xs font-semibold text-gray-700 mb-1">Forma de pago registrada:</p>
-                    <p className="text-sm text-gray-900">{adminManualNote}</p>
+                  <div className="mt-4 bg-white border border-green-200 rounded-lg p-4">
+                    <p className="text-xs font-semibold text-gray-700 mb-2">Forma de pago registrada:</p>
+                    <p className="text-sm text-gray-900 font-medium">{adminManualNote}</p>
                   </div>
                 )}
               </div>
+            </div>
+
+            <div className="bg-green-100 border border-green-300 rounded-lg p-4">
+              <p className="text-sm text-green-900 mb-1">
+                <strong>✓ No necesitas realizar ningún pago adicional</strong>
+              </p>
+              <p className="text-xs text-green-700">
+                El pago ya fue procesado. Haz clic en el botón de abajo para continuar con la firma del contrato.
+              </p>
+            </div>
+
+            <div className="flex gap-4">
+              <Button
+                onClick={props.onBack}
+                variant="outline"
+                className="flex-1"
+              >
+                Volver
+              </Button>
+              <Button
+                onClick={() => props.onSuccess()}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              >
+                <CheckCircle2 className="mr-2" size={18} />
+                Continuar con la firma
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -513,6 +541,16 @@ export function PaymentForm(props: PaymentFormProps) {
     );
   }
 
+  // Si el pago fue confirmado por el admin, mostrar SOLO la info y botón para continuar
+  if (adminManualPayment) {
+    return (
+      <div className="max-w-3xl mx-auto p-6">
+        {manualCard}
+      </div>
+    );
+  }
+
+  // Si no, mostrar el flujo normal (checkbox opcional + Stripe o pago manual del cliente)
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       {manualCard}
