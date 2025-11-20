@@ -67,6 +67,29 @@ export function HiringFlow() {
            }
          }, [details, navigate, code]);
 
+  // Protección: Si el hiring ya está completado (firmado + pagado), redirigir al paso 5
+  useEffect(() => {
+    if (!details) return;
+    
+    // Verificar si el contrato ya fue aceptado y el pago confirmado
+    const isContractAccepted = details.contract_accepted === true;
+    const isPaid = details.status === 'paid' || details.status === 'completed';
+    
+    // Si ya está firmado Y pagado, y NO estamos en el paso 5, redirigir
+    if (isContractAccepted && isPaid && currentStep !== 5) {
+      console.log('🔒 Hiring ya completado (firmado + pagado), redirigiendo al paso 5');
+      setCurrentStep(5);
+      setSearchParams({ step: '5' }, { replace: true });
+    }
+    
+    // Si solo está firmado pero no pagado, no permitir volver a pasos 1-2
+    if (isContractAccepted && (currentStep === 1 || currentStep === 2)) {
+      console.log('🔒 Contrato ya firmado, avanzando al paso de pago');
+      setCurrentStep(4);
+      setSearchParams({ step: '4' }, { replace: true });
+    }
+  }, [details, currentStep, setSearchParams]);
+
   // Detectar retorno de Stripe Checkout y subir contrato definitivo
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
@@ -257,6 +280,7 @@ export function HiringFlow() {
           <ContractSignature
             hiringCode={code}
             userName={details.client_name}
+            isAlreadySigned={details.contract_accepted === true}
             onComplete={handleSignatureComplete}
             onBack={handleBack}
           />

@@ -10,11 +10,12 @@ import { PenTool, CheckCircle2, AlertCircle } from 'lucide-react';
 interface ContractSignatureProps {
   hiringCode: string;
   userName: string; // Nombre completo del usuario desde el backend
+  isAlreadySigned?: boolean; // Si el contrato ya fue firmado
   onComplete: (signature?: string) => void;
   onBack: () => void;
 }
 
-export function ContractSignature({ userName, onComplete, onBack }: ContractSignatureProps) {
+export function ContractSignature({ userName, isAlreadySigned = false, onComplete, onBack }: ContractSignatureProps) {
   const [signature, setSignature] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isValid, setIsValid] = useState(false);
@@ -60,6 +61,49 @@ export function ContractSignature({ userName, onComplete, onBack }: ContractSign
     // Firma válida, continuar al siguiente paso
     onComplete(signature);
   };
+
+  // Si ya está firmado, mostrar mensaje y botón para continuar
+  if (isAlreadySigned) {
+    return (
+      <div className="max-w-3xl mx-auto p-6">
+        <Card className="shadow-lg border-2 border-green-300 bg-green-50">
+          <CardHeader className="bg-gradient-to-r from-green-100 to-green-50">
+            <CardTitle className="text-2xl text-green-900 flex items-center gap-2">
+              <CheckCircle2 className="text-green-600" size={28} />
+              Contrato Ya Firmado
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent className="pt-6 space-y-6">
+            <div className="bg-white border border-green-200 rounded-lg p-6">
+              <p className="text-lg text-green-900 mb-4">
+                ✅ Este contrato ya ha sido firmado digitalmente.
+              </p>
+              <p className="text-sm text-green-700">
+                No es posible volver a firmar un contrato que ya fue aceptado. Puede continuar con el siguiente paso.
+              </p>
+            </div>
+
+            <div className="flex gap-4">
+              <Button
+                onClick={onBack}
+                variant="outline"
+                className="flex-1"
+              >
+                Volver
+              </Button>
+              <Button
+                onClick={() => onComplete()}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+              >
+                Continuar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto p-6">
