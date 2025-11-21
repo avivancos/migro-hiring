@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { adminService } from '@/services/adminService';
-import { GRADE_PRICING, GRADE_DESCRIPTIONS, type ClientGrade } from '@/types/admin';
+import { GRADE_PRICING, GRADE_PRICING_SUBSCRIPTION, GRADE_DESCRIPTIONS, type ClientGrade, type PaymentType } from '@/types/admin';
 import { UserPlus, LogOut, CheckCircle, Copy, AlertCircle } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
@@ -33,6 +33,7 @@ export function AdminDashboard() {
   const [serviceName, setServiceName] = useState('Residencia Legal en España');
   const [serviceDescription, setServiceDescription] = useState('Tramitación de expediente para obtención de residencia legal');
   const [grade, setGrade] = useState<ClientGrade>('B');
+  const [paymentType, setPaymentType] = useState<PaymentType>('one_time');
   const [manualPaymentMode, setManualPaymentMode] = useState(false);
   const [manualPaymentNote, setManualPaymentNote] = useState('');
 
@@ -79,15 +80,21 @@ export function AdminDashboard() {
     setGeneratedUrl(null);
 
     try {
+      // Calcular monto total según tipo de pago
+      const totalAmount = paymentType === 'subscription' 
+        ? GRADE_PRICING_SUBSCRIPTION[grade]
+        : GRADE_PRICING[grade];
+      
       const requestBody = {
         contract_template: "standard", // Campo requerido
         service_name: serviceName,
         service_description: serviceDescription,
-        amount: GRADE_PRICING[grade] * 100, // Convertir a centavos
+        amount: totalAmount * 100, // Convertir a centavos
         currency: "EUR",
         grade: grade,
+        payment_type: paymentType, // Tipo de pago: "one_time" o "subscription"
         expires_in_days: 30,
-        notes: `Código creado por administrador - Grado ${grade}`,
+        notes: `Código creado por administrador - Grado ${grade} - ${paymentType === 'subscription' ? 'Suscripción' : 'Pago Único'}`,
         // Datos del cliente (información de contacto principal) - REQUERIDOS
         client_name: userName,
         client_email: userEmail,
@@ -149,6 +156,7 @@ export function AdminDashboard() {
       setUserProvince('');
       setUserPostalCode('');
       setGrade('B');
+      setPaymentType('one_time');
       setManualPaymentMode(false);
       setManualPaymentNote('');
     } catch (err: any) {
@@ -164,25 +172,42 @@ export function AdminDashboard() {
   };
 
   const getPaymentInfo = () => {
-    const totalAmount = GRADE_PRICING[grade];
-    let firstPayment, secondPayment;
+    // Calcular monto total según tipo de pago
+    const totalAmount = paymentType === 'subscription' 
+      ? GRADE_PRICING_SUBSCRIPTION[grade]
+      : GRADE_PRICING[grade];
     
-    if (grade === 'T') {
-      // Para testing: 1€ total (0.50€ ahora + 0.50€ después)
-      firstPayment = 0.5;
-      secondPayment = 0.5;
-    } else if (grade === 'C') {
-      firstPayment = 300;
-      secondPayment = 300;
+    let firstPayment, secondPayment, monthlyPayment, numberOfPayments;
+    
+    if (paymentType === 'subscription') {
+      // Suscripción: 10 pagos mensuales
+      numberOfPayments = 10;
+      monthlyPayment = totalAmount / numberOfPayments;
+      firstPayment = monthlyPayment;
+      secondPayment = 0; // No aplica para suscripción
     } else {
-      firstPayment = 200;
-      secondPayment = 200;
+      // Pago único: 2 pagos (50% + 50%)
+      numberOfPayments = 2;
+      if (grade === 'T') {
+        // Para testing: 1€ total (0.50€ ahora + 0.50€ después)
+        firstPayment = 0.5;
+        secondPayment = 0.5;
+      } else if (grade === 'C') {
+        firstPayment = 300;
+        secondPayment = 300;
+      } else {
+        firstPayment = 200;
+        secondPayment = 200;
+      }
+      monthlyPayment = 0; // No aplica para pago único
     }
     
     return {
       total: totalAmount,
       first: firstPayment,
       second: secondPayment,
+      monthly: monthlyPayment,
+      numberOfPayments,
     };
   };
 
@@ -439,6 +464,64 @@ export function AdminDashboard() {
                   ))}
                 </div>
 
+                {/* Selección de Tipo de Pago */}
+                <div className="mt-6">
+                  <h4 className="font-semibold text-gray-900 mb-4">Tipo de Pago</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentType('one_time')}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        paymentType === 'one_time'
+                          ? 'border-primary bg-primary/10'
+                          : 'border-gray-300 bg-white hover:border-primary'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="radio"
+                          checked={paymentType === 'one_time'}
+                          readOnly
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <h5 className="font-semibold text-gray-900 mb-1">Pago Único</h5>
+                          <p className="text-sm text-gray-600 mb-2">2 pagos (50% inicial + 50% después)</p>
+                          <p className="text-lg font-bold text-primary">
+                            {grade === 'C' ? '600' : grade === 'T' ? '1' : '400'} EUR total
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setPaymentType('subscription')}
+                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                        paymentType === 'subscription'
+                          ? 'border-primary bg-primary/10'
+                          : 'border-gray-300 bg-white hover:border-primary'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <input
+                          type="radio"
+                          checked={paymentType === 'subscription'}
+                          readOnly
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <h5 className="font-semibold text-gray-900 mb-1">Suscripción</h5>
+                          <p className="text-sm text-gray-600 mb-2">10 pagos mensuales automáticos</p>
+                          <p className="text-lg font-bold text-primary">
+                            {grade === 'C' ? '680' : grade === 'T' ? '1' : '480'} EUR total
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Resumen de Pago */}
                 <div className="mt-4 bg-gray-50 border-2 border-gray-300 rounded-lg p-4">
                   <h4 className="font-semibold text-gray-900 mb-3">Resumen de Pago</h4>
@@ -447,14 +530,29 @@ export function AdminDashboard() {
                       <span className="text-gray-600">Coste Total (IVA incluido):</span>
                       <span className="font-bold text-lg text-primary">{paymentInfo.total}€</span>
                     </div>
-                    <div className="flex justify-between border-t pt-2">
-                      <span className="text-gray-600">Primer pago (al contratar):</span>
-                      <span className="font-semibold">{paymentInfo.first}€</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Segundo pago (tras aprobación):</span>
-                      <span className="font-semibold">{paymentInfo.second}€</span>
-                    </div>
+                    {paymentType === 'subscription' ? (
+                      <>
+                        <div className="flex justify-between border-t pt-2">
+                          <span className="text-gray-600">Pago mensual:</span>
+                          <span className="font-semibold">{paymentInfo.monthly.toFixed(2)}€</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Número de pagos:</span>
+                          <span className="font-semibold">{paymentInfo.numberOfPayments} pagos mensuales</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex justify-between border-t pt-2">
+                          <span className="text-gray-600">Primer pago (al contratar):</span>
+                          <span className="font-semibold">{paymentInfo.first}€</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Segundo pago (tras aprobación):</span>
+                          <span className="font-semibold">{paymentInfo.second}€</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
