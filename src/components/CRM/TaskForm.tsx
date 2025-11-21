@@ -14,6 +14,9 @@ interface TaskFormProps {
   task?: Task;
   defaultEntityType?: 'lead' | 'contact' | 'company';
   defaultEntityId?: number;
+  defaultText?: string;
+  defaultTaskType?: string;
+  defaultCompleteTill?: string;
   onSubmit: (data: any) => Promise<void>;
   onCancel: () => void;
 }
@@ -21,7 +24,10 @@ interface TaskFormProps {
 export function TaskForm({ 
   task, 
   defaultEntityType, 
-  defaultEntityId, 
+  defaultEntityId,
+  defaultText,
+  defaultTaskType,
+  defaultCompleteTill,
   onSubmit, 
   onCancel 
 }: TaskFormProps) {
@@ -37,14 +43,16 @@ export function TaskForm({
   };
 
   const [formData, setFormData] = useState({
-    text: task?.text || '',
-    task_type: task?.task_type || 'call',
+    text: task?.text || defaultText || '',
+    task_type: task?.task_type || defaultTaskType || 'call',
     entity_type: task?.entity_type || defaultEntityType || 'leads',
     entity_id: task?.entity_id || defaultEntityId || '',
     responsible_user_id: task?.responsible_user_id || '',
     complete_till: task?.complete_till 
-      ? new Date(task.complete_till).toISOString().slice(0, 16) 
-      : getDefaultDueDate(),
+      ? new Date(task.complete_till).toISOString().slice(0, 16)
+      : defaultCompleteTill
+        ? new Date(defaultCompleteTill).toISOString().slice(0, 16)
+        : getDefaultDueDate(),
     task_template_id: task?.task_template_id || '',
     result_text: task?.result_text || '',
   });

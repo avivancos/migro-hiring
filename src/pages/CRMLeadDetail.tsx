@@ -5,10 +5,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Edit, User, Phone } from 'lucide-react';
-import type { KommoLead, Task, Call, Note } from '@/types/crm';
+import { ArrowLeft, Edit, User, Phone, Plus, PhoneCall, RefreshCw, DollarSign, ChevronDown } from 'lucide-react';
+import type { KommoLead, Task, Call, Note, TaskCreateRequest } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { LeadForm } from '@/components/CRM/LeadForm';
+import { TaskForm } from '@/components/CRM/TaskForm';
 
 export function CRMLeadDetail() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +21,9 @@ export function CRMLeadDetail() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [editing, setEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('info');
+  const [showNewTaskMenu, setShowNewTaskMenu] = useState(false);
+  const [showTaskForm, setShowTaskForm] = useState(false);
+  const [quickTaskType, setQuickTaskType] = useState<'first_call' | 'follow_up' | 'note_sale' | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -65,6 +69,72 @@ export function CRMLeadDetail() {
       style: 'currency',
       currency: currency,
     }).format(price);
+  };
+
+  const handleQuickTask = (type: 'first_call' | 'follow_up' | 'note_sale') => {
+    setQuickTaskType(type);
+    setShowTaskForm(true);
+    setShowNewTaskMenu(false);
+  };
+
+  const getQuickTaskConfig = (type: 'first_call' | 'follow_up' | 'note_sale') => {
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(10, 0, 0, 0);
+
+    const configs = {
+      first_call: {
+        text: 'Primera llamada al cliente',
+        task_type: 'call',
+        complete_till: tomorrow.toISOString(),
+      },
+      follow_up: {
+        text: 'Seguimiento con el cliente',
+        task_type: 'follow_up',
+        complete_till: tomorrow.toISOString(),
+      },
+      note_sale: {
+        text: 'Anotar venta - Registrar información de la venta',
+        task_type: 'deadline',
+        complete_till: now.toISOString(),
+      },
+    };
+
+    return configs[type];
+  };
+
+  const handleTaskSubmit = async (taskData: TaskCreateRequest) => {
+    if (!id) return;
+    
+    try {
+      // Si es una tarea rápida, usar la configuración predefinida
+      if (quickTaskType) {
+        const config = getQuickTaskConfig(quickTaskType);
+        taskData = {
+          ...taskData,
+          text: config.text,
+          task_type: config.task_type,
+          complete_till: config.complete_till,
+        };
+      }
+
+      // Asegurar que entity_id sea el ID del lead
+      const finalTaskData: TaskCreateRequest = {
+        ...taskData,
+        entity_type: 'leads',
+        entity_id: id,
+      };
+
+      await crmService.createTask(finalTaskData);
+      await loadLeadData(); // Recargar datos
+      setShowTaskForm(false);
+      setQuickTaskType(null);
+      setActiveTab('tasks'); // Cambiar a la pestaña de tareas
+    } catch (err) {
+      console.error('Error creating task:', err);
+      alert('Error al crear la tarea');
+    }
   };
 
   if (loading) {
@@ -125,13 +195,90 @@ export function CRMLeadDetail() {
             <p className="text-gray-600 mt-1">ID: {lead.id}</p>
           </div>
         </div>
-        <Button
-          onClick={() => setEditing(true)}
-          className="bg-green-600 hover:bg-green-700"
-        >
-          <Edit size={18} className="mr-2" />
-          Editar
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setEditing(true)}
+            variant="outline"
+            className="bg-white hover:bg-gray-50"
+          >
+            <Edit size={18} className="mr-2" />
+            Editar
+          </Button>
+          
+          {/* Botón Nuevo con menú desplegable */}
+          <div className="relative">
+            <Button
+              onClick={() => setShowNewTaskMenu(!showNewTaskMenu)}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              <Plus size={18} className="mr-2" />
+              Nuevo
+              <ChevronDown size={16} className="ml-2" />
+            </Button>
+            
+            {showNewTaskMenu && (
+              <>
+                <div 
+                  className="fixed inset-0 z-10" 
+                  onClick={() => setShowNewTaskMenu(false)}
+                />
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-20">
+                  <div className="py-2">
+                    <button
+                      onClick={() => handleQuickTask('first_call')}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                    >
+                      <PhoneCall size={20} className="text-blue-600" />
+                      <div>
+                        <div className="font-semibold text-gray-900">Primera Llamada</div>
+                        <div className="text-sm text-gray-500">Crear tarea de primera llamada</div>
+                      </div>
+                    </button>
+                    
+                    <button
+                      onClick={() => handleQuickTask('follow_up')}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                    >
+                      <RefreshCw size={20} className="text-green-600" />
+                      <div>
+                        <div className="font-semibold text-gray-900">Seguimiento</div>
+                        <div className="text-sm text-gray-500">Crear tarea de seguimiento</div>
+                      </div>
+                    </button>
+                    
+                    <button
+                      onClick={() => handleQuickTask('note_sale')}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                    >
+                      <DollarSign size={20} className="text-yellow-600" />
+                      <div>
+                        <div className="font-semibold text-gray-900">Anotar Venta</div>
+                        <div className="text-sm text-gray-500">Registrar información de venta</div>
+                      </div>
+                    </button>
+                    
+                    <div className="border-t border-gray-200 my-1" />
+                    
+                    <button
+                      onClick={() => {
+                        setQuickTaskType(null);
+                        setShowTaskForm(true);
+                        setShowNewTaskMenu(false);
+                      }}
+                      className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                    >
+                      <Plus size={20} className="text-gray-600" />
+                      <div>
+                        <div className="font-semibold text-gray-900">Tarea Personalizada</div>
+                        <div className="text-sm text-gray-500">Crear tarea con opciones avanzadas</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Información Principal */}
@@ -341,6 +488,45 @@ export function CRMLeadDetail() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Modal de Formulario de Tarea */}
+      {showTaskForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  {quickTaskType === 'first_call' && 'Nueva Primera Llamada'}
+                  {quickTaskType === 'follow_up' && 'Nuevo Seguimiento'}
+                  {quickTaskType === 'note_sale' && 'Anotar Venta'}
+                  {!quickTaskType && 'Nueva Tarea'}
+                </h2>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowTaskForm(false);
+                    setQuickTaskType(null);
+                  }}
+                >
+                  ✕
+                </Button>
+              </div>
+              <TaskForm
+                defaultEntityType="lead"
+                defaultEntityId={id ? (typeof id === 'string' ? parseInt(id) : id) : undefined}
+                defaultText={quickTaskType ? getQuickTaskConfig(quickTaskType).text : undefined}
+                defaultTaskType={quickTaskType ? getQuickTaskConfig(quickTaskType).task_type : undefined}
+                defaultCompleteTill={quickTaskType ? getQuickTaskConfig(quickTaskType).complete_till : undefined}
+                onSubmit={handleTaskSubmit}
+                onCancel={() => {
+                  setShowTaskForm(false);
+                  setQuickTaskType(null);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
