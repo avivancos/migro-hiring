@@ -471,24 +471,28 @@ export function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => setPaymentType('one_time')}
-                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                      className={`p-5 rounded-lg border-2 transition-all text-left ${
                         paymentType === 'one_time'
-                          ? 'border-primary bg-primary/10'
-                          : 'border-gray-300 bg-white hover:border-primary'
+                          ? 'border-primary bg-primary/10 shadow-md'
+                          : 'border-gray-300 bg-white hover:border-primary hover:shadow-sm'
                       }`}
                     >
                       <div className="flex items-start gap-3">
-                        <input
-                          type="radio"
-                          checked={paymentType === 'one_time'}
-                          readOnly
-                          className="mt-1"
-                        />
+                        <div className={`mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                          paymentType === 'one_time'
+                            ? 'border-primary bg-primary'
+                            : 'border-gray-400'
+                        }`}>
+                          {paymentType === 'one_time' && (
+                            <div className="w-2 h-2 rounded-full bg-white" />
+                          )}
+                        </div>
                         <div className="flex-1">
-                          <h5 className="font-semibold text-gray-900 mb-1">Pago Único</h5>
-                          <p className="text-sm text-gray-600 mb-2">2 pagos (50% inicial + 50% después)</p>
-                          <p className="text-lg font-bold text-primary">
-                            {grade === 'C' ? '600' : grade === 'T' ? '1' : '400'} EUR total
+                          <h5 className="font-semibold text-gray-900 mb-2 text-lg">Pago Único</h5>
+                          <p className="text-sm text-gray-600 mb-1">2 pagos</p>
+                          <p className="text-xs text-gray-500 mb-3">50% inicial + 50% después de comunicación favorable</p>
+                          <p className="text-xl font-bold text-primary">
+                            {GRADE_PRICING[grade]} EUR total
                           </p>
                         </div>
                       </div>
@@ -497,24 +501,28 @@ export function AdminDashboard() {
                     <button
                       type="button"
                       onClick={() => setPaymentType('subscription')}
-                      className={`p-4 rounded-lg border-2 transition-all text-left ${
+                      className={`p-5 rounded-lg border-2 transition-all text-left ${
                         paymentType === 'subscription'
-                          ? 'border-primary bg-primary/10'
-                          : 'border-gray-300 bg-white hover:border-primary'
+                          ? 'border-primary bg-primary/10 shadow-md'
+                          : 'border-gray-300 bg-white hover:border-primary hover:shadow-sm'
                       }`}
                     >
                       <div className="flex items-start gap-3">
-                        <input
-                          type="radio"
-                          checked={paymentType === 'subscription'}
-                          readOnly
-                          className="mt-1"
-                        />
+                        <div className={`mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                          paymentType === 'subscription'
+                            ? 'border-primary bg-primary'
+                            : 'border-gray-400'
+                        }`}>
+                          {paymentType === 'subscription' && (
+                            <div className="w-2 h-2 rounded-full bg-white" />
+                          )}
+                        </div>
                         <div className="flex-1">
-                          <h5 className="font-semibold text-gray-900 mb-1">Suscripción</h5>
-                          <p className="text-sm text-gray-600 mb-2">10 pagos mensuales automáticos</p>
-                          <p className="text-lg font-bold text-primary">
-                            {grade === 'C' ? '680' : grade === 'T' ? '1' : '480'} EUR total
+                          <h5 className="font-semibold text-gray-900 mb-2 text-lg">Suscripción</h5>
+                          <p className="text-sm text-gray-600 mb-1">10 pagos mensuales</p>
+                          <p className="text-xs text-gray-500 mb-3">Pago automático cada mes</p>
+                          <p className="text-xl font-bold text-primary">
+                            {GRADE_PRICING_SUBSCRIPTION[grade]} EUR total
                           </p>
                         </div>
                       </div>
