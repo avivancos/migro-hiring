@@ -23,6 +23,7 @@ export function PaymentForm(props: PaymentFormProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
+  const [checkoutInfo, setCheckoutInfo] = useState<{ payment_type?: 'first' | 'subscription'; installments?: number; amount?: number; total_amount?: number } | null>(null);
   
   // Si el código viene con manual_payment_confirmed del backend, activar modo manual automáticamente
   const adminManualPayment = props.hiringDetails?.manual_payment_confirmed || false;
@@ -35,17 +36,82 @@ export function PaymentForm(props: PaymentFormProps) {
   // Estado para pago manual solo si el admin lo confirmó (solo para renderizado, no editable)
   const manualPaymentMode = adminManualPayment;
 
-  // Calcular el monto del primer pago según el grado
-  const getFirstPaymentAmount = (): string => {
+  // Obtener el monto del primer pago del backend (en centavos) o calcularlo como fallback
+  const getFirstPaymentAmount = (): number => {
+    // Prioridad 1: Usar first_payment_amount del backend
+    if (props.hiringDetails?.first_payment_amount !== undefined) {
+      return props.hiringDetails.first_payment_amount;
+    }
+    // Prioridad 2: Usar amount del checkout response
+    if (checkoutInfo?.amount !== undefined) {
+      return checkoutInfo.amount;
+    }
+    // Fallback: Calcular según el grado (solo si no hay datos del backend)
     const grade = props.hiringDetails?.grade;
-    
     if (grade === 'T') {
-      return '0.50';
+      return 50; // 0.50 EUR en centavos
     } else if (grade === 'C') {
-      return '300.00';
+      return 30000; // 300 EUR en centavos
     } else {
       // Grados A y B
-      return '200.00';
+      return 20000; // 200 EUR en centavos
+    }
+  };
+
+  // Obtener el tipo de pago del backend
+  const getPaymentType = (): 'one_time' | 'subscription' | null => {
+    // Prioridad 1: Usar payment_type del backend
+    if (props.hiringDetails?.payment_type) {
+      return props.hiringDetails.payment_type;
+    }
+    // Prioridad 2: Inferir del checkout response
+    if (checkoutInfo?.payment_type === 'subscription') {
+      return 'subscription';
+    }
+    if (checkoutInfo?.payment_type === 'first') {
+      return 'one_time';
+    }
+    return null;
+  };
+
+  // Helper para formatear el monto en euros
+  const formatAmount = (amountInCents: number): string => {
+    return (amountInCents / 100).toFixed(2);
+  };
+
+  // Helper para renderizar información de pago según el tipo
+  const renderPaymentInfo = () => {
+    const paymentType = getPaymentType();
+    const firstPayment = getFirstPaymentAmount();
+    const totalAmount = checkoutInfo?.total_amount || props.hiringDetails?.amount || 0;
+    const installments = checkoutInfo?.installments;
+    const isSubscription = paymentType === 'subscription';
+
+    if (isSubscription && installments) {
+      return (
+        <>
+          <p><strong>Servicio:</strong> {props.serviceName}</p>
+          <p><strong>Tipo:</strong> <span className="font-semibold text-primary">📅 Suscripción Mensual</span></p>
+          <p><strong>Primer pago:</strong> €{formatAmount(firstPayment)}</p>
+          <p><strong>Pagos mensuales:</strong> {installments} cuotas de €{formatAmount(firstPayment)}</p>
+          <p><strong>Total:</strong> €{formatAmount(totalAmount)}</p>
+          <p className="text-xs text-gray-600 mt-2 italic">
+            El primer pago se cobrará ahora. Los siguientes {installments - 1} pagos se cobrarán automáticamente cada mes.
+          </p>
+        </>
+      );
+    } else {
+      return (
+        <>
+          <p><strong>Servicio:</strong> {props.serviceName} - Primer Pago</p>
+          <p><strong>Tipo:</strong> <span className="font-semibold text-primary">💳 Pago Único</span></p>
+          <p><strong>Primer pago:</strong> €{formatAmount(firstPayment)}</p>
+          <p><strong>Total del servicio:</strong> €{formatAmount(totalAmount)}</p>
+          <p className="text-xs text-gray-600 mt-2 italic">
+            El segundo pago (50%) se realizará después de la comunicación favorable.
+          </p>
+        </>
+      );
     }
   };
 
@@ -63,6 +129,13 @@ export function PaymentForm(props: PaymentFormProps) {
         
         console.log('✅ Checkout session creada:', response);
         setCheckoutUrl(response.checkout_url);
+        // Guardar información del checkout para mostrar en la UI
+        setCheckoutInfo({
+          payment_type: response.payment_type,
+          installments: response.installments,
+          amount: response.amount,
+          total_amount: response.total_amount,
+        });
         
       } catch (err: any) {
         // Mostrar el mensaje de error del backend si está disponible
@@ -392,9 +465,8 @@ export function PaymentForm(props: PaymentFormProps) {
                 Detalles del Pago:
               </h4>
               <div className="space-y-2 text-sm">
-                <p><strong>Servicio:</strong> {props.serviceName} - Primer Pago</p>
-                <p><strong>Monto:</strong> €{getFirstPaymentAmount()}</p>
-                <p><strong>Código:</strong> {props.hiringCode}</p>
+                {renderPaymentInfo()}
+                <p className="mt-3 pt-3 border-t border-blue-300"><strong>Código:</strong> {props.hiringCode}</p>
                 <p><strong>Estado:</strong> Simulación</p>
               </div>
             </div>
@@ -451,9 +523,8 @@ export function PaymentForm(props: PaymentFormProps) {
                 Detalles del Pago:
               </h4>
               <div className="space-y-2 text-sm">
-                <p><strong>Servicio:</strong> {props.serviceName} - Primer Pago</p>
-                <p><strong>Monto:</strong> €{getFirstPaymentAmount()}</p>
-                <p><strong>Código:</strong> {props.hiringCode}</p>
+                {renderPaymentInfo()}
+                <p className="mt-3 pt-3 border-t border-green-300"><strong>Código:</strong> {props.hiringCode}</p>
                 <p><strong>Método:</strong> Stripe Checkout</p>
               </div>
             </div>

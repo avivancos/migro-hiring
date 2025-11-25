@@ -399,14 +399,27 @@ Archivos de referencia creados:
 - [ ] Multi-idioma (i18n)
 - [ ] Integrar API real del CRM (actualmente usa datos mock)
 
-## 🔁 Cambios recientes (19 de Noviembre de 2025)
+## 🔁 Cambios recientes
 
+### 20 de Enero de 2025 - Actualización Frontend v2.0
+- ✅ Soporte completo para suscripciones y pagos únicos
+- ✅ Campo `payment_type` agregado a todas las interfaces TypeScript
+- ✅ Campo `first_payment_amount` del backend (calculado automáticamente)
+- ✅ UI actualizada para mostrar información según tipo de pago:
+  - Suscripción: 10 pagos mensuales automáticos
+  - Pago único: 2 pagos (50% inicial + 50% después de comunicación favorable)
+- ✅ `CheckoutResponse` actualizado con `payment_type`, `installments`, `total_amount`
+- ✅ `PaymentForm` actualizado para usar datos del backend
+- ✅ `ServiceDetails` actualizado para mostrar información de pago correcta
+- ✅ Ver documentación completa: `BACKEND_PAYMENT_TYPE_IMPLEMENTATION.md`
+
+### 19 de Noviembre de 2025
 - ✅ Renombrada la entrada a la administración de contratación (`/admin`) por la nueva ruta `/contrato`, incluyendo panel, login y redirecciones.
-- ✅ Añadida una opción de “pago ya abonado” que permite registrar la forma de pago previa, almacenar la nota y reflejarla tanto en el flujo como en el PDF final del contrato.
+- ✅ Añadida una opción de "pago ya abonado" que permite registrar la forma de pago previa, almacenar la nota y reflejarla tanto en el flujo como en el PDF final del contrato.
 
 ---
 
-**Última actualización:** 28 de Octubre de 2025  
-**Estado:** ✅ Frontend 100% Funcional - ✅ Dashboard CRM Completo - ⏳ Backend pendiente resolver memoria y emails  
+**Última actualización:** 20 de Enero de 2025  
+**Estado:** ✅ Frontend 100% Funcional - ✅ Dashboard CRM Completo - ✅ Soporte Suscripciones v2.0 - ⏳ Backend pendiente resolver memoria y emails  
 **Ver resumen completo:** `RESUMEN_SESION_COMPLETO.md`
 

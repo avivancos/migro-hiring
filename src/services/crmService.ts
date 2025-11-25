@@ -34,7 +34,9 @@ import type {
 } from '@/types/crm';
 
 // Base path para endpoints del CRM
-const CRM_BASE_PATH = '/v1/crm';
+// Según documentación: todos los endpoints están bajo /api/crm
+// Como la base URL ya incluye /api, usamos solo /crm
+const CRM_BASE_PATH = '/crm';
 
 export const crmService = {
   // ===== LEADS =====
@@ -181,6 +183,8 @@ export const crmService = {
 
   /**
    * Obtener lista de pipelines
+   * NOTA: Este endpoint puede no estar implementado en el backend
+   * Si no existe, el componente debe manejar el error
    */
   async getPipelines(): Promise<Pipeline[]> {
     const { data } = await api.get<PipelinesListResponse>(`${CRM_BASE_PATH}/pipelines`);
@@ -503,6 +507,8 @@ export const crmService = {
 
   /**
    * Obtener estadísticas del dashboard
+   * NOTA: Este endpoint puede no estar implementado en el backend
+   * Si no existe, el componente debe manejar el error
    */
   async getDashboardStats(): Promise<DashboardStats> {
     const { data } = await api.get<DashboardStats>(`${CRM_BASE_PATH}/dashboard/stats`);
@@ -517,6 +523,246 @@ export const crmService = {
       params: { pipeline_id: pipelineId },
     });
     return data;
+  },
+
+  // ===== FLUJOS DE TRABAJO COMUNES =====
+
+  /**
+   * Flujo 1: Crear Contacto y Lead asociado
+   * Crea un contacto con información básica y campos Migro, luego crea un lead asociado
+   */
+  async createContactWithLead(
+    contactData: ContactCreateRequest,
+    leadData: Omit<LeadCreateRequest, 'contact_id'>
+  ): Promise<{ contact: KommoContact; lead: KommoLead }> {
+    // 1. Crear contacto
+    const contact = await this.createContact(contactData);
+
+    // 2. Crear lead asociado
+    const lead = await this.createLead({
+      ...leadData,
+      contact_id: contact.id,
+    });
+
+    return { contact, lead };
+  },
+
+  /**
+   * Flujo 2: Asignar Tareas Automáticas desde Plantillas
+   * Obtiene plantillas activas y crea tareas automáticamente para un contacto o lead
+   * 
+   * @example
+   * ```typescript
+   * // Asignar todas las tareas aplicables a un contacto
+   * const tasks = await crmService.assignTasksFromTemplates(contactId, 'contacts');
+   * 
+   * // Asignar solo tareas específicas
+   * const tasks = await crmService.assignTasksFromTemplates(contactId, 'contacts', {
+   *   onlyActive: true,
+   *   appliesToContacts: true
+   * });
+   * ```
+   */
+  async assignTasksFromTemplates(
+    entityId: string,
+    entityType: 'contacts' | 'leads',
+    options?: {
+      onlyActive?: boolean;
+      appliesToContacts?: boolean;
+      appliesToLeads?: boolean;
+    }
+  ): Promise<Task[]> {
+    // 1. Obtener plantillas disponibles
+    const templatesResponse = await this.getTaskTemplates({
+      is_active: options?.onlyActive ?? true,
+      applies_to_contacts: options?.appliesToContacts ?? (entityType === 'contacts'),
+      applies_to_leads: options?.appliesToLeads ?? (entityType === 'leads'),
+    });
+
+    const templates = templatesResponse.items || [];
+
+    // 2. Crear tareas automáticamente
+    const tasks: Task[] = [];
+    for (const template of templates) {
+      // Calcular fecha de vencimiento
+      const completeTill = new Date();
+      completeTill.setDate(completeTill.getDate() + (template.default_duration_days || 7));
+
+      try {
+        const task = await this.createTask({
+          text: template.default_text || template.name,
+          task_template_id: template.id,
+          entity_id: entityId,
+          entity_type: entityType === 'contacts' ? 'contacts' : 'leads',
+          complete_till: completeTill.toISOString(),
+          task_type: template.task_type || 'call',
+        });
+        tasks.push(task);
+      } catch (error) {
+        console.error(`Error creando tarea desde plantilla ${template.name}:`, error);
+        // Continuar con las demás plantillas aunque una falle
+      }
+    }
+
+    return tasks;
+  },
+
+  /**
+   * Flujo 3: Registrar Llamada con Seguimiento Automático
+   * Registra una llamada y crea automáticamente una tarea para la próxima llamada si se especifica
+   */
+  async registerCallWithFollowUp(
+    callData: CallCreateRequest
+  ): Promise<{ call: Call; followUpTask?: Task }> {
+    // 1. Registrar llamada
+    const call = await this.createCall(callData);
+
+    // 2. Crear tarea automática para próxima llamada si se especifica
+    let followUpTask: Task | undefined;
+    if (call.proxima_llamada_fecha) {
+      try {
+        followUpTask = await this.createTask({
+          text: 'Llamada de seguimiento programada',
+          task_type: 'call',
+          entity_id: call.entity_id,
+          entity_type: call.entity_type === 'contact' ? 'contacts' : 
+                      call.entity_type === 'contacts' ? 'contacts' :
+                      call.entity_type === 'lead' ? 'leads' :
+                      call.entity_type === 'leads' ? 'leads' : 'contacts',
+          complete_till: call.proxima_llamada_fecha,
+        });
+      } catch (error) {
+        console.error('Error creando tarea de seguimiento:', error);
+        // No fallar si no se puede crear la tarea
+      }
+    }
+
+    return { call, followUpTask };
+  },
+
+  /**
+   * Flujo 4: Obtener Historial Completo de Interacciones de un Contacto
+   * Obtiene todas las tareas, llamadas y notas de un contacto y las combina ordenadas por fecha
+   */
+  async getContactInteractionHistory(contactId: string): Promise<Array<{
+    type: 'task' | 'call' | 'note';
+    id: string;
+    created_at: string;
+    data: Task | Call | Note;
+  }>> {
+    // Obtener todas las interacciones en paralelo
+    const [tasksResponse, callsResponse, notesResponse] = await Promise.all([
+      this.getContactTasks(contactId, { limit: 100 }),
+      this.getContactCalls(contactId, { limit: 100 }),
+      this.getContactNotes(contactId, { limit: 100 }),
+    ]);
+
+    const tasks = tasksResponse.items || [];
+    const calls = callsResponse.items || [];
+    const notes = notesResponse.items || [];
+
+    // Combinar y ordenar por fecha (más recientes primero)
+    const interactions = [
+      ...tasks.map(t => ({ type: 'task' as const, id: t.id, created_at: t.created_at, data: t })),
+      ...calls.map(c => ({ type: 'call' as const, id: c.id, created_at: c.created_at, data: c })),
+      ...notes.map(n => ({ type: 'note' as const, id: n.id, created_at: n.created_at, data: n })),
+    ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    return interactions;
+  },
+
+  /**
+   * Flujo 5: Obtener Pipeline de Leads Agrupados por Estado
+   * Obtiene todos los leads y los agrupa por estado para visualización en pipeline
+   */
+  async getLeadsPipeline(filters?: LeadFilters): Promise<{
+    new: KommoLead[];
+    contacted: KommoLead[];
+    proposal: KommoLead[];
+    negotiation: KommoLead[];
+    won: KommoLead[];
+    lost: KommoLead[];
+    all: KommoLead[];
+  }> {
+    const response = await this.getLeads({ ...filters, limit: 100 });
+    const leads = response.items || [];
+
+    return {
+      new: leads.filter(l => l.status === 'new'),
+      contacted: leads.filter(l => l.status === 'contacted'),
+      proposal: leads.filter(l => l.status === 'proposal'),
+      negotiation: leads.filter(l => l.status === 'negotiation'),
+      won: leads.filter(l => l.status === 'won'),
+      lost: leads.filter(l => l.status === 'lost'),
+      all: leads,
+    };
+  },
+
+  /**
+   * Flujo 6: Flujo Completo de Venta
+   * Implementa el flujo completo desde crear contacto hasta convertir lead
+   */
+  async completeSalesFlow(params: {
+    contactData: ContactCreateRequest;
+    leadData: Omit<LeadCreateRequest, 'contact_id'>;
+    assignTasks?: boolean;
+    initialCall?: Omit<CallCreateRequest, 'entity_id' | 'entity_type'>;
+    updateGradings?: {
+      grading_llamada?: 'A' | 'B+' | 'B-' | 'C';
+      grading_situacion?: 'A' | 'B+' | 'B-' | 'C';
+    };
+  }): Promise<{
+    contact: KommoContact;
+    lead: KommoLead;
+    tasks: Task[];
+    call?: Call;
+    followUpTask?: Task;
+  }> {
+    // 1. Crear contacto y lead
+    const { contact, lead } = await this.createContactWithLead(
+      params.contactData,
+      params.leadData
+    );
+
+    const tasks: Task[] = [];
+
+    // 2. Asignar tareas automáticas si se solicita
+    if (params.assignTasks) {
+      const assignedTasks = await this.assignTasksFromTemplates(
+        contact.id,
+        'contacts'
+      );
+      tasks.push(...assignedTasks);
+    }
+
+    // 3. Registrar llamada inicial si se proporciona
+    let call: Call | undefined;
+    let followUpTask: Task | undefined;
+    if (params.initialCall) {
+      const callResult = await this.registerCallWithFollowUp({
+        ...params.initialCall,
+        entity_id: contact.id,
+        entity_type: 'contacts',
+      });
+      call = callResult.call;
+      followUpTask = callResult.followUpTask;
+    }
+
+    // 4. Actualizar gradings si se proporcionan
+    if (params.updateGradings) {
+      await this.updateContact(contact.id, {
+        grading_llamada: params.updateGradings.grading_llamada,
+        grading_situacion: params.updateGradings.grading_situacion,
+      });
+    }
+
+    return {
+      contact,
+      lead,
+      tasks,
+      call,
+      followUpTask,
+    };
   },
 };
 

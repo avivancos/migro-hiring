@@ -104,7 +104,7 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
     const manualPaymentNote = localStorage.getItem(`manual_payment_note_${hiringCode}`);
     const manualPaymentDate = localStorage.getItem(`manual_payment_date_${hiringCode}`);
     const manualPaymentMethod = localStorage.getItem(`manual_payment_method_${hiringCode}`);
-
+    
     // Generar PDF localmente
     console.log('🔄 Generando PDF localmente...');
     const contractBlob = generateContractPDF(details, {

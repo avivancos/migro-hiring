@@ -39,6 +39,11 @@ export interface HiringDetails {
   manual_payment_confirmed?: boolean;
   manual_payment_note?: string;
   manual_payment_method?: string;
+  // Tipo de pago y suscripción
+  payment_type?: 'one_time' | 'subscription';
+  first_payment_amount?: number; // Monto del primer pago en centavos
+  subscription_id?: string; // Solo para suscripciones
+  subscription_status?: string; // Solo para suscripciones
 }
 
 export interface ConfirmDataRequest {
@@ -65,5 +70,15 @@ export interface ContractResponse {
   status: string;
   contract_pdf_url: string;
   message: string;
+}
+
+export interface CheckoutResponse {
+  checkout_url: string;
+  session_id: string;
+  amount: number; // Monto del primer pago en centavos
+  total_amount: number; // Monto total en centavos
+  payment_type: 'first' | 'subscription';
+  installments?: number; // Solo para suscripciones (número de pagos)
+  currency: string;
 }
 

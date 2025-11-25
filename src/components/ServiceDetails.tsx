@@ -68,13 +68,31 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
             <p className="text-4xl font-bold text-primary">
               {formatCurrency(details.amount, details.currency)}
             </p>
-            <p className="text-sm text-gray-600 mt-2">
-              {details.grade === 'T' ? (
-                <><span className="font-bold">0,50€ ahora</span> y 0,50€ con la comunicación favorable del expediente</>
-              ) : (
-                <><span className="font-bold">200€ ahora</span> y 200€ con la comunicación favorable del expediente</>
-              )}
-            </p>
+            {details.payment_type === 'subscription' && details.first_payment_amount ? (
+              <div className="mt-3 space-y-1">
+                <p className="text-sm text-gray-600">
+                  <span className="font-bold">📅 Suscripción Mensual</span>
+                </p>
+                <p className="text-sm text-gray-600">
+                  <span className="font-bold">{formatCurrency(details.first_payment_amount, details.currency)} ahora</span> y {formatCurrency(details.first_payment_amount, details.currency)}/mes durante 10 meses
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Los pagos se realizarán automáticamente cada mes
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-600 mt-2">
+                {details.first_payment_amount ? (
+                  <>
+                    <span className="font-bold">{formatCurrency(details.first_payment_amount, details.currency)} ahora</span> y {formatCurrency(details.amount - details.first_payment_amount, details.currency)} con la comunicación favorable del expediente
+                  </>
+                ) : details.grade === 'T' ? (
+                  <><span className="font-bold">0,50€ ahora</span> y 0,50€ con la comunicación favorable del expediente</>
+                ) : (
+                  <><span className="font-bold">200€ ahora</span> y 200€ con la comunicación favorable del expediente</>
+                )}
+              </p>
+            )}
             <p className="text-xs text-gray-500 mt-1">
               IVA incluido
             </p>

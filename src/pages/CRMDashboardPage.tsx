@@ -250,8 +250,14 @@ export function CRMDashboardPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [leads, setLeads] = useState<KommoLead[]>([]);
-  const [stats, setStats] = useState<DashboardStats>(mockStats);
+  const [stats, setStats] = useState<DashboardStats>({
+    total_leads: 0,
+    leads_by_status: [],
+    pending_tasks: 0,
+    total_pipeline_value: 0,
+  });
   const [stages, setStages] = useState<PipelineStatus[]>([]);
   // const [pipelines, setPipelines] = useState<Pipeline[]>([]); // No usado actualmente
   const user = adminService.getUser();
@@ -267,14 +273,15 @@ export function CRMDashboardPage() {
   const loadDashboardData = async () => {
     setLoading(true);
     try {
-      // Cargar datos en paralelo
+      // Cargar datos en paralelo desde el backend
       const [leadsResponse, pipelinesData] = await Promise.all([
         crmService.getLeads({ limit: 100 }),
-        crmService.getPipelines(),
+        crmService.getPipelines().catch(() => []), // Si pipelines no está implementado, usar array vacío
       ]);
 
-      setLeads(leadsResponse.items || []);
-      // setPipelines(pipelinesData); // Usado solo para obtener el pipeline principal
+      // Usar datos del backend (pueden estar vacíos si no hay datos)
+      const leadsToUse = leadsResponse.items || [];
+      setLeads(leadsToUse);
 
       // Obtener stages del pipeline principal
       if (pipelinesData.length > 0) {
@@ -284,21 +291,24 @@ export function CRMDashboardPage() {
           setStages(stagesData);
         } catch (err) {
           console.error('Error loading stages:', err);
-          // Usar stages mock si falla
-          setStages(mockPipelineStages);
+          // Si no hay stages, dejar array vacío
+          setStages([]);
         }
+      } else {
+        // Si no hay pipelines, dejar stages vacío
+        setStages([]);
       }
 
-      // Calcular estadísticas
-      const totalLeads = leadsResponse.items?.length || 0;
-      const totalPipelineValue = leadsResponse.items?.reduce((sum, lead) => sum + (lead.price || 0), 0) || 0;
+      // Calcular estadísticas desde los datos del backend
+      const totalLeads = leadsToUse.length;
+      const totalPipelineValue = leadsToUse.reduce((sum, lead) => sum + (lead.price || 0), 0);
       
       // Contar por status
-      const leadsByStatus = leadsResponse.items?.reduce((acc, lead) => {
+      const leadsByStatus = leadsToUse.reduce((acc, lead) => {
         const status = lead.status || 'new';
         acc[status] = (acc[status] || 0) + 1;
         return acc;
-      }, {} as Record<string, number>) || {};
+      }, {} as Record<string, number>);
 
       setStats({
         total_leads: totalLeads,
@@ -306,15 +316,22 @@ export function CRMDashboardPage() {
           name,
           count,
         })),
-        pending_tasks: 0, // Se calculará después
+        pending_tasks: 0, // Se calculará después desde el backend
         total_pipeline_value: totalPipelineValue,
       });
     } catch (err) {
       console.error('Error loading dashboard data:', err);
-      // En caso de error, usar datos mock
-      setLeads(mockLeads);
-      setStats(mockStats);
-      setStages(mockPipelineStages);
+      // Mostrar error al usuario en lugar de usar datos mock
+      setError('Error al cargar datos del dashboard. Por favor, verifica que el backend esté disponible.');
+      // Inicializar con datos vacíos
+      setLeads([]);
+      setStats({
+        total_leads: 0,
+        leads_by_status: [],
+        pending_tasks: 0,
+        total_pipeline_value: 0,
+      });
+      setStages([]);
     } finally {
       setLoading(false);
     }
@@ -401,6 +418,29 @@ export function CRMDashboardPage() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Cargando datos del CRM...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg border border-red-200">
+          <div className="flex items-center gap-3 mb-4">
+            <AlertCircle className="w-8 h-8 text-red-600" />
+            <h2 className="text-xl font-bold text-gray-900">Error al cargar datos</h2>
+          </div>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <Button
+            onClick={() => {
+              setError(null);
+              loadDashboardData();
+            }}
+            className="w-full"
+          >
+            Reintentar
+          </Button>
         </div>
       </div>
     );

@@ -7,6 +7,7 @@ import type {
   KYCSession,
   PaymentIntent,
   ContractResponse,
+  CheckoutResponse,
 } from '@/types/hiring';
 
 export const hiringService = {
@@ -112,8 +113,8 @@ export const hiringService = {
     return data;
   },
 
-  async createCheckoutSession(hiringCode: string): Promise<{ checkout_url: string }> {
-    const { data } = await api.post<{ checkout_url: string }>(`/hiring/${hiringCode}/checkout`, {});
+  async createCheckoutSession(hiringCode: string): Promise<CheckoutResponse> {
+    const { data } = await api.post<CheckoutResponse>(`/hiring/${hiringCode}/checkout`, {});
     return data;
   },
 
