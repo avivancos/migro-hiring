@@ -10,6 +10,7 @@ import { AdminDashboard } from '@/pages/AdminDashboard';
 import { PrivacyPolicy } from '@/pages/PrivacyPolicy';
 import { BorradorPDF } from '@/pages/BorradorPDF';
 import { Colaboradores } from '@/pages/Colaboradores';
+import { Closer } from '@/pages/Closer';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // CRM Pages
@@ -39,6 +40,7 @@ function App() {
           <Route path="/privacy" element={<PrivacyPolicy />} /> {/* Alias en inglés */}
           <Route path="/borrador" element={<BorradorPDF />} />
           <Route path="/colaboradores" element={<Colaboradores />} />
+          <Route path="/closer" element={<Closer />} />
           
           {/* Servicio de contratación y firma */}
           <Route path="/contrato/login" element={<AdminLogin />} />

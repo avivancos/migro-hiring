@@ -3,7 +3,7 @@ import jsPDF from 'jspdf';
 // @ts-ignore – Vite raw import
 import agreementMd from '@/legal/colab_agreement.md?raw';
 
-function renderCollabAgreementPdf(rawContent: string): Blob {
+function renderPdf(rawContent: string, title: string, footerUrl = 'contratacion.migro.es/colaboradores'): Blob {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -41,8 +41,8 @@ function renderCollabAgreementPdf(rawContent: string): Blob {
   doc.setTextColor(0, 0, 0);
   y += 24;
 
-  // Título fijo (sin negritas)
-  addText('CONVENIO MARCO DE COLABORACIÓN ENTRE DESPACHO COLABORADOR Y MIGRO SERVICIOS Y REMESAS S.L.', 12, 'center');
+  // Título (sin negritas)
+  addText(title, 12, 'center');
   addSpace(2);
 
   // Preprocesar contenido: eliminar título MD duplicado y normalizar caracteres problemáticos
@@ -80,7 +80,7 @@ function renderCollabAgreementPdf(rawContent: string): Blob {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(128, 128, 128);
-    doc.text('Visualiza este convenio en: contratacion.migro.es/colaboradores', pageWidth / 2, pageHeight - 10, { align: 'center' });
+    doc.text(`Visualiza este documento en: ${footerUrl}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
   }
 
   return doc.output('blob');
@@ -88,11 +88,15 @@ function renderCollabAgreementPdf(rawContent: string): Blob {
 
 export function generateCollabAgreementPdfFromMd(contentOverride?: string): Blob {
   const raw = contentOverride ?? (agreementMd as unknown as string);
-  return renderCollabAgreementPdf(raw);
+  return renderPdf(raw, 'CONVENIO MARCO DE COLABORACIÓN ENTRE ABOGADO COLABORADOR Y MIGRO SERVICIOS Y REMESAS S.L.', 'contratacion.migro.es/colaboradores');
 }
 
 export function generateCollabAgreementPdfFromText(rawText: string): Blob {
-  return renderCollabAgreementPdf(rawText);
+  return renderPdf(rawText, 'CONVENIO MARCO DE COLABORACIÓN ENTRE ABOGADO COLABORADOR Y MIGRO SERVICIOS Y REMESAS S.L.', 'contratacion.migro.es/colaboradores');
+}
+
+export function generatePdfWithTitle(rawText: string, title: string, footerUrl?: string): Blob {
+  return renderPdf(rawText, title, footerUrl ?? 'contratacion.migro.es');
 }
 
 

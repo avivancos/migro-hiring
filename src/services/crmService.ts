@@ -570,6 +570,7 @@ export const crmService = {
       onlyActive?: boolean;
       appliesToContacts?: boolean;
       appliesToLeads?: boolean;
+      responsibleUserId?: string;
     }
   ): Promise<Task[]> {
     // 1. Obtener plantillas disponibles
@@ -596,6 +597,7 @@ export const crmService = {
           entity_type: entityType === 'contacts' ? 'contacts' : 'leads',
           complete_till: completeTill.toISOString(),
           task_type: template.task_type || 'call',
+          responsible_user_id: options?.responsibleUserId || '1',
         });
         tasks.push(task);
       } catch (error) {
@@ -630,6 +632,7 @@ export const crmService = {
                       call.entity_type === 'lead' ? 'leads' :
                       call.entity_type === 'leads' ? 'leads' : 'contacts',
           complete_till: call.proxima_llamada_fecha,
+          responsible_user_id: call.responsible_user_id || '1',
         });
       } catch (error) {
         console.error('Error creando tarea de seguimiento:', error);

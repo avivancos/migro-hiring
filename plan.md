@@ -413,6 +413,11 @@ Archivos de referencia creados:
 - ✅ `ServiceDetails` actualizado para mostrar información de pago correcta
 - ✅ Ver documentación completa: `BACKEND_PAYMENT_TYPE_IMPLEMENTATION.md`
 
+### 25 de Noviembre de 2025
+- ✅ Corrección de build (Render): eliminados mocks no usados en `src/pages/CRMDashboardPage.tsx`.
+- ✅ `crmService`: añadido `responsible_user_id` en creación de tareas dentro de `assignTasksFromTemplates` y `registerCallWithFollowUp`.
+- ✅ Build de producción verificado en Docker (tsc + vite) sin errores.
+
 ### 19 de Noviembre de 2025
 - ✅ Renombrada la entrada a la administración de contratación (`/admin`) por la nueva ruta `/contrato`, incluyendo panel, login y redirecciones.
 - ✅ Añadida una opción de "pago ya abonado" que permite registrar la forma de pago previa, almacenar la nota y reflejarla tanto en el flujo como en el PDF final del contrato.
