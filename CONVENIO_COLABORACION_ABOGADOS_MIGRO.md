@@ -6,7 +6,7 @@ REUNIDOS
 
 De una parte, [ABOGADO COLABORADOR], en adelante “EL ABOGADO”, con NIF [●], domicilio en [●].
 
-Y de otra, MIGRO SERVICIOS Y REMESAS S.L., en adelante “MIGRO”, con CIF B22759765, domicilio en C/ Libreros, nº 4, 1º, 37008, Salamanca, actuando en su nombre y representación [Nombre y Apellidos del representante], con NIF [●], en su calidad de [cargo].
+Y de otra, MIGRO SERVICIOS Y REMESAS S.L., en adelante “MIGRO”, con CIF B22759765, domicilio en C/ Libreros, nº 54, 37008, Salamanca, actuando en su nombre y representación [Nombre y Apellidos del representante], con NIF [●], en su calidad de [cargo].
 
 Ambas partes se reconocen capacidad legal suficiente y convienen suscribir el presente convenio de colaboración (“el Convenio”), con arreglo a los siguientes:
 

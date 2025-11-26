@@ -37,7 +37,7 @@ function renderPdf(rawContent: string, title: string, footerUrl = 'contratacion.
   doc.text('MIGRO SERVICIOS Y REMESAS S.L.', pageWidth / 2, y + 7, { align: 'center' });
   doc.setFontSize(9);
   doc.setFont('times', 'normal');
-  doc.text('CIF: B22759765 · C/ Libreros, 4, 1º, 37008 Salamanca', pageWidth / 2, y + 13, { align: 'center' });
+  doc.text('CIF: B22759765 · C/ Libreros, nº 54, 37008 Salamanca', pageWidth / 2, y + 13, { align: 'center' });
   doc.setTextColor(0, 0, 0);
   y += 24;
 

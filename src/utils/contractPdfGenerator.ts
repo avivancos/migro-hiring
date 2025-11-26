@@ -94,7 +94,7 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
   
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text('CIF: B22759765 | C/ Libreros, nº 4, 1º - Salamanca', pageWidth / 2, yPosition + 18, { align: 'center' });
+  doc.text('CIF: B22759765 | C/ Libreros, nº 54, 37008 - Salamanca', pageWidth / 2, yPosition + 18, { align: 'center' });
   
   yPosition += 25;
   doc.setTextColor(0, 0, 0);
@@ -180,7 +180,7 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
 
   const reunidosText = `De una parte, D. ${details.client_name || '____________________'}, mayor de edad, con correo electrónico ${details.client_email || '____________________'}${passport ? `, Pasaporte nº ${passport}` : ''}${nie ? ` y/o NIE ${nie}` : ''}${nationality ? `, de nacionalidad ${nationality}` : ''}${clientAddress ? `, con domicilio en ${clientAddress}` : ''}, en lo sucesivo denominada EL CLIENTE y,
 
-De la otra parte, la entidad MIGRO SERVICIOS Y REMESAS SL, con CIF B22759765, con domicilio social en C/ Libreros, nº 4, 1º de Salamanca – España, debidamente representada en función de la escritura de constitución social de fecha 15 de julio de 2025 y protocolo 940/25 otorgada ante el Notario de Huelva, Dª María Gómez – Rodulfo García de Castro, en lo sucesivo denominada LA PRESTADORA DEL SERVICIO o AGENCIA.`;
+De la otra parte, la entidad MIGRO SERVICIOS Y REMESAS SL, con CIF B22759765, con domicilio social en C/ Libreros, nº 54, 37008, Salamanca – España, debidamente representada en función de la escritura de constitución social de fecha 15 de julio de 2025 y protocolo 940/25 otorgada ante el Notario de Huelva, Dª María Gómez – Rodulfo García de Castro, en lo sucesivo denominada LA PRESTADORA DEL SERVICIO o AGENCIA.`;
   
   addText(reunidosText, 10, false);
   addSpace(5);

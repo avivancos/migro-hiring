@@ -162,18 +162,34 @@ export function Colaboradores() {
               <div className="bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-700">
                 Texto del changelog
               </div>
-              <div className="p-4 whitespace-pre-wrap text-xs leading-6 font-mono">
-                {
-                  (() => {
-                    const raw = (agreementMd as unknown as string) || '';
-                    const anchor = '16. REGISTRO DE MODIFICACIONES';
-                    const start = raw.indexOf(anchor);
-                    if (start === -1) return 'No hay registro de modificaciones.';
-                    const endMarker = '\nY en prueba de conformidad';
-                    const end = raw.indexOf(endMarker, start);
-                    return raw.substring(start, end === -1 ? raw.length : end).trim();
-                  })()
-                }
+              <div className="p-4 text-xs leading-6 font-mono">
+                {(() => {
+                  const raw = (agreementMd as unknown as string) || '';
+                  const anchor = '16. REGISTRO DE MODIFICACIONES';
+                  const start = raw.indexOf(anchor);
+                  if (start === -1) return <span>No hay registro de modificaciones.</span>;
+                  const endMarker = '\nY en prueba de conformidad';
+                  const end = raw.indexOf(endMarker, start);
+                  const section = raw.substring(start, end === -1 ? raw.length : end).trim();
+                  const lines = section.split(/\r?\n/);
+                  return (
+                    <div className="space-y-0.5">
+                      {lines.map((line, idx) => {
+                        const highlight =
+                          line.includes('Ajuste de 11.3') ||
+                          line.toLowerCase().includes('registro en crm');
+                        return (
+                          <div
+                            key={idx}
+                            className={highlight ? 'bg-yellow-200 px-1 rounded' : undefined}
+                          >
+                            {line}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
