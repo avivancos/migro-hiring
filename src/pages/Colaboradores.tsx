@@ -127,7 +127,7 @@ export function Colaboradores() {
       <section>
         <h1 className="text-2xl font-bold text-green-600 mb-2">Convenio de Colaboración</h1>
         <p className="text-sm text-gray-600 mb-6">
-        Visualiza o descarga el convenio marco de colaboración entre despachos colaboradores y MIGRO.
+        Visualiza o descarga el convenio marco de colaboración entre abogados colaboradores y MIGRO.
         </p>
         <div className="flex gap-3">
           <Button onClick={handlePreview} variant="default" className="bg-green-600 hover:bg-green-700">
@@ -136,6 +136,47 @@ export function Colaboradores() {
           <Button onClick={handleDownload} disabled={downloading} variant="outline">
             {downloading ? 'Generando…' : 'Descargar PDF'}
           </Button>
+        </div>
+
+        <div className="mt-8 space-y-2">
+          <h2 className="text-lg font-semibold text-green-700">Registro de modificaciones (publicado)</h2>
+          <div className="text-sm text-gray-700">
+            <p className="mb-2">
+              Última modificación publicada: <span className="font-medium">
+                {
+                  (() => {
+                    const raw = (agreementMd as unknown as string) || '';
+                    const anchor = '16. REGISTRO DE MODIFICACIONES';
+                    const start = raw.indexOf(anchor);
+                    if (start === -1) return '—';
+                    const endMarker = '\nY en prueba de conformidad';
+                    const end = raw.indexOf(endMarker, start);
+                    const section = raw.substring(start, end === -1 ? raw.length : end);
+                    const m = section.match(/16\.1\.\s*Última modificación:\s*([^\n]+)/);
+                    return m ? m[1].trim() : '—';
+                  })()
+                }
+              </span>
+            </p>
+            <div className="rounded-md border border-gray-200">
+              <div className="bg-gray-50 px-4 py-2 text-xs font-semibold text-gray-700">
+                Texto del changelog
+              </div>
+              <div className="p-4 whitespace-pre-wrap text-xs leading-6 font-mono">
+                {
+                  (() => {
+                    const raw = (agreementMd as unknown as string) || '';
+                    const anchor = '16. REGISTRO DE MODIFICACIONES';
+                    const start = raw.indexOf(anchor);
+                    if (start === -1) return 'No hay registro de modificaciones.';
+                    const endMarker = '\nY en prueba de conformidad';
+                    const end = raw.indexOf(endMarker, start);
+                    return raw.substring(start, end === -1 ? raw.length : end).trim();
+                  })()
+                }
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="mt-8">
