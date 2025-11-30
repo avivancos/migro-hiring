@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { Task, KommoLead, KommoContact } from '@/types/crm';
 import { crmService } from '@/services/crmService';
+import { CRMHeader } from '@/components/CRM/CRMHeader';
 
 interface ActionItem {
   id: string;

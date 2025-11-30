@@ -2,7 +2,6 @@
 // Permite: atender llamada, gestionar lead en embudo, anotar datos del cliente, programar próxima llamada
 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +13,6 @@ import {
   User, 
   Save, 
   Calendar, 
-  ArrowLeft,
   RefreshCw,
   CheckCircle2,
   TrendingUp
@@ -26,16 +24,13 @@ import type {
   ContactCreateRequest,
   Pipeline,
   PipelineStatus,
-  TaskCreateRequest,
-  CRMUser
+  TaskCreateRequest
 } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { ContactForm } from '@/components/CRM/ContactForm';
 import { CRMHeader } from '@/components/CRM/CRMHeader';
 
 export function CRMCallHandler() {
-  const navigate = useNavigate();
-  
   // Estados principales
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{ leads: KommoLead[]; contacts: KommoContact[] }>({
@@ -46,7 +41,6 @@ export function CRMCallHandler() {
     type: 'lead' | 'contact' | null;
     data: KommoLead | KommoContact | null;
   }>({ type: null, data: null });
-  const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   
   // Datos del formulario
@@ -60,13 +54,11 @@ export function CRMCallHandler() {
   const [nextCallNotes, setNextCallNotes] = useState('');
   
   // Estados del lead (embudo)
-  const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   const [currentPipeline, setCurrentPipeline] = useState<Pipeline | null>(null);
   const [pipelineStatuses, setPipelineStatuses] = useState<PipelineStatus[]>([]);
   const [selectedStatusId, setSelectedStatusId] = useState<string>('');
   
   // Usuarios responsables
-  const [users, setUsers] = useState<CRMUser[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string>('');
   
   // Edición de datos del cliente
@@ -94,7 +86,6 @@ export function CRMCallHandler() {
         crmService.getPipelines().catch(() => []),
       ]);
       
-      setUsers(usersData);
       if (usersData.length > 0) {
         setCurrentUserId(usersData[0].id);
       }
@@ -103,7 +94,6 @@ export function CRMCallHandler() {
       const mainPipeline = Array.isArray(pipelinesData) 
         ? pipelinesData.find((p: Pipeline) => p.is_main) || pipelinesData[0] || null
         : null;
-      setPipelines(Array.isArray(pipelinesData) ? pipelinesData : []);
       setCurrentPipeline(mainPipeline);
     } catch (err) {
       console.error('Error loading initial data:', err);
@@ -311,7 +301,7 @@ export function CRMCallHandler() {
         proxima_llamada_fecha: nextCallDate ? new Date(nextCallDate).toISOString() : undefined,
       };
       
-      const createdCall = await crmService.createCall(finalCallData);
+      await crmService.createCall(finalCallData);
       
       // 4. Crear tarea para próxima llamada si se especificó
       if (nextCallDate) {
@@ -605,7 +595,7 @@ export function CRMCallHandler() {
                     </select>
                   </div>
                   <Button
-                    onClick={handleUpdateLeadStatus}
+                    onClick={() => handleUpdateLeadStatus()}
                     disabled={!selectedStatusId || saving}
                     variant="outline"
                   >

@@ -48,19 +48,19 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
   const [users, setUsers] = useState<CRMUser[]>([]);
   const [contacts, setContacts] = useState<KommoContact[]>([]);
   const [price, setPrice] = useState<number | null>(lead?.price ?? null);
-  const [formData, setFormData] = useState<Omit<LeadCreateRequest, 'price'>>({
+  const [formData, setFormData] = useState<any>({
     name: lead?.name || '',
     currency: lead?.currency || 'EUR',
     status: lead?.status || 'new',
-    pipeline_id: lead?.pipeline_id || null,
-    responsible_user_id: lead?.responsible_user_id || null,
+    pipeline_id: lead?.pipeline_id || undefined,
+    responsible_user_id: lead?.responsible_user_id || undefined,
     priority: lead?.priority || 'medium',
     service_type: lead?.service_type || '',
     service_description: lead?.service_description || '',
     source: lead?.source || '',
     description: lead?.description || '',
-    contact_id: lead?.contact_id || null,
-    company_id: lead?.company_id || null,
+    contact_id: lead?.contact_id || undefined,
+    company_id: lead?.company_id || undefined,
   });
 
   useEffect(() => {
@@ -113,17 +113,17 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
             // Inicializar formulario con defaults de /crm/leads/new
             setFormData({
               name: defaults.name ?? '',
-              status: defaults.status ?? null,
-              pipeline_id: defaults.pipeline_id ?? null,
-              contact_id: defaults.contact_id ?? null,
-              responsible_user_id: defaults.responsible_user_id ?? null,
+              status: defaults.status ?? 'new',
+              pipeline_id: defaults.pipeline_id ?? undefined,
+              contact_id: defaults.contact_id ?? undefined,
+              responsible_user_id: defaults.responsible_user_id ?? undefined,
               currency: defaults.currency ?? 'EUR',
               priority: defaults.priority || 'medium',
               service_type: defaults.service_type || '',
               service_description: defaults.service_description || '',
               source: defaults.source || '',
               description: defaults.description || '',
-              company_id: defaults.company_id ?? null,
+              company_id: defaults.company_id ?? undefined,
             });
             setPrice(defaults.price ?? null);
           }
@@ -253,7 +253,7 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
                 value={formData.responsible_user_id ?? ''}
                 onChange={(e) => {
                   const v = e.target.value;
-                  setFormData({ ...formData, responsible_user_id: v === '' ? null : v });
+                  setFormData({ ...formData, responsible_user_id: v === '' ? undefined : v });
                 }}
                 className="w-full rounded-md border border-gray-300 p-2"
                 disabled={loadingUsers}
@@ -287,7 +287,7 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
                 value={formData.contact_id ?? ''}
                 onChange={(e) => {
                   const v = e.target.value;
-                  setFormData({ ...formData, contact_id: v === '' ? null : v });
+                  setFormData({ ...formData, contact_id: v === '' ? undefined : v });
                 }}
                 className="w-full rounded-md border border-gray-300 p-2"
                 disabled={loadingContacts}

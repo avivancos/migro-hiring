@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Edit, User, Phone, Plus, PhoneCall, RefreshCw, DollarSign, ChevronDown, CheckCircle2 } from 'lucide-react';
-import type { KommoLead, Task, Call, Note, TaskCreateRequest, KommoContact } from '@/types/crm';
+import type { KommoLead, Task, Call, Note, TaskCreateRequest, KommoContact, LeadCreateRequest, LeadUpdateRequest } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { LeadForm } from '@/components/CRM/LeadForm';
 import { TaskForm } from '@/components/CRM/TaskForm';
@@ -108,15 +108,14 @@ export function CRMLeadDetail() {
   };
 
   // Función para construir payload sin valores inválidos
-  const buildLeadPayload = (lead: KommoLead) => {
-    return {
+  const buildLeadPayload = (lead: KommoLead, isCreate: boolean = false): LeadCreateRequest | LeadUpdateRequest => {
+    const basePayload: any = {
       name: (lead.name ?? '').trim() || 'Nuevo lead',
-      status: lead.status || null,
-      pipeline_id: isUUID(lead.pipeline_id) ? lead.pipeline_id : null,
-      contact_id: isUUID(lead.contact_id) ? lead.contact_id : null,
-      company_id: isUUID(lead.company_id) ? lead.company_id : null,
-      responsible_user_id: isUUID(lead.responsible_user_id) ? lead.responsible_user_id : null,
-      price: Number.isFinite(lead.price) ? lead.price : null,
+      pipeline_id: isUUID(lead.pipeline_id) ? lead.pipeline_id : undefined,
+      contact_id: isUUID(lead.contact_id) ? lead.contact_id : undefined,
+      company_id: isUUID(lead.company_id) ? lead.company_id : undefined,
+      responsible_user_id: isUUID(lead.responsible_user_id) ? lead.responsible_user_id : undefined,
+      price: Number.isFinite(lead.price) ? lead.price : undefined,
       currency: lead.currency || 'EUR',
       priority: lead.priority || 'medium',
       service_type: lead.service_type || '',
@@ -124,18 +123,30 @@ export function CRMLeadDetail() {
       source: lead.source || '',
       description: lead.description || '',
     };
+    
+    // status es requerido en LeadCreateRequest pero opcional en LeadUpdateRequest
+    if (isCreate) {
+      // Para creación, status es requerido
+      basePayload.status = lead.status || 'new';
+      return basePayload as LeadCreateRequest;
+    } else {
+      // Para actualización, status es opcional
+      if (lead.status) {
+        basePayload.status = lead.status;
+      }
+      return basePayload as LeadUpdateRequest;
+    }
   };
 
   const handleSave = async (updatedLead: KommoLead) => {
     if (!id) return;
     try {
       setSaveSuccess(false);
-      // Construir payload normalizado
-      const payload = buildLeadPayload(updatedLead);
       
       // Si es un nuevo lead, crearlo; si no, actualizarlo
       if (id === 'new') {
-        // Crear nuevo lead con payload normalizado
+        // Construir payload para creación
+        const payload = buildLeadPayload(updatedLead, true) as LeadCreateRequest;
         console.log('Creando lead con payload:', payload);
         const newLead = await crmService.createLead(payload);
         
@@ -155,7 +166,8 @@ export function CRMLeadDetail() {
           navigate(`/crm/leads/${newLead.id}`);
         }, 2000);
       } else {
-        // Actualizar lead existente
+        // Construir payload para actualización
+        const payload = buildLeadPayload(updatedLead, false) as LeadUpdateRequest;
         console.log('Actualizando lead con payload:', payload);
         await crmService.updateLead(id, payload);
         // Recargar lead actualizado
@@ -371,6 +383,9 @@ export function CRMLeadDetail() {
     );
   }
 
+  // TypeScript assertion: después de la verificación anterior, lead no puede ser null
+  const currentLead: KommoLead = lead!;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <CRMHeader />
@@ -387,8 +402,8 @@ export function CRMLeadDetail() {
                 Volver
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">{lead.name}</h1>
-                <p className="text-gray-600 mt-1">ID: {lead.id}</p>
+                <h1 className="text-3xl font-bold text-gray-900">{currentLead.name}</h1>
+                <p className="text-gray-600 mt-1">ID: {currentLead.id}</p>
               </div>
             </div>
         <div className="flex items-center gap-2">
@@ -485,7 +500,7 @@ export function CRMLeadDetail() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {lead.price > 0 ? formatPrice(lead.price, lead.currency) : 'Sin valor'}
+              {currentLead.price > 0 ? formatPrice(currentLead.price, currentLead.currency) : 'Sin valor'}
             </div>
           </CardContent>
         </Card>
@@ -496,7 +511,7 @@ export function CRMLeadDetail() {
           </CardHeader>
           <CardContent>
             <span className="px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
-              {lead.status}
+              {currentLead.status}
             </span>
           </CardContent>
         </Card>
@@ -507,7 +522,7 @@ export function CRMLeadDetail() {
           </CardHeader>
           <CardContent>
             <div className="text-sm text-gray-900">
-              {new Date(lead.created_at).toLocaleDateString('es-ES', {
+              {new Date(currentLead.created_at).toLocaleDateString('es-ES', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
@@ -532,49 +547,49 @@ export function CRMLeadDetail() {
               <CardTitle>Detalles del Lead</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {lead.description && (
+              {currentLead.description && (
                 <div>
                   <h3 className="font-semibold mb-2">Descripción</h3>
-                  <p className="text-gray-700">{lead.description}</p>
+                  <p className="text-gray-700">{currentLead.description}</p>
                 </div>
               )}
 
-              {lead.service_type && (
+              {currentLead.service_type && (
                 <div>
                   <h3 className="font-semibold mb-2">Tipo de Servicio</h3>
-                  <p className="text-gray-700">{lead.service_type}</p>
+                  <p className="text-gray-700">{currentLead.service_type}</p>
                 </div>
               )}
 
-              {lead.service_description && (
+              {currentLead.service_description && (
                 <div>
                   <h3 className="font-semibold mb-2">Descripción del Servicio</h3>
-                  <p className="text-gray-700">{lead.service_description}</p>
+                  <p className="text-gray-700">{currentLead.service_description}</p>
                 </div>
               )}
 
-              {lead.source && (
+              {currentLead.source && (
                 <div>
                   <h3 className="font-semibold mb-2">Fuente</h3>
-                  <p className="text-gray-700">{lead.source}</p>
+                  <p className="text-gray-700">{currentLead.source}</p>
                 </div>
               )}
 
-              {lead.expected_close_date && (
+              {currentLead.expected_close_date && (
                 <div>
                   <h3 className="font-semibold mb-2">Fecha Esperada de Cierre</h3>
                   <p className="text-gray-700">
-                    {new Date(lead.expected_close_date).toLocaleDateString('es-ES')}
+                    {new Date(currentLead.expected_close_date).toLocaleDateString('es-ES')}
                   </p>
                 </div>
               )}
 
-              {lead.contact && (
+              {currentLead.contact && (
                 <div>
                   <h3 className="font-semibold mb-2">Contacto Asociado</h3>
                   <div className="flex items-center gap-2 text-gray-700">
                     <User size={18} />
-                    <span>{lead.contact.name}</span>
+                    <span>{currentLead.contact.name}</span>
                   </div>
                 </div>
               )}

@@ -10,7 +10,6 @@ import { crmService } from '@/services/crmService';
 import type { KommoLead, PipelineStatus, DashboardStats } from '@/types/crm';
 import {
   Users,
-  LogOut,
   TrendingUp,
   DollarSign,
   Calendar,
