@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { Call, CRMUser } from '@/types/crm';
+import type { Call, CRMUser, KommoContact, KommoLead } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 
 interface CallFormProps {
@@ -28,11 +28,14 @@ export function CallForm({
   onCancel,
 }: CallFormProps) {
   const [loading, setLoading] = useState(false);
+  const [loadingEntities, setLoadingEntities] = useState(false);
   const [users, setUsers] = useState<CRMUser[]>([]);
+  const [contacts, setContacts] = useState<KommoContact[]>([]);
+  const [leads, setLeads] = useState<KommoLead[]>([]);
   
   const [formData, setFormData] = useState({
     direction: call?.direction || 'outbound',
-    duration: call?.duration || 0,
+    duration: call?.duration ?? null,
     phone: call?.phone || defaultPhone || '',
     call_status: call?.call_status || 'completed',
     call_result: call?.call_result || '',
@@ -51,7 +54,13 @@ export function CallForm({
 
   useEffect(() => {
     loadUsers();
+    loadEntities();
   }, []);
+
+  // Cargar entidades cuando cambie el tipo
+  useEffect(() => {
+    loadEntities();
+  }, [formData.entity_type]);
 
   const loadUsers = async () => {
     try {
@@ -66,6 +75,27 @@ export function CallForm({
     }
   };
 
+  const loadEntities = async () => {
+    setLoadingEntities(true);
+    try {
+      if (formData.entity_type === 'contacts') {
+        const contactsData = await crmService.getContacts({ limit: 100 });
+        setContacts(contactsData.items || []);
+        setLeads([]);
+      } else if (formData.entity_type === 'leads') {
+        const leadsData = await crmService.getLeads({ limit: 100 });
+        setLeads(leadsData.items || []);
+        setContacts([]);
+      }
+    } catch (err) {
+      console.error('Error loading entities:', err);
+      setContacts([]);
+      setLeads([]);
+    } finally {
+      setLoadingEntities(false);
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -73,7 +103,7 @@ export function CallForm({
     try {
       const submitData: any = {
         ...formData,
-        duration: parseInt(formData.duration.toString()),
+        duration: formData.duration ?? 0,
       };
 
       // Convertir fechas a ISO string
@@ -85,8 +115,18 @@ export function CallForm({
       }
 
       await onSubmit(submitData);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error submitting form:', err);
+      // Manejar error 400 relacionado con responsible_user_id
+      if (err?.response?.status === 400) {
+        const errorDetail = err?.response?.data?.detail || '';
+        if (errorDetail.includes('responsible') || errorDetail.includes('Only users with role')) {
+          alert('Solo abogados y administradores pueden ser responsables. Por favor, selecciona un usuario válido.');
+          return;
+        }
+      }
+      // Re-lanzar el error para que el componente padre lo maneje
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -144,8 +184,11 @@ export function CallForm({
               <Input
                 id="duration"
                 type="number"
-                value={formData.duration}
-                onChange={(e) => handleChange('duration', parseInt(e.target.value) || 0)}
+                value={formData.duration ?? ''}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  handleChange('duration', v === '' ? null : (Number(v) || 0));
+                }}
                 placeholder="300"
                 min="0"
               />
@@ -187,6 +230,9 @@ export function CallForm({
                   </option>
                 ))}
               </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Solo abogados y administradores pueden ser responsables
+              </p>
             </div>
           </div>
 
@@ -272,16 +318,42 @@ export function CallForm({
           {!defaultEntityId && (
             <div>
               <Label htmlFor="entity_id">
-                ID de {formData.entity_type === 'contacts' ? 'Contacto' : 'Lead'}
+                {formData.entity_type === 'contacts' ? 'Contacto' : 'Lead'}
                 <span className="text-red-500">*</span>
               </Label>
-              <Input
+              <select
                 id="entity_id"
                 value={formData.entity_id}
                 onChange={(e) => handleChange('entity_id', e.target.value)}
-                placeholder="UUID"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 required
-              />
+                disabled={loadingEntities}
+              >
+                <option value="">
+                  {loadingEntities 
+                    ? 'Cargando...' 
+                    : `Seleccionar ${formData.entity_type === 'contacts' ? 'contacto' : 'lead'}...`}
+                </option>
+                {formData.entity_type === 'contacts' ? (
+                  contacts.map(contact => {
+                    const displayName = contact.name || 
+                      `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 
+                      contact.email || 
+                      `Contacto ${contact.id?.slice(0, 8) || 'N/A'}`;
+                    return (
+                      <option key={contact.id} value={contact.id}>
+                        {displayName}
+                      </option>
+                    );
+                  })
+                ) : (
+                  leads.map(lead => (
+                    <option key={lead.id} value={lead.id}>
+                      {lead.name || `Lead ${lead.id?.slice(0, 8) || 'N/A'}`}
+                    </option>
+                  ))
+                )}
+              </select>
             </div>
           )}
 

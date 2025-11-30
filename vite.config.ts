@@ -23,7 +23,9 @@ export default defineConfig({
     // @ts-ignore - allowedHosts acepta 'all' en runtime
     allowedHosts: 'all' as any,
     hmr: {
-      clientPort: 443, // Para HTTPS en producción
+      protocol: 'ws',
+      host: 'localhost',
+      port: 5173,
     },
     watch: {
       // Usar polling en Windows/Docker para hot reload

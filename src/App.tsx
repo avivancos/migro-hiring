@@ -24,6 +24,7 @@ import { CRMSettings } from '@/pages/CRMSettings';
 import { CRMTaskTemplatesSettings } from '@/pages/CRMTaskTemplatesSettings';
 import { CRMActions } from '@/pages/CRMActions';
 import { CRMExpedientes } from '@/pages/CRMExpedientes';
+import { CRMCallHandler } from '@/pages/CRMCallHandler';
 
 function App() {
   return (
@@ -64,6 +65,9 @@ function App() {
           {/* CRM Actions & Expedientes */}
           <Route path="/crm/actions" element={<CRMActions />} />
           <Route path="/crm/expedientes" element={<CRMExpedientes />} />
+          
+          {/* CRM Call Handler */}
+          <Route path="/crm/call" element={<CRMCallHandler />} />
           
           {/* CRM Settings */}
           <Route path="/crm/settings" element={<CRMSettings />} />

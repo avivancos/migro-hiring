@@ -32,10 +32,22 @@ export function ActivityTimeline({ entityType, entityId }: ActivityTimelineProps
   const loadNotes = async () => {
     setLoading(true);
     try {
-      const notesData = await crmService.getNotes({ entity_type: entityType, entity_id: entityId, limit: 50 });
+      // Si entity_id es "new", esperar lista vacía sin errores
+      if (entityId === 'new') {
+        setNotes([]);
+        setLoading(false);
+        return;
+      }
+      
+      const notesData = await crmService.getNotes({ 
+        entity_type: entityType === 'lead' ? 'leads' : entityType === 'contact' ? 'contacts' : entityType,
+        entity_id: entityId, 
+        limit: 50 
+      });
       setNotes(notesData.items || []);
     } catch (err) {
       console.error('Error loading notes:', err);
+      setNotes([]); // Mostrar lista vacía en caso de error
     } finally {
       setLoading(false);
     }

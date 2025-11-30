@@ -10,6 +10,7 @@ import type { KommoLead, KommoContact, Task, Call, Note } from '@/types/crm';
 import * as LucideIcons from 'lucide-react';
 const { FileText, Search, Calendar, User, DollarSign, Clock } = LucideIcons;
 import { crmService } from '@/services/crmService';
+import { CRMHeader } from '@/components/CRM/CRMHeader';
 
 interface ExpedienteData {
   lead: KommoLead;
@@ -54,7 +55,8 @@ export function CRMExpedientes() {
         ]);
 
         // Determinar estado del expediente
-        const pendingTasks = tasks.items.filter((t: Task) => !t.is_completed);
+        const tasksItems = tasks?.items || [];
+        const pendingTasks = tasksItems.filter((t: Task) => !t.is_completed);
         const nextAction = pendingTasks.sort((a: Task, b: Task) => {
           if (!a.complete_till) return 1;
           if (!b.complete_till) return -1;
@@ -75,9 +77,9 @@ export function CRMExpedientes() {
         expedientesData.push({
           lead,
           contact: lead.contact,
-          tasks: tasks.items,
-          calls: calls.items,
-          notes: notes.items,
+          tasks: tasksItems,
+          calls: calls?.items || [],
+          notes: notes?.items || [],
           status,
           nextAction,
           lastUpdate: lead.updated_at,
@@ -158,14 +160,15 @@ export function CRMExpedientes() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Expedientes Legales</h1>
-          <p className="text-gray-600 mt-1">Gestiona los expedientes legales de tus clientes</p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <CRMHeader />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="space-y-6">
+          {/* Page Header */}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Expedientes Legales</h1>
+            <p className="text-gray-600 mt-1">Gestiona los expedientes legales de tus clientes</p>
+          </div>
 
       {/* Filtros */}
       <Card>
@@ -295,6 +298,8 @@ export function CRMExpedientes() {
           </CardContent>
         </Card>
       )}
+        </div>
+      </div>
     </div>
   );
 }

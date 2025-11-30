@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { Task, CRMUser } from '@/types/crm';
+import type { Task, CRMUser, KommoContact, KommoLead } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 
 interface TaskFormProps {
@@ -32,7 +32,10 @@ export function TaskForm({
   onCancel 
 }: TaskFormProps) {
   const [loading, setLoading] = useState(false);
+  const [loadingEntities, setLoadingEntities] = useState(false);
   const [users, setUsers] = useState<CRMUser[]>([]);
+  const [contacts, setContacts] = useState<KommoContact[]>([]);
+  const [leads, setLeads] = useState<KommoLead[]>([]);
   
   // Calcular fecha por defecto (mañana a las 10:00)
   const getDefaultDueDate = () => {
@@ -59,7 +62,13 @@ export function TaskForm({
 
   useEffect(() => {
     loadUsers();
+    loadEntities();
   }, []);
+
+  // Cargar entidades cuando cambie el tipo
+  useEffect(() => {
+    loadEntities();
+  }, [formData.entity_type]);
 
   const loadUsers = async () => {
     try {
@@ -72,6 +81,27 @@ export function TaskForm({
       }
     } catch (err) {
       console.error('Error loading users:', err);
+    }
+  };
+
+  const loadEntities = async () => {
+    setLoadingEntities(true);
+    try {
+      if (formData.entity_type === 'contacts') {
+        const contactsData = await crmService.getContacts({ limit: 100 });
+        setContacts(contactsData.items || []);
+        setLeads([]);
+      } else if (formData.entity_type === 'leads') {
+        const leadsData = await crmService.getLeads({ limit: 100 });
+        setLeads(leadsData.items || []);
+        setContacts([]);
+      }
+    } catch (err) {
+      console.error('Error loading entities:', err);
+      setContacts([]);
+      setLeads([]);
+    } finally {
+      setLoadingEntities(false);
     }
   };
 
@@ -97,8 +127,18 @@ export function TaskForm({
       }
       
       await onSubmit(submitData);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error submitting form:', err);
+      // Manejar error 400 relacionado con responsible_user_id
+      if (err?.response?.status === 400) {
+        const errorDetail = err?.response?.data?.detail || '';
+        if (errorDetail.includes('responsible') || errorDetail.includes('Only users with role')) {
+          alert('Solo abogados y administradores pueden ser responsables. Por favor, selecciona un usuario válido.');
+          return;
+        }
+      }
+      // Re-lanzar el error para que el componente padre lo maneje
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -169,17 +209,20 @@ export function TaskForm({
               <select
                 id="responsible_user_id"
                 value={formData.responsible_user_id}
-                onChange={(e) => handleChange('responsible_user_id', parseInt(e.target.value))}
+                onChange={(e) => handleChange('responsible_user_id', e.target.value || null)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 required
               >
                 <option value="">Seleccionar...</option>
                 {users.map(user => (
-                  <option key={user.id} value={String(user.id)}>
+                  <option key={user.id} value={user.id}>
                     {user.name}
                   </option>
                 ))}
               </select>
+              <p className="text-xs text-gray-500 mt-1">
+                Solo abogados y administradores pueden ser responsables
+              </p>
             </div>
 
             {/* Fecha de vencimiento */}
@@ -218,17 +261,42 @@ export function TaskForm({
             {!defaultEntityId && (
               <div className="md:col-span-2">
                 <Label htmlFor="entity_id">
-                  ID de {formData.entity_type === 'leads' ? 'Lead' : 'Contacto'}
+                  {formData.entity_type === 'leads' ? 'Lead' : 'Contacto'}
                   <span className="text-red-500">*</span>
                 </Label>
-                <Input
+                <select
                   id="entity_id"
-                  type="text"
                   value={formData.entity_id}
                   onChange={(e) => handleChange('entity_id', e.target.value)}
-                  placeholder="UUID"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
-                />
+                  disabled={loadingEntities}
+                >
+                  <option value="">
+                    {loadingEntities 
+                      ? 'Cargando...' 
+                      : `Seleccionar ${formData.entity_type === 'leads' ? 'lead' : 'contacto'}...`}
+                  </option>
+                  {formData.entity_type === 'contacts' ? (
+                    contacts.map(contact => {
+                      const displayName = contact.name || 
+                        `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 
+                        contact.email || 
+                        `Contacto ${contact.id?.slice(0, 8) || 'N/A'}`;
+                      return (
+                        <option key={contact.id} value={contact.id}>
+                          {displayName}
+                        </option>
+                      );
+                    })
+                  ) : (
+                    leads.map(lead => (
+                      <option key={lead.id} value={lead.id}>
+                        {lead.name || `Lead ${lead.id?.slice(0, 8) || 'N/A'}`}
+                      </option>
+                    ))
+                  )}
+                </select>
               </div>
             )}
           </div>

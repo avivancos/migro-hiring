@@ -29,6 +29,7 @@ import {
   FileText,
   ArrowRight,
 } from 'lucide-react';
+import { CRMHeader } from '@/components/CRM/CRMHeader';
 
 export function CRMDashboardPage() {
   const navigate = useNavigate();
@@ -122,10 +123,7 @@ export function CRMDashboardPage() {
     }
   };
 
-  const handleLogout = () => {
-    adminService.logout();
-    navigate('/contrato/login');
-  };
+  // handleLogout ahora está en CRMHeader
 
   // Filtrar leads
   const filteredLeads = leads.filter(lead => {
@@ -233,34 +231,8 @@ export function CRMDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Building2 className="w-8 h-8 text-green-600" />
-                <h1 className="text-xl font-bold text-gray-900">CRM Migro</h1>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm font-medium text-gray-900">{user.name || user.email}</p>
-                <p className="text-xs text-gray-500">Administrador</p>
-              </div>
-              <Button
-                onClick={handleLogout}
-                variant="ghost"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <LogOut className="w-4 h-4" />
-                Salir
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Header con navegación */}
+      <CRMHeader />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Estadísticas */}
@@ -359,7 +331,15 @@ export function CRMDashboardPage() {
                   </Button>
                 ))}
               </div>
-              <Button size="sm" className="bg-green-600 hover:bg-green-700">
+              <Button 
+                size="sm" 
+                className="bg-green-600 hover:bg-green-700"
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log('Navegando a nuevo lead desde dashboard...');
+                  navigate('/crm/leads/new');
+                }}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Nuevo Lead
               </Button>

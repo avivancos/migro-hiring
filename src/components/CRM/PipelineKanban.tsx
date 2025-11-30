@@ -26,13 +26,17 @@ export function PipelineKanban({ pipelineId, onLeadClick }: PipelineKanbanProps)
   const loadPipeline = async () => {
     setLoading(true);
     try {
-      // Obtener pipelines
-      const pipelines = await crmService.getPipelines();
+      // Obtener pipelines - manejar array vacío
+      const pipelines = await crmService.getPipelines().catch(() => []);
       const selectedPipeline = pipelineId 
         ? pipelines.find(p => p.id === pipelineId)
         : pipelines.find(p => p.is_main) || pipelines[0];
 
-      if (!selectedPipeline) return;
+      // Si no hay pipelines, mostrar mensaje pero no bloquear
+      if (!selectedPipeline || pipelines.length === 0) {
+        setLoading(false);
+        return;
+      }
 
       setPipeline(selectedPipeline);
 

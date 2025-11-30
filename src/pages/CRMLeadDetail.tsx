@@ -5,11 +5,12 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Edit, User, Phone, Plus, PhoneCall, RefreshCw, DollarSign, ChevronDown } from 'lucide-react';
-import type { KommoLead, Task, Call, Note, TaskCreateRequest } from '@/types/crm';
+import { ArrowLeft, Edit, User, Phone, Plus, PhoneCall, RefreshCw, DollarSign, ChevronDown, CheckCircle2 } from 'lucide-react';
+import type { KommoLead, Task, Call, Note, TaskCreateRequest, KommoContact } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { LeadForm } from '@/components/CRM/LeadForm';
 import { TaskForm } from '@/components/CRM/TaskForm';
+import { CRMHeader } from '@/components/CRM/CRMHeader';
 
 export function CRMLeadDetail() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +21,8 @@ export function CRMLeadDetail() {
   const [calls, setCalls] = useState<Call[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [editing, setEditing] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [createdContact, setCreatedContact] = useState<KommoContact | null>(null);
   const [activeTab, setActiveTab] = useState('info');
   const [showNewTaskMenu, setShowNewTaskMenu] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
@@ -35,32 +38,159 @@ export function CRMLeadDetail() {
     if (!id) return;
     setLoading(true);
     try {
-      const [leadData, tasksData, callsData, notesData] = await Promise.all([
-        crmService.getLead(id),
-        crmService.getTasks({ entity_id: id, entity_type: 'leads', limit: 50 }),
-        crmService.getCalls({ entity_id: id, entity_type: 'leads', limit: 50 }),
-        crmService.getNotes({ entity_id: id, entity_type: 'leads', limit: 50 }),
-      ]);
-      setLead(leadData);
-      setTasks(tasksData.items || []);
-      setCalls(callsData.items || []);
-      setNotes(notesData.items || []);
+      // Si es "new", usar defaults y no cargar datos relacionados
+      if (id === 'new') {
+        let leadDefaults: Partial<KommoLead> = {};
+        try {
+          leadDefaults = await crmService.getLeadDefaults();
+        } catch (err) {
+          console.warn('No se pudieron cargar los defaults del backend, usando valores por defecto:', err);
+          // Continuar con valores por defecto locales
+        }
+        
+        // Crear lead con defaults o valores por defecto
+        const newLead: KommoLead = {
+          id: 'new',
+          name: '',
+          price: 0,
+          currency: leadDefaults?.currency || 'EUR',
+          status: leadDefaults?.status || 'new',
+          pipeline_id: leadDefaults?.pipeline_id || '',
+          responsible_user_id: leadDefaults?.responsible_user_id || '',
+          created_by: '',
+          updated_by: '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_deleted: false,
+          priority: leadDefaults?.priority || 'medium',
+          service_type: leadDefaults?.service_type || '',
+          service_description: leadDefaults?.service_description || '',
+          source: leadDefaults?.source || '',
+          description: leadDefaults?.description || '',
+        } as KommoLead;
+        
+        setLead(newLead);
+        // Para "new", no hay tareas, llamadas ni notas - mostrar arrays vacíos
+        setTasks([]);
+        setCalls([]);
+        setNotes([]);
+        // Activar modo de edición automáticamente para nuevo lead
+        setEditing(true);
+      } else {
+        // Lead existente: cargar todo, pero manejar errores silenciosamente
+        const [leadData, tasksData, callsData, notesData] = await Promise.all([
+          crmService.getLead(id).catch((err) => {
+            console.error('Error loading lead:', err);
+            throw err; // Re-lanzar para mostrar error de lead
+          }),
+          // Para tareas, llamadas y notas, si fallan, usar arrays vacíos
+          crmService.getTasks({ entity_id: id, entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
+          crmService.getCalls({ entity_id: id, entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
+          crmService.getNotes({ entity_id: id, entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
+        ]);
+        setLead(leadData);
+        setTasks(tasksData.items || []);
+        setCalls(callsData.items || []);
+        setNotes(notesData.items || []);
+      }
     } catch (err) {
       console.error('Error loading lead data:', err);
+      // No mostrar toast de error - solo log en consola
     } finally {
       setLoading(false);
     }
   };
 
+  // Función para validar UUID
+  const isUUID = (v?: string | null): boolean => {
+    if (!v) return false;
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
+  };
+
+  // Función para construir payload sin valores inválidos
+  const buildLeadPayload = (lead: KommoLead) => {
+    return {
+      name: (lead.name ?? '').trim() || 'Nuevo lead',
+      status: lead.status || null,
+      pipeline_id: isUUID(lead.pipeline_id) ? lead.pipeline_id : null,
+      contact_id: isUUID(lead.contact_id) ? lead.contact_id : null,
+      company_id: isUUID(lead.company_id) ? lead.company_id : null,
+      responsible_user_id: isUUID(lead.responsible_user_id) ? lead.responsible_user_id : null,
+      price: Number.isFinite(lead.price) ? lead.price : null,
+      currency: lead.currency || 'EUR',
+      priority: lead.priority || 'medium',
+      service_type: lead.service_type || '',
+      service_description: lead.service_description || '',
+      source: lead.source || '',
+      description: lead.description || '',
+    };
+  };
+
   const handleSave = async (updatedLead: KommoLead) => {
     if (!id) return;
     try {
-      await crmService.updateLead(id, updatedLead);
-      setLead(updatedLead);
-      setEditing(false);
-    } catch (err) {
-      console.error('Error updating lead:', err);
-      alert('Error al actualizar el lead');
+      setSaveSuccess(false);
+      // Construir payload normalizado
+      const payload = buildLeadPayload(updatedLead);
+      
+      // Si es un nuevo lead, crearlo; si no, actualizarlo
+      if (id === 'new') {
+        // Crear nuevo lead con payload normalizado
+        console.log('Creando lead con payload:', payload);
+        const newLead = await crmService.createLead(payload);
+        
+        // Recargar el lead completo para obtener el contacto vinculado
+        const leadWithContact = await crmService.getLead(newLead.id);
+        
+        // Guardar información del contacto para mostrarlo en el mensaje
+        if (leadWithContact.contact) {
+          setCreatedContact(leadWithContact.contact);
+        }
+        
+        // Mostrar mensaje de éxito con información del contacto
+        setSaveSuccess(true);
+        
+        // Esperar un momento para que el usuario vea el mensaje, luego redirigir
+        setTimeout(() => {
+          navigate(`/crm/leads/${newLead.id}`);
+        }, 2000);
+      } else {
+        // Actualizar lead existente
+        console.log('Actualizando lead con payload:', payload);
+        await crmService.updateLead(id, payload);
+        // Recargar lead actualizado
+        const updated = await crmService.getLead(id);
+        setLead(updated);
+        
+        // Mostrar mensaje de éxito
+        setSaveSuccess(true);
+        
+        // Esperar un momento y luego salir del modo edición
+        setTimeout(() => {
+          setSaveSuccess(false);
+          setEditing(false);
+        }, 2000);
+      }
+    } catch (err: any) {
+      console.error('Error saving lead:', err);
+      setSaveSuccess(false);
+      
+      // Manejar error 400 relacionado con responsible_user_id
+      if (err?.response?.status === 400) {
+        const errorDetail = err?.response?.data?.detail || '';
+        if (errorDetail.includes('responsible') || errorDetail.includes('Only users with role')) {
+          alert('Solo abogados y administradores pueden ser responsables. Por favor, selecciona un usuario válido.');
+          return;
+        }
+      }
+      
+      // Log detallado para diagnosticar error 422
+      if (err?.response?.status === 422) {
+        console.error('Error 422 - Detalles:', err.response?.data);
+        alert(`Error de validación: ${JSON.stringify(err.response?.data, null, 2)}`);
+      } else {
+        alert(id === 'new' ? 'Error al crear el lead' : 'Error al actualizar el lead');
+      }
     }
   };
 
@@ -131,70 +261,136 @@ export function CRMLeadDetail() {
       setShowTaskForm(false);
       setQuickTaskType(null);
       setActiveTab('tasks'); // Cambiar a la pestaña de tareas
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error creating task:', err);
+      // Manejar error 400 relacionado con responsible_user_id
+      if (err?.response?.status === 400) {
+        const errorDetail = err?.response?.data?.detail || '';
+        if (errorDetail.includes('responsible') || errorDetail.includes('Only users with role')) {
+          alert('Solo abogados y administradores pueden ser responsables. Por favor, selecciona un usuario válido.');
+          return;
+        }
+      }
       alert('Error al crear la tarea');
     }
   };
 
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="text-center py-12">Cargando lead...</div>
-      </div>
-    );
-  }
-
-  if (!lead) {
-    return (
-      <div className="p-6">
-        <div className="text-center py-12">
-          <p className="text-gray-500">Lead no encontrado</p>
-          <Button onClick={() => navigate('/crm/leads')} className="mt-4">
-            Volver a Leads
-          </Button>
+      <div className="min-h-screen bg-gray-50">
+        <CRMHeader />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="text-center py-12">Cargando lead...</div>
         </div>
       </div>
     );
   }
 
+  // Si estamos en modo edición, mostrar formulario
   if (editing) {
+    // Si no hay lead pero estamos editando, crear uno básico (para id="new")
+    if (!lead && id === 'new') {
+      // Este caso ya debería estar manejado en loadLeadData, pero por si acaso:
+      return (
+        <div className="min-h-screen bg-gray-50">
+          <CRMHeader />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="text-center py-12">Preparando formulario...</div>
+          </div>
+        </div>
+      );
+    }
+    
+    // Mostrar formulario de edición
+    if (!lead) {
+      return (
+        <div className="min-h-screen bg-gray-50">
+          <CRMHeader />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="text-center py-12">
+              <p className="text-gray-500">Error al cargar el lead</p>
+              <Button onClick={() => navigate('/crm/leads')} className="mt-4">
+                Volver a Leads
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
     return (
-      <div className="p-6">
-        <Button
-          variant="outline"
-          onClick={() => setEditing(false)}
-          className="mb-4"
-        >
-          <ArrowLeft size={18} className="mr-2" />
-          Cancelar edición
-        </Button>
-        <LeadForm
-          lead={lead}
-          onSave={handleSave}
-          onCancel={() => setEditing(false)}
-        />
+      <div className="min-h-screen bg-gray-50">
+        <CRMHeader />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="space-y-6">
+            <Button
+              variant="outline"
+              onClick={() => setEditing(false)}
+            >
+              <ArrowLeft size={18} className="mr-2" />
+              Cancelar edición
+            </Button>
+            
+            {/* Mensaje de confirmación de guardado */}
+            {saveSuccess && (
+              <Card className="border-green-300 bg-green-50 shadow-md">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="text-green-600 flex-shrink-0" size={24} />
+                    <div className="flex-1">
+                      <p className="font-semibold text-green-900">
+                        {id === 'new' ? '¡Lead creado exitosamente!' : '¡Lead actualizado exitosamente!'}
+                      </p>
+                      <p className="text-sm text-green-700 mt-1">
+                        {id === 'new' 
+                          ? 'El Lead ha sido creado y vinculado a un Contacto. Redirigiendo...' 
+                          : 'Los cambios se han guardado correctamente.'}
+                      </p>
+                      {id === 'new' && createdContact && (
+                        <p className="text-xs text-green-600 mt-2">
+                          Contacto vinculado: <span className="font-medium">
+                            {createdContact.name || 
+                             `${createdContact.first_name || ''} ${createdContact.last_name || ''}`.trim() || 
+                             'Contacto creado automáticamente'}
+                          </span>
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            
+            <LeadForm
+              lead={lead}
+              onSave={handleSave}
+              onCancel={() => setEditing(false)}
+            />
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-start">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => navigate('/crm/leads')}
-          >
-            <ArrowLeft size={18} className="mr-2" />
-            Volver
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">{lead.name}</h1>
-            <p className="text-gray-600 mt-1">ID: {lead.id}</p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <CRMHeader />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="space-y-6">
+          {/* Page Header */}
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/crm/leads')}
+              >
+                <ArrowLeft size={18} className="mr-2" />
+                Volver
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">{lead.name}</h1>
+                <p className="text-gray-600 mt-1">ID: {lead.id}</p>
+              </div>
+            </div>
         <div className="flex items-center gap-2">
           <Button
             onClick={() => setEditing(true)}
@@ -527,6 +723,8 @@ export function CRMLeadDetail() {
           </div>
         </div>
       )}
+        </div>
+      </div>
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { adminService } from '@/services/adminService';
 import { crmService } from '@/services/crmService';
-import type { KommoContact, KommoLead, Task, Call, Note } from '@/types/crm';
+import type { KommoContact, KommoLead, Task, Call, Note, CallCreateRequest, TaskCreateRequest, NoteCreateRequest } from '@/types/crm';
 import {
   ArrowLeft,
   Edit,
@@ -22,8 +22,11 @@ import {
   Clock,
   FileText,
   Plus,
-  MoreVertical,
 } from 'lucide-react';
+import { CRMHeader } from '@/components/CRM/CRMHeader';
+import { CallForm } from '@/components/CRM/CallForm';
+import { TaskForm } from '@/components/CRM/TaskForm';
+import { NoteForm } from '@/components/CRM/NoteForm';
 
 export function CRMContactDetail() {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +38,9 @@ export function CRMContactDetail() {
   const [calls, setCalls] = useState<Call[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [activeTab, setActiveTab] = useState('info');
+  const [showCallForm, setShowCallForm] = useState(false);
+  const [showTaskForm, setShowTaskForm] = useState(false);
+  const [showNoteForm, setShowNoteForm] = useState(false);
 
   useEffect(() => {
     if (!adminService.isAuthenticated()) {
@@ -103,12 +109,85 @@ export function CRMContactDetail() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const handleCallSubmit = async (callData: CallCreateRequest) => {
+    if (!id) return;
+    try {
+      const finalCallData: CallCreateRequest = {
+        ...callData,
+        entity_type: 'contacts',
+        entity_id: id,
+      };
+      await crmService.createCall(finalCallData);
+      await loadContactData();
+      setShowCallForm(false);
+      setActiveTab('calls');
+    } catch (err: any) {
+      console.error('Error creating call:', err);
+      // Manejar error 400 relacionado con responsible_user_id
+      if (err?.response?.status === 400) {
+        const errorDetail = err?.response?.data?.detail || '';
+        if (errorDetail.includes('responsible') || errorDetail.includes('Only users with role')) {
+          alert('Solo abogados y administradores pueden ser responsables. Por favor, selecciona un usuario válido.');
+          return;
+        }
+      }
+      alert('Error al crear la llamada');
+    }
+  };
+
+  const handleTaskSubmit = async (taskData: TaskCreateRequest) => {
+    if (!id) return;
+    try {
+      const finalTaskData: TaskCreateRequest = {
+        ...taskData,
+        entity_type: 'contacts',
+        entity_id: id,
+      };
+      await crmService.createTask(finalTaskData);
+      await loadContactData();
+      setShowTaskForm(false);
+      setActiveTab('tasks');
+    } catch (err: any) {
+      console.error('Error creating task:', err);
+      // Manejar error 400 relacionado con responsible_user_id
+      if (err?.response?.status === 400) {
+        const errorDetail = err?.response?.data?.detail || '';
+        if (errorDetail.includes('responsible') || errorDetail.includes('Only users with role')) {
+          alert('Solo abogados y administradores pueden ser responsables. Por favor, selecciona un usuario válido.');
+          return;
+        }
+      }
+      alert('Error al crear la tarea');
+    }
+  };
+
+  const handleNoteSubmit = async (noteData: NoteCreateRequest) => {
+    if (!id) return;
+    try {
+      const finalNoteData: NoteCreateRequest = {
+        ...noteData,
+        entity_type: 'contacts',
+        entity_id: id,
+      };
+      await crmService.createNote(finalNoteData);
+      await loadContactData();
+      setShowNoteForm(false);
+      setActiveTab('notes');
+    } catch (err: any) {
+      console.error('Error creating note:', err);
+      alert('Error al crear la nota');
+    }
+  };
+
   if (loading || !contact) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando contacto...</p>
+      <div className="min-h-screen bg-gray-50">
+        <CRMHeader />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Cargando contacto...</p>
+          </div>
         </div>
       </div>
     );
@@ -116,39 +195,32 @@ export function CRMContactDetail() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate('/crm/contacts')}
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  {contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim()}
-                </h1>
-                <p className="text-sm text-gray-500">Contacto</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={() => navigate(`/crm/contacts/${id}/edit`)}>
-                <Edit className="w-4 h-4 mr-2" />
-                Editar
-              </Button>
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="w-4 h-4" />
-              </Button>
+      <CRMHeader />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Page Header */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={() => navigate('/crm/contacts')}
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Volver
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim()}
+              </h1>
+              <p className="text-gray-600 mt-1">Contacto</p>
             </div>
           </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => navigate(`/crm/contacts/${id}/edit`)}>
+              <Edit className="w-4 h-4 mr-2" />
+              Editar
+            </Button>
+          </div>
         </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Información Principal */}
         <Card className="mb-6">
           <CardContent className="pt-6">
@@ -205,21 +277,21 @@ export function CRMContactDetail() {
               <div className="flex gap-2">
                 <Button
                   variant="outline"
-                  onClick={() => navigate(`/crm/contacts/${id}/call`)}
+                  onClick={() => setShowCallForm(true)}
                 >
                   <Phone className="w-4 h-4 mr-2" />
                   Nueva Llamada
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => navigate(`/crm/contacts/${id}/task`)}
+                  onClick={() => setShowTaskForm(true)}
                 >
                   <Calendar className="w-4 h-4 mr-2" />
                   Nueva Tarea
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => navigate(`/crm/contacts/${id}/note`)}
+                  onClick={() => setShowNoteForm(true)}
                 >
                   <FileText className="w-4 h-4 mr-2" />
                   Nueva Nota
@@ -372,7 +444,7 @@ export function CRMContactDetail() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Tareas</CardTitle>
-                  <Button size="sm" onClick={() => navigate(`/crm/contacts/${id}/task`)}>
+                  <Button size="sm" onClick={() => setShowTaskForm(true)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Nueva Tarea
                   </Button>
@@ -425,7 +497,7 @@ export function CRMContactDetail() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Llamadas</CardTitle>
-                  <Button size="sm" onClick={() => navigate(`/crm/contacts/${id}/call`)}>
+                  <Button size="sm" onClick={() => setShowCallForm(true)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Nueva Llamada
                   </Button>
@@ -481,7 +553,7 @@ export function CRMContactDetail() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Notas</CardTitle>
-                  <Button size="sm" onClick={() => navigate(`/crm/contacts/${id}/note`)}>
+                  <Button size="sm" onClick={() => setShowNoteForm(true)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Nueva Nota
                   </Button>
@@ -519,6 +591,81 @@ export function CRMContactDetail() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modal de Formulario de Llamada */}
+      {showCallForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">Nueva Llamada</h2>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCallForm(false)}
+                >
+                  ✕
+                </Button>
+              </div>
+              <CallForm
+                defaultEntityType="contacts"
+                defaultEntityId={id}
+                onSubmit={handleCallSubmit}
+                onCancel={() => setShowCallForm(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Formulario de Tarea */}
+      {showTaskForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">Nueva Tarea</h2>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowTaskForm(false)}
+                >
+                  ✕
+                </Button>
+              </div>
+              <TaskForm
+                defaultEntityType="contact"
+                defaultEntityId={id as any}
+                onSubmit={handleTaskSubmit}
+                onCancel={() => setShowTaskForm(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Formulario de Nota */}
+      {showNoteForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">Nueva Nota</h2>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowNoteForm(false)}
+                >
+                  ✕
+                </Button>
+              </div>
+              <NoteForm
+                defaultEntityType="contacts"
+                defaultEntityId={id}
+                onSubmit={handleNoteSubmit}
+                onCancel={() => setShowNoteForm(false)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

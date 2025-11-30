@@ -73,11 +73,35 @@ export const crmService = {
   },
 
   /**
+   * Obtener defaults para un nuevo lead (prefilling)
+   */
+  async getLeadDefaults(): Promise<Partial<KommoLead>> {
+    try {
+      const { data } = await api.get<Partial<KommoLead>>(`${CRM_BASE_PATH}/leads/new`);
+      return data;
+    } catch (err) {
+      console.error('Error loading lead defaults:', err);
+      return {};
+    }
+  },
+
+  /**
    * Crear un nuevo lead
    */
   async createLead(lead: LeadCreateRequest): Promise<KommoLead> {
-    const { data } = await api.post<KommoLead>(`${CRM_BASE_PATH}/leads`, lead);
-    return data;
+    // Log del payload antes de enviarlo para diagnosticar errores 422
+    console.log('POST /crm/leads - Payload:', JSON.stringify(lead, null, 2));
+    try {
+      const { data } = await api.post<KommoLead>(`${CRM_BASE_PATH}/leads`, lead);
+      return data;
+    } catch (err: any) {
+      // Log detallado del error 422
+      if (err?.response?.status === 422) {
+        console.error('Error 422 - Payload enviado:', JSON.stringify(lead, null, 2));
+        console.error('Error 422 - Respuesta del servidor:', err.response?.data);
+      }
+      throw err;
+    }
   },
 
   /**
@@ -185,10 +209,21 @@ export const crmService = {
    * Obtener lista de pipelines
    * NOTA: Este endpoint puede no estar implementado en el backend
    * Si no existe, el componente debe manejar el error
+   * Maneja arrays vacíos correctamente
    */
   async getPipelines(): Promise<Pipeline[]> {
-    const { data } = await api.get<PipelinesListResponse>(`${CRM_BASE_PATH}/pipelines`);
-    return data.items || data;
+    try {
+      const { data } = await api.get<PipelinesListResponse | Pipeline[]>(`${CRM_BASE_PATH}/pipelines`);
+      // Si devuelve array vacío o array directo, manejarlo
+      if (Array.isArray(data)) {
+        return data;
+      }
+      // Si devuelve objeto con items
+      return data.items || [];
+    } catch (err) {
+      console.error('Error loading pipelines:', err);
+      return []; // Retornar array vacío en lugar de bloquear
+    }
   },
 
   /**
@@ -273,12 +308,26 @@ export const crmService = {
 
   /**
    * Obtener notas de una entidad
+   * Si entity_id="new", el backend devuelve [] sin error
    */
   async getNotes(filters?: { entity_type?: string; entity_id?: string; note_type?: string; skip?: number; limit?: number; created_by?: string }): Promise<NotesListResponse> {
-    const { data } = await api.get<NotesListResponse>(`${CRM_BASE_PATH}/notes`, {
-      params: filters,
-    });
-    return data;
+    try {
+      const { data } = await api.get<NotesListResponse>(`${CRM_BASE_PATH}/notes`, {
+        params: filters,
+      });
+      return data;
+    } catch (err: any) {
+      // Si entity_id es "new", esperar lista vacía
+      if (filters?.entity_id === 'new') {
+        return {
+          items: [],
+          total: 0,
+          skip: filters?.skip || 0,
+          limit: filters?.limit || 20,
+        };
+      }
+      throw err;
+    }
   },
 
   /**
@@ -325,12 +374,28 @@ export const crmService = {
 
   /**
    * Obtener llamadas
+   * Maneja error 500 mostrando lista vacía hasta que se apliquen migraciones del backend
    */
   async getCalls(filters?: CallFilters): Promise<CallsListResponse> {
-    const { data } = await api.get<CallsListResponse>(`${CRM_BASE_PATH}/calls`, {
-      params: filters,
-    });
-    return data;
+    try {
+      const { data } = await api.get<CallsListResponse>(`${CRM_BASE_PATH}/calls`, {
+        params: filters,
+      });
+      return data;
+    } catch (err: any) {
+      // Si es error 500, probablemente faltan migraciones de transcripción
+      // Mientras tanto, retornar lista vacía
+      if (err?.response?.status === 500) {
+        console.warn('Error 500 en /crm/calls - probablemente faltan migraciones. Mostrando lista vacía.');
+        return {
+          items: [],
+          total: 0,
+          skip: filters?.skip || 0,
+          limit: filters?.limit || 20,
+        };
+      }
+      throw err;
+    }
   },
 
   /**

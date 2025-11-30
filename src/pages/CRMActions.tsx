@@ -189,14 +189,15 @@ export function CRMActions() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Acciones y Tareas</h1>
-          <p className="text-gray-600 mt-1">Gestiona las acciones prioritarias para cerrar ventas y expedientes</p>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <CRMHeader />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="space-y-6">
+          {/* Page Header */}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Acciones y Tareas</h1>
+            <p className="text-gray-600 mt-1">Gestiona las acciones prioritarias para cerrar ventas y expedientes</p>
+          </div>
 
       {/* Filtros */}
       <Card>
@@ -360,6 +361,8 @@ export function CRMActions() {
           )}
         </CardContent>
       </Card>
+        </div>
+      </div>
     </div>
   );
 }

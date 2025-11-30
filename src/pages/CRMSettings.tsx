@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Settings, FileText, Users, BarChart3 } from 'lucide-react';
+import { CRMHeader } from '@/components/CRM/CRMHeader';
 
 export function CRMSettings() {
   const navigate = useNavigate();
@@ -33,11 +34,14 @@ export function CRMSettings() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Configuración del CRM</h1>
-        <p className="text-gray-600 mt-1">Gestiona la configuración del sistema CRM</p>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <CRMHeader />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Configuración del CRM</h1>
+            <p className="text-gray-600 mt-1">Gestiona la configuración del sistema CRM</p>
+          </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {settingsSections.map((section) => {
@@ -88,6 +92,8 @@ export function CRMSettings() {
           <p>• Los usuarios pueden tener diferentes roles y permisos</p>
         </CardContent>
       </Card>
+        </div>
+      </div>
     </div>
   );
 }

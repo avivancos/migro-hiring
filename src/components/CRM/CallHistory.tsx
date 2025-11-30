@@ -33,13 +33,23 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
   const loadCalls = async () => {
     setLoading(true);
     try {
+      // Si entity_id es "new", esperar lista vacía sin errores
+      if (entityId === 'new') {
+        setCalls([]);
+        setLoading(false);
+        return;
+      }
+      
+      // Enviar entity_id y entity_type para filtrar en el backend
       const callsData = await crmService.getCalls({
-        entity_type: entityType,
+        entity_type: entityType === 'lead' ? 'leads' : entityType === 'contact' ? 'contacts' : entityType,
         entity_id: entityId,
+        limit: 50,
       });
       setCalls(callsData.items || []);
     } catch (err) {
       console.error('Error loading calls:', err);
+      setCalls([]); // Mostrar lista vacía en caso de error (incluye 500)
     } finally {
       setLoading(false);
     }

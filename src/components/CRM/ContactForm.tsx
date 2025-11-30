@@ -44,7 +44,7 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
     lugar_residencia: contact?.lugar_residencia || '',
     tiene_ingresos: contact?.tiene_ingresos ?? undefined,
     trabaja_b: contact?.trabaja_b ?? undefined,
-    edad: contact?.edad || '',
+    edad: contact?.edad ?? null,
     tiene_familiares_espana: contact?.tiene_familiares_espana ?? undefined,
   });
 
@@ -301,8 +301,11 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
                 <Input
                   id="edad"
                   type="number"
-                  value={formData.edad}
-                  onChange={(e) => handleChange('edad', e.target.value ? parseInt(e.target.value) : '')}
+                  value={formData.edad ?? ''}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    handleChange('edad', v === '' ? null : (Number(v) || null));
+                  }}
                   placeholder="30"
                   min="0"
                 />

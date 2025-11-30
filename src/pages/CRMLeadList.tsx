@@ -9,6 +9,7 @@ import { Plus, Search, List, LayoutGrid } from 'lucide-react';
 import type { KommoLead, Pipeline } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { DollarSign, User, Calendar } from 'lucide-react';
+import { CRMHeader } from '@/components/CRM/CRMHeader';
 
 const LEAD_STATUSES = [
   { value: 'new', label: 'Nuevos', color: 'bg-blue-100 border-blue-300' },
@@ -43,13 +44,16 @@ export function CRMLeadList() {
     try {
       const [leadsResponse, pipelinesData] = await Promise.all([
         crmService.getLeads({ limit: 100 }),
-        crmService.getPipelines(),
+        crmService.getPipelines().catch(() => []), // Manejar pipelines vacío
       ]);
       setLeads(leadsResponse.items);
-      setPipelines(pipelinesData);
-      if (pipelinesData.length > 0 && !selectedPipeline) {
+      setPipelines(Array.isArray(pipelinesData) ? pipelinesData : []);
+      // Si hay pipelines, seleccionar el principal; si está vacío, no bloquear vista
+      if (Array.isArray(pipelinesData) && pipelinesData.length > 0 && !selectedPipeline) {
         const mainPipeline = pipelinesData.find(p => p.is_main) || pipelinesData[0];
-        setSelectedPipeline(mainPipeline.id);
+        if (mainPipeline) {
+          setSelectedPipeline(mainPipeline.id);
+        }
       }
     } catch (err) {
       console.error('Error loading leads:', err);
@@ -126,21 +130,28 @@ export function CRMLeadList() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
-          <p className="text-gray-600 mt-1">Gestiona tus oportunidades de venta</p>
-        </div>
-        <Button
-          onClick={() => navigate('/crm/leads/new')}
-          className="bg-green-600 hover:bg-green-700"
-        >
-          <Plus size={20} className="mr-2" />
-          Nuevo Lead
-        </Button>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <CRMHeader />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="space-y-6">
+          {/* Page Header */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
+              <p className="text-gray-600 mt-1">Gestiona tus oportunidades de venta</p>
+            </div>
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                console.log('Navegando a nuevo lead...');
+                navigate('/crm/leads/new');
+              }}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Plus size={20} className="mr-2" />
+              Nuevo Lead
+            </Button>
+          </div>
 
       {/* Filtros */}
       <Card>
@@ -305,6 +316,8 @@ export function CRMLeadList() {
           </CardContent>
         </Card>
       )}
+        </div>
+      </div>
     </div>
   );
 }
