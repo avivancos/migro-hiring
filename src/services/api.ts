@@ -52,14 +52,19 @@ api.interceptors.response.use(
     if (error.response) {
       const { status } = error.response;
       
-      // Token expired or unauthorized - NO redirigir a login en flujo de contratación
+      // Token expired or unauthorized - NO redirigir a login en flujo de contratación o home
       if (status === 401) {
         // Solo limpiar tokens si estamos en rutas que requieren autenticación
-        // El flujo de contratación NO requiere login
-        const isHiringFlow = window.location.pathname.includes('/contratacion/') || 
-                             window.location.pathname.includes('/hiring/');
+        // El flujo de contratación y la home NO requieren login
+        const isPublicRoute = window.location.pathname === '/' ||
+                             window.location.pathname.includes('/contratacion/') || 
+                             window.location.pathname.includes('/hiring/') ||
+                             window.location.pathname === '/expirado' ||
+                             window.location.pathname === '/404' ||
+                             window.location.pathname === '/privacidad' ||
+                             window.location.pathname === '/privacy';
         
-        if (!isHiringFlow) {
+        if (!isPublicRoute) {
           localStorage.removeItem('access_token');
           localStorage.removeItem('user');
         }

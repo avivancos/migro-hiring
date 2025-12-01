@@ -1,11 +1,16 @@
 // Header component
 
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
 
 export function Header() {
+  const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
+  
+  // La página home no requiere autenticación, solo mostrar header básico
+  const isHomePage = location.pathname === '/';
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -25,8 +30,8 @@ export function Header() {
             </a>
           </div>
 
-          {/* User info */}
-          {isAuthenticated && user && (
+          {/* User info - Solo mostrar en páginas que no sean home */}
+          {!isHomePage && isAuthenticated && user && (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 text-sm">
                 <User size={16} className="text-gray-500" />
