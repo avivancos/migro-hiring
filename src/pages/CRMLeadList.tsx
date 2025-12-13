@@ -10,6 +10,7 @@ import type { KommoLead, Pipeline } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { DollarSign, User, Calendar } from 'lucide-react';
 import { CRMHeader } from '@/components/CRM/CRMHeader';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 const LEAD_STATUSES = [
   { value: 'new', label: 'Nuevos', color: 'bg-blue-100 border-blue-300' },
@@ -21,6 +22,7 @@ const LEAD_STATUSES = [
 ];
 
 export function CRMLeadList() {
+  const { isAuthenticated, isValidating, LoginComponent } = useRequireAuth();
   const navigate = useNavigate();
   const [view, setView] = useState<'kanban' | 'list'>('kanban');
   const [loading, setLoading] = useState(true);
@@ -32,8 +34,10 @@ export function CRMLeadList() {
   const [draggedLead, setDraggedLead] = useState<KommoLead | null>(null);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (isAuthenticated) {
+      loadData();
+    }
+  }, [isAuthenticated]);
 
   useEffect(() => {
     filterLeads();
@@ -42,17 +46,21 @@ export function CRMLeadList() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [leadsResponse, pipelinesData] = await Promise.all([
-        crmService.getLeads({ limit: 100 }),
+      // Usar contactos directamente ya que los leads están unificados con contactos
+      const [allContacts, pipelinesData] = await Promise.all([
+        crmService.getAllContacts().catch(() => []), // Cargar todos los contactos (los leads ahora son contactos)
         crmService.getPipelines().catch(() => []), // Manejar pipelines vacío
       ]);
-      setLeads(leadsResponse.items);
+      
+      // Los contactos ahora incluyen todos los campos de leads
+      // Usar contactos directamente como "leads" (son lo mismo ahora)
+      setLeads(allContacts as any);
       setPipelines(Array.isArray(pipelinesData) ? pipelinesData : []);
       // Si hay pipelines, seleccionar el principal; si está vacío, no bloquear vista
       if (Array.isArray(pipelinesData) && pipelinesData.length > 0 && !selectedPipeline) {
         const mainPipeline = pipelinesData.find(p => p.is_main) || pipelinesData[0];
         if (mainPipeline) {
-          setSelectedPipeline(mainPipeline.id);
+        setSelectedPipeline(mainPipeline.id);
         }
       }
     } catch (err) {
@@ -104,7 +112,7 @@ export function CRMLeadList() {
       ));
     } catch (err) {
       console.error('Error updating lead status:', err);
-      alert('Error al actualizar el estado del lead');
+      alert('Error al actualizar el estado del contacto');
     } finally {
       setDraggedLead(null);
     }
@@ -121,10 +129,30 @@ export function CRMLeadList() {
     }).format(price);
   };
 
+  // Mostrar spinner mientras valida sesión
+  if (isValidating) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando sesión...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Si no está autenticado, mostrar login
+  if (!isAuthenticated) {
+    return <LoginComponent />;
+  }
+
   if (loading) {
     return (
-      <div className="p-6">
-        <div className="text-center py-12">Cargando leads...</div>
+      <div className="min-h-screen bg-gray-50">
+        <CRMHeader />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="text-center py-12">Cargando contactos...</div>
+        </div>
       </div>
     );
   }
@@ -135,23 +163,23 @@ export function CRMLeadList() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
           {/* Page Header */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
-              <p className="text-gray-600 mt-1">Gestiona tus oportunidades de venta</p>
-            </div>
-            <Button
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Contactos</h1>
+          <p className="text-gray-600 mt-1">Gestiona tus oportunidades de venta</p>
+        </div>
+        <Button
               onClick={(e) => {
                 e.preventDefault();
                 console.log('Navegando a nuevo lead...');
                 navigate('/crm/leads/new');
               }}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <Plus size={20} className="mr-2" />
-              Nuevo Lead
-            </Button>
-          </div>
+          className="bg-green-600 hover:bg-green-700"
+        >
+          <Plus size={20} className="mr-2" />
+          Nuevo Contacto
+        </Button>
+      </div>
 
       {/* Filtros */}
       <Card>
@@ -232,7 +260,18 @@ export function CRMLeadList() {
                       onClick={() => navigate(`/crm/leads/${lead.id}`)}
                     >
                       <CardContent className="p-4 space-y-2">
-                        <h3 className="font-semibold text-sm">{lead.name}</h3>
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="font-semibold text-sm flex-1">{lead.name}</h3>
+                          {lead.initial_contact_completed ? (
+                            <span className="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800 flex-shrink-0" title="Contactado inicialmente">
+                              ✅
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-800 flex-shrink-0" title="Pendiente de contacto inicial">
+                              ⏳
+                            </span>
+                          )}
+                        </div>
                         {lead.contact && (
                           <div className="flex items-center text-xs text-gray-600">
                             <User size={14} className="mr-1" />
@@ -288,7 +327,20 @@ export function CRMLeadList() {
                       className="border-b hover:bg-gray-50 cursor-pointer"
                       onClick={() => navigate(`/crm/leads/${lead.id}`)}
                     >
-                      <td className="p-3 font-medium">{lead.name}</td>
+                      <td className="p-3 font-medium">
+                        <div className="flex items-center gap-2">
+                          <span>{lead.name}</span>
+                          {lead.initial_contact_completed ? (
+                            <span className="px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-800" title="Contactado inicialmente">
+                              ✅
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full text-xs bg-yellow-100 text-yellow-800" title="Pendiente de contacto inicial">
+                              ⏳
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td className="p-3 text-gray-600">{lead.contact?.name || '-'}</td>
                       <td className="p-3">
                         <span className={`px-2 py-1 rounded-full text-xs ${
