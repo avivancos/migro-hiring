@@ -3,7 +3,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Settings, FileText, Users, BarChart3 } from 'lucide-react';
+import { Settings, FileText, Users, BarChart3, List } from 'lucide-react';
 import { CRMHeader } from '@/components/CRM/CRMHeader';
 
 export function CRMSettings() {
@@ -16,6 +16,13 @@ export function CRMSettings() {
       icon: FileText,
       path: '/crm/settings/task-templates',
       color: 'bg-blue-500',
+    },
+    {
+      title: 'Campos Personalizados',
+      description: 'Crea y gestiona campos personalizados para Contactos, Leads y Empresas',
+      icon: List,
+      path: '/crm/settings/custom-fields',
+      color: 'bg-orange-500',
     },
     {
       title: 'Pipelines',
@@ -38,10 +45,10 @@ export function CRMSettings() {
       <CRMHeader />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Configuración del CRM</h1>
-            <p className="text-gray-600 mt-1">Gestiona la configuración del sistema CRM</p>
-          </div>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Configuración del CRM</h1>
+        <p className="text-gray-600 mt-1">Gestiona la configuración del sistema CRM</p>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {settingsSections.map((section) => {

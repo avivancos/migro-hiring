@@ -5,18 +5,22 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Edit, User, Phone, Plus, PhoneCall, RefreshCw, DollarSign, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Edit, User, Phone, Plus, PhoneCall, RefreshCw, DollarSign, ChevronDown, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
 import type { KommoLead, Task, Call, Note, TaskCreateRequest, KommoContact, LeadCreateRequest, LeadUpdateRequest } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { LeadForm } from '@/components/CRM/LeadForm';
 import { TaskForm } from '@/components/CRM/TaskForm';
+import { CallForm } from '@/components/CRM/CallForm';
 import { CRMHeader } from '@/components/CRM/CRMHeader';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 export function CRMLeadDetail() {
+  const { isAuthenticated, isValidating, LoginComponent } = useRequireAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [lead, setLead] = useState<KommoLead | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [calls, setCalls] = useState<Call[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -26,7 +30,14 @@ export function CRMLeadDetail() {
   const [activeTab, setActiveTab] = useState('info');
   const [showNewTaskMenu, setShowNewTaskMenu] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
+  const [showCallForm, setShowCallForm] = useState(false);
   const [quickTaskType, setQuickTaskType] = useState<'first_call' | 'follow_up' | 'note_sale' | null>(null);
+  const [validatingContact, setValidatingContact] = useState(false);
+  const [validationResult, setValidationResult] = useState<{
+    success: boolean;
+    message: string;
+    missingFields: string[];
+  } | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -35,8 +46,13 @@ export function CRMLeadDetail() {
   }, [id]);
 
   const loadLeadData = async () => {
-    if (!id) return;
+    console.log('🟣 [CRMLeadDetail] loadLeadData llamado, id:', id);
+    if (!id) {
+      console.warn('⚠️ [CRMLeadDetail] loadLeadData: id no válido');
+      return;
+    }
     setLoading(true);
+    setError(null);
     try {
       // Si es "new", usar defaults y no cargar datos relacionados
       if (id === 'new') {
@@ -77,27 +93,79 @@ export function CRMLeadDetail() {
         // Activar modo de edición automáticamente para nuevo lead
         setEditing(true);
       } else {
-        // Lead existente: cargar todo, pero manejar errores silenciosamente
+        // Lead existente: cargar todo, pero manejar errores
+        // Nota: Los leads ahora están unificados con contactos, usar getContact
+        console.log('🟣 [CRMLeadDetail] Cargando datos del lead existente (como contacto)...');
         const [leadData, tasksData, callsData, notesData] = await Promise.all([
-          crmService.getLead(id).catch((err) => {
-            console.error('Error loading lead:', err);
-            throw err; // Re-lanzar para mostrar error de lead
+          crmService.getContact(id).catch((err) => {
+            console.error('❌ [CRMLeadDetail] Error loading contact (lead unificado):', err);
+            // Si falla con getContact, intentar con getLead como fallback
+            return crmService.getLead(id).catch((fallbackErr) => {
+              console.error('❌ [CRMLeadDetail] Error loading lead (fallback):', fallbackErr);
+              throw fallbackErr; // Re-lanzar para mostrar error
+            });
           }),
-          // Para tareas, llamadas y notas, si fallan, usar arrays vacíos
-          crmService.getTasks({ entity_id: id, entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
-          crmService.getCalls({ entity_id: id, entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
-          crmService.getNotes({ entity_id: id, entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
+          // Para tareas, llamadas y notas, usar 'contacts' porque los leads ahora son contactos unificados
+          crmService.getTasks({ entity_id: id, entity_type: 'contacts', limit: 50 }).catch((err) => {
+            console.warn('⚠️ [CRMLeadDetail] Error loading tasks, usando array vacío:', err);
+            return { items: [] };
+          }),
+          crmService.getCalls({ entity_id: id, entity_type: 'contacts', limit: 50 }).catch((err) => {
+            console.warn('⚠️ [CRMLeadDetail] Error loading calls, usando array vacío:', err);
+            return { items: [] };
+          }),
+          crmService.getNotes({ entity_id: id, entity_type: 'contacts', limit: 50 }).catch((err) => {
+            console.warn('⚠️ [CRMLeadDetail] Error loading notes, usando array vacío:', err);
+            return { items: [] };
+          }),
         ]);
+        
+        console.log('🟣 [CRMLeadDetail] Datos cargados:');
+        console.log('  - Lead:', leadData?.id, leadData?.name);
+        console.log('  - Tasks:', tasksData?.items?.length || 0, tasksData);
+        console.log('  - Calls (raw):', callsData);
+        console.log('  - Calls items:', callsData?.items);
+        console.log('  - Calls items length:', callsData?.items?.length || 0);
+        console.log('  - Calls es array?:', Array.isArray(callsData));
+        console.log('  - Notes:', notesData?.items?.length || 0);
+        
+        // Normalizar callsData si viene en formato inesperado
+        let normalizedCalls: Call[] = [];
+        if (Array.isArray(callsData)) {
+          console.warn('⚠️ [CRMLeadDetail] callsData es un array directo, normalizando...');
+          normalizedCalls = callsData;
+        } else if (callsData?.items && Array.isArray(callsData.items)) {
+          normalizedCalls = callsData.items;
+        } else {
+          console.warn('⚠️ [CRMLeadDetail] callsData no tiene estructura esperada, usando array vacío');
+          normalizedCalls = [];
+        }
+        
         setLead(leadData);
-        setTasks(tasksData.items || []);
-        setCalls(callsData.items || []);
-        setNotes(notesData.items || []);
+        setTasks(tasksData?.items || []);
+        
+        // Ordenar llamadas de más recientes a más antiguas
+        const sortedCalls = normalizedCalls.sort((a, b) => {
+          const dateA = new Date(a.started_at || a.created_at).getTime();
+          const dateB = new Date(b.started_at || b.created_at).getTime();
+          return dateB - dateA; // Descendente (más recientes primero)
+        });
+        setCalls(sortedCalls);
+        
+        setNotes(notesData?.items || []);
+        
+        console.log('✅ [CRMLeadDetail] Estados actualizados con nuevos datos');
       }
-    } catch (err) {
-      console.error('Error loading lead data:', err);
-      // No mostrar toast de error - solo log en consola
+    } catch (err: any) {
+      console.error('❌ [CRMLeadDetail] Error loading lead data:', err);
+      const errorMessage = err?.response?.status === 404 
+        ? 'Contacto no encontrado'
+        : err?.response?.data?.detail || err?.message || 'Error al cargar el contacto';
+      setError(errorMessage);
+      setLead(null);
     } finally {
       setLoading(false);
+      console.log('🟣 [CRMLeadDetail] loadLeadData finalizado');
     }
   };
 
@@ -161,6 +229,12 @@ export function CRMLeadDetail() {
         // Mostrar mensaje de éxito con información del contacto
         setSaveSuccess(true);
         
+        // Mostrar notificación si se asignó automáticamente
+        if (!payload.responsible_user_id && newLead.responsible_user_id) {
+          // El backend asignó automáticamente - esto se maneja en el mensaje de éxito
+          console.log('Lead asignado automáticamente a:', newLead.responsible_user_id);
+        }
+        
         // Esperar un momento para que el usuario vea el mensaje, luego redirigir
         setTimeout(() => {
           navigate(`/crm/leads/${newLead.id}`);
@@ -180,7 +254,7 @@ export function CRMLeadDetail() {
         // Esperar un momento y luego salir del modo edición
         setTimeout(() => {
           setSaveSuccess(false);
-          setEditing(false);
+      setEditing(false);
         }, 2000);
       }
     } catch (err: any) {
@@ -201,7 +275,7 @@ export function CRMLeadDetail() {
         console.error('Error 422 - Detalles:', err.response?.data);
         alert(`Error de validación: ${JSON.stringify(err.response?.data, null, 2)}`);
       } else {
-        alert(id === 'new' ? 'Error al crear el lead' : 'Error al actualizar el lead');
+        alert(id === 'new' ? 'Error al crear el contacto' : 'Error al actualizar el contacto');
       }
     }
   };
@@ -214,6 +288,20 @@ export function CRMLeadDetail() {
   };
 
   const handleQuickTask = (type: 'first_call' | 'follow_up' | 'note_sale') => {
+    console.log('🔶 [CRMLeadDetail] handleQuickTask llamado con type:', type);
+    
+    // Si es 'first_call', abrir formulario de llamada en lugar de tarea
+    if (type === 'first_call') {
+      console.log('🔶 [CRMLeadDetail] first_call detectado - abriendo CallForm');
+      setShowCallForm(true);
+      setShowTaskForm(false);
+      setShowNewTaskMenu(false);
+      setQuickTaskType(null);
+      return;
+    }
+    
+    // Para otros tipos, crear tarea normalmente
+    console.log('🔶 [CRMLeadDetail] Creando tarea de tipo:', type);
     setQuickTaskType(type);
     setShowTaskForm(true);
     setShowNewTaskMenu(false);
@@ -261,10 +349,10 @@ export function CRMLeadDetail() {
         };
       }
 
-      // Asegurar que entity_id sea el ID del lead
+      // Los leads ahora son contactos unificados, usar 'contacts' como entity_type
       const finalTaskData: TaskCreateRequest = {
         ...taskData,
-        entity_type: 'leads',
+        entity_type: 'contacts',
         entity_id: id,
       };
 
@@ -287,12 +375,155 @@ export function CRMLeadDetail() {
     }
   };
 
+  const handleCallSubmit = async (callData: any) => {
+    console.log('🔵 [CRMLeadDetail] handleCallSubmit llamado');
+    console.log('🔵 [CRMLeadDetail] id:', id);
+    console.log('🔵 [CRMLeadDetail] callData recibido:', callData);
+    
+    if (!id || id === 'new') {
+      console.warn('⚠️ [CRMLeadDetail] No se puede guardar llamada: id inválido', id);
+      return;
+    }
+    
+    try {
+      // Los leads ahora son contactos unificados, usar 'contacts' como entity_type
+      const finalCallData = {
+        ...callData,
+        entity_type: 'contacts' as const,
+        entity_id: id,
+      };
+
+      console.log('🔵 [CRMLeadDetail] finalCallData preparado:', finalCallData);
+      console.log('🔵 [CRMLeadDetail] Llamando a crmService.createCall...');
+      
+      const createdCall = await crmService.createCall(finalCallData);
+      
+      console.log('✅ [CRMLeadDetail] Llamada creada exitosamente:', createdCall);
+      console.log('🔵 [CRMLeadDetail] Recargando datos del lead...');
+      
+      await loadLeadData(); // Recargar datos para mostrar la nueva llamada
+      
+      console.log('✅ [CRMLeadDetail] Datos recargados. Cerrando modal y cambiando pestaña...');
+      setShowCallForm(false);
+      setActiveTab('calls'); // Cambiar a la pestaña de llamadas
+      
+      console.log('✅ [CRMLeadDetail] handleCallSubmit completado exitosamente');
+    } catch (err: any) {
+      console.error('❌ [CRMLeadDetail] Error creating call:', err);
+      console.error('❌ [CRMLeadDetail] Error details:', {
+        message: err?.message,
+        status: err?.response?.status,
+        data: err?.response?.data,
+        stack: err?.stack,
+      });
+      
+      // Manejar error 400 relacionado con responsible_user_id
+      if (err?.response?.status === 400) {
+        const errorDetail = err?.response?.data?.detail || '';
+        if (errorDetail.includes('responsible') || errorDetail.includes('Only users with role')) {
+          alert('Solo abogados y administradores pueden ser responsables. Por favor, selecciona un usuario válido.');
+          return;
+        }
+      }
+      alert('Error al registrar la llamada');
+      throw err; // Re-lanzar para que CallForm maneje el error
+    }
+  };
+
+  const handleMarkAsContacted = async () => {
+    if (!id || id === 'new') return;
+    
+    setValidatingContact(true);
+    setValidationResult(null);
+    
+    try {
+      const result = await crmService.markLeadAsContacted(id);
+      
+      setValidationResult({
+        success: result.success,
+        message: result.message,
+        missingFields: result.missing_fields || [],
+      });
+      
+      if (result.success) {
+        // Recargar el lead para obtener el estado actualizado
+        await loadLeadData();
+      }
+    } catch (err: any) {
+      console.error('Error al marcar contacto como contactado:', err);
+      setValidationResult({
+        success: false,
+        message: err?.response?.data?.message || 'Error al validar el contacto inicial',
+        missingFields: err?.response?.data?.missing_fields || [],
+      });
+    } finally {
+      setValidatingContact(false);
+    }
+  };
+
+  // Mostrar spinner mientras valida sesión
+  if (isValidating) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando sesión...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Si no está autenticado, mostrar login
+  if (!isAuthenticated) {
+    return <LoginComponent />;
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <CRMHeader />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="text-center py-12">Cargando lead...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Mostrar error si existe
+  if (error || (!loading && !lead && id !== 'new')) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <CRMHeader />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <Card className="border-red-300 bg-red-50">
+            <CardContent className="pt-6">
+              <div className="text-center py-8">
+                <h2 className="text-xl font-semibold text-red-900 mb-2">
+                  Error al cargar el lead
+                </h2>
+                <p className="text-red-700 mb-4">
+                  {error || 'El lead no se pudo cargar. Puede que no exista o que haya un problema de conexión.'}
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate('/crm/leads')}
+                  >
+                    Volver a Leads
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setError(null);
+                      loadLeadData();
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    Reintentar
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
@@ -314,33 +545,33 @@ export function CRMLeadDetail() {
     }
     
     // Mostrar formulario de edición
-    if (!lead) {
-      return (
+  if (!lead) {
+    return (
         <div className="min-h-screen bg-gray-50">
           <CRMHeader />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="text-center py-12">
-              <p className="text-gray-500">Error al cargar el lead</p>
-              <Button onClick={() => navigate('/crm/leads')} className="mt-4">
-                Volver a Leads
-              </Button>
+        <div className="text-center py-12">
+              <p className="text-gray-500">Error al cargar el contacto</p>
+          <Button onClick={() => navigate('/crm/leads')} className="mt-4">
+            Volver a Contactos
+          </Button>
             </div>
-          </div>
         </div>
-      );
-    }
+      </div>
+    );
+  }
     return (
       <div className="min-h-screen bg-gray-50">
         <CRMHeader />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="space-y-6">
-            <Button
-              variant="outline"
-              onClick={() => setEditing(false)}
-            >
-              <ArrowLeft size={18} className="mr-2" />
-              Cancelar edición
-            </Button>
+        <Button
+          variant="outline"
+          onClick={() => setEditing(false)}
+        >
+          <ArrowLeft size={18} className="mr-2" />
+          Cancelar edición
+        </Button>
             
             {/* Mensaje de confirmación de guardado */}
             {saveSuccess && (
@@ -350,20 +581,26 @@ export function CRMLeadDetail() {
                     <CheckCircle2 className="text-green-600 flex-shrink-0" size={24} />
                     <div className="flex-1">
                       <p className="font-semibold text-green-900">
-                        {id === 'new' ? '¡Lead creado exitosamente!' : '¡Lead actualizado exitosamente!'}
+                        {id === 'new' ? '¡Contacto creado exitosamente!' : '¡Contacto actualizado exitosamente!'}
                       </p>
                       <p className="text-sm text-green-700 mt-1">
                         {id === 'new' 
-                          ? 'El Lead ha sido creado y vinculado a un Contacto. Redirigiendo...' 
+                          ? 'El Contacto ha sido creado correctamente. Redirigiendo...' 
                           : 'Los cambios se han guardado correctamente.'}
                       </p>
                       {id === 'new' && createdContact && (
                         <p className="text-xs text-green-600 mt-2">
-                          Contacto vinculado: <span className="font-medium">
+                          Contacto: <span className="font-medium">
                             {createdContact.name || 
                              `${createdContact.first_name || ''} ${createdContact.last_name || ''}`.trim() || 
                              'Contacto creado automáticamente'}
                           </span>
+                        </p>
+                      )}
+                      {id === 'new' && lead && lead.responsible_user_id && (
+                        <p className="text-xs text-blue-600 mt-2">
+                          ℹ️ El contacto ha sido asignado automáticamente a un agente. 
+                          El agente recibirá una notificación por email.
                         </p>
                       )}
                     </div>
@@ -372,11 +609,11 @@ export function CRMLeadDetail() {
               </Card>
             )}
             
-            <LeadForm
-              lead={lead}
-              onSave={handleSave}
-              onCancel={() => setEditing(false)}
-            />
+        <LeadForm
+          lead={lead}
+          onSave={handleSave}
+          onCancel={() => setEditing(false)}
+        />
           </div>
         </div>
       </div>
@@ -392,20 +629,20 @@ export function CRMLeadDetail() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
           {/* Page Header */}
-          <div className="flex justify-between items-start">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                onClick={() => navigate('/crm/leads')}
-              >
-                <ArrowLeft size={18} className="mr-2" />
-                Volver
-              </Button>
-              <div>
+      <div className="flex justify-between items-start">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/crm/leads')}
+          >
+            <ArrowLeft size={18} className="mr-2" />
+            Volver
+          </Button>
+          <div>
                 <h1 className="text-3xl font-bold text-gray-900">{currentLead.name}</h1>
                 <p className="text-gray-600 mt-1">ID: {currentLead.id}</p>
-              </div>
-            </div>
+          </div>
+        </div>
         <div className="flex items-center gap-2">
           <Button
             onClick={() => setEditing(true)}
@@ -441,8 +678,8 @@ export function CRMLeadDetail() {
                     >
                       <PhoneCall size={20} className="text-blue-600" />
                       <div>
-                        <div className="font-semibold text-gray-900">Primera Llamada</div>
-                        <div className="text-sm text-gray-500">Crear tarea de primera llamada</div>
+                        <div className="font-semibold text-gray-900">Registrar Primera Llamada</div>
+                        <div className="text-sm text-gray-500">Abrir formulario de llamada</div>
                       </div>
                     </button>
                     
@@ -510,9 +747,22 @@ export function CRMLeadDetail() {
             <CardTitle className="text-sm font-medium text-gray-600">Estado</CardTitle>
           </CardHeader>
           <CardContent>
-            <span className="px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
-              {currentLead.status}
-            </span>
+            <div className="space-y-2">
+              <span className="px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
+                {currentLead.status}
+              </span>
+              {currentLead.initial_contact_completed ? (
+                <div className="flex items-center gap-2 mt-2">
+                  <CheckCircle2 size={16} className="text-green-600" />
+                  <span className="text-sm text-green-700">Contactado inicialmente</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 mt-2">
+                  <AlertCircle size={16} className="text-yellow-600" />
+                  <span className="text-sm text-yellow-700">Pendiente de contacto inicial</span>
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -537,14 +787,112 @@ export function CRMLeadDetail() {
         <TabsList>
           <TabsTrigger value="info">Información</TabsTrigger>
           <TabsTrigger value="tasks">Tareas ({tasks.length})</TabsTrigger>
-          <TabsTrigger value="calls">Llamadas ({calls.length})</TabsTrigger>
+          <TabsTrigger value="calls" data-tab="calls">Llamadas ({calls.length})</TabsTrigger>
           <TabsTrigger value="notes">Notas ({notes.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info" className="space-y-4">
+          {/* Validación de Primera Llamada */}
+          {!currentLead.initial_contact_completed && (
+            <Card className="bg-white">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <PhoneCall className="h-5 w-5" />
+                  Validación de Primera Llamada
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="text-sm text-gray-600">
+                  Este contacto aún no ha sido marcado como contactado inicialmente. 
+                  Asegúrate de que la primera llamada tenga todos los datos requeridos antes de marcarlo.
+                </p>
+                
+                {/* Botón para registrar primera llamada */}
+                <Button
+                  onClick={() => {
+                    console.log('🟢 [CRMLeadDetail] Botón "Registrar Primera Llamada" clickeado');
+                    setShowCallForm(true);
+                    setShowTaskForm(false);
+                    setQuickTaskType(null);
+                  }}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <PhoneCall className="h-4 w-4 mr-2" />
+                  Registrar Primera Llamada
+                </Button>
+                
+                {/* Botón para validar */}
+                <Button
+                  onClick={handleMarkAsContacted}
+                  disabled={validatingContact}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {validatingContact ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Validando...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      Marcar como Contactado Inicialmente
+                    </>
+                  )}
+                </Button>
+                
+                {/* Resultado de validación */}
+                {validationResult && (
+                  <div className={`p-4 rounded-lg border ${
+                    validationResult.success 
+                      ? 'bg-green-50 border-green-200' 
+                      : 'bg-red-50 border-red-200'
+                  }`}>
+                    <div className="flex items-start gap-2">
+                      {validationResult.success ? (
+                        <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      )}
+                      <div className="flex-1">
+                        <p className={`font-semibold text-sm ${
+                          validationResult.success ? 'text-green-800' : 'text-red-800'
+                        }`}>
+                          {validationResult.message}
+                        </p>
+                        
+                        {validationResult.missingFields.length > 0 && (
+                          <div className="mt-2">
+                            <p className="text-sm font-medium text-red-700 mb-1">
+                              Faltan los siguientes datos:
+                            </p>
+                            <ul className="list-disc list-inside text-sm text-red-600 space-y-1">
+                              {validationResult.missingFields.map((field, idx) => (
+                                <li key={idx}>{field}</li>
+                              ))}
+                            </ul>
+                            <p className="text-xs text-red-600 mt-2">
+                              📧 Se ha enviado un email al agente responsable con esta información.
+                            </p>
+                          </div>
+                        )}
+                        
+                        {validationResult.success && (
+                          <p className="text-sm text-green-700 mt-2">
+                            📧 Se ha enviado un email de notificación al responsable del lead.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+          
           <Card>
             <CardHeader>
-              <CardTitle>Detalles del Lead</CardTitle>
+              <CardTitle>Detalles del Contacto</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {currentLead.description && (
@@ -591,6 +939,21 @@ export function CRMLeadDetail() {
                     <User size={18} />
                     <span>{currentLead.contact.name}</span>
                   </div>
+                  {!currentLead.contact.city && (
+                    <p className="text-xs text-yellow-600 mt-1">
+                      ⚠️ Falta la ciudad del contacto (requerido para validación)
+                    </p>
+                  )}
+                  {!currentLead.contact.nacionalidad && (
+                    <p className="text-xs text-yellow-600 mt-1">
+                      ⚠️ Falta la nacionalidad del contacto (requerido para validación)
+                    </p>
+                  )}
+                  {!currentLead.contact.email && !currentLead.contact.phone && (
+                    <p className="text-xs text-yellow-600 mt-1">
+                      ⚠️ Falta email o teléfono del contacto (requerido para validación)
+                    </p>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -637,8 +1000,21 @@ export function CRMLeadDetail() {
 
         <TabsContent value="calls">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Llamadas</CardTitle>
+              <Button
+                onClick={() => {
+                  console.log('🔵 [CRMLeadDetail] Botón "Registrar Llamada" en pestaña clickeado');
+                  setShowCallForm(true);
+                  setShowTaskForm(false);
+                  setQuickTaskType(null);
+                }}
+                variant="outline"
+                size="sm"
+              >
+                <Phone size={16} className="mr-2" />
+                Registrar Llamada
+              </Button>
             </CardHeader>
             <CardContent>
               {calls.length > 0 ? (
@@ -646,7 +1022,7 @@ export function CRMLeadDetail() {
                   {calls.map(call => (
                     <div key={call.id} className="border rounded-lg p-4">
                       <div className="flex justify-between items-start">
-                        <div>
+                        <div className="flex-1">
                           <h4 className="font-semibold flex items-center gap-2">
                             <Phone size={18} />
                             {call.direction === 'inbound' ? 'Llamada Entrante' : 'Llamada Saliente'}
@@ -656,6 +1032,21 @@ export function CRMLeadDetail() {
                           </p>
                           {call.resumen_llamada && (
                             <p className="text-sm text-gray-700 mt-2">{call.resumen_llamada}</p>
+                          )}
+                          {!call.resumen_llamada && (
+                            <p className="text-xs text-yellow-600 mt-2">
+                              ⚠️ Falta el resumen de la llamada (requerido para validación)
+                            </p>
+                          )}
+                          {!call.started_at && (
+                            <p className="text-xs text-yellow-600 mt-1">
+                              ⚠️ Falta la fecha de inicio (requerido para validación)
+                            </p>
+                          )}
+                          {!call.call_status && (
+                            <p className="text-xs text-yellow-600 mt-1">
+                              ⚠️ Falta el estado de la llamada (requerido para validación)
+                            </p>
                           )}
                         </div>
                         <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">
@@ -669,7 +1060,12 @@ export function CRMLeadDetail() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-8">No hay llamadas registradas</p>
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">No hay llamadas registradas</p>
+                  <p className="text-xs text-gray-400">
+                    Registra la primera llamada para poder marcar el contacto como contactado inicialmente.
+                  </p>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -723,8 +1119,8 @@ export function CRMLeadDetail() {
                 </Button>
               </div>
               <TaskForm
-                defaultEntityType="lead"
-                defaultEntityId={id ? (typeof id === 'string' ? parseInt(id) : id) : undefined}
+                defaultEntityType="leads"
+                defaultEntityId={id || undefined}
                 defaultText={quickTaskType ? getQuickTaskConfig(quickTaskType).text : undefined}
                 defaultTaskType={quickTaskType ? getQuickTaskConfig(quickTaskType).task_type : undefined}
                 defaultCompleteTill={quickTaskType ? getQuickTaskConfig(quickTaskType).complete_till : undefined}
@@ -732,6 +1128,38 @@ export function CRMLeadDetail() {
                 onCancel={() => {
                   setShowTaskForm(false);
                   setQuickTaskType(null);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Formulario de Llamada */}
+      {showCallForm && id && id !== 'new' && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Registrar Llamada
+                </h2>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowCallForm(false);
+                  }}
+                >
+                  ✕
+                </Button>
+              </div>
+              <CallForm
+                defaultEntityType="contacts"
+                defaultEntityId={id}
+                defaultPhone={lead?.phone || lead?.mobile || lead?.contact?.phone || lead?.contact?.mobile || ''}
+                onSubmit={handleCallSubmit}
+                onCancel={() => {
+                  setShowCallForm(false);
                 }}
               />
             </div>

@@ -47,7 +47,8 @@ export function ContactDetail() {
     try {
       const [contactData, leadsResponse] = await Promise.all([
         crmService.getContact(id),
-        crmService.getLeads({ contact_id: id }),
+        // Los leads ahora son contactos, así que no necesitamos buscar leads asociados
+        Promise.resolve({ items: [] }),
       ]);
 
       setContact(contactData);

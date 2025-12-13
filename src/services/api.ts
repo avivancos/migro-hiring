@@ -16,8 +16,13 @@ export const api = axios.create({
 // Request interceptor - Add JWT token (except for login endpoint)
 api.interceptors.request.use(
   (config) => {
-    // No añadir token en endpoints de autenticación pública
-    const publicEndpoints = ['/auth/login', '/auth/register', '/auth/refresh'];
+    // No añadir token en endpoints de autenticación pública o health checks
+    const publicEndpoints = [
+      '/auth/login', 
+      '/auth/register', 
+      '/auth/refresh',
+      '/ai/pili-openai/health' // Health check no requiere autenticación
+    ];
     const isPublicEndpoint = config.url && publicEndpoints.some(endpoint => config.url!.includes(endpoint));
     
     if (!isPublicEndpoint) {
@@ -26,6 +31,18 @@ api.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
+    
+    // Log para debugging de búsquedas con espacios
+    if (config.url?.includes('/crm/contacts') && config.params?.search) {
+      console.log('🔍 [api.ts] Búsqueda de contactos:', {
+        url: config.url,
+        search: config.params.search,
+        searchType: typeof config.params.search,
+        searchLength: config.params.search.length,
+        fullParams: config.params
+      });
+    }
+    
     return config;
   },
   (error) => {
@@ -38,6 +55,19 @@ api.interceptors.response.use(
   (response) => {
     // Log successful responses for debugging
     console.log(`✅ ${response.config.method?.toUpperCase()} ${response.config.url} → ${response.status}`);
+    
+    // Log temporal para debug de calls
+    if (response.config.url?.includes('/crm/calls') && response.config.method === 'get') {
+      console.log('🔍 [api.ts] GET /crm/calls - Response data:', response.data);
+      console.log('🔍 [api.ts] GET /crm/calls - Response data type:', typeof response.data);
+      console.log('🔍 [api.ts] GET /crm/calls - Is array?:', Array.isArray(response.data));
+      if (response.data && typeof response.data === 'object') {
+        console.log('🔍 [api.ts] GET /crm/calls - Has items?:', 'items' in response.data);
+        console.log('🔍 [api.ts] GET /crm/calls - Items value:', response.data.items);
+        console.log('🔍 [api.ts] GET /crm/calls - Keys:', Object.keys(response.data));
+      }
+    }
+    
     return response;
   },
   (error: AxiosError) => {

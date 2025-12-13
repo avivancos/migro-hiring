@@ -17,14 +17,17 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { CRMDashboardPage } from '@/pages/CRMDashboardPage';
 import { CRMContactList } from '@/pages/CRMContactList';
 import { CRMContactDetail } from '@/pages/CRMContactDetail';
+import { CRMContactEdit } from '@/pages/CRMContactEdit';
 import { CRMLeadList } from '@/pages/CRMLeadList';
 import { CRMLeadDetail } from '@/pages/CRMLeadDetail';
 import { CRMTaskCalendar } from '@/pages/CRMTaskCalendar';
 import { CRMSettings } from '@/pages/CRMSettings';
 import { CRMTaskTemplatesSettings } from '@/pages/CRMTaskTemplatesSettings';
+import { CRMCustomFieldsSettings } from '@/pages/CRMCustomFieldsSettings';
 import { CRMActions } from '@/pages/CRMActions';
 import { CRMExpedientes } from '@/pages/CRMExpedientes';
 import { CRMCallHandler } from '@/pages/CRMCallHandler';
+import { CRMTaskDetail } from '@/pages/CRMTaskDetail';
 
 function App() {
   return (
@@ -53,6 +56,7 @@ function App() {
           
           {/* CRM Contacts */}
           <Route path="/crm/contacts" element={<CRMContactList />} />
+          <Route path="/crm/contacts/:id/edit" element={<CRMContactEdit />} />
           <Route path="/crm/contacts/:id" element={<CRMContactDetail />} />
           
           {/* CRM Leads */}
@@ -61,6 +65,9 @@ function App() {
           
           {/* CRM Calendar */}
           <Route path="/crm/calendar" element={<CRMTaskCalendar />} />
+          
+          {/* CRM Tasks */}
+          <Route path="/crm/tasks/:id" element={<CRMTaskDetail />} />
           
           {/* CRM Actions & Expedientes */}
           <Route path="/crm/actions" element={<CRMActions />} />
@@ -72,6 +79,7 @@ function App() {
           {/* CRM Settings */}
           <Route path="/crm/settings" element={<CRMSettings />} />
           <Route path="/crm/settings/task-templates" element={<CRMTaskTemplatesSettings />} />
+          <Route path="/crm/settings/custom-fields" element={<CRMCustomFieldsSettings />} />
           
           {/* Client login (futuro) */}
           <Route path="/login" element={<Login />} />

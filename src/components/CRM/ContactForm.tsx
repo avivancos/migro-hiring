@@ -56,8 +56,13 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
     try {
       const response = await crmService.getCompanies({ limit: 100 });
       setCompanies(response.items || []);
-    } catch (err) {
-      console.error('Error loading companies:', err);
+    } catch (err: any) {
+      // El endpoint de companies puede no existir (404), no es crítico
+      if (err?.response?.status !== 404) {
+        console.error('Error loading companies:', err);
+      }
+      // Continuar sin empresas si el endpoint no existe
+      setCompanies([]);
     }
   };
 
@@ -66,9 +71,47 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
     setLoading(true);
 
     try {
-      await onSubmit(formData);
+      // Limpiar datos antes de enviar: eliminar campos vacíos, undefined, null innecesarios
+      const cleanedData: any = {};
+      
+      // Campos requeridos siempre se envían
+      if (formData.name) cleanedData.name = formData.name.trim();
+      
+      // Campos opcionales solo si tienen valor
+      if (formData.first_name?.trim()) cleanedData.first_name = formData.first_name.trim();
+      if (formData.last_name?.trim()) cleanedData.last_name = formData.last_name.trim();
+      if (formData.email?.trim()) cleanedData.email = formData.email.trim();
+      if (formData.phone?.trim()) cleanedData.phone = formData.phone.trim();
+      if (formData.mobile?.trim()) cleanedData.mobile = formData.mobile.trim();
+      if (formData.address?.trim()) cleanedData.address = formData.address.trim();
+      if (formData.city?.trim()) cleanedData.city = formData.city.trim();
+      if (formData.state?.trim()) cleanedData.state = formData.state.trim();
+      if (formData.postal_code?.trim()) cleanedData.postal_code = formData.postal_code.trim();
+      if (formData.country?.trim()) cleanedData.country = formData.country.trim();
+      if (formData.company?.trim()) cleanedData.company = formData.company.trim();
+      if (formData.position?.trim()) cleanedData.position = formData.position.trim();
+      if (formData.company_id) cleanedData.company_id = formData.company_id;
+      if (formData.responsible_user_id) cleanedData.responsible_user_id = formData.responsible_user_id;
+      if (formData.notes?.trim()) cleanedData.notes = formData.notes.trim();
+      
+      // Campos Migro específicos
+      if (formData.grading_llamada) cleanedData.grading_llamada = formData.grading_llamada;
+      if (formData.grading_situacion) cleanedData.grading_situacion = formData.grading_situacion;
+      if (formData.nacionalidad?.trim()) cleanedData.nacionalidad = formData.nacionalidad.trim();
+      if (formData.tiempo_espana?.trim()) cleanedData.tiempo_espana = formData.tiempo_espana.trim();
+      if (formData.lugar_residencia?.trim()) cleanedData.lugar_residencia = formData.lugar_residencia.trim();
+      if (formData.empadronado !== undefined) cleanedData.empadronado = formData.empadronado;
+      if (formData.tiene_ingresos !== undefined) cleanedData.tiene_ingresos = formData.tiene_ingresos;
+      if (formData.trabaja_b !== undefined) cleanedData.trabaja_b = formData.trabaja_b;
+      if (formData.tiene_familiares_espana !== undefined) cleanedData.tiene_familiares_espana = formData.tiene_familiares_espana;
+      if (formData.edad !== null && formData.edad !== undefined) cleanedData.edad = formData.edad;
+      
+      console.log('🟢 [ContactForm] Datos limpiados antes de enviar:', cleanedData);
+      await onSubmit(cleanedData);
     } catch (err) {
       console.error('Error submitting form:', err);
+      // El error se maneja en el componente padre
+      throw err;
     } finally {
       setLoading(false);
     }

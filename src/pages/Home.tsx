@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileCheck, Shield, CreditCard, Download } from 'lucide-react';
+import { FileCheck, Shield, CreditCard, Download, Search } from 'lucide-react';
 import { fadeIn, slideUp, staggerContainer, staggerItem } from '@/utils/animations';
 
 export function Home() {
@@ -110,6 +110,21 @@ export function Home() {
               </form>
             </CardContent>
           </Card>
+        </motion.div>
+
+        {/* Botón de búsqueda de contactos */}
+        <motion.div 
+          className="mt-8 text-center"
+          variants={fadeIn}
+        >
+          <Button
+            onClick={() => navigate('/crm/contacts')}
+            size="lg"
+            className="bg-green-600 hover:bg-green-700 text-white"
+          >
+            <Search className="w-5 h-5 mr-2" />
+            Buscar Contactos
+          </Button>
         </motion.div>
 
         {/* Info */}

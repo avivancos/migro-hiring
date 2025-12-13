@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, ExternalLink } from 'lucide-react';
 import type { Task } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { CRMHeader } from '@/components/CRM/CRMHeader';
@@ -204,15 +204,33 @@ export function CRMTaskCalendar() {
                     className="text-xs p-2 bg-green-100 rounded cursor-pointer hover:bg-green-200"
                     onClick={() => navigate(`/crm/tasks/${task.id}`)}
                   >
-                    <div className="font-semibold">{task.text}</div>
-                    {task.complete_till && (
-                      <div className="text-gray-600 mt-1">
-                        {new Date(task.complete_till).toLocaleTimeString('es-ES', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <div className="font-semibold">{task.text}</div>
+                        {task.complete_till && (
+                          <div className="text-gray-600 mt-1">
+                            {new Date(task.complete_till).toLocaleTimeString('es-ES', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </div>
+                        )}
                       </div>
-                    )}
+                      {task.entity_id && task.entity_type && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const entityType = task.entity_type === 'leads' || task.entity_type === 'lead' ? 'leads' : 'contacts';
+                            navigate(`/crm/${entityType}/${task.entity_id}`);
+                          }}
+                          className="ml-2 h-6 text-xs px-2"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -247,7 +265,7 @@ export function CRMTaskCalendar() {
               >
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start">
-                    <div>
+                    <div className="flex-1">
                       <h3 className="font-semibold">{task.text}</h3>
                       <p className="text-sm text-gray-600 mt-1">
                         Tipo: {task.task_type}
@@ -258,11 +276,28 @@ export function CRMTaskCalendar() {
                         </p>
                       )}
                     </div>
-                    <span className={`px-2 py-1 rounded text-xs ${
-                      task.is_completed ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                    }`}>
-                      {task.is_completed ? 'Completada' : 'Pendiente'}
-                    </span>
+                    <div className="flex flex-col items-end gap-2 ml-4">
+                      <span className={`px-2 py-1 rounded text-xs ${
+                        task.is_completed ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {task.is_completed ? 'Completada' : 'Pendiente'}
+                      </span>
+                      {task.entity_id && task.entity_type && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const entityType = task.entity_type === 'leads' || task.entity_type === 'lead' ? 'leads' : 'contacts';
+                            navigate(`/crm/${entityType}/${task.entity_id}`);
+                          }}
+                          className="text-xs"
+                        >
+                          <ExternalLink className="w-3 h-3 mr-1" />
+                          Contacto
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -300,19 +335,19 @@ export function CRMTaskCalendar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
           {/* Page Header */}
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Calendario de Tareas</h1>
-              <p className="text-gray-600 mt-1">Gestiona tus tareas por fecha</p>
-            </div>
-            <Button
-              onClick={() => navigate('/crm/tasks/new')}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <Plus size={20} className="mr-2" />
-              Nueva Tarea
-            </Button>
-          </div>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Calendario de Tareas</h1>
+          <p className="text-gray-600 mt-1">Gestiona tus tareas por fecha</p>
+        </div>
+        <Button
+          onClick={() => navigate('/crm/tasks/new')}
+          className="bg-green-600 hover:bg-green-700"
+        >
+          <Plus size={20} className="mr-2" />
+          Nueva Tarea
+        </Button>
+      </div>
 
       {/* Controles */}
       <Card>

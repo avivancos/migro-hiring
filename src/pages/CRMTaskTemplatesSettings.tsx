@@ -71,7 +71,7 @@ export function CRMTaskTemplatesSettings() {
       <div className="min-h-screen bg-gray-50">
         <CRMHeader />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center py-12">Cargando plantillas...</div>
+        <div className="text-center py-12">Cargando plantillas...</div>
         </div>
       </div>
     );
@@ -82,11 +82,11 @@ export function CRMTaskTemplatesSettings() {
       <CRMHeader />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Plantillas de Tareas</h1>
-              <p className="text-gray-600 mt-1">Gestiona las plantillas de tareas del sistema</p>
-            </div>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Plantillas de Tareas</h1>
+          <p className="text-gray-600 mt-1">Gestiona las plantillas de tareas del sistema</p>
+        </div>
         <Button
           onClick={() => {
             setEditing(null);

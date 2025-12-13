@@ -46,7 +46,14 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
         entity_id: entityId,
         limit: 50,
       });
-      setCalls(callsData.items || []);
+      
+      // Ordenar llamadas de más recientes a más antiguas
+      const sortedCalls = (callsData.items || []).sort((a, b) => {
+        const dateA = new Date(a.started_at || a.created_at).getTime();
+        const dateB = new Date(b.started_at || b.created_at).getTime();
+        return dateB - dateA; // Descendente (más recientes primero)
+      });
+      setCalls(sortedCalls);
     } catch (err) {
       console.error('Error loading calls:', err);
       setCalls([]); // Mostrar lista vacía en caso de error (incluye 500)

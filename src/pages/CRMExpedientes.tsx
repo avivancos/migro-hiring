@@ -42,10 +42,11 @@ export function CRMExpedientes() {
   const loadExpedientes = async () => {
     setLoading(true);
     try {
-      const leadsResponse = await crmService.getLeads({ limit: 100 });
+      // Cargar todos los contactos (los leads están unificados con contactos)
+      const allLeads = await crmService.getAllContacts().catch(() => []) as any;
       const expedientesData: ExpedienteData[] = [];
 
-      for (const lead of leadsResponse.items) {
+      for (const lead of allLeads) {
         if (lead.status === 'lost') continue; // Excluir leads perdidos
 
         const [tasks, calls, notes] = await Promise.all([

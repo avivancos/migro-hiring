@@ -32,6 +32,9 @@ export interface KommoLead {
   expected_close_date?: string;
   description?: string;
   
+  // Validación de primera llamada
+  initial_contact_completed?: boolean; // Indica si la primera llamada está completa
+  
   // Custom fields (JSON flexible)
   custom_fields?: Record<string, any>;
   
@@ -203,6 +206,7 @@ export interface CRMUser {
   avatar_url?: string;
   created_at: string;
   updated_at: string;
+  daily_lead_quota?: number; // Cuota diaria de leads (default: 10)
 }
 
 export interface Call {
@@ -238,6 +242,89 @@ export interface Tag {
   color?: string;
 }
 
+// ===== CUSTOM FIELDS =====
+
+export type CustomFieldType = 
+  | "text"
+  | "number"
+  | "date"
+  | "select"
+  | "multiselect"
+  | "checkbox"
+  | "url"
+  | "email"
+  | "phone";
+
+export type EntityType = "contacts" | "leads" | "companies";
+
+export interface FieldSettings {
+  options?: string[];            // Para select/multiselect
+  min?: number;                  // Para números/fechas
+  max?: number;                  // Para números/fechas
+  min_length?: number;           // Para textos
+  max_length?: number;           // Para textos
+  pattern?: string;              // Regex para validación
+  currency?: string;             // Para precios
+  placeholder?: string;
+  help_text?: string;
+  default?: any;                 // Valor por defecto
+}
+
+export interface CustomField {
+  id: string;                    // UUID
+  name: string;
+  code?: string;                 // Código único para API
+  type: CustomFieldType;
+  entity_type: EntityType;
+  sort: number;
+  is_predefined: boolean;
+  is_deletable: boolean;
+  is_required: boolean;
+  is_visible: boolean;
+  settings?: FieldSettings;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CustomFieldValue {
+  id: string;                    // UUID
+  custom_field_id: string;       // UUID
+  entity_id: string;             // UUID
+  entity_type: EntityType;
+  value: any;                    // JSON flexible
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CustomFieldCreateRequest {
+  name: string;
+  code?: string;
+  type: CustomFieldType;
+  entity_type: EntityType;
+  sort?: number;
+  is_required?: boolean;
+  is_visible?: boolean;
+  settings?: FieldSettings;
+}
+
+export interface CustomFieldUpdateRequest {
+  name?: string;
+  code?: string;
+  type?: CustomFieldType;
+  entity_type?: EntityType;
+  sort?: number;
+  is_required?: boolean;
+  is_visible?: boolean;
+  settings?: FieldSettings;
+}
+
+export interface CustomFieldValueCreateRequest {
+  custom_field_id: string;       // UUID
+  entity_id: string;             // UUID
+  entity_type: EntityType;
+  value: any;                    // JSON flexible
+}
+
 // ===== Request/Response Types =====
 
 export interface LeadCreateRequest {
@@ -248,7 +335,7 @@ export interface LeadCreateRequest {
   price?: number;
   currency?: string;
   description?: string;
-  responsible_user_id: string; // UUID
+  responsible_user_id?: string; // UUID - Opcional: si no se proporciona, se asigna automáticamente
   // Campos opcionales adicionales
   company_id?: string; // UUID
   priority?: string;
@@ -438,11 +525,21 @@ export interface DashboardStats {
   total_pipeline_value: number;
 }
 
+// ===== Lead Validation Response =====
+
+export interface MarkInitialContactCompletedResponse {
+  success: boolean;
+  message: string;
+  missing_fields?: string[];
+  recommended_missing?: string[];
+}
+
 // ===== Filters =====
 
 export interface LeadFilters {
   skip?: number;
   limit?: number;
+  page?: number; // Paginación basada en página (backend usa esto)
   status?: string; // 'new', 'contacted', 'proposal', 'negotiation', 'won', 'lost'
   pipeline_id?: string; // UUID
   contact_id?: string; // UUID
@@ -457,6 +554,7 @@ export interface LeadFilters {
 export interface ContactFilters {
   skip?: number;
   limit?: number;
+  page?: number; // Paginación basada en página (backend usa esto)
   name?: string; // Búsqueda parcial por nombre
   search?: string; // Búsqueda general (nombre, email, teléfono)
   email?: string;

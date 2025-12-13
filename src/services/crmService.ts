@@ -31,6 +31,12 @@ import type {
   TaskFilters,
   CallFilters,
   TaskTemplate,
+  CustomField,
+  CustomFieldValue,
+  CustomFieldCreateRequest,
+  CustomFieldUpdateRequest,
+  CustomFieldValueCreateRequest,
+  MarkInitialContactCompletedResponse,
 } from '@/types/crm';
 
 // Base path para endpoints del CRM
@@ -60,8 +66,52 @@ export const crmService = {
       };
     }
     
+    // Si tiene formato _embedded/_page (backend real)
+    if (data._embedded && data._embedded.leads) {
+      return {
+        items: data._embedded.leads,
+        total: data._page?.total || data._embedded.leads.length,
+        skip: ((data._page?.page || 1) - 1) * (data._page?.limit || 50),
+        limit: data._page?.limit || 50,
+      };
+    }
+    
     // Si ya tiene formato estándar, devolverlo
     return data;
+  },
+
+  /**
+   * Obtener TODOS los leads mediante múltiples peticiones (paginación automática)
+   */
+  async getAllLeads(filters?: Omit<LeadFilters, 'limit' | 'skip' | 'page'>): Promise<KommoLead[]> {
+    const allLeads: KommoLead[] = [];
+    let page = 1;
+    const limit = 100; // Máximo permitido
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await this.getLeads({ ...filters, page, limit } as LeadFilters);
+      allLeads.push(...response.items);
+      
+      const totalPages = Math.ceil(response.total / limit);
+      hasMore = page < totalPages;
+      page++;
+    }
+
+    return allLeads;
+  },
+  
+  /**
+   * Obtener el total de leads usando el endpoint dedicado /leads/count
+   */
+  async getLeadsCount(): Promise<number> {
+    try {
+      const { data } = await api.get<{ total: number }>(`${CRM_BASE_PATH}/leads/count`);
+      return data.total || 0;
+    } catch (err) {
+      console.error('Error obteniendo total de leads:', err);
+      return 0;
+    }
   },
 
   /**
@@ -92,8 +142,8 @@ export const crmService = {
     // Log del payload antes de enviarlo para diagnosticar errores 422
     console.log('POST /crm/leads - Payload:', JSON.stringify(lead, null, 2));
     try {
-      const { data } = await api.post<KommoLead>(`${CRM_BASE_PATH}/leads`, lead);
-      return data;
+    const { data } = await api.post<KommoLead>(`${CRM_BASE_PATH}/leads`, lead);
+    return data;
     } catch (err: any) {
       // Log detallado del error 422
       if (err?.response?.status === 422) {
@@ -127,6 +177,17 @@ export const crmService = {
     return data;
   },
 
+  /**
+   * Marcar lead como contactado inicialmente (validación de primera llamada)
+   * Valida que la primera llamada tenga todos los datos requeridos
+   */
+  async markLeadAsContacted(leadId: string): Promise<MarkInitialContactCompletedResponse> {
+    const { data } = await api.post<MarkInitialContactCompletedResponse>(
+      `${CRM_BASE_PATH}/leads/${leadId}/mark-initial-contact-completed`
+    );
+    return data;
+  },
+
   // ===== CONTACTS =====
 
   /**
@@ -134,8 +195,15 @@ export const crmService = {
    * La API puede devolver un array directamente o un objeto con items
    */
   async getContacts(filters?: ContactFilters): Promise<ContactsListResponse> {
+    // Asegurar que el parámetro search se envíe correctamente (sin encoding adicional)
+    const params: any = { ...filters };
+    if (params.search) {
+      // El parámetro search debe enviarse tal cual, axios lo codificará automáticamente
+      console.log('📤 [crmService] Enviando búsqueda:', params.search);
+    }
+    
     const { data } = await api.get<any>(`${CRM_BASE_PATH}/contacts`, {
-      params: filters,
+      params,
     });
     
     // Si la respuesta es un array, convertir a formato estándar
@@ -148,8 +216,60 @@ export const crmService = {
       };
     }
     
+    // Si tiene formato _embedded/_page (backend real)
+    if (data._embedded && data._embedded.contacts) {
+      return {
+        items: data._embedded.contacts,
+        total: data._page?.total || data._embedded.contacts.length,
+        skip: ((data._page?.page || 1) - 1) * (data._page?.limit || 50),
+        limit: data._page?.limit || 50,
+      };
+    }
+    
     // Si ya tiene formato estándar, devolverlo
     return data;
+  },
+
+  /**
+   * Obtener el total de contactos usando el endpoint dedicado /contacts/count
+   */
+  async getContactsCount(filters?: Omit<ContactFilters, 'limit' | 'skip' | 'page'>): Promise<number> {
+    try {
+      const params: any = {};
+      if (filters?.search) params.search = filters.search;
+      if (filters?.grading_llamada) params.grading_llamada = filters.grading_llamada;
+      if (filters?.grading_situacion) params.grading_situacion = filters.grading_situacion;
+      if (filters?.nacionalidad) params.nacionalidad = filters.nacionalidad;
+
+      const { data } = await api.get<{ total: number }>(`${CRM_BASE_PATH}/contacts/count`, {
+        params,
+      });
+      return data.total || 0;
+    } catch (err) {
+      console.error('Error obteniendo total de contactos:', err);
+      return 0;
+    }
+  },
+
+  /**
+   * Obtener TODOS los contactos mediante múltiples peticiones (paginación automática)
+   */
+  async getAllContacts(filters?: Omit<ContactFilters, 'limit' | 'skip' | 'page'>): Promise<KommoContact[]> {
+    const allContacts: KommoContact[] = [];
+    let page = 1;
+    const limit = 100; // Máximo permitido
+    let hasMore = true;
+
+    while (hasMore) {
+      const response = await this.getContacts({ ...filters, page, limit } as ContactFilters);
+      allContacts.push(...response.items);
+      
+      const totalPages = Math.ceil(response.total / limit);
+      hasMore = page < totalPages;
+      page++;
+    }
+
+    return allContacts;
   },
 
   /**
@@ -256,10 +376,55 @@ export const crmService = {
 
   /**
    * Obtener una tarea por ID
+   * Nota: Si el backend no tiene endpoint GET /tasks/{id}, 
+   * se intenta obtener desde la lista de tareas del calendario con un rango amplio de fechas
    */
   async getTask(id: string): Promise<Task> {
-    const { data } = await api.get<Task>(`${CRM_BASE_PATH}/tasks/${id}`);
-    return data;
+    try {
+      // Intentar obtener directamente (si el endpoint existe)
+      const { data } = await api.get<Task>(`${CRM_BASE_PATH}/tasks/${id}`);
+      return data;
+    } catch (error: any) {
+      // Si el endpoint no existe (404), intentar obtener desde la lista del calendario
+      if (error?.response?.status === 404) {
+        console.warn(`⚠️ [crmService] Endpoint GET /tasks/${id} no encontrado, intentando obtener desde calendario...`);
+        try {
+          // Obtener tareas del calendario con un rango amplio de fechas (últimos 2 años y próximos 2 años)
+          const now = new Date();
+          const startDate = new Date(now);
+          startDate.setFullYear(startDate.getFullYear() - 2);
+          const endDate = new Date(now);
+          endDate.setFullYear(endDate.getFullYear() + 2);
+          
+          const calendarResponse = await api.get<{ items: Task[] } | Task[]>(`${CRM_BASE_PATH}/tasks/calendar`, {
+            params: {
+              start_date: startDate.toISOString().split('T')[0],
+              end_date: endDate.toISOString().split('T')[0],
+            },
+          });
+          
+          // Manejar diferentes formatos de respuesta
+          const tasks = Array.isArray(calendarResponse.data) 
+            ? calendarResponse.data 
+            : (calendarResponse.data as any)?.items || [];
+          const task = tasks.find((t: Task) => t.id === id);
+          
+          if (task) {
+            console.log(`✅ [crmService] Tarea ${id} encontrada en calendario`);
+            return task;
+          }
+          
+          // Si no se encuentra, lanzar error 404
+          throw { response: { status: 404, data: { detail: 'Tarea no encontrada' } } };
+        } catch (calendarError: any) {
+          // Si también falla el calendario, lanzar el error original
+          console.error(`❌ [crmService] Error obteniendo tarea desde calendario:`, calendarError);
+          throw error;
+        }
+      }
+      // Si es otro error, re-lanzarlo
+      throw error;
+    }
   },
 
   /**
@@ -312,10 +477,10 @@ export const crmService = {
    */
   async getNotes(filters?: { entity_type?: string; entity_id?: string; note_type?: string; skip?: number; limit?: number; created_by?: string }): Promise<NotesListResponse> {
     try {
-      const { data } = await api.get<NotesListResponse>(`${CRM_BASE_PATH}/notes`, {
-        params: filters,
-      });
-      return data;
+    const { data } = await api.get<NotesListResponse>(`${CRM_BASE_PATH}/notes`, {
+      params: filters,
+    });
+    return data;
     } catch (err: any) {
       // Si entity_id es "new", esperar lista vacía
       if (filters?.entity_id === 'new') {
@@ -342,16 +507,20 @@ export const crmService = {
    * Crear una nota
    */
   async createNote(note: NoteCreateRequest): Promise<Note> {
-    // Normalizar entity_type a plural si es necesario
+    // El backend ahora acepta variaciones y las normaliza automáticamente
+    // Pero mantenemos la normalización aquí para consistencia
     const apiNote: any = {
       ...note,
+      // Normalizar entity_type a plural (el backend también lo hace, pero por consistencia)
       entity_type: note.entity_type === 'contact' ? 'contacts' : 
                    note.entity_type === 'lead' ? 'leads' : 
                    note.entity_type === 'company' ? 'companies' :
                    note.entity_type,
     };
     
+    console.log('📝 [crmService] Creando nota:', apiNote);
     const { data } = await api.post<Note>(`${CRM_BASE_PATH}/notes`, apiNote);
+    console.log('✅ [crmService] Nota creada exitosamente:', data.id);
     return data;
   },
 
@@ -377,16 +546,54 @@ export const crmService = {
    * Maneja error 500 mostrando lista vacía hasta que se apliquen migraciones del backend
    */
   async getCalls(filters?: CallFilters): Promise<CallsListResponse> {
+    console.log('🟠 [crmService] getCalls llamado con filters:', filters);
     try {
-      const { data } = await api.get<CallsListResponse>(`${CRM_BASE_PATH}/calls`, {
+      const { data } = await api.get<any>(`${CRM_BASE_PATH}/calls`, {
         params: filters,
       });
-      return data;
+      console.log('🟠 [crmService] getCalls respuesta recibida:', data);
+      console.log('🟠 [crmService] getCalls - tipo:', typeof data, 'es array?:', Array.isArray(data));
+      
+      // El backend puede devolver un array directo o un objeto con items
+      let normalizedResponse: CallsListResponse;
+      
+      if (Array.isArray(data)) {
+        // Backend devuelve array directo: convertir a estructura esperada
+        console.log('🟠 [crmService] getCalls: respuesta es array, normalizando...');
+        normalizedResponse = {
+          items: data,
+          total: data.length,
+          skip: filters?.skip || 0,
+          limit: filters?.limit || 20,
+        };
+      } else if (data && typeof data === 'object' && 'items' in data) {
+        // Backend devuelve objeto con items: usar tal cual
+        console.log('🟠 [crmService] getCalls: respuesta tiene estructura items');
+        normalizedResponse = {
+          items: data.items || [],
+          total: data.total ?? (data.items?.length || 0),
+          skip: data.skip ?? (filters?.skip || 0),
+          limit: data.limit ?? (filters?.limit || 20),
+        };
+      } else {
+        // Respuesta inesperada: normalizar a estructura vacía
+        console.warn('⚠️ [crmService] getCalls: respuesta inesperada, normalizando a vacío');
+        normalizedResponse = {
+          items: [],
+          total: 0,
+          skip: filters?.skip || 0,
+          limit: filters?.limit || 20,
+        };
+      }
+      
+      console.log('🟠 [crmService] getCalls respuesta normalizada:', normalizedResponse);
+      return normalizedResponse;
     } catch (err: any) {
+      console.error('❌ [crmService] getCalls error:', err);
       // Si es error 500, probablemente faltan migraciones de transcripción
       // Mientras tanto, retornar lista vacía
       if (err?.response?.status === 500) {
-        console.warn('Error 500 en /crm/calls - probablemente faltan migraciones. Mostrando lista vacía.');
+        console.warn('⚠️ [crmService] Error 500 en /crm/calls - probablemente faltan migraciones. Mostrando lista vacía.');
         return {
           items: [],
           total: 0,
@@ -410,6 +617,9 @@ export const crmService = {
    * Registrar una llamada
    */
   async createCall(call: CallCreateRequest): Promise<Call> {
+    console.log('🟢 [crmService] createCall llamado');
+    console.log('🟢 [crmService] call recibido:', call);
+    
     // Normalizar campos para la API
     const apiCall: any = {
       ...call,
@@ -425,8 +635,45 @@ export const crmService = {
     delete apiCall.recording_url;
     delete apiCall.status; // Usar call_status en su lugar
     
-    const { data } = await api.post<Call>(`${CRM_BASE_PATH}/calls`, apiCall);
-    return data;
+    console.log('🟢 [crmService] apiCall normalizado:', apiCall);
+    console.log('🟢 [crmService] URL:', `${CRM_BASE_PATH}/calls`);
+    console.log('🟢 [crmService] Enviando POST request...');
+    
+    try {
+      const { data } = await api.post<Call>(`${CRM_BASE_PATH}/calls`, apiCall);
+      console.log('✅ [crmService] Llamada creada exitosamente:', data);
+      return data;
+    } catch (error: any) {
+      console.error('❌ [crmService] Error en createCall:', error);
+      console.error('❌ [crmService] Error details:', {
+        message: error?.message,
+        status: error?.response?.status,
+        data: error?.response?.data,
+        detail: error?.response?.data?.detail,
+        config: {
+          url: error?.config?.url,
+          method: error?.config?.method,
+          data: error?.config?.data,
+        },
+      });
+      
+      // Log detallado de errores de validación 422
+      if (error?.response?.status === 422 && error?.response?.data?.detail) {
+        console.error('❌ [crmService] Errores de validación (422):');
+        if (Array.isArray(error.response.data.detail)) {
+          error.response.data.detail.forEach((err: any, index: number) => {
+            console.error(`  Error ${index + 1}:`, err);
+            if (err.loc) console.error(`    Campo: ${err.loc.join('.')}`);
+            if (err.msg) console.error(`    Mensaje: ${err.msg}`);
+            if (err.type) console.error(`    Tipo: ${err.type}`);
+          });
+        } else {
+          console.error('  Detalle:', error.response.data.detail);
+        }
+      }
+      
+      throw error;
+    }
   },
 
   /**
@@ -490,10 +737,56 @@ export const crmService = {
    * Obtener llamadas de un contacto
    */
   async getContactCalls(contactId: string, filters?: { skip?: number; limit?: number; direction?: string; call_status?: string }): Promise<CallsListResponse> {
-    const { data } = await api.get<CallsListResponse>(`${CRM_BASE_PATH}/contacts/${contactId}/calls`, {
-      params: filters,
-    });
-    return data;
+    try {
+      const { data } = await api.get<any>(`${CRM_BASE_PATH}/contacts/${contactId}/calls`, {
+        params: filters,
+      });
+      
+      // El backend puede devolver un array directo o un objeto con items
+      let normalizedResponse: CallsListResponse;
+      
+      if (Array.isArray(data)) {
+        // Backend devuelve array directo: convertir a estructura esperada
+        normalizedResponse = {
+          items: data,
+          total: data.length,
+          skip: filters?.skip || 0,
+          limit: filters?.limit || 20,
+        };
+      } else if (data && typeof data === 'object' && 'items' in data) {
+        // Backend devuelve objeto con items: usar tal cual
+        normalizedResponse = {
+          items: data.items || [],
+          total: data.total ?? (data.items?.length || 0),
+          skip: data.skip ?? (filters?.skip || 0),
+          limit: data.limit ?? (filters?.limit || 20),
+        };
+      } else {
+        // Respuesta inesperada: normalizar a estructura vacía
+        console.warn('⚠️ [crmService] getContactCalls: respuesta inesperada, normalizando a vacío');
+        normalizedResponse = {
+          items: [],
+          total: 0,
+          skip: filters?.skip || 0,
+          limit: filters?.limit || 20,
+        };
+      }
+      
+      return normalizedResponse;
+    } catch (err: any) {
+      console.error('❌ [crmService] getContactCalls error:', err);
+      // Si es error 500, retornar lista vacía
+      if (err?.response?.status === 500) {
+        console.warn('⚠️ [crmService] Error 500 en /crm/contacts/{id}/calls - mostrando lista vacía.');
+        return {
+          items: [],
+          total: 0,
+          skip: filters?.skip || 0,
+          limit: filters?.limit || 20,
+        };
+      }
+      throw err;
+    }
   },
 
   /**
@@ -831,6 +1124,122 @@ export const crmService = {
       call,
       followUpTask,
     };
+  },
+
+  // ===== CUSTOM FIELDS =====
+
+  /**
+   * Obtener lista de campos personalizados
+   */
+  async getCustomFields(params?: {
+    entity_type?: 'contacts' | 'leads' | 'companies';
+    is_visible?: boolean;
+  }): Promise<CustomField[]> {
+    const queryParams = new URLSearchParams();
+    if (params?.entity_type) {
+      queryParams.append('entity_type', params.entity_type);
+    }
+    if (params?.is_visible !== undefined) {
+      queryParams.append('is_visible', String(params.is_visible));
+    }
+
+    const { data } = await api.get<CustomField[]>(
+      `${CRM_BASE_PATH}/custom-fields${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    );
+    return data;
+  },
+
+  /**
+   * Obtener un campo personalizado por ID
+   */
+  async getCustomField(id: string): Promise<CustomField> {
+    const { data } = await api.get<CustomField>(`${CRM_BASE_PATH}/custom-fields/${id}`);
+    return data;
+  },
+
+  /**
+   * Crear un campo personalizado
+   */
+  async createCustomField(field: CustomFieldCreateRequest): Promise<CustomField> {
+    const { data } = await api.post<CustomField>(
+      `${CRM_BASE_PATH}/custom-fields`,
+      field
+    );
+    return data;
+  },
+
+  /**
+   * Actualizar un campo personalizado
+   */
+  async updateCustomField(id: string, updates: CustomFieldUpdateRequest): Promise<CustomField> {
+    const { data } = await api.put<CustomField>(
+      `${CRM_BASE_PATH}/custom-fields/${id}`,
+      updates
+    );
+    return data;
+  },
+
+  /**
+   * Eliminar un campo personalizado
+   */
+  async deleteCustomField(id: string): Promise<void> {
+    await api.delete(`${CRM_BASE_PATH}/custom-fields/${id}`);
+  },
+
+  // ===== CUSTOM FIELD VALUES =====
+
+  /**
+   * Obtener valores de campos personalizados
+   */
+  async getCustomFieldValues(params?: {
+    entity_id?: string;
+    entity_type?: 'contacts' | 'leads' | 'companies';
+    custom_field_id?: string;
+  }): Promise<CustomFieldValue[]> {
+    const queryParams = new URLSearchParams();
+    if (params?.entity_id) {
+      queryParams.append('entity_id', params.entity_id);
+    }
+    if (params?.entity_type) {
+      queryParams.append('entity_type', params.entity_type);
+    }
+    if (params?.custom_field_id) {
+      queryParams.append('custom_field_id', params.custom_field_id);
+    }
+
+    const { data } = await api.get<CustomFieldValue[]>(
+      `${CRM_BASE_PATH}/custom-field-values${queryParams.toString() ? `?${queryParams.toString()}` : ''}`
+    );
+    return data;
+  },
+
+  /**
+   * Crear o actualizar un valor de campo personalizado (upsert)
+   */
+  async upsertCustomFieldValue(value: CustomFieldValueCreateRequest): Promise<CustomFieldValue> {
+    const { data } = await api.post<CustomFieldValue>(
+      `${CRM_BASE_PATH}/custom-field-values`,
+      value
+    );
+    return data;
+  },
+
+  /**
+   * Actualizar un valor de campo personalizado
+   */
+  async updateCustomFieldValue(id: string, value: any): Promise<CustomFieldValue> {
+    const { data } = await api.put<CustomFieldValue>(
+      `${CRM_BASE_PATH}/custom-field-values/${id}`,
+      { value }
+    );
+    return data;
+  },
+
+  /**
+   * Eliminar un valor de campo personalizado
+   */
+  async deleteCustomFieldValue(id: string): Promise<void> {
+    await api.delete(`${CRM_BASE_PATH}/custom-field-values/${id}`);
   },
 };
 

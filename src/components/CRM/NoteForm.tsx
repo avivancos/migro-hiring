@@ -27,19 +27,27 @@ export function NoteForm({
   
   const [formData, setFormData] = useState({
     content: note?.content || '',
-    note_type: note?.note_type || 'common',
+    note_type: note?.note_type || 'comment', // El backend espera "comment" por defecto
     entity_type: note?.entity_type || defaultEntityType || 'contacts',
     entity_id: note?.entity_id || defaultEntityId || '',
   });
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    
+    // Validar que el contenido no esté vacío
+    if (!formData.content || formData.content.trim().length === 0) {
+      alert('El contenido de la nota no puede estar vacío');
+      return;
+    }
+
     setLoading(true);
 
     try {
       await onSubmit(formData);
     } catch (err) {
       console.error('Error submitting form:', err);
+      // El error ya se maneja en el componente padre
     } finally {
       setLoading(false);
     }
@@ -82,7 +90,7 @@ export function NoteForm({
               onChange={(e) => handleChange('note_type', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
             >
-              <option value="common">General</option>
+              <option value="comment">Comentario</option>
               <option value="call">Llamada</option>
               <option value="meeting">Reunión</option>
               <option value="email">Email</option>

@@ -24,7 +24,7 @@ const isUUID = (v?: string | null): boolean => {
 // Función para construir payload sin valores inválidos
 function buildLeadPayload(form: any): LeadCreateRequest {
   return {
-    name: (form.name ?? '').trim() || 'Nuevo lead',
+    name: (form.name ?? '').trim() || 'Nuevo contacto',
     status: form.status || null,
     pipeline_id: isUUID(form.pipeline_id) ? form.pipeline_id : null,
     contact_id: isUUID(form.contact_id) ? form.contact_id : null,
@@ -259,11 +259,11 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
                 disabled={loadingUsers}
               >
                 <option value="">
-                  {loadingUsers ? 'Cargando usuarios...' : 'Sin responsable'}
+                  {loadingUsers ? 'Cargando usuarios...' : 'Asignación automática (recomendado)'}
                 </option>
                 {users.length === 0 && !loadingUsers && (
                   <option value="" disabled>
-                    No hay usuarios disponibles
+                    No hay usuarios disponibles - se asignará automáticamente
                   </option>
                 )}
                 {users.map(user => {
@@ -276,7 +276,9 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
                 })}
               </select>
               <p className="text-xs text-gray-500 mt-1">
-                Solo abogados y administradores pueden ser responsables
+                {formData.responsible_user_id 
+                  ? 'Solo abogados y administradores pueden ser responsables'
+                  : 'Si no seleccionas un responsable, el sistema asignará automáticamente el lead a un agente disponible según cuota diaria y disponibilidad.'}
               </p>
             </div>
 

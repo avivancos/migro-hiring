@@ -59,10 +59,8 @@ export function CRMActions() {
         limit: 100,
       });
 
-      // Cargar leads activos
-      const leadsResponse = await crmService.getLeads({
-        limit: 100,
-      });
+      // Cargar todos los contactos (los leads están unificados con contactos)
+      const allLeads = await crmService.getAllContacts().catch(() => []) as any;
 
       const actionItems: ActionItem[] = [];
 
@@ -94,7 +92,7 @@ export function CRMActions() {
       });
 
       // Procesar leads que necesitan acción
-      leadsResponse.items.forEach((lead: KommoLead) => {
+      allLeads.forEach((lead: KommoLead) => {
         if (lead.status === 'won' || lead.status === 'lost') return;
 
         const needsAction = 

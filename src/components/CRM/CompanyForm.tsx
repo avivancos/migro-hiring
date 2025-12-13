@@ -143,11 +143,14 @@ export function CompanyForm({ company, onSubmit, onCancel }: CompanyFormProps) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="">Sin asignar</option>
-                {users.map(user => (
-                  <option key={user.id} value={user.id}>
-                    {user.name}
-                  </option>
-                ))}
+                {users.map(user => {
+                  const displayName = user.name?.trim() || user.email || `Usuario ${user.id?.slice(0, 8) || 'N/A'}`;
+                  return (
+                    <option key={user.id} value={user.id}>
+                      {displayName}
+                    </option>
+                  );
+                })}
               </select>
               <p className="text-xs text-gray-500 mt-1">
                 Solo abogados y administradores pueden ser responsables

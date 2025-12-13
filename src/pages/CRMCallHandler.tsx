@@ -24,13 +24,17 @@ import type {
   ContactCreateRequest,
   Pipeline,
   PipelineStatus,
-  TaskCreateRequest
+  TaskCreateRequest,
+  Call
 } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { ContactForm } from '@/components/CRM/ContactForm';
 import { CRMHeader } from '@/components/CRM/CRMHeader';
+import { useNavigate } from 'react-router-dom';
+import { Clock, ExternalLink } from 'lucide-react';
 
 export function CRMCallHandler() {
+  const navigate = useNavigate();
   // Estados principales
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{ leads: KommoLead[]; contacts: KommoContact[] }>({
@@ -42,6 +46,8 @@ export function CRMCallHandler() {
     data: KommoLead | KommoContact | null;
   }>({ type: null, data: null });
   const [searching, setSearching] = useState(false);
+  const [recentCalls, setRecentCalls] = useState<Call[]>([]);
+  const [loadingCalls, setLoadingCalls] = useState(true);
   
   // Datos del formulario
   const [callData, setCallData] = useState<Partial<CallCreateRequest>>({
@@ -71,6 +77,7 @@ export function CRMCallHandler() {
 
   useEffect(() => {
     loadInitialData();
+    loadRecentCalls();
   }, []);
 
   useEffect(() => {
@@ -78,6 +85,13 @@ export function CRMCallHandler() {
       loadLeadPipelineData(selectedEntity.data as KommoLead);
     }
   }, [selectedEntity]);
+
+  // Recargar llamadas después de guardar
+  useEffect(() => {
+    if (saveSuccess) {
+      loadRecentCalls();
+    }
+  }, [saveSuccess]);
 
   const loadInitialData = async () => {
     try {
@@ -97,6 +111,27 @@ export function CRMCallHandler() {
       setCurrentPipeline(mainPipeline);
     } catch (err) {
       console.error('Error loading initial data:', err);
+    }
+  };
+
+  const loadRecentCalls = async () => {
+    setLoadingCalls(true);
+    try {
+      const callsData = await crmService.getCalls({ limit: 50 });
+      
+      // Ordenar llamadas de más recientes a más antiguas
+      const sortedCalls = (callsData.items || []).sort((a, b) => {
+        const dateA = new Date(a.started_at || a.created_at).getTime();
+        const dateB = new Date(b.started_at || b.created_at).getTime();
+        return dateB - dateA; // Descendente (más recientes primero)
+      });
+      
+      setRecentCalls(sortedCalls);
+    } catch (err) {
+      console.error('Error loading recent calls:', err);
+      setRecentCalls([]);
+    } finally {
+      setLoadingCalls(false);
     }
   };
 
@@ -462,6 +497,104 @@ export function CRMCallHandler() {
           )}
         </CardContent>
       </Card>
+
+          {/* Llamadas Recientes */}
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center gap-2">
+                  <Phone size={20} />
+                  Llamadas Recientes
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={loadRecentCalls}
+                  disabled={loadingCalls}
+                >
+                  <RefreshCw size={16} className={`mr-2 ${loadingCalls ? 'animate-spin' : ''}`} />
+                  Actualizar
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingCalls ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                  <p className="mt-2 text-sm text-gray-600">Cargando llamadas...</p>
+                </div>
+              ) : recentCalls.length === 0 ? (
+                <p className="text-center text-gray-500 py-8">No hay llamadas registradas</p>
+              ) : (
+                <div className="space-y-3">
+                  {recentCalls.map((call) => (
+                    <div
+                      key={call.id}
+                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className={`p-2 rounded-full ${
+                            call.direction === 'inbound' 
+                              ? 'bg-green-100 text-green-600' 
+                              : 'bg-blue-100 text-blue-600'
+                          }`}>
+                            <Phone size={16} />
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900">
+                              {call.phone || call.phone_number || 'N/A'}
+                            </div>
+                            <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+                              <span className="flex items-center gap-1">
+                                <Calendar size={14} />
+                                {new Date(call.started_at || call.created_at).toLocaleString('es-ES', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </span>
+                              {call.duration > 0 && (
+                                <span className="flex items-center gap-1">
+                                  <Clock size={14} />
+                                  {Math.floor(call.duration / 60)}:{(call.duration % 60).toString().padStart(2, '0')}
+                                </span>
+                              )}
+                              <span className={`text-xs px-2 py-1 rounded ${
+                                call.call_status === 'completed' || call.status === 'answered' || call.status === 'completed'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {call.call_status || call.status || 'unknown'}
+                              </span>
+                            </div>
+                            {call.resumen_llamada && (
+                              <p className="text-sm text-gray-700 mt-2 line-clamp-2">
+                                {call.resumen_llamada}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      {call.entity_id && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigate(`/crm/contacts/${call.entity_id}`)}
+                          className="ml-4"
+                        >
+                          <ExternalLink className="w-3 h-3 mr-1" />
+                          Ver contacto
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
       {/* Cliente Seleccionado */}
       {selectedEntity.data && (
