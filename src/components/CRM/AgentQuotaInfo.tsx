@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import type { CRMUser, KommoLead } from '@/types/crm';
+import type { CRMUser } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 
 interface AgentQuotaInfoProps {

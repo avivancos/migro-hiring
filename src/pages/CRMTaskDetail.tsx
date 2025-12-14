@@ -16,7 +16,6 @@ import {
   Phone,
   Mail,
   Users,
-  Building2,
   FileText,
   ExternalLink,
 } from 'lucide-react';

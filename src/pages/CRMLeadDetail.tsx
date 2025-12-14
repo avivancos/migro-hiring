@@ -141,7 +141,15 @@ export function CRMLeadDetail() {
           normalizedCalls = [];
         }
         
-        setLead(leadData);
+        // leadData puede ser KommoLead o KommoContact, pero setLead espera KommoLead | null
+        // Si es KommoContact, no podemos asignarlo directamente
+        if (leadData && 'price' in leadData && 'pipeline_id' in leadData) {
+          setLead(leadData as KommoLead);
+        } else {
+          // Si es un contacto, no podemos usarlo como lead
+          console.warn('⚠️ [CRMLeadDetail] leadData es un KommoContact, no se puede usar como lead');
+          setLead(null);
+        }
         setTasks(tasksData?.items || []);
         
         // Ordenar llamadas de más recientes a más antiguas
@@ -1156,7 +1164,7 @@ export function CRMLeadDetail() {
               <CallForm
                 defaultEntityType="contacts"
                 defaultEntityId={id}
-                defaultPhone={lead?.phone || lead?.mobile || lead?.contact?.phone || lead?.contact?.mobile || ''}
+                defaultPhone={lead?.contact?.phone || lead?.contact?.mobile || ''}
                 onSubmit={handleCallSubmit}
                 onCancel={() => {
                   setShowCallForm(false);

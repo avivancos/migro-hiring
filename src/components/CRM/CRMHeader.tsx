@@ -10,7 +10,6 @@ import {
   Building2,
   LayoutDashboard,
   Users,
-  TrendingUp,
   Calendar,
   Phone,
   FileText,
@@ -23,7 +22,6 @@ import {
   MapPin,
   Flag,
   Loader2,
-  MessageCircle,
 } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { PiliChatModal } from './PiliChatModal';

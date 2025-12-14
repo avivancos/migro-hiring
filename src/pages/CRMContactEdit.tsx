@@ -171,7 +171,7 @@ export function CRMContactEdit() {
   }
 
   if (!isAuthenticated) {
-    return LoginComponent;
+    return <LoginComponent />;
   }
 
   if (loading) {

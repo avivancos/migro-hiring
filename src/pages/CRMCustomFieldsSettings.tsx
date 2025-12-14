@@ -204,7 +204,9 @@ export function CRMCustomFieldsSettings() {
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-2">
                               {!field.is_deletable && (
-                                <Lock size={16} className="text-gray-400" title="Campo del sistema" />
+                                <span title="Campo del sistema">
+                                  <Lock size={16} className="text-gray-400" />
+                                </span>
                               )}
                               <span className="font-medium">{field.name}</span>
                               {field.code && (
