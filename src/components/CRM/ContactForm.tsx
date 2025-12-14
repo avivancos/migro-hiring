@@ -88,10 +88,17 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
       if (formData.state?.trim()) cleanedData.state = formData.state.trim();
       if (formData.postal_code?.trim()) cleanedData.postal_code = formData.postal_code.trim();
       if (formData.country?.trim()) cleanedData.country = formData.country.trim();
-      if (formData.company?.trim()) cleanedData.company = formData.company.trim();
+      // company puede ser string o KommoCompany
+      if (typeof formData.company === 'string' && formData.company.trim()) {
+        cleanedData.company = formData.company.trim();
+      } else if (formData.company && typeof formData.company === 'object') {
+        // Si es un objeto KommoCompany, usar el ID
+        cleanedData.company_id = formData.company.id;
+      }
       if (formData.position?.trim()) cleanedData.position = formData.position.trim();
       if (formData.company_id) cleanedData.company_id = formData.company_id;
-      if (formData.responsible_user_id) cleanedData.responsible_user_id = formData.responsible_user_id;
+      // responsible_user_id se obtiene del contacto original si existe
+      if (contact?.responsible_user_id) cleanedData.responsible_user_id = contact.responsible_user_id;
       if (formData.notes?.trim()) cleanedData.notes = formData.notes.trim();
       
       // Campos Migro específicos
