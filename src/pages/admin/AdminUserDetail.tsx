@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { adminService } from '@/services/adminService';
-import { ArrowLeft, Save, Trash2, Mail, Shield, UserCheck, UserX, Key, UserCog, History, Eye, Lock } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Shield, UserCheck, UserX, Key, UserCog, History, Eye, Lock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/common/Modal';
 import type { User, UserRole } from '@/types/user';
@@ -35,6 +35,7 @@ export function AdminUserDetail() {
     is_active: true,
     is_verified: false,
     role: 'user' as UserRole,
+    is_superuser: false,
   });
 
   useEffect(() => {
@@ -116,6 +117,7 @@ export function AdminUserDetail() {
         is_active: data.is_active ?? true,
         is_verified: data.is_verified ?? false,
         role: (data.role || 'user') as UserRole,
+        is_superuser: data.is_superuser ?? false,
       });
     } catch (error) {
       console.error('Error cargando usuario:', error);

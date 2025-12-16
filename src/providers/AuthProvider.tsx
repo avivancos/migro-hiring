@@ -1,10 +1,9 @@
 // AuthProvider - Sistema de autenticación unificado para Admin y CRM
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { authService } from '@/services/authService';
 import { api } from '@/services/api';
 import type { User } from '@/types/auth';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 interface AuthContextType {
   user: User | null;
@@ -33,8 +32,6 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
-  const location = useLocation();
 
   // Verificar autenticación al montar y cuando cambia la ruta
   useEffect(() => {
@@ -175,7 +172,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await checkAuth();
   };
 
-  const isAdmin = user ? (user.is_superuser || user.role === 'admin' || user.role === 'superuser') : false;
+  const isAdmin = user ? (user.is_superuser || user.role === 'admin') : false;
   const isAuthenticated = !!user && user.is_active;
 
   return (

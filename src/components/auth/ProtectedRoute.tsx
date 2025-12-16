@@ -1,5 +1,5 @@
 // ProtectedRoute - Componente para proteger rutas
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/providers/AuthProvider';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';

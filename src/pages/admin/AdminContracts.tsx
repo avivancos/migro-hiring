@@ -496,7 +496,7 @@ export function AdminContracts() {
           {total > (filters.limit || 20) && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="text-sm text-gray-600">
-                Mostrando {filters.skip + 1} - {Math.min(filters.skip + (filters.limit || 20), total)} de {total}
+                Mostrando {(filters.skip || 0) + 1} - {Math.min((filters.skip || 0) + (filters.limit || 20), total)} de {total}
               </div>
               <div className="flex items-center gap-2">
                 <Button

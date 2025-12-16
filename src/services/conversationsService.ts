@@ -12,8 +12,8 @@ import type {
   AssignLawyerResponse,
   ConversationExportRequest,
   ConversationExportResponse,
-  MessageResponse,
 } from '@/types/conversations';
+import type { MessageResponse } from '@/types/auth';
 
 export const conversationsService = {
   /**

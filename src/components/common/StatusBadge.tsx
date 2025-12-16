@@ -56,14 +56,13 @@ const statusToVariant: Record<string, StatusVariant> = {
   
   // Estados de documento
   'verified': 'success',
-  'pending': 'pending',
+  'document_pending': 'pending',
   'rejected': 'error',
   
   // Estados de expediente
   'new': 'info',
   'in_progress': 'warning',
-  'completed': 'completed',
-  'cancelled': 'cancelled',
+  'completed': 'success',
   
   // Roles
   'admin': 'info',

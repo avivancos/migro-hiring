@@ -341,7 +341,7 @@ export const adminService = {
    * Get user by ID (alias for backward compatibility)
    * @deprecated Use getUserById instead to avoid confusion with getUser() without params
    */
-  async getUser(id: string): Promise<any> {
+  async getUserByIdFromApi(id: string): Promise<any> {
     return this.getUserById(id);
   },
 
@@ -469,6 +469,21 @@ export const adminService = {
         'Content-Type': 'multipart/form-data',
       },
     });
+    return data;
+  },
+
+  /**
+   * Create new user (admin only)
+   */
+  async createUser(userData: {
+    email: string;
+    full_name?: string;
+    password: string;
+    is_active?: boolean;
+    is_verified?: boolean;
+    role?: string;
+  }): Promise<any> {
+    const { data } = await api.post('/users/', userData);
     return data;
   },
 };

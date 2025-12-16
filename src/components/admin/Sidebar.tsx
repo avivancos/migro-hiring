@@ -6,7 +6,6 @@ import {
   FileText, 
   Shield, 
   MessageSquare, 
-  Activity,
   Bot
 } from 'lucide-react';
 

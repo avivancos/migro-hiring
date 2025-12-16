@@ -1,5 +1,6 @@
 // Modal - Sistema de modales con animaciones
-import { ReactNode, useEffect } from 'react';
+import { useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';

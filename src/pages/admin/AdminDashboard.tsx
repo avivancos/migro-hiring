@@ -3,16 +3,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { adminService } from '@/services/adminService';
 import {
   Users,
   UserPlus,
   FileText,
   DollarSign,
-  TrendingUp,
-  Calendar,
-  AlertCircle,
-  CheckCircle2,
   Clock,
   ArrowRight,
 } from 'lucide-react';

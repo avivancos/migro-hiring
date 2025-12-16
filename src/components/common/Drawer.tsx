@@ -1,5 +1,6 @@
 // Drawer - Panel lateral deslizante
-import { ReactNode, useEffect } from 'react';
+import { useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/providers/AuthProvider';
-import { LogOut, Menu, User } from 'lucide-react';
+import { LogOut, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface AdminHeaderProps {
@@ -55,7 +55,7 @@ export function AdminHeader({ isAdminMode, onModeSwitch, onMenuClick }: AdminHea
             <div className="flex items-center gap-3">
                <div className="hidden md:flex flex-col items-end">
                   <span className="text-sm font-medium text-gray-900">
-                    {user?.name || 'Usuario'}
+                    {user?.full_name || user?.email || 'Usuario'}
                   </span>
                   <span className="text-xs text-gray-500">
                     {user?.email}

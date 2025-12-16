@@ -25,7 +25,7 @@ import {
   ArrowDown,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import type { User, UserRole } from '@/types/user';
+import type { User } from '@/types/user';
 
 type SortField = 'name' | 'email' | 'phone_number' | 'role' | 'is_active' | 'last_login' | 'created_at';
 type SortOrder = 'asc' | 'desc';
@@ -561,7 +561,7 @@ export function AdminUsers() {
                       >
                         <option value="">Todas</option>
                         {uniqueNationalities.map(nat => (
-                          <option key={nat} value={nat}>{nat}</option>
+                          <option key={nat} value={nat || ''}>{nat || ''}</option>
                         ))}
                       </select>
                     </div>

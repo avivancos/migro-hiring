@@ -1,5 +1,5 @@
 // EmptyState - Estados vacíos atractivos con ilustraciones
-import { ReactNode, ComponentType } from 'react';
+import type { ReactNode, ComponentType } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';

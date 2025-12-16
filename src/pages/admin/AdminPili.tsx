@@ -4,7 +4,6 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { piliService } from '@/services/piliService';
-import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Send, Bot, User, Activity } from 'lucide-react';
 import type { Message, HealthResponse } from '@/types/pili';

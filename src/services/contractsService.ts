@@ -1,7 +1,6 @@
 // Contracts Service - API endpoints for contracts (hiring codes) management
 
 import { api } from './api';
-import { adminService } from './adminService';
 import { hiringService } from './hiringService';
 import type {
   Contract,
@@ -10,7 +9,6 @@ import type {
   ContractCreateRequest,
   ContractUpdateRequest,
 } from '@/types/contracts';
-import type { CreateHiringRequest, HiringCodeResponse } from '@/types/admin';
 
 /**
  * Normalize hiring code response to Contract format
@@ -144,10 +142,7 @@ export const contractsService = {
     } catch (error) {
       // Fallback to public hiring endpoint
       const data = await hiringService.getDetails(code);
-      return normalizeHiringCode({
-        id: data.id,
-        ...data,
-      });
+      return normalizeHiringCode(data);
     }
   },
 
@@ -217,7 +212,7 @@ export const contractsService = {
   /**
    * Update contract (not supported yet)
    */
-  async updateContract(code: string, request: ContractUpdateRequest): Promise<Contract> {
+  async updateContract(_code: string, _request: ContractUpdateRequest): Promise<Contract> {
     throw new Error('Update contract not yet implemented. Use backend API directly if available.');
   },
 
