@@ -161,6 +161,46 @@ await adminService.resetUserPassword(userId);
 
 ---
 
+## 🔑 Cambiar Contraseña (Directo)
+
+### Endpoint: `PATCH /api/users/{user_id}/password`
+
+**Uso en Frontend:**
+```typescript
+await adminService.changeUserPassword(userId, 'nueva_contraseña');
+```
+
+**Permisos:** Solo admin
+
+**Request Body:**
+```json
+{
+  "password": "nueva_contraseña_segura"
+}
+```
+
+**Respuesta:**
+```json
+{
+  "message": "Password changed successfully"
+}
+```
+
+**Audit Log:** Se registra la acción `USER_PASSWORD_CHANGED`
+
+**Nota:** 
+- Cambia la contraseña directamente sin enviar email al usuario
+- La contraseña debe tener al menos 8 caracteres
+- Se recomienda enviar notificación por email al usuario (opcional)
+
+**Diferencia con Reset Password:**
+- **Reset Password**: Envía email al usuario para que cambie su propia contraseña
+- **Change Password**: Admin cambia la contraseña directamente
+
+**⚠️ Estado:** Pendiente de implementación en backend. Ver `docs/BACKEND_IMPLEMENT_CHANGE_PASSWORD.md` para guía de implementación.
+
+---
+
 ## 👁️ Impersonar Usuario
 
 ### Endpoint: `POST /api/users/{user_id}/impersonate`

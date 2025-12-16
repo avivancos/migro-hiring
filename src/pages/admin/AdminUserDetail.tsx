@@ -40,16 +40,64 @@ export function AdminUserDetail() {
   useEffect(() => {
     if (id) {
       loadUser();
-      loadCurrentUser();
+      // Cargar usuario actual de forma segura
+      loadCurrentUser().catch((error) => {
+        console.error('Error en loadCurrentUser:', error);
+      });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const loadCurrentUser = () => {
+  const loadCurrentUser = async () => {
     try {
-      // getUser() sin parámetros obtiene del localStorage
-      const current = adminService.getUser();
+      // Intentar obtener del localStorage primero (usar directamente localStorage para evitar confusión)
+      let current: any = null;
+      const userStr = localStorage.getItem('admin_user');
+      if (userStr) {
+        try {
+          current = JSON.parse(userStr);
+        } catch (e) {
+          console.warn('Error parseando admin_user del localStorage:', e);
+        }
+      }
+      
+      // Si no hay usuario en localStorage o no tiene la estructura correcta, obtener de la API
+      if (!current || (!current.role && !current.is_admin && !current.is_superuser)) {
+        try {
+          const apiUser = await adminService.getCurrentUser();
+          // Mapear a formato esperado
+          if (apiUser) {
+            current = {
+              id: apiUser.id,
+              email: apiUser.email,
+              name: apiUser.full_name || apiUser.email,
+              is_admin: apiUser.is_superuser || apiUser.role === 'admin' || apiUser.role === 'superuser',
+              is_superuser: apiUser.is_superuser,
+              role: apiUser.role,
+            };
+            // Guardar en localStorage para próximas veces
+            localStorage.setItem('admin_user', JSON.stringify(current));
+          }
+        } catch (apiError: any) {
+          // Solo loggear si no es un error esperado (como 401)
+          if (apiError.response?.status !== 401) {
+            console.warn('No se pudo obtener usuario de la API, usando localStorage:', apiError);
+          }
+        }
+      }
+      
       setCurrentUser(current);
+      
+      // Debug: mostrar información del usuario
+      console.log('🔍 [AdminUserDetail] Usuario actual cargado:', {
+        current,
+        isAdmin: current?.role === 'admin' || current?.is_admin || current?.is_superuser,
+        role: current?.role,
+        is_superuser: current?.is_superuser,
+        is_admin: current?.is_admin,
+      });
     } catch (error) {
+      // Capturar cualquier error inesperado sin romper la aplicación
       console.error('Error cargando usuario actual:', error);
       setCurrentUser(null);
     }
@@ -195,7 +243,13 @@ export function AdminUserDetail() {
       setPasswordData({ newPassword: '', confirmPassword: '' });
     } catch (error: any) {
       console.error('Error cambiando contraseña:', error);
-      alert(error.response?.data?.detail || 'Error al cambiar la contraseña');
+      
+      // Manejar error 404 específicamente (endpoint no implementado)
+      if (error.response?.status === 404) {
+        alert('⚠️ El endpoint para cambiar contraseña no está implementado en el backend.\n\nPor favor, implementa el endpoint:\nPATCH /api/users/{user_id}/password\n\nConsulta la documentación en docs/ADMIN_CHANGE_PASSWORD.md');
+      } else {
+        alert(error.response?.data?.detail || 'Error al cambiar la contraseña');
+      }
     } finally {
       setChangingPassword(false);
     }
@@ -389,7 +443,10 @@ export function AdminUserDetail() {
             </Card>
 
             {/* Admin Actions */}
-            {currentUser && (currentUser.is_superuser || currentUser.role === 'admin') && (
+            {/* Mostrar acciones administrativas si el usuario es admin o si hay token de admin */}
+            {((currentUser && (currentUser.is_superuser || currentUser.is_admin || currentUser.role === 'admin' || currentUser.role === 'superuser')) || 
+              localStorage.getItem('admin_token') || 
+              localStorage.getItem('access_token')) && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
