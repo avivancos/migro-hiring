@@ -136,11 +136,11 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {/* Nombre completo (requerido) */}
             <div>
-              <Label htmlFor="name">
+              <Label htmlFor="name" className="text-sm sm:text-base">
                 Nombre Completo <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -149,6 +149,7 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
                 onChange={(e) => handleChange('name', e.target.value)}
                 placeholder="Juan Pérez"
                 required
+                className="text-sm sm:text-base"
               />
             </div>
 
@@ -262,33 +263,35 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
             </div>
 
             {/* Dirección */}
-            <div className="md:col-span-2">
-              <Label htmlFor="address">Dirección</Label>
+            <div className="sm:col-span-2">
+              <Label htmlFor="address" className="text-sm sm:text-base">Dirección</Label>
               <Input
                 id="address"
                 value={formData.address}
                 onChange={(e) => handleChange('address', e.target.value)}
                 placeholder="Calle Example, 123"
+                className="text-sm sm:text-base"
               />
             </div>
 
             {/* Notas */}
-            <div className="md:col-span-2">
-              <Label htmlFor="notes">Notas</Label>
+            <div className="sm:col-span-2">
+              <Label htmlFor="notes" className="text-sm sm:text-base">Notas</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => handleChange('notes', e.target.value)}
                 placeholder="Información adicional sobre el contacto..."
                 rows={4}
+                className="text-sm sm:text-base"
               />
             </div>
           </div>
 
           {/* Campos Migro Específicos */}
-          <div className="border-t pt-6 mt-6">
-            <h3 className="text-lg font-semibold mb-4">Información Migro</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="border-t pt-4 sm:pt-6 mt-4 sm:mt-6">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">Información Migro</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {/* Grading Llamada */}
               <div>
                 <Label htmlFor="grading_llamada">Grading Llamada</Label>
@@ -373,36 +376,40 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
               </div>
 
               {/* Checkboxes */}
-              <div className="md:col-span-2 space-y-2">
-                <label className="flex items-center gap-2">
+              <div className="sm:col-span-2 space-y-2 sm:space-y-3">
+                <label className="flex items-center gap-2 text-sm sm:text-base cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.empadronado ?? false}
                     onChange={(e) => handleChange('empadronado', e.target.checked || undefined)}
+                    className="w-4 h-4 sm:w-5 sm:h-5"
                   />
                   <span>Empadronado</span>
                 </label>
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm sm:text-base cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.tiene_ingresos ?? false}
                     onChange={(e) => handleChange('tiene_ingresos', e.target.checked || undefined)}
+                    className="w-4 h-4 sm:w-5 sm:h-5"
                   />
                   <span>Tiene Ingresos</span>
                 </label>
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm sm:text-base cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.trabaja_b ?? false}
                     onChange={(e) => handleChange('trabaja_b', e.target.checked || undefined)}
+                    className="w-4 h-4 sm:w-5 sm:h-5"
                   />
                   <span>Trabaja en B (trabajo en negro)</span>
                 </label>
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-2 text-sm sm:text-base cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.tiene_familiares_espana ?? false}
                     onChange={(e) => handleChange('tiene_familiares_espana', e.target.checked || undefined)}
+                    className="w-4 h-4 sm:w-5 sm:h-5"
                   />
                   <span>Tiene Familiares en España</span>
                 </label>
@@ -411,18 +418,19 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
           </div>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
               disabled={loading}
+              className="w-full sm:w-auto text-sm sm:text-base"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto text-sm sm:text-base"
               disabled={loading}
             >
               {loading ? 'Guardando...' : contact ? 'Actualizar' : 'Crear Contacto'}

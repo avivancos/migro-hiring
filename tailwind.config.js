@@ -7,70 +7,93 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+        display: ['Outfit', 'sans-serif'],
+      },
       colors: {
-        // Colores del sistema Migro
+        // Paleta Principal Migro
+        migro: {
+          green: {
+            DEFAULT: '#C2F8DE', // Migro Green
+            dark: '#059669',    // Hover, Acentos
+            darker: '#065F46',  // Texto sobre fondos claros
+            light: '#D1FAE5',   // Fondos suaves
+          },
+          blue: {
+            DEFAULT: '#0066CC', // Enlaces
+            dark: '#004A99',    // Hover enlaces
+            light: '#DBEAFE',   // Info bg
+          },
+        },
+        // Mapeo a tokens semánticos (shadcn/ui compatible)
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "#C2F8DE", // Migro Green
+        background: "#FFFFFF",
+        foreground: "#1F2937", // Text Primary
         primary: {
-          DEFAULT: '#16a34a', // green-600 - Logo/Marca
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e', // green-500 - Acento
-          600: '#16a34a', // green-600 - Principal
-          700: '#15803d',
-          800: '#166534',
-          900: '#14532d',
+          DEFAULT: "#059669", // Migro Green Dark - Primary Action Color
+          foreground: "#FFFFFF", // White text on dark green
         },
         secondary: {
-          DEFAULT: '#22c55e', // green-500 - Acento
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          200: '#bbf7d0',
-          300: '#86efac',
-          400: '#4ade80',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
-          800: '#166534',
-          900: '#14532d',
+          DEFAULT: "#F3F4F6", // Background Tertiary
+          foreground: "#1F2937",
         },
-        emphasis: {
-          DEFAULT: '#111827', // gray-900 - Énfasis/CTAs
-          900: '#111827',
+        destructive: {
+          DEFAULT: "#EF4444",
+          foreground: "#FFFFFF",
+        },
+        muted: {
+          DEFAULT: "#F3F4F6",
+          foreground: "#6B7280", // Text Secondary
+        },
+        accent: {
+          DEFAULT: "#F9FAFB",
+          foreground: "#065F46",
+        },
+        popover: {
+          DEFAULT: "#FFFFFF",
+          foreground: "#1F2937",
+        },
+        card: {
+          DEFAULT: "#FFFFFF",
+          foreground: "#1F2937",
+        },
+        // Estados Semánticos
+        success: {
+          DEFAULT: '#10B981',
+          light: '#D1FAE5',
+          dark: '#065F46',
+        },
+        warning: {
+          DEFAULT: '#F59E0B',
+          light: '#FEF3C7',
+          dark: '#92400E',
         },
         error: {
-          DEFAULT: '#ef4444',
-          50: '#fef2f2',
-          100: '#fee2e2',
-          200: '#fecaca',
-          300: '#fca5a5',
-          400: '#f87171',
-          500: '#ef4444',
-          600: '#dc2626',
-          700: '#b91c1c',
-          800: '#991b1b',
-          900: '#7f1d1d',
+          DEFAULT: '#EF4444',
+          light: '#FEE2E2',
+          dark: '#991B1B',
+        },
+        info: {
+          DEFAULT: '#3B82F6',
+          light: '#DBEAFE',
+          dark: '#1E40AF',
         },
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        lg: '12px',
+        md: '8px',
+        sm: '4px',
+        xl: '16px',
+        full: '9999px',
       },
-      keyframes: {
-        'accordion-down': {
-          from: { height: '0' },
-          to: { height: 'var(--radix-accordion-content-height)' },
-        },
-        'accordion-up': {
-          from: { height: 'var(--radix-accordion-content-height)' },
-          to: { height: '0' },
-        },
-      },
-      animation: {
-        'accordion-down': 'accordion-down 0.2s ease-out',
-        'accordion-up': 'accordion-up 0.2s ease-out',
+      boxShadow: {
+        sm: '0 1px 2px rgba(31,41,55,0.05)',
+        md: '0 4px 6px rgba(31,41,55,0.1)',
+        lg: '0 10px 15px rgba(31,41,55,0.1)',
+        xl: '0 20px 25px rgba(31,41,55,0.15)',
       },
     },
   },

@@ -24,10 +24,10 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { CRMHeader } from '@/components/CRM/CRMHeader';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useAuth } from '@/providers/AuthProvider';
 
 export function CRMDashboardPage() {
-  const { isAuthenticated, isValidating, user, LoginComponent } = useRequireAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
@@ -39,11 +39,11 @@ export function CRMDashboardPage() {
 
   // Solo cargar datos si está autenticado
   useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && !isLoading) {
       console.log('✅ Sesión válida, cargando datos del dashboard...');
       loadDashboardData();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isLoading]);
 
   const loadDashboardData = async () => {
     setLoading(true);
@@ -89,23 +89,7 @@ export function CRMDashboardPage() {
   };
 
   // handleLogout ahora está en CRMHeader
-
-  // Mostrar spinner mientras valida la sesión con el backend
-  if (isValidating) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando sesión...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Si no está autenticado (después de validar), mostrar login
-  if (!isAuthenticated) {
-    return <LoginComponent />;
-  }
+  // La autenticación se maneja con ProtectedRoute en App.tsx
 
   // Si está cargando datos del dashboard, mostrar loading
   if (loading) {
@@ -230,46 +214,48 @@ export function CRMDashboardPage() {
       {/* Header con navegación */}
       <CRMHeader />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8">
         {/* Mis Contactos para Llamadas */}
-        <Card className="mb-6 border-2 border-blue-200 bg-blue-50">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Phone className="w-5 h-5 text-blue-600" />
-                <CardTitle className="text-xl font-bold text-blue-900">
-                  Mis Contactos para Llamadas
-                </CardTitle>
-                <span className="text-sm font-normal text-blue-700 bg-blue-100 px-2 py-1 rounded-full">
-                  {myLeadsForCalls.length} asignados
-                </span>
+        <Card className="mb-4 sm:mb-6 border-2 border-blue-200 bg-blue-50">
+          <CardHeader className="p-3 sm:p-4 md:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 md:gap-0">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-2">
+                  <CardTitle className="text-base sm:text-lg md:text-xl font-bold text-blue-900">
+                    Mis Contactos para Llamadas
+                  </CardTitle>
+                  <span className="text-[10px] xs:text-xs sm:text-sm font-normal text-blue-700 bg-blue-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
+                    {myLeadsForCalls.length} asignados
+                  </span>
+                </div>
               </div>
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => navigate('/crm/contacts')}
-                className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                className="border-blue-300 text-blue-700 hover:bg-blue-100 w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9 md:h-10"
               >
-                Ver todos mis contactos
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <span className="sm:inline">Ver todos mis contactos</span>
+                <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 sm:ml-2" />
               </Button>
             </div>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-blue-700 mb-4">
+          <CardContent className="p-3 sm:p-4 md:p-6">
+            <p className="text-[11px] xs:text-xs sm:text-sm text-blue-700 mb-3 sm:mb-4">
               Últimos 10 contactos asignados a ti para efectuar llamadas. El sistema distribuye automáticamente los contactos entre los agentes.
             </p>
             {myLeadsForCalls.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {myLeadsForCalls.map((lead) => (
                   <div
                     key={lead.id}
-                    className="flex items-center justify-between p-4 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 md:gap-4 p-2.5 sm:p-3 md:p-4 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
                     onClick={() => navigate(`/crm/contacts/${lead.id}`)}
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-gray-900">{lead.name}</h3>
+                    <div className="flex-1 min-w-0 w-full sm:w-auto">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                        <h3 className="font-semibold text-gray-900 text-xs sm:text-sm md:text-base truncate">{lead.name}</h3>
                         {lead.priority && lead.priority !== 'medium' && (
                           <span
                             className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(
@@ -285,62 +271,60 @@ export function CRMDashboardPage() {
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-4 text-[10px] xs:text-xs sm:text-sm text-gray-600">
                         {lead.contact && (
                           <div className="flex items-center gap-1">
-                            <Users className="w-4 h-4" />
-                            <span>
+                            <Users className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <span className="truncate">
                               {lead.contact.first_name} {lead.contact.last_name}
                             </span>
                           </div>
                         )}
                         {lead.contact?.phone && (
                           <div className="flex items-center gap-1">
-                            <Phone className="w-4 h-4" />
+                            <Phone className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                             <span>{lead.contact.phone}</span>
                           </div>
                         )}
                         {lead.service_type && (
                           <div className="flex items-center gap-1">
-                            <Building2 className="w-4 h-4" />
-                            <span>{lead.service_type}</span>
+                            <Building2 className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <span className="truncate">{lead.service_type}</span>
                           </div>
                         )}
                         <div className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
+                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span>{formatDate(lead.created_at)}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="text-right ml-6 flex items-center gap-4">
+                    <div className="flex items-center gap-2 sm:gap-3 md:gap-4 w-full sm:w-auto justify-between sm:justify-end">
                       {lead.price > 0 && (
-                        <div>
-                          <p className="text-lg font-bold text-green-600">
+                        <div className="text-right">
+                          <p className="text-sm sm:text-base md:text-lg font-bold text-green-600">
                             {formatCurrency(lead.price)}
                           </p>
                         </div>
                       )}
                       <Button
                         size="sm"
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-initial text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/crm/contacts/${lead.id}?action=call`);
                         }}
                       >
-                        <Phone className="w-4 h-4 mr-2" />
-                        Llamar
+                        <Phone className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                        <span className="sm:inline">Llamar</span>
                       </Button>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="py-12 text-center text-blue-600">
-                <Phone className="w-12 h-12 mx-auto mb-4 text-blue-300" />
-                <p className="font-medium">No tienes contactos asignados para llamadas</p>
-                <p className="text-sm text-blue-500 mt-2">
-                  Los contactos se distribuyen automáticamente entre los agentes del sistema
+              <div className="py-6 text-center">
+                <p className="text-sm text-gray-500">
+                  No hay contactos asignados
                 </p>
               </div>
             )}
@@ -348,21 +332,21 @@ export function CRMDashboardPage() {
         </Card>
 
         {/* Pipeline Kanban */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">Pipeline de Ventas</h2>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Activity className="w-4 h-4" />
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3 sm:mb-4">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Pipeline de Ventas</h2>
+            <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] xs:text-xs sm:text-sm text-gray-600">
+              <Activity className="w-3 h-3 sm:w-4 sm:h-4" />
               <span>{totalContactsCount > 0 ? totalContactsCount : filteredLeads.length} contactos</span>
             </div>
           </div>
-          <div className="flex gap-4 overflow-x-auto pb-4">
+          <div className="flex gap-2 sm:gap-3 md:gap-4 overflow-x-auto pb-3 sm:pb-4 -mx-3 sm:-mx-4 md:mx-0 px-3 sm:px-4 md:px-0">
             {stages.map((stage) => {
               const stageLeads = leadsByStage[stage.id] || [];
               const stageTotal = stageLeads.reduce((sum, lead) => sum + (lead.price || 0), 0);
 
               return (
-                <div key={stage.id} className="flex-shrink-0 w-80">
+                <div key={stage.id} className="flex-shrink-0 w-[260px] sm:w-[280px] md:w-80">
                   <Card className="h-full">
                     <CardHeader
                       className="pb-3"
@@ -470,55 +454,59 @@ export function CRMDashboardPage() {
         </div>
 
         {/* Filtros y Búsqueda */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4">
+        <Card className="mb-4 sm:mb-6">
+          <CardContent className="pt-3 sm:pt-4 md:pt-6">
+            <div className="flex flex-col gap-2 sm:gap-3 md:gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                 <Input
-                  placeholder="Buscar contactos por nombre, servicio o contacto..."
-                  className="pl-10"
+                  placeholder="Buscar contactos por nombre, servicio..."
+                  className="pl-8 sm:pl-10 pr-3 sm:pr-4 text-xs sm:text-sm md:text-base h-9 sm:h-10"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant={selectedStage === null ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setSelectedStage(null)}
-                >
-                  <Filter className="w-4 h-4 mr-2" />
-                  Todos
-                </Button>
-                {stages.slice(0, 3).map((stage) => (
+              <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 sm:pb-0">
                   <Button
-                    key={stage.id}
-                    variant={selectedStage === stage.id ? 'default' : 'outline'}
+                    variant={selectedStage === null ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => setSelectedStage(stage.id)}
-                    style={
-                      selectedStage === stage.id
-                        ? { borderTopColor: stage.color, borderTopWidth: '3px' }
-                        : {}
-                    }
+                    onClick={() => setSelectedStage(null)}
+                    className="flex-shrink-0 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                   >
-                    {stage.name}
+                    <Filter className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                    <span className="sm:inline">Todos</span>
                   </Button>
-                ))}
+                  {stages.slice(0, 3).map((stage) => (
+                    <Button
+                      key={stage.id}
+                      variant={selectedStage === stage.id ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setSelectedStage(stage.id)}
+                      style={
+                        selectedStage === stage.id
+                          ? { borderTopColor: stage.color, borderTopWidth: '3px' }
+                          : {}
+                      }
+                      className="flex-shrink-0 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
+                    >
+                      {stage.name}
+                    </Button>
+                  ))}
+                </div>
+                <Button 
+                  size="sm" 
+                  className="bg-green-600 hover:bg-green-700 w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9 md:h-10"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    console.log('Navegando a nuevo contacto desde dashboard...');
+                    navigate('/crm/contacts/new');
+                  }}
+                >
+                  <Plus className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                  <span className="sm:inline">Nuevo Contacto</span>
+                </Button>
               </div>
-              <Button 
-                size="sm" 
-                className="bg-green-600 hover:bg-green-700"
-                onClick={(e) => {
-                  e.preventDefault();
-                  console.log('Navegando a nuevo contacto desde dashboard...');
-                  navigate('/crm/contacts/new');
-                }}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Nuevo Contacto
-              </Button>
             </div>
           </CardContent>
         </Card>
@@ -526,9 +514,9 @@ export function CRMDashboardPage() {
         {/* Contactos Recientes - Lista */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl font-bold">Contactos Recientes</CardTitle>
-              <Button variant="outline" size="sm" onClick={() => navigate('/crm/contacts')}>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+              <CardTitle className="text-lg sm:text-xl font-bold">Contactos Recientes</CardTitle>
+              <Button variant="outline" size="sm" onClick={() => navigate('/crm/contacts')} className="w-full sm:w-auto">
                 Ver todos
               </Button>
             </div>
@@ -538,11 +526,11 @@ export function CRMDashboardPage() {
               {filteredLeads.slice(0, 5).map((lead) => (
                 <div
                   key={lead.id}
-                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 p-3 sm:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-gray-900">{cleanContactName(lead.name)}</h3>
+                  <div className="flex-1 min-w-0 w-full">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+                      <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{cleanContactName(lead.name)}</h3>
                       {lead.priority && lead.priority !== 'medium' && (
                         <span
                           className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(
@@ -556,35 +544,35 @@ export function CRMDashboardPage() {
                         <CheckCircle2 className="w-4 h-4 text-green-600" />
                       )}
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
                       {lead.contact && (
                         <div className="flex items-center gap-1">
-                          <Users className="w-4 h-4" />
-                          <span>
+                          <Users className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span className="truncate">
                             {lead.contact.first_name} {lead.contact.last_name}
                           </span>
                         </div>
                       )}
                       {lead.service_type && (
                         <div className="flex items-center gap-1">
-                          <Building2 className="w-4 h-4" />
-                          <span>{lead.service_type}</span>
+                          <Building2 className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span className="truncate">{lead.service_type}</span>
                         </div>
                       )}
                       {lead.contact?.phone && (
                         <div className="flex items-center gap-1">
-                          <Phone className="w-4 h-4" />
+                          <Phone className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span>{lead.contact.phone}</span>
                         </div>
                       )}
                       {lead.contact?.email && (
                         <div className="flex items-center gap-1">
-                          <Mail className="w-4 h-4" />
-                          <span className="truncate max-w-[200px]">{lead.contact.email}</span>
+                          <Mail className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span className="truncate max-w-[150px] sm:max-w-[200px]">{lead.contact.email}</span>
                         </div>
                       )}
                       <div className="flex items-center gap-1 text-gray-500">
-                        <Calendar className="w-4 h-4" />
+                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                         <span>{formatDate(lead.created_at)}</span>
                       </div>
                     </div>
@@ -602,7 +590,7 @@ export function CRMDashboardPage() {
         </Card>
 
         {/* Acciones Urgentes y Expedientes - Al final */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
           <Card className="border-2 border-red-200 bg-red-50">
             <CardHeader>
               <div className="flex items-center justify-between">

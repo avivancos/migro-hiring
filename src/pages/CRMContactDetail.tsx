@@ -31,10 +31,7 @@ import { TaskForm } from '@/components/CRM/TaskForm';
 import { NoteForm } from '@/components/CRM/NoteForm';
 import { ContactCustomFields } from '@/components/CRM/ContactCustomFields';
 import type { CRMUser } from '@/types/crm';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
-
 export function CRMContactDetail() {
-  const { isAuthenticated, isValidating, LoginComponent } = useRequireAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -52,15 +49,15 @@ export function CRMContactDetail() {
   const [showNoteForm, setShowNoteForm] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated && id) {
+    if (id) {
       loadContactData();
     }
-  }, [id, isAuthenticated, searchParams.toString()]); // Recargar cuando cambia la query string (útil después de editar)
+  }, [id, searchParams.toString()]); // Recargar cuando cambia la query string (útil después de editar)
 
   // Recargar datos cuando se navega a esta página (útil después de editar)
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && isAuthenticated && id) {
+      if (document.visibilityState === 'visible' && id) {
         // Recargar datos cuando la pestaña se vuelve visible
         loadContactData();
       }
@@ -68,7 +65,7 @@ export function CRMContactDetail() {
     
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [id, isAuthenticated]);
+  }, [id]);
 
   const loadContactData = async () => {
     if (!id) return;
@@ -338,22 +335,7 @@ export function CRMContactDetail() {
     }
   };
 
-  // Mostrar spinner mientras valida sesión
-  if (isValidating) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando sesión...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Si no está autenticado, mostrar login
-  if (!isAuthenticated) {
-    return <LoginComponent />;
-  }
+  // La autenticación se maneja con ProtectedRoute en App.tsx
 
   if (loading) {
     return (
@@ -397,44 +379,49 @@ export function CRMContactDetail() {
   return (
     <div className="min-h-screen bg-gray-50">
       <CRMHeader />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Page Header */}
-        <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
               <Button
               variant="outline"
                 onClick={() => navigate('/crm/contacts')}
+                className="flex-shrink-0"
               >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Volver
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+              <span className="hidden sm:inline">Volver</span>
               </Button>
-              <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 truncate">
                   {contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim()}
                 </h1>
-              <p className="text-gray-600 mt-1">Contacto</p>
+              <p className="text-gray-600 mt-1 text-sm sm:text-base">Contacto</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={() => navigate(`/crm/contacts/${id}/edit`)}>
-                <Edit className="w-4 h-4 mr-2" />
-                Editar
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button 
+                variant="outline" 
+                onClick={() => navigate(`/crm/contacts/${id}/edit`)}
+                className="flex-1 sm:flex-initial"
+              >
+                <Edit className="w-4 h-4 sm:mr-2" />
+                <span className="sm:inline">Editar</span>
               </Button>
           </div>
         </div>
         {/* Datos Básicos Destacados */}
-        <Card className="mb-6 border-2 border-green-200 bg-green-50">
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="mb-4 sm:mb-6 border-2 border-green-200 bg-green-50">
+          <CardContent className="pt-3 sm:pt-4 md:pt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
               {/* Columna 1: Información de Contacto */}
               <div>
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-full bg-green-600 flex items-center justify-center text-2xl font-bold text-white">
+                <div className="flex items-center gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-green-600 flex items-center justify-center text-lg sm:text-xl md:text-2xl font-bold text-white flex-shrink-0">
                     {(contact.name || contact.first_name || 'C')[0].toUpperCase()}
                     {(contact.last_name || contact.name?.split(' ')[1] || '')[0]?.toUpperCase()}
                   </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900">
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 truncate">
                       {contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim()}
                     </h2>
                   </div>
@@ -542,29 +529,29 @@ export function CRMContactDetail() {
             </div>
 
             {/* Botones de Acción */}
-            <div className="flex flex-wrap gap-2 mt-6 pt-6 border-t border-green-200">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2 mt-3 sm:mt-4 md:mt-6 pt-3 sm:pt-4 md:pt-6 border-t border-green-200">
               <Button
                 onClick={() => setShowCallForm(true)}
-                className="bg-green-600 hover:bg-green-700 text-white"
+                className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
               >
-                <Phone className="w-4 h-4 mr-2" />
-                Nueva Llamada
+                <Phone className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="sm:inline">Nueva Llamada</span>
               </Button>
               <Button
                 variant="outline"
                 onClick={() => setShowTaskForm(true)}
-                className="bg-white hover:bg-green-50"
+                className="bg-white hover:bg-green-50 flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
               >
-                <Calendar className="w-4 h-4 mr-2" />
-                Nueva Tarea
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="sm:inline">Nueva Tarea</span>
               </Button>
               <Button
                 variant="outline"
                 onClick={() => setShowNoteForm(true)}
-                className="bg-white hover:bg-green-50"
+                className="bg-white hover:bg-green-50 flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
               >
-                <FileText className="w-4 h-4 mr-2" />
-                Nueva Nota
+                <FileText className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="sm:inline">Nueva Nota</span>
               </Button>
             </div>
           </CardContent>
@@ -572,22 +559,24 @@ export function CRMContactDetail() {
 
         {/* Pestañas */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="info">Información</TabsTrigger>
-            <TabsTrigger value="leads">
-              Leads <span className="ml-2 text-xs">({leads.length})</span>
-            </TabsTrigger>
-            <TabsTrigger value="tasks">
-              Tareas <span className="ml-2 text-xs">({tasks.length})</span>
-            </TabsTrigger>
-            <TabsTrigger value="calls">
-              Llamadas <span className="ml-2 text-xs">({calls.length})</span>
-            </TabsTrigger>
-            <TabsTrigger value="notes">
-              Notas <span className="ml-2 text-xs">({notes.length})</span>
-            </TabsTrigger>
-            <TabsTrigger value="history">Historial</TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto -mx-4 sm:mx-0 mb-6">
+            <TabsList className="mb-6 min-w-max sm:min-w-0 inline-flex">
+              <TabsTrigger value="info" className="text-xs sm:text-sm">Información</TabsTrigger>
+              <TabsTrigger value="leads" className="text-xs sm:text-sm">
+                Leads <span className="ml-1 sm:ml-2 text-xs">({leads.length})</span>
+              </TabsTrigger>
+              <TabsTrigger value="tasks" className="text-xs sm:text-sm">
+                Tareas <span className="ml-1 sm:ml-2 text-xs">({tasks.length})</span>
+              </TabsTrigger>
+              <TabsTrigger value="calls" className="text-xs sm:text-sm">
+                Llamadas <span className="ml-1 sm:ml-2 text-xs">({calls.length})</span>
+              </TabsTrigger>
+              <TabsTrigger value="notes" className="text-xs sm:text-sm">
+                Notas <span className="ml-1 sm:ml-2 text-xs">({notes.length})</span>
+              </TabsTrigger>
+              <TabsTrigger value="history" className="text-xs sm:text-sm">Historial</TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Contenido de Pestañas */}
           <TabsContent value="info">
@@ -596,7 +585,7 @@ export function CRMContactDetail() {
                 <CardTitle>Información del Migrante</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-4">Información Básica</h3>
                     <div className="space-y-3">
@@ -962,24 +951,24 @@ export function CRMContactDetail() {
                         }
 
                         return (
-                          <div key={item.id} className="relative flex items-start gap-4 pb-6">
+                          <div key={item.id} className="relative flex items-start gap-2 sm:gap-4 pb-6">
                             {/* Icono */}
-                            <div className={`relative z-10 flex items-center justify-center w-12 h-12 rounded-full ${iconBgColor} border-2 ${borderColor}`}>
-                              <IconComponent className="w-5 h-5" />
+                            <div className={`relative z-10 flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-full ${iconBgColor} border-2 ${borderColor} flex-shrink-0`}>
+                              <IconComponent className="w-4 h-4 sm:w-5 sm:h-5" />
                             </div>
                             
                             {/* Contenido */}
                             <div className="flex-1 min-w-0">
-                              <div className={`p-4 rounded-lg border-2 ${borderColor} bg-white`}>
+                              <div className={`p-3 sm:p-4 rounded-lg border-2 ${borderColor} bg-white`}>
                                 {/* Header con fecha y usuario */}
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <Calendar className="w-4 h-4" />
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
+                                  <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                                    <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
                                     <span>{formatDate(item.date)}</span>
                                   </div>
-                                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <User className="w-4 h-4" />
-                                    <span>
+                                  <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                                    <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                                    <span className="truncate">
                                       {isCall && call?.responsible_user_id
                                         ? getUserName(call.responsible_user_id)
                                         : isTask && task?.responsible_user_id
@@ -1137,14 +1126,16 @@ export function CRMContactDetail() {
 
       {/* Modal de Formulario de Llamada */}
       {showCallForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-900">Nueva Llamada</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[98vh] sm:max-h-[95vh] md:max-h-[90vh] overflow-y-auto">
+            <div className="p-3 sm:p-4 md:p-6">
+              <div className="flex justify-between items-center mb-3 sm:mb-4">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Nueva Llamada</h2>
                 <Button
                   variant="outline"
                   onClick={() => setShowCallForm(false)}
+                  size="sm"
+                  className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                 >
                   ✕
                 </Button>
@@ -1162,14 +1153,16 @@ export function CRMContactDetail() {
 
       {/* Modal de Formulario de Tarea */}
       {showTaskForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-900">Nueva Tarea</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[98vh] sm:max-h-[95vh] md:max-h-[90vh] overflow-y-auto">
+            <div className="p-3 sm:p-4 md:p-6">
+              <div className="flex justify-between items-center mb-3 sm:mb-4">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Nueva Tarea</h2>
                 <Button
                   variant="outline"
                   onClick={() => setShowTaskForm(false)}
+                  size="sm"
+                  className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                 >
                   ✕
                 </Button>
@@ -1187,14 +1180,16 @@ export function CRMContactDetail() {
 
       {/* Modal de Formulario de Nota */}
       {showNoteForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-900">Nueva Nota</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[98vh] sm:max-h-[95vh] md:max-h-[90vh] overflow-y-auto">
+            <div className="p-3 sm:p-4 md:p-6">
+              <div className="flex justify-between items-center mb-3 sm:mb-4">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Nueva Nota</h2>
                 <Button
                   variant="outline"
                   onClick={() => setShowNoteForm(false)}
+                  size="sm"
+                  className="h-8 w-8 sm:h-9 sm:w-9 p-0"
                 >
                   ✕
                 </Button>

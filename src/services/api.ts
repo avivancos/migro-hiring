@@ -13,7 +13,7 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor - Add JWT token (except for login endpoint)
+// Request interceptor - Add JWT token (except for login endpoint and admin password endpoints)
 api.interceptors.request.use(
   (config) => {
     // No añadir token en endpoints de autenticación pública o health checks
@@ -25,7 +25,10 @@ api.interceptors.request.use(
     ];
     const isPublicEndpoint = config.url && publicEndpoints.some(endpoint => config.url!.includes(endpoint));
     
-    if (!isPublicEndpoint) {
+    // No añadir token si ya tiene X-Admin-Password (autenticación alternativa)
+    const hasAdminPassword = config.headers && 'X-Admin-Password' in config.headers;
+    
+    if (!isPublicEndpoint && !hasAdminPassword) {
       const token = localStorage.getItem('access_token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -50,7 +53,24 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - Handle errors
+// Response interceptor - Handle errors and refresh token
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: any) => void;
+  reject: (error?: any) => void;
+}> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 api.interceptors.response.use(
   (response) => {
     // Log successful responses for debugging
@@ -70,22 +90,22 @@ api.interceptors.response.use(
     
     return response;
   },
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
+    const originalRequest = error.config as any;
+    
     // Detailed error logging
     console.error('❌ API Error Details:');
     console.error('   URL:', error.config?.url);
     console.error('   Method:', error.config?.method);
     console.error('   Status:', error.response?.status);
     console.error('   Response Data:', error.response?.data);
-    console.error('   Full Error:', error);
     
     if (error.response) {
       const { status } = error.response;
       
-      // Token expired or unauthorized - NO redirigir a login en flujo de contratación o home
-      if (status === 401) {
-        // Solo limpiar tokens si estamos en rutas que requieren autenticación
-        // El flujo de contratación y la home NO requieren login
+      // Token expired or unauthorized - Intentar refresh token
+      if (status === 401 && originalRequest && !originalRequest._retry) {
+        // Verificar si es una ruta pública
         const isPublicRoute = window.location.pathname === '/' ||
                              window.location.pathname.includes('/contratacion/') || 
                              window.location.pathname.includes('/hiring/') ||
@@ -94,13 +114,92 @@ api.interceptors.response.use(
                              window.location.pathname === '/privacidad' ||
                              window.location.pathname === '/privacy';
         
-        if (!isPublicRoute) {
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('user');
+        if (isPublicRoute) {
+          return Promise.reject(error);
         }
         
-        // Log pero NO redirigir - el componente manejará el error
-        console.error('No autorizado:', error.response.data);
+        // Evitar múltiples llamadas de refresh simultáneas
+        if (isRefreshing) {
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then((token) => {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+              return api(originalRequest);
+            })
+            .catch((err) => {
+              return Promise.reject(err);
+            });
+        }
+        
+        originalRequest._retry = true;
+        isRefreshing = true;
+        
+        const refreshToken = localStorage.getItem('refresh_token');
+        
+        if (!refreshToken) {
+          // No hay refresh token, limpiar y redirigir a login
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('admin_token');
+          localStorage.removeItem('admin_user');
+          processQueue(new Error('No refresh token'), null);
+          isRefreshing = false;
+          
+          // Solo redirigir si estamos en rutas de admin
+          if (window.location.pathname.startsWith('/admin') || 
+              window.location.pathname.startsWith('/crm') ||
+              window.location.pathname.startsWith('/contrato')) {
+            window.location.href = '/auth/login';
+          }
+          
+          return Promise.reject(error);
+        }
+        
+        try {
+          // Intentar refrescar el token
+          const response = await axios.post(
+            `${API_BASE_URL}/auth/refresh`,
+            { refresh_token: refreshToken },
+            { timeout: API_TIMEOUT }
+          );
+          
+          const { access_token, refresh_token: newRefreshToken } = response.data;
+          
+          // Guardar nuevos tokens
+          localStorage.setItem('access_token', access_token);
+          if (newRefreshToken) {
+            localStorage.setItem('refresh_token', newRefreshToken);
+          }
+          localStorage.setItem('admin_token', access_token);
+          
+          // Actualizar header de la petición original
+          originalRequest.headers.Authorization = `Bearer ${access_token}`;
+          
+          // Procesar cola de peticiones fallidas
+          processQueue(null, access_token);
+          isRefreshing = false;
+          
+          // Reintentar petición original
+          return api(originalRequest);
+        } catch (refreshError) {
+          // Refresh falló, limpiar tokens y redirigir
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('admin_token');
+          localStorage.removeItem('admin_user');
+          processQueue(refreshError, null);
+          isRefreshing = false;
+          
+          // Solo redirigir si estamos en rutas de admin
+          if (window.location.pathname.startsWith('/admin') || 
+              window.location.pathname.startsWith('/crm') ||
+              window.location.pathname.startsWith('/contrato')) {
+            window.location.href = '/auth/login';
+          }
+          
+          return Promise.reject(refreshError);
+        }
       }
       
       // Forbidden

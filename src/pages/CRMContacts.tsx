@@ -61,64 +61,66 @@ export function CRMContacts() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Button
               onClick={() => navigate('/admin/crm')}
               variant="ghost"
               size="icon"
+              className="flex-shrink-0"
             >
               <ArrowLeft size={20} />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Contactos</h1>
-              <p className="text-gray-600 mt-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Contactos</h1>
+              <p className="text-gray-600 mt-1 text-sm sm:text-base">
                 {contacts.length} contactos encontrados
               </p>
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
             <Button
               onClick={() => setShowFilters(!showFilters)}
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 flex-1 sm:flex-initial"
             >
               <Filter size={18} />
-              Filtros
+              <span className="sm:inline">Filtros</span>
             </Button>
             <Button
               onClick={() => navigate('/admin/crm/contacts/new')}
-              className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+              className="bg-green-600 hover:bg-green-700 flex items-center gap-2 flex-1 sm:flex-initial"
             >
               <Plus size={18} />
-              Nuevo Contacto
+              <span className="sm:inline">Nuevo Contacto</span>
             </Button>
           </div>
         </div>
 
         {/* Search */}
         <Card className="mb-6">
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 sm:pt-6">
             <div className="flex gap-4">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                 <Input
                   placeholder="Buscar contactos por nombre o email..."
-                  className="pl-10"
+                  className="pl-10 text-sm sm:text-base"
                   onChange={(e) => handleSearch(e.target.value)}
                 />
               </div>
             </div>
 
             {showFilters && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t">
                 <div>
-                  <Label>Empresa</Label>
+                  <Label className="text-sm">Empresa</Label>
                   <Input
                     placeholder="Filtrar por empresa..."
+                    className="text-sm sm:text-base"
                     onChange={(e) => setFilters({ ...filters, company_id: e.target.value || undefined })}
                   />
                 </div>
@@ -137,46 +139,46 @@ export function CRMContacts() {
           </Card>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {contacts.map((contact) => (
                 <Card
                   key={contact.id}
                   className="hover:shadow-lg transition-shadow cursor-pointer"
                   onClick={() => navigate(`/admin/crm/contacts/${contact.id}`)}
                 >
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-4">
-                      <div className="bg-blue-100 p-3 rounded-full text-blue-600">
-                        <User size={24} />
+                  <CardContent className="pt-4 sm:pt-6">
+                    <div className="flex items-start gap-3 sm:gap-4">
+                      <div className="bg-blue-100 p-2 sm:p-3 rounded-full text-blue-600 flex-shrink-0">
+                        <User size={20} className="sm:w-6 sm:h-6" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-gray-900 truncate">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
                           {contact.first_name} {contact.last_name}
                         </h3>
                         {contact.position && (
-                          <p className="text-sm text-gray-500 truncate">
+                          <p className="text-xs sm:text-sm text-gray-500 truncate">
                             {contact.position}
                           </p>
                         )}
                         
-                        <div className="mt-3 space-y-2">
+                        <div className="mt-2 sm:mt-3 space-y-1.5 sm:space-y-2">
                           {contact.email && (
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Mail size={14} />
+                            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                              <Mail size={12} className="sm:w-3.5 sm:h-3.5 flex-shrink-0" />
                               <span className="truncate">{contact.email}</span>
                             </div>
                           )}
                           
                           {contact.phone && (
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Phone size={14} />
+                            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                              <Phone size={12} className="sm:w-3.5 sm:h-3.5 flex-shrink-0" />
                               <span>{contact.phone}</span>
                             </div>
                           )}
                           
                           {contact.company && (
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Building2 size={14} />
+                            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                              <Building2 size={12} className="sm:w-3.5 sm:h-3.5 flex-shrink-0" />
                               <span className="truncate">{contact.company.name}</span>
                             </div>
                           )}

@@ -10,8 +10,6 @@ import type { KommoLead, Pipeline } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { DollarSign, User, Calendar } from 'lucide-react';
 import { CRMHeader } from '@/components/CRM/CRMHeader';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
-
 const LEAD_STATUSES = [
   { value: 'new', label: 'Nuevos', color: 'bg-blue-100 border-blue-300' },
   { value: 'contacted', label: 'Contactados', color: 'bg-yellow-100 border-yellow-300' },
@@ -22,7 +20,6 @@ const LEAD_STATUSES = [
 ];
 
 export function CRMLeadList() {
-  const { isAuthenticated, isValidating, LoginComponent } = useRequireAuth();
   const navigate = useNavigate();
   const [view, setView] = useState<'kanban' | 'list'>('kanban');
   const [loading, setLoading] = useState(true);
@@ -34,10 +31,8 @@ export function CRMLeadList() {
   const [draggedLead, setDraggedLead] = useState<KommoLead | null>(null);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      loadData();
-    }
-  }, [isAuthenticated]);
+    loadData();
+  }, []);
 
   useEffect(() => {
     filterLeads();
@@ -129,22 +124,7 @@ export function CRMLeadList() {
     }).format(price);
   };
 
-  // Mostrar spinner mientras valida sesión
-  if (isValidating) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando sesión...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Si no está autenticado, mostrar login
-  if (!isAuthenticated) {
-    return <LoginComponent />;
-  }
+  // La autenticación se maneja con ProtectedRoute en App.tsx
 
   if (loading) {
     return (

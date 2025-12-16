@@ -21,10 +21,7 @@ import {
 } from 'lucide-react';
 import { CRMHeader } from '@/components/CRM/CRMHeader';
 import { TaskForm } from '@/components/CRM/TaskForm';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
-
 export function CRMTaskDetail() {
-  const { isAuthenticated, isValidating, LoginComponent } = useRequireAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -36,10 +33,10 @@ export function CRMTaskDetail() {
   const [editing, setEditing] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated && id) {
+    if (id) {
       loadTaskData();
     }
-  }, [id, isAuthenticated]);
+  }, [id]);
 
   const loadTaskData = async () => {
     if (!id) return;
@@ -189,21 +186,7 @@ export function CRMTaskDetail() {
   };
 
   // Mostrar spinner mientras valida la sesión
-  if (isValidating) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando sesión...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Si no está autenticado, mostrar login
-  if (!isAuthenticated) {
-    return <LoginComponent />;
-  }
+  // La autenticación se maneja con ProtectedRoute en App.tsx
 
   // Si está cargando
   if (loading) {

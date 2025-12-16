@@ -9,10 +9,7 @@ import type { KommoContact, ContactCreateRequest, NoteCreateRequest } from '@/ty
 import { crmService } from '@/services/crmService';
 import { ContactForm } from '@/components/CRM/ContactForm';
 import { CRMHeader } from '@/components/CRM/CRMHeader';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
-
 export function CRMContactEdit() {
-  const { isAuthenticated, isValidating, LoginComponent } = useRequireAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -21,13 +18,13 @@ export function CRMContactEdit() {
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated && id && id !== 'new') {
+    if (id && id !== 'new') {
       loadContactData();
     } else if (id === 'new') {
       // Para nuevo contacto, no necesitamos cargar datos
       setLoading(false);
     }
-  }, [isAuthenticated, id]);
+  }, [id]);
 
   const loadContactData = async () => {
     if (!id || id === 'new') return;
@@ -162,17 +159,7 @@ export function CRMContactEdit() {
     }
   };
 
-  if (isValidating) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <LoginComponent />;
-  }
+  // La autenticación se maneja con ProtectedRoute en App.tsx
 
   if (loading) {
     return (

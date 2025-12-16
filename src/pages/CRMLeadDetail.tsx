@@ -12,10 +12,7 @@ import { LeadForm } from '@/components/CRM/LeadForm';
 import { TaskForm } from '@/components/CRM/TaskForm';
 import { CallForm } from '@/components/CRM/CallForm';
 import { CRMHeader } from '@/components/CRM/CRMHeader';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
-
 export function CRMLeadDetail() {
-  const { isAuthenticated, isValidating, LoginComponent } = useRequireAuth();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
@@ -469,22 +466,7 @@ export function CRMLeadDetail() {
     }
   };
 
-  // Mostrar spinner mientras valida sesión
-  if (isValidating) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando sesión...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Si no está autenticado, mostrar login
-  if (!isAuthenticated) {
-    return <LoginComponent />;
-  }
+  // La autenticación se maneja con ProtectedRoute en App.tsx
 
   if (loading) {
     return (

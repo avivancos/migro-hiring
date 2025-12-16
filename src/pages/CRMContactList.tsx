@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { crmService } from '@/services/crmService';
 import type { KommoContact, ContactFilters, CRMUser } from '@/types/crm';
 import {
@@ -28,22 +29,21 @@ import {
   Calendar,
 } from 'lucide-react';
 import { CRMHeader } from '@/components/CRM/CRMHeader';
-import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { useAuth } from '@/providers/AuthProvider';
 
 type SortField = 'name' | 'email' | 'phone' | 'created_at' | 'grading_llamada' | 'grading_situacion' | 'nacionalidad';
 type SortOrder = 'asc' | 'desc';
 type ViewMode = 'cards' | 'table';
 
 export function CRMContactList() {
-  const { isAuthenticated, isValidating, LoginComponent } = useRequireAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
   const [contacts, setContacts] = useState<KommoContact[]>([]);
   const [users, setUsers] = useState<CRMUser[]>([]);
   
   // Estado de búsqueda y filtros
-  // Decodificar el término de búsqueda de la URL (puede venir con + o %20 para espacios)
   const searchFromUrl = searchParams.get('search');
   const decodedSearch = searchFromUrl ? decodeURIComponent(searchFromUrl.replace(/\+/g, ' ')) : '';
   const [searchTerm, setSearchTerm] = useState(decodedSearch);
@@ -71,14 +71,10 @@ export function CRMContactList() {
   
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Cargar usuarios para filtro de responsable
   useEffect(() => {
-    if (isAuthenticated) {
-      crmService.getUsers(true).then(setUsers).catch(() => setUsers([]));
-    }
-  }, [isAuthenticated]);
+    crmService.getUsers(true).then(setUsers).catch(() => setUsers([]));
+  }, []);
 
-  // Actualizar URL cuando cambian los filtros
   useEffect(() => {
     const params = new URLSearchParams();
     if (searchTerm) params.set('search', searchTerm);
@@ -95,18 +91,15 @@ export function CRMContactList() {
     setSearchParams(params, { replace: true });
   }, [searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos, sortField, sortOrder, viewMode]);
 
-  // Cargar contactos cuando cambian los filtros o la autenticación
   useEffect(() => {
     if (isAuthenticated) {
       loadContacts();
     }
   }, [isAuthenticated, searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos, sortField, sortOrder]);
 
-  // Si hay un parámetro de búsqueda en la URL, inicializar el término
   useEffect(() => {
     const searchFromUrl = searchParams.get('search');
     if (searchFromUrl) {
-      // Decodificar espacios (pueden venir como + o %20)
       const decoded = decodeURIComponent(searchFromUrl.replace(/\+/g, ' '));
       if (decoded !== searchTerm) {
         setSearchTerm(decoded);
@@ -123,40 +116,19 @@ export function CRMContactList() {
     try {
       const filters: Omit<ContactFilters, 'limit' | 'skip' | 'page'> = {};
       
-      if (searchTerm) {
-        filters.search = searchTerm;
-      }
-      if (gradingLlamada) {
-        filters.grading_llamada = gradingLlamada as 'A' | 'B+' | 'B-' | 'C';
-      }
-      if (gradingSituacion) {
-        filters.grading_situacion = gradingSituacion as 'A' | 'B+' | 'B-' | 'C';
-      }
-      if (nacionalidad) {
-        filters.nacionalidad = nacionalidad;
-      }
-      if (responsibleUserId) {
-        filters.responsible_user_id = responsibleUserId;
-      }
-      if (empadronado) {
-        filters.empadronado = empadronado === 'true';
-      }
-      if (tieneIngresos) {
-        filters.tiene_ingresos = tieneIngresos === 'true';
-      }
+      if (searchTerm) filters.search = searchTerm;
+      if (gradingLlamada) filters.grading_llamada = gradingLlamada as 'A' | 'B+' | 'B-' | 'C';
+      if (gradingSituacion) filters.grading_situacion = gradingSituacion as 'A' | 'B+' | 'B-' | 'C';
+      if (nacionalidad) filters.nacionalidad = nacionalidad;
+      if (responsibleUserId) filters.responsible_user_id = responsibleUserId;
+      if (empadronado) filters.empadronado = empadronado === 'true';
+      if (tieneIngresos) filters.tiene_ingresos = tieneIngresos === 'true';
       if (sortField) {
         filters.sort_by = sortField;
         filters.sort_order = sortOrder;
       }
 
-      console.log('🔄 [CRMContactList] Cargando contactos con filtros:', filters);
-      console.log('🔍 [CRMContactList] Término de búsqueda:', searchTerm);
-      console.log('🔍 [CRMContactList] Filtro search enviado:', filters.search);
-      
-      // El backend ahora busca automáticamente en llamadas asociadas cuando hay search
-      // No necesitamos búsqueda híbrida en el frontend
       const allContacts = await crmService.getAllContacts(filters);
-      console.log('✅ [CRMContactList] Contactos cargados:', allContacts.length);
       setContacts(allContacts);
     } catch (err) {
       console.error('❌ [CRMContactList] Error loading contacts:', err);
@@ -165,19 +137,9 @@ export function CRMContactList() {
     }
   };
 
-  // Filtrar y ordenar contactos
   const filteredAndSortedContacts = useMemo(() => {
     let filtered = [...contacts];
 
-    // NO hacer filtrado local cuando hay searchTerm porque el backend ya busca en llamadas
-    // El backend devuelve los contactos que coinciden en nombre/email/teléfono O en llamadas asociadas
-    // Si hacemos filtrado local adicional, eliminamos contactos encontrados por llamadas
-    // Solo aplicar filtrado local si NO hay término de búsqueda (para otros casos de uso)
-    // if (searchTerm) {
-    //   // El backend ya filtró, no hacer filtrado adicional
-    // }
-
-    // Ordenamiento
     filtered.sort((a, b) => {
       let aValue: any;
       let bValue: any;
@@ -248,18 +210,13 @@ export function CRMContactList() {
 
   const hasActiveFilters = searchTerm || gradingLlamada || gradingSituacion || nacionalidad || responsibleUserId || empadronado || tieneIngresos;
 
-  const getGradingColor = (grading?: 'A' | 'B+' | 'B-' | 'C'): string => {
+  const getGradingVariant = (grading?: 'A' | 'B+' | 'B-' | 'C'): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "error" | "info" | "neutral" => {
     switch (grading) {
-      case 'A':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'B+':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'B-':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'C':
-        return 'bg-red-100 text-red-800 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'A': return 'success';
+      case 'B+': return 'info';
+      case 'B-': return 'warning';
+      case 'C': return 'error';
+      default: return 'neutral';
     }
   };
 
@@ -276,11 +233,10 @@ export function CRMContactList() {
       return <ArrowUpDown className="w-4 h-4 text-gray-400" />;
     }
     return sortOrder === 'asc' 
-      ? <ArrowUp className="w-4 h-4 text-green-600" />
-      : <ArrowDown className="w-4 h-4 text-green-600" />;
+      ? <ArrowUp className="w-4 h-4 text-primary" />
+      : <ArrowDown className="w-4 h-4 text-primary" />;
   };
 
-  // Obtener nacionalidades únicas para el filtro
   const uniqueNacionalidades = useMemo(() => {
     const nacionalidades = contacts
       .map(c => c.nacionalidad)
@@ -288,96 +244,83 @@ export function CRMContactList() {
     return Array.from(new Set(nacionalidades)).sort();
   }, [contacts]);
 
-  // Mostrar spinner mientras valida sesión
-  if (isValidating) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando sesión...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Si no está autenticado, mostrar login
-  if (!isAuthenticated) {
-    return <LoginComponent />;
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <CRMHeader />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Page Header */}
-        <div className="flex justify-between items-center mb-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Contactos</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-gray-900">Contactos</h1>
+            <p className="text-gray-600 mt-1 text-xs sm:text-sm md:text-base font-sans">
               {filteredAndSortedContacts.length} {filteredAndSortedContacts.length === 1 ? 'contacto' : 'contactos'}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full sm:w-auto">
             <Button
               variant="outline"
               onClick={() => setViewMode(viewMode === 'table' ? 'cards' : 'table')}
               title={viewMode === 'table' ? 'Vista de tarjetas' : 'Vista de tabla'}
+              className="flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
             >
-              {viewMode === 'table' ? <Grid3x3 className="w-4 h-4" /> : <List className="w-4 h-4" />}
+              {viewMode === 'table' ? <Grid3x3 className="w-3 h-3 sm:w-4 sm:h-4" /> : <List className="w-3 h-3 sm:w-4 sm:h-4" />}
+              <span className="ml-1 sm:ml-2 sm:hidden">Vista</span>
             </Button>
             <Button
               onClick={() => navigate('/crm/contacts/new')}
-              className="bg-green-600 hover:bg-green-700"
+              className="flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
             >
-              <Plus className="w-4 h-4 mr-2" />
-              Nuevo Contacto
+              <Plus className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <span className="sm:inline">Nuevo Contacto</span>
             </Button>
           </div>
         </div>
 
-        {/* Búsqueda y Filtros */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="flex flex-col gap-4">
-              <div className="flex gap-4">
+        <Card className="mb-4 sm:mb-6">
+          <CardContent className="pt-3 sm:pt-4 md:pt-6">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Search className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                   <Input
                     ref={searchInputRef}
-                    placeholder="Buscar por nombre, email, teléfono o nacionalidad..."
-                    className="pl-10"
+                    placeholder="Buscar por nombre, email, teléfono..."
+                    className="pl-8 sm:pl-10 pr-3 sm:pr-4 text-xs sm:text-sm md:text-base h-9 sm:h-10"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowFilters(!showFilters)}
-                >
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filtros
-                  {hasActiveFilters && (
-                    <span className="ml-2 bg-green-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                      {[searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos].filter(Boolean).length}
-                    </span>
-                  )}
-                </Button>
-                {hasActiveFilters && (
+                <div className="flex gap-2">
                   <Button
                     variant="outline"
-                    onClick={clearFilters}
-                    className="text-red-600 hover:text-red-700"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
                   >
-                    <X className="w-4 h-4 mr-2" />
-                    Limpiar
+                    <Filter className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                    <span className="sm:inline">Filtros</span>
+                    {hasActiveFilters && (
+                      <span className="ml-1 sm:ml-2 bg-primary text-primary-foreground rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[10px] sm:text-xs">
+                        {[searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos].filter(Boolean).length}
+                      </span>
+                    )}
                   </Button>
-                )}
+                  {hasActiveFilters && (
+                    <Button
+                      variant="outline"
+                      onClick={clearFilters}
+                      className="text-red-600 hover:text-red-700 text-sm sm:text-base h-9 sm:h-10 px-2 sm:px-3"
+                    >
+                      <X className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Limpiar</span>
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {showFilters && (
-                <div className="pt-4 border-t space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* Grading Llamada */}
+                <div className="pt-3 sm:pt-4 border-t space-y-3 sm:space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                    {/* Filtros ... */}
+                    {/* Los selects se pueden mejorar con componentes de Select de UI en el futuro */}
                     <div>
                       <Label className="text-sm font-medium text-gray-700 mb-2 block">
                         Grading Llamada
@@ -385,7 +328,7 @@ export function CRMContactList() {
                       <select
                         value={gradingLlamada}
                         onChange={(e) => setGradingLlamada(e.target.value as any)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px]"
                       >
                         <option value="">Todos</option>
                         <option value="A">A</option>
@@ -395,7 +338,6 @@ export function CRMContactList() {
                       </select>
                     </div>
 
-                    {/* Grading Situación */}
                     <div>
                       <Label className="text-sm font-medium text-gray-700 mb-2 block">
                         Grading Situación
@@ -403,7 +345,7 @@ export function CRMContactList() {
                       <select
                         value={gradingSituacion}
                         onChange={(e) => setGradingSituacion(e.target.value as any)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px]"
                       >
                         <option value="">Todos</option>
                         <option value="A">A</option>
@@ -413,7 +355,6 @@ export function CRMContactList() {
                       </select>
                     </div>
 
-                    {/* Nacionalidad */}
                     <div>
                       <Label className="text-sm font-medium text-gray-700 mb-2 block">
                         Nacionalidad
@@ -421,7 +362,7 @@ export function CRMContactList() {
                       <select
                         value={nacionalidad}
                         onChange={(e) => setNacionalidad(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px]"
                       >
                         <option value="">Todas</option>
                         {uniqueNacionalidades.map(nac => (
@@ -430,7 +371,6 @@ export function CRMContactList() {
                       </select>
                     </div>
 
-                    {/* Responsable */}
                     <div>
                       <Label className="text-sm font-medium text-gray-700 mb-2 block">
                         Responsable
@@ -438,7 +378,7 @@ export function CRMContactList() {
                       <select
                         value={responsibleUserId}
                         onChange={(e) => setResponsibleUserId(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px]"
                       >
                         <option value="">Todos</option>
                         {users.map(user => {
@@ -452,7 +392,6 @@ export function CRMContactList() {
                       </select>
                     </div>
 
-                    {/* Empadronado */}
                     <div>
                       <Label className="text-sm font-medium text-gray-700 mb-2 block">
                         Empadronado
@@ -460,7 +399,7 @@ export function CRMContactList() {
                       <select
                         value={empadronado}
                         onChange={(e) => setEmpadronado(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px]"
                       >
                         <option value="">Todos</option>
                         <option value="true">Sí</option>
@@ -468,7 +407,6 @@ export function CRMContactList() {
                       </select>
                     </div>
 
-                    {/* Tiene Ingresos */}
                     <div>
                       <Label className="text-sm font-medium text-gray-700 mb-2 block">
                         Tiene Ingresos
@@ -476,7 +414,7 @@ export function CRMContactList() {
                       <select
                         value={tieneIngresos}
                         onChange={(e) => setTieneIngresos(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px]"
                       >
                         <option value="">Todos</option>
                         <option value="true">Sí</option>
@@ -490,187 +428,257 @@ export function CRMContactList() {
           </CardContent>
         </Card>
 
-        {/* Lista de Contactos */}
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
             <p className="mt-4 text-gray-600">Cargando contactos...</p>
           </div>
         ) : viewMode === 'table' ? (
-          /* Vista de Tabla */
-          <Card>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50 border-b">
-                    <tr>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort('name')}
-                      >
-                        <div className="flex items-center gap-2">
-                          Nombre
-                          <SortIcon field="name" />
+          <>
+            <div className="block md:hidden space-y-4">
+              {filteredAndSortedContacts.map((contact) => (
+                <Card
+                  key={contact.id}
+                  className="hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => navigate(`/crm/contacts/${contact.id}`)}
+                >
+                  <CardContent className="pt-4">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-base font-semibold text-gray-900 mb-1 font-display">
+                          {contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim() || 'Sin nombre'}
+                        </h3>
+                        {contact.email && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                            <Mail className="w-4 h-4 flex-shrink-0" />
+                            <span className="truncate">{contact.email}</span>
+                          </div>
+                        )}
+                        {contact.phone && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
+                            <Phone className="w-4 h-4 flex-shrink-0" />
+                            <span>{contact.phone}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {contact.nacionalidad && (
+                        <div className="flex items-center gap-1 text-xs text-gray-600">
+                          <Flag className="w-3 h-3" />
+                          <span>{contact.nacionalidad}</span>
                         </div>
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort('email')}
+                      )}
+                      {contact.grading_llamada && (
+                        <Badge variant={getGradingVariant(contact.grading_llamada)} className="text-xs">
+                          Llamada: {contact.grading_llamada}
+                        </Badge>
+                      )}
+                      {contact.grading_situacion && (
+                        <Badge variant={getGradingVariant(contact.grading_situacion)} className="text-xs">
+                          Situación: {contact.grading_situacion}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between pt-3 border-t">
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <Calendar className="w-3 h-3" />
+                        <span>{formatDate(contact.created_at)}</span>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/crm/contacts/${contact.id}`);
+                        }}
                       >
-                        <div className="flex items-center gap-2">
-                          Email
-                          <SortIcon field="email" />
-                        </div>
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort('phone')}
-                      >
-                        <div className="flex items-center gap-2">
-                          Teléfono
-                          <SortIcon field="phone" />
-                        </div>
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort('nacionalidad')}
-                      >
-                        <div className="flex items-center gap-2">
-                          Nacionalidad
-                          <SortIcon field="nacionalidad" />
-                        </div>
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort('grading_llamada')}
-                      >
-                        <div className="flex items-center gap-2">
-                          Grading Llamada
-                          <SortIcon field="grading_llamada" />
-                        </div>
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort('grading_situacion')}
-                      >
-                        <div className="flex items-center gap-2">
-                          Grading Situación
-                          <SortIcon field="grading_situacion" />
-                        </div>
-                      </th>
-                      <th
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                        onClick={() => handleSort('created_at')}
-                      >
-                        <div className="flex items-center gap-2">
-                          Fecha Creación
-                          <SortIcon field="created_at" />
-                        </div>
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredAndSortedContacts.map((contact) => (
-                      <tr
-                        key={contact.id}
-                        className="hover:bg-gray-50 cursor-pointer"
-                        onClick={() => navigate(`/crm/contacts/${contact.id}`)}
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim() || 'Sin nombre'}
+                        Ver
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            
+            <Card className="hidden md:block">
+              <CardContent className="p-0">
+                <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <div className="inline-block min-w-full align-middle">
+                    <div className="overflow-hidden">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th
+                              className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 font-sans"
+                              onClick={() => handleSort('name')}
+                            >
+                              <div className="flex items-center gap-2">
+                                Nombre
+                                <SortIcon field="name" />
                               </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            {contact.email ? (
-                              <>
-                                <Mail className="w-4 h-4" />
-                                <span>{contact.email}</span>
-                              </>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            {contact.phone ? (
-                              <>
-                                <Phone className="w-4 h-4" />
-                                <span>{contact.phone}</span>
-                              </>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            {contact.nacionalidad ? (
-                              <>
-                                <Flag className="w-4 h-4" />
-                                <span>{contact.nacionalidad}</span>
-                              </>
-                            ) : (
-                              <span className="text-gray-400">—</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {contact.grading_llamada ? (
-                            <span className={`text-xs px-2 py-1 rounded-full border ${getGradingColor(contact.grading_llamada)}`}>
-                              {contact.grading_llamada}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400">—</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {contact.grading_situacion ? (
-                            <span className={`text-xs px-2 py-1 rounded-full border ${getGradingColor(contact.grading_situacion)}`}>
-                              {contact.grading_situacion}
-                            </span>
-                          ) : (
-                            <span className="text-gray-400">—</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            {formatDate(contact.created_at)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/crm/contacts/${contact.id}`);
-                            }}
-                          >
-                            Ver
-                            <ChevronRight className="w-4 h-4 ml-1" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
+                            </th>
+                            <th
+                              className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hidden lg:table-cell font-sans"
+                              onClick={() => handleSort('email')}
+                            >
+                              <div className="flex items-center gap-2">
+                                Email
+                                <SortIcon field="email" />
+                              </div>
+                            </th>
+                            <th
+                              className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 font-sans"
+                              onClick={() => handleSort('phone')}
+                            >
+                              <div className="flex items-center gap-2">
+                                Teléfono
+                                <SortIcon field="phone" />
+                              </div>
+                            </th>
+                            <th
+                              className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hidden xl:table-cell font-sans"
+                              onClick={() => handleSort('nacionalidad')}
+                            >
+                              <div className="flex items-center gap-2">
+                                Nacionalidad
+                                <SortIcon field="nacionalidad" />
+                              </div>
+                            </th>
+                            <th
+                              className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hidden xl:table-cell font-sans"
+                              onClick={() => handleSort('grading_llamada')}
+                            >
+                              <div className="flex items-center gap-2">
+                                Grading Llamada
+                                <SortIcon field="grading_llamada" />
+                              </div>
+                            </th>
+                            <th
+                              className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hidden xl:table-cell font-sans"
+                              onClick={() => handleSort('grading_situacion')}
+                            >
+                              <div className="flex items-center gap-2">
+                                Grading Situación
+                                <SortIcon field="grading_situacion" />
+                              </div>
+                            </th>
+                            <th
+                              className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 hidden lg:table-cell font-sans"
+                              onClick={() => handleSort('created_at')}
+                            >
+                              <div className="flex items-center gap-2">
+                                Fecha Creación
+                                <SortIcon field="created_at" />
+                              </div>
+                            </th>
+                            <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider font-sans">
+                              Acciones
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {filteredAndSortedContacts.map((contact) => (
+                            <tr
+                              key={contact.id}
+                              className="hover:bg-gray-50 cursor-pointer"
+                              onClick={() => navigate(`/crm/contacts/${contact.id}`)}
+                            >
+                              <td className="px-3 sm:px-6 py-4">
+                                <div className="flex items-center">
+                                  <div>
+                                    <div className="text-sm font-medium text-gray-900 font-sans">
+                                      {contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim() || 'Sin nombre'}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-3 sm:px-6 py-4 hidden lg:table-cell">
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                  {contact.email ? (
+                                    <>
+                                      <Mail className="w-4 h-4" />
+                                      <span className="truncate max-w-xs">{contact.email}</span>
+                                    </>
+                                  ) : (
+                                    <span className="text-gray-400">—</span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-3 sm:px-6 py-4">
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                  {contact.phone ? (
+                                    <>
+                                      <Phone className="w-4 h-4" />
+                                      <span>{contact.phone}</span>
+                                    </>
+                                  ) : (
+                                    <span className="text-gray-400">—</span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-3 sm:px-6 py-4 hidden xl:table-cell">
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                  {contact.nacionalidad ? (
+                                    <>
+                                      <Flag className="w-4 h-4" />
+                                      <span>{contact.nacionalidad}</span>
+                                    </>
+                                  ) : (
+                                    <span className="text-gray-400">—</span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-3 sm:px-6 py-4 hidden xl:table-cell">
+                                {contact.grading_llamada ? (
+                                  <Badge variant={getGradingVariant(contact.grading_llamada)} className="text-xs">
+                                    {contact.grading_llamada}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-gray-400">—</span>
+                                )}
+                              </td>
+                              <td className="px-3 sm:px-6 py-4 hidden xl:table-cell">
+                                {contact.grading_situacion ? (
+                                  <Badge variant={getGradingVariant(contact.grading_situacion)} className="text-xs">
+                                    {contact.grading_situacion}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-gray-400">—</span>
+                                )}
+                              </td>
+                              <td className="px-3 sm:px-6 py-4 hidden lg:table-cell text-sm text-gray-600">
+                                <div className="flex items-center gap-2">
+                                  <Calendar className="w-4 h-4" />
+                                  {formatDate(contact.created_at)}
+                                </div>
+                              </td>
+                              <td className="px-3 sm:px-6 py-4 text-right text-sm font-medium">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/crm/contacts/${contact.id}`);
+                                  }}
+                                >
+                                  Ver
+                                  <ChevronRight className="w-4 h-4 ml-1" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
         ) : (
-          /* Vista de Tarjetas */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredAndSortedContacts.map((contact) => (
               <Card
                 key={contact.id}
@@ -680,7 +688,7 @@ export function CRMContactList() {
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1 font-display">
                         {contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim()}
                       </h3>
                       {contact.email && (
@@ -716,29 +724,21 @@ export function CRMContactList() {
 
                     <div className="flex items-center gap-2 pt-2">
                       {contact.grading_llamada && (
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full border ${getGradingColor(
-                            contact.grading_llamada
-                          )}`}
-                        >
+                        <Badge variant={getGradingVariant(contact.grading_llamada)} className="text-xs">
                           <Star className="w-3 h-3 inline mr-1" />
                           Llamada: {contact.grading_llamada}
-                        </span>
+                        </Badge>
                       )}
                       {contact.grading_situacion && (
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full border ${getGradingColor(
-                            contact.grading_situacion
-                          )}`}
-                        >
+                        <Badge variant={getGradingVariant(contact.grading_situacion)} className="text-xs">
                           <Star className="w-3 h-3 inline mr-1" />
                           Situación: {contact.grading_situacion}
-                        </span>
+                        </Badge>
                       )}
                     </div>
 
                     {contact.tiempo_espana && (
-                      <p className="text-xs text-gray-500 mt-2">
+                      <p className="text-xs text-gray-500 mt-2 font-sans">
                         En España: {contact.tiempo_espana}
                       </p>
                     )}

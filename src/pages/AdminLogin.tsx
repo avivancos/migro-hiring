@@ -1,20 +1,30 @@
 // Admin Login Page
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { adminService } from '@/services/adminService';
+import { useAuth } from '@/providers/AuthProvider';
 import { Lock, AlertCircle } from 'lucide-react';
 
 export function AdminLogin() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { login, isAuthenticated, isAdmin } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Si ya está autenticado, redirigir
+  useEffect(() => {
+    if (isAuthenticated && isAdmin) {
+      const returnUrl = searchParams.get('returnUrl') || '/admin/dashboard';
+      navigate(returnUrl, { replace: true });
+    }
+  }, [isAuthenticated, isAdmin, navigate, searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,44 +38,26 @@ export function AdminLogin() {
     setError(null);
 
     try {
-      console.log('🔐 Iniciando login con:', { email });
-      const result = await adminService.login(email, password);
+      await login(email, password);
       
-      console.log('📋 Resultado del login:', result);
-      console.log('✅ Success:', result.success);
-      console.log('👤 User:', result.user);
-      console.log('🔑 Token:', result.token ? 'Presente' : 'Ausente');
+      // Obtener returnUrl o usar ruta por defecto
+      const returnUrl = searchParams.get('returnUrl');
       
-      if (result.success && result.user) {
-        // Verificar que el usuario sea admin o superuser
-        const isAdmin = result.user.is_admin || 
-                       result.user.is_superuser || 
-                       result.user.role === 'admin' || 
-                       result.user.role === 'superuser';
-        
-        if (isAdmin) {
-          console.log('✅ Usuario es admin, navegando a /crm');
-          // Navegar al nuevo dashboard CRM
-          // Si estamos en /crm, recargar la página para actualizar el estado
-          if (window.location.pathname === '/crm' || window.location.pathname.startsWith('/crm/')) {
-            window.location.reload();
-          } else {
-            navigate('/crm');
-          }
-        } else {
-          console.warn('⚠️ Usuario no es admin:', result.user);
-          setError('No tienes permisos de administrador');
-          adminService.logout();
-        }
+      if (returnUrl) {
+        navigate(returnUrl, { replace: true });
       } else {
-        console.error('❌ Login falló:', result.error);
-        setError(result.error || 'Credenciales incorrectas. Verifica tu email y contraseña.');
+        // Redirigir según la ruta de origen o por defecto a admin
+        const path = window.location.pathname;
+        if (path.includes('/crm') || path.startsWith('/crm')) {
+          navigate('/crm', { replace: true });
+        } else {
+          navigate('/admin/dashboard', { replace: true });
+        }
       }
     } catch (err: any) {
       console.error('❌ Error en login:', err);
-      console.error('❌ Error response:', err?.response);
-      console.error('❌ Error data:', err?.response?.data);
-      setError(err?.response?.data?.detail || err?.message || 'Error al iniciar sesión. Verifica tus credenciales.');
+      const errorMessage = err?.response?.data?.detail || err?.message || 'Error al iniciar sesión. Verifica tus credenciales.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

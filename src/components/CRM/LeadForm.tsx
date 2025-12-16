@@ -349,7 +349,7 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
               <X size={16} className="mr-2" />
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading} className="bg-green-600 hover:bg-green-700">
+            <Button type="submit" disabled={loading} variant="default">
               <Save size={16} className="mr-2" />
               {loading ? 'Guardando...' : 'Guardar Lead'}
             </Button>

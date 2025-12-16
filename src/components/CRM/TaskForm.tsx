@@ -228,7 +228,7 @@ export function TaskForm({
                 id="task_type"
                 value={formData.task_type}
                 onChange={(e) => handleChange('task_type', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px]"
                 required
               >
                 {taskTypes.map(type => (
@@ -248,7 +248,7 @@ export function TaskForm({
                 id="responsible_user_id"
                 value={formData.responsible_user_id}
                 onChange={(e) => handleChange('responsible_user_id', e.target.value || null)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px]"
                 required
               >
                 <option value="">Seleccionar...</option>
@@ -290,7 +290,7 @@ export function TaskForm({
                   id="entity_type"
                   value={formData.entity_type}
                   onChange={(e) => handleChange('entity_type', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px]"
                   required
                 >
                   <option value="leads">Lead</option>
@@ -313,7 +313,7 @@ export function TaskForm({
                   id="entity_id"
                   value={formData.entity_id}
                   onChange={(e) => handleChange('entity_id', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px]"
                   required
                   disabled={loadingEntities}
                 >
@@ -408,7 +408,7 @@ export function TaskForm({
             </Button>
             <Button
               type="submit"
-              className="bg-green-600 hover:bg-green-700"
+              variant="default"
               disabled={loading}
             >
               {loading ? 'Guardando...' : task ? 'Actualizar' : 'Crear Tarea'}

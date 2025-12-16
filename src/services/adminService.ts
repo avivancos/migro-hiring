@@ -222,5 +222,254 @@ export const adminService = {
     });
     return data;
   },
+
+  // ===== USER MANAGEMENT =====
+
+  /**
+   * Get all users (admin only)
+   * Returns paginated response with items, total, skip, and limit
+   */
+  async getAllUsers(params?: {
+    skip?: number;
+    limit?: number;
+    // Búsqueda
+    search?: string;
+    q?: string; // Mantener para compatibilidad, pero usar search
+    // Filtros básicos
+    role?: string;
+    is_active?: boolean;
+    is_verified?: boolean;
+    // Filtros adicionales
+    nationality?: string;
+    profession?: string;
+    city?: string;
+    is_lawyer?: boolean;
+    lawyer_specialty?: string;
+    // Filtros de fechas (ISO 8601)
+    last_login_from?: string;
+    last_login_to?: string;
+    created_from?: string;
+    created_to?: string;
+    // Ordenamiento
+    sort_by?: 'name' | 'email' | 'phone_number' | 'role' | 'is_active' | 'last_login' | 'created_at';
+    sort_order?: 'asc' | 'desc';
+  }): Promise<{
+    items: any[];
+    total: number;
+    skip: number;
+    limit: number;
+  }> {
+    try {
+      // Preparar parámetros: usar search si está disponible, sino q (compatibilidad)
+      const requestParams: any = { ...params };
+      if (requestParams.search) {
+        // Usar search (nuevo parámetro)
+        delete requestParams.q;
+      } else if (requestParams.q) {
+        // Migrar q a search para compatibilidad
+        requestParams.search = requestParams.q;
+        delete requestParams.q;
+      }
+      
+      const { data } = await api.get('/users/', { params: requestParams });
+      
+      console.log('📡 [adminService.getAllUsers] Respuesta completa del backend:', {
+        data,
+        hasItems: data?.items !== undefined,
+        hasTotal: typeof data?.total === 'number',
+        totalValue: data?.total,
+        itemsLength: data?.items?.length,
+        skipValue: data?.skip,
+        limitValue: data?.limit,
+      });
+      
+      // El backend ahora siempre devuelve formato paginado
+      if (data.items && typeof data.total === 'number') {
+        const result = {
+          items: data.items,
+          total: data.total,
+          skip: data.skip !== undefined ? data.skip : (params?.skip || 0),
+          limit: data.limit !== undefined ? data.limit : (params?.limit || 50),
+        };
+        console.log('✅ [adminService.getAllUsers] Retornando resultado paginado:', result);
+        return result;
+      }
+      
+      // Fallback: si aún devuelve array (compatibilidad)
+      if (Array.isArray(data)) {
+        return {
+          items: data,
+          total: data.length,
+          skip: params?.skip || 0,
+          limit: params?.limit || 50,
+        };
+      }
+      
+      // Fallback final
+      return {
+        items: [],
+        total: 0,
+        skip: params?.skip || 0,
+        limit: params?.limit || 50,
+      };
+    } catch (error: any) {
+      console.error('Error getting users:', error);
+      if (error.response?.status === 404 || error.response?.status === 403) {
+        return {
+          items: [],
+          total: 0,
+          skip: params?.skip || 0,
+          limit: params?.limit || 50,
+        };
+      }
+      throw error;
+    }
+  },
+
+  /**
+   * Get user by ID from API
+   */
+  async getUserById(id: string): Promise<any> {
+    if (!id || id === 'undefined') {
+      throw new Error('User ID is required');
+    }
+    const { data } = await api.get(`/users/${id}`);
+    return data;
+  },
+
+  /**
+   * Get user by ID (alias for backward compatibility)
+   * @deprecated Use getUserById instead to avoid confusion with getUser() without params
+   */
+  async getUser(id: string): Promise<any> {
+    return this.getUserById(id);
+  },
+
+  /**
+   * Update user (campos básicos, sin rol)
+   * NOTA: El rol debe actualizarse por separado usando updateUserRole()
+   */
+  async updateUser(id: string, userData: {
+    email?: string | null;
+    full_name?: string | null;
+    phone_number?: string | null;
+    avatar_url?: string | null;
+    photo_avatar_url?: string | null;
+    bio?: string | null;
+    is_active?: boolean | null;
+    is_verified?: boolean | null;
+    // role NO debe incluirse aquí - usar updateUserRole() en su lugar
+  }): Promise<any> {
+    // Remover role si viene en userData (no debe estar aquí)
+    const { role, ...dataWithoutRole } = userData as any;
+    if (role !== undefined) {
+      console.warn('⚠️ El campo "role" no debe incluirse en updateUser(). Usa updateUserRole() en su lugar.');
+    }
+    const { data } = await api.patch(`/users/${id}`, dataWithoutRole);
+    return data;
+  },
+
+  /**
+   * Delete user
+   */
+  async deleteUser(id: string): Promise<void> {
+    await api.delete(`/users/${id}`);
+  },
+
+  /**
+   * Update user role (admin only)
+   */
+  async updateUserRole(id: string, role: string): Promise<any> {
+    const { data } = await api.patch(`/users/${id}/role`, { role });
+    return data;
+  },
+
+  /**
+   * Update user status (admin only)
+   */
+  async updateUserStatus(id: string, isActive: boolean): Promise<any> {
+    const { data } = await api.patch(`/users/${id}/status`, { is_active: isActive });
+    return data;
+  },
+
+  /**
+   * Reset user password (admin only)
+   */
+  async resetUserPassword(id: string): Promise<{ message: string }> {
+    const { data } = await api.post(`/users/${id}/reset-password`);
+    return data;
+  },
+
+  /**
+   * Change user password directly (admin only)
+   */
+  async changeUserPassword(id: string, newPassword: string): Promise<{ message: string }> {
+    const { data } = await api.patch(`/users/${id}/password`, { password: newPassword });
+    return data;
+  },
+
+  /**
+   * Impersonate user (superuser only)
+   */
+  async impersonateUser(id: string): Promise<any> {
+    const { data } = await api.post(`/users/${id}/impersonate`);
+    return data;
+  },
+
+  /**
+   * Export users (admin only)
+   */
+  async exportUsers(params: {
+    format?: 'json' | 'csv';
+    role?: string;
+    is_active?: boolean;
+    is_verified?: boolean;
+    from_date?: string;
+    to_date?: string;
+    q?: string;
+    skip?: number;
+    limit?: number;
+  }): Promise<any> {
+    if (params.format === 'csv') {
+      const response = await api.get('/users/export', {
+        params,
+        responseType: 'blob',
+      });
+      return response.data;
+    } else {
+      const { data } = await api.get('/users/export', { params });
+      return data;
+    }
+  },
+
+  /**
+   * Get audit logs for users (admin only)
+   */
+  async getAuditLogs(params?: {
+    user_id?: string;
+    from_date?: string;
+    to_date?: string;
+    q?: string;
+    skip?: number;
+    limit?: number;
+  }): Promise<any> {
+    const { data } = await api.get('/users/audit-logs', { params });
+    return data;
+  },
+
+  /**
+   * Upload photo avatar for current user
+   */
+  async uploadPhotoAvatar(file: File): Promise<any> {
+    const formData = new FormData();
+    formData.append('photo', file);
+    
+    const { data } = await api.post('/users/me/photo-avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  },
 };
 

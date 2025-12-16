@@ -176,7 +176,7 @@ export function PipelineKanban({ pipelineId, onLeadClick }: PipelineKanbanProps)
                     </CardTitle>
                   </div>
                   {total > 0 && (
-                    <p className="text-sm font-semibold text-green-600 mt-1">
+                    <p className="text-sm font-semibold text-primary mt-1">
                       {formatCurrency(total)}
                     </p>
                   )}
@@ -190,15 +190,15 @@ export function PipelineKanban({ pipelineId, onLeadClick }: PipelineKanbanProps)
                       onClick={() => onLeadClick?.(lead)}
                       className="p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-move"
                     >
-                      <h4 className="font-medium text-gray-900 mb-2 line-clamp-2">
+                      <h4 className="font-medium text-gray-900 mb-2 line-clamp-2 font-display">
                         {lead.name}
                       </h4>
 
-                      <div className="space-y-2 text-sm text-gray-600">
+                      <div className="space-y-2 text-sm text-gray-600 font-sans">
                         {lead.price && (
                           <div className="flex items-center gap-2">
                             <DollarSign size={14} />
-                            <span className="font-semibold text-green-600">
+                            <span className="font-semibold text-primary">
                               {formatCurrency(lead.price)}
                             </span>
                           </div>
@@ -236,9 +236,9 @@ export function PipelineKanban({ pipelineId, onLeadClick }: PipelineKanbanProps)
                       {lead.priority && lead.priority !== 'medium' && (
                         <div className="mt-2">
                           <span className={`text-xs px-2 py-1 rounded-full ${
-                            lead.priority === 'urgent' ? 'bg-red-100 text-red-800' :
-                            lead.priority === 'high' ? 'bg-orange-100 text-orange-800' :
-                            'bg-green-100 text-green-800'
+                            lead.priority === 'urgent' ? 'bg-error-light text-error-dark' :
+                            lead.priority === 'high' ? 'bg-warning-light text-warning-dark' :
+                            'bg-success-light text-success-dark'
                           }`}>
                             {lead.priority}
                           </span>
