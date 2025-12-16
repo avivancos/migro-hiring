@@ -130,7 +130,7 @@ export function AdminContracts() {
   };
 
   const getKYCStatusBadge = (status: KYCStatus) => {
-    const colors = KYC_STATUS_COLORS[status || null] || 'bg-gray-100 text-gray-800';
+    const colors = KYC_STATUS_COLORS[status || 'unknown'] || 'bg-gray-100 text-gray-800';
     const labels: Record<string, string> = {
       null: 'No iniciado',
       pending: 'Pendiente',

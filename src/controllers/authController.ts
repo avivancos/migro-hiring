@@ -67,7 +67,7 @@ class AuthController {
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
         isAuthenticated: true,
-        isAdmin: user.is_superuser || user.role === 'admin' || user.role === 'superuser',
+        isAdmin: user.is_superuser || user.role === 'admin',
       };
 
       // Guardar en localStorage para compatibilidad
@@ -126,7 +126,7 @@ class AuthController {
         accessToken,
         refreshToken: localStorage.getItem('refresh_token'),
         isAuthenticated: true,
-        isAdmin: user.is_superuser || user.role === 'admin' || user.role === 'superuser',
+        isAdmin: user.is_superuser || user.role === 'admin',
       };
 
       // Actualizar localStorage
