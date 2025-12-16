@@ -98,7 +98,7 @@ function App() {
           <Route
             path="/crm"
             element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent']}>
+              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
                 <CRMDashboardPage />
               </ProtectedRoute>
             }
@@ -108,7 +108,7 @@ function App() {
           <Route
             path="/crm/contacts"
             element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent']}>
+              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
                 <CRMContactList />
               </ProtectedRoute>
             }
@@ -116,7 +116,7 @@ function App() {
           <Route
             path="/crm/contacts/:id/edit"
             element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent']}>
+              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
                 <CRMContactEdit />
               </ProtectedRoute>
             }
@@ -124,7 +124,7 @@ function App() {
           <Route
             path="/crm/contacts/:id"
             element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent']}>
+              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
                 <CRMContactDetail />
               </ProtectedRoute>
             }
@@ -134,7 +134,7 @@ function App() {
           <Route
             path="/crm/leads"
             element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent']}>
+              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
                 <CRMLeadList />
               </ProtectedRoute>
             }
@@ -142,7 +142,7 @@ function App() {
           <Route
             path="/crm/leads/:id"
             element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent']}>
+              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
                 <CRMLeadDetail />
               </ProtectedRoute>
             }
@@ -152,7 +152,7 @@ function App() {
           <Route
             path="/crm/calendar"
             element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent']}>
+              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
                 <CRMTaskCalendar />
               </ProtectedRoute>
             }
@@ -162,7 +162,7 @@ function App() {
           <Route
             path="/crm/tasks/:id"
             element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent']}>
+              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
                 <CRMTaskDetail />
               </ProtectedRoute>
             }
@@ -172,7 +172,7 @@ function App() {
           <Route
             path="/crm/actions"
             element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent']}>
+              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
                 <CRMActions />
               </ProtectedRoute>
             }
@@ -180,7 +180,7 @@ function App() {
           <Route
             path="/crm/expedientes"
             element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent']}>
+              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
                 <CRMExpedientes />
               </ProtectedRoute>
             }
@@ -190,7 +190,7 @@ function App() {
           <Route
             path="/crm/call"
             element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent']}>
+              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
                 <CRMCallHandler />
               </ProtectedRoute>
             }
@@ -200,7 +200,7 @@ function App() {
           <Route
             path="/crm/settings"
             element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent']}>
+              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
                 <CRMSettings />
               </ProtectedRoute>
             }
@@ -208,7 +208,7 @@ function App() {
           <Route
             path="/crm/settings/task-templates"
             element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent']}>
+              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
                 <CRMTaskTemplatesSettings />
               </ProtectedRoute>
             }
@@ -216,7 +216,7 @@ function App() {
           <Route
             path="/crm/settings/custom-fields"
             element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent']}>
+              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
                 <CRMCustomFieldsSettings />
               </ProtectedRoute>
             }
