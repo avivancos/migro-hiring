@@ -7,7 +7,7 @@ import { auditService } from '@/services/auditService';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
 import { StatusBadge } from '@/components/common/StatusBadge';
-import { Search, Download, Filter, Calendar } from 'lucide-react';
+import { Search, Download } from 'lucide-react';
 import type { AuditLogEntry, AuditLogFilters } from '@/types/audit';
 import { format } from 'date-fns';
 

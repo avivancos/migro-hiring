@@ -17,7 +17,6 @@ import {
   XCircle,
   Clock,
   Edit,
-  Trash2,
   ExternalLink,
   Copy,
   Check,
@@ -133,7 +132,8 @@ export function AdminContractDetail() {
   };
 
   const getKYCStatusBadge = (status: Contract['kyc_status']) => {
-    const colors = KYC_STATUS_COLORS[status || 'unknown'] || 'bg-gray-100 text-gray-800';
+    const statusKey = status ?? null;
+    const colors = (statusKey !== null ? KYC_STATUS_COLORS[statusKey] : KYC_STATUS_COLORS.null) || 'bg-gray-100 text-gray-800';
     const labels: Record<string, string> = {
       null: 'No iniciado',
       pending: 'Pendiente',

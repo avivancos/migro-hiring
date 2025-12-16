@@ -65,7 +65,7 @@ export function useAuth() {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true }));
 
-      const loginResponse = await authService.login(credentials);
+      const loginResponse = await authService.login(credentials.email, credentials.password);
       const user = await authService.getCurrentUser();
 
       setAuthState({

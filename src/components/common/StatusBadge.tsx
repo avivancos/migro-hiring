@@ -39,7 +39,7 @@ const statusToVariant: Record<string, StatusVariant> = {
   // Estados de usuario
   'active': 'active',
   'inactive': 'inactive',
-  'verified': 'success',
+  'user_verified': 'success',
   'unverified': 'warning',
   
   // Estados de conversación

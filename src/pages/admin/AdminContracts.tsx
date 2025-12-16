@@ -1,7 +1,7 @@
 // Admin Contracts - Lista de contratos con UI mobile-first
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -14,12 +14,7 @@ import {
   Eye,
   Plus,
   Calendar,
-  Mail,
-  User,
   DollarSign,
-  CheckCircle,
-  XCircle,
-  Clock,
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
@@ -31,7 +26,6 @@ import type {
   ContractStatus,
   KYCStatus,
   ClientGrade,
-  PaymentType,
 } from '@/types/contracts';
 import {
   CONTRACT_STATUS_COLORS,
@@ -130,7 +124,8 @@ export function AdminContracts() {
   };
 
   const getKYCStatusBadge = (status: KYCStatus) => {
-    const colors = KYC_STATUS_COLORS[status || 'unknown'] || 'bg-gray-100 text-gray-800';
+    const statusKey = status ?? null;
+    const colors = (statusKey !== null ? KYC_STATUS_COLORS[statusKey] : KYC_STATUS_COLORS.null) || 'bg-gray-100 text-gray-800';
     const labels: Record<string, string> = {
       null: 'No iniciado',
       pending: 'Pendiente',

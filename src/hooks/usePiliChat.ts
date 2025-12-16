@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { piliService } from '@/services/piliService';
-import type { PiliChatRequest } from '@/services/piliService';
+import type { PiliChatRequest } from '@/types/pili';
 
 export interface Message {
   id: string;
