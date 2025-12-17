@@ -37,7 +37,7 @@ export function useAuth() {
               isAuthenticated: true,
               isLoading: false,
             });
-          } catch (error) {
+          } catch {
             // Token invalid, clear everything
             authService.logout();
             setAuthState({

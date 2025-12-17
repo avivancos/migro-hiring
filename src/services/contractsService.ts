@@ -14,13 +14,29 @@ import type {
  * Normalize hiring code response to Contract format
  */
 function normalizeHiringCode(hiringCode: any): Contract {
+    // Helper to clean "N/A" values and provide defaults
+    const cleanServiceName = (value: any): string => {
+      if (!value || value === 'N/A' || value === 'n/a' || value === null || value === undefined || String(value).trim() === '') {
+        // Valores por defecto según el tipo de servicio común
+        return 'Autorización inicial de Residencia y Trabajo';
+      }
+      return String(value).trim();
+    };
+    
+    const cleanServiceDescription = (value: any): string => {
+      if (!value || value === 'N/A' || value === 'n/a' || value === null || value === undefined || String(value).trim() === '') {
+        return 'Tramitación de expediente para obtención de la primera residencia temporal laboral en España';
+      }
+      return String(value).trim();
+    };
+    
     return {
       id: String(hiringCode.id || hiringCode.hiring_code),
       hiring_code: hiringCode.hiring_code,
       client_name: hiringCode.client_name || hiringCode.user_name || '',
       client_email: hiringCode.client_email || hiringCode.user_email || '',
-      service_name: hiringCode.service_name || '',
-      service_description: hiringCode.service_description,
+      service_name: cleanServiceName(hiringCode.service_name),
+      service_description: cleanServiceDescription(hiringCode.service_description),
       amount: hiringCode.amount || 0,
       currency: hiringCode.currency || 'EUR',
       status: (hiringCode.status || 'pending') as Contract['status'],
@@ -129,18 +145,59 @@ export const contractsService = {
   /**
    * Get contract by hiring code
    * Uses /admin/contracts/{code} endpoint with X-Admin-Password header
+   * Falls back to public /hiring/{code} endpoint to get complete data (service_name, service_description)
    */
   async getContract(code: string): Promise<Contract> {
     try {
       // Try admin endpoint first
-      const { data } = await api.get<Contract>(`/admin/contracts/${code}`, {
+      const { data: adminData } = await api.get<Contract>(`/admin/contracts/${code}`, {
         headers: {
           'X-Admin-Password': 'Pomelo2005.1',
         },
       });
-      return normalizeHiringCode(data);
+      
+      // Get public endpoint data to ensure we have service_name and service_description
+      try {
+        const publicData = await hiringService.getDetails(code);
+        console.log('📋 Datos del endpoint público (raw):', publicData);
+        console.log('📋 service_name del público:', publicData.service_name, typeof publicData.service_name);
+        console.log('📋 service_description del público:', publicData.service_description, typeof publicData.service_description);
+        console.log('📋 Datos del endpoint admin (raw):', adminData);
+        console.log('📋 service_name del admin:', adminData.service_name, typeof adminData.service_name);
+        console.log('📋 service_description del admin:', adminData.service_description, typeof adminData.service_description);
+        
+        // Helper to check if value is valid (not empty, not "N/A")
+        const isValidValue = (value: any) => {
+          if (!value) return false;
+          const str = String(value).trim();
+          return str !== '' && str !== 'N/A' && str !== 'n/a';
+        };
+        
+        // Merge: use admin data but fill in service info from public endpoint if missing or invalid
+        const mergedData = {
+          ...adminData,
+          service_name: isValidValue(adminData.service_name) 
+            ? adminData.service_name 
+            : (isValidValue(publicData.service_name) ? publicData.service_name : 'Servicio de Migro'),
+          service_description: isValidValue(adminData.service_description)
+            ? adminData.service_description
+            : (isValidValue(publicData.service_description) ? publicData.service_description : 'Tramitación de expediente administrativo'),
+        };
+        
+        console.log('📋 Datos mergeados finales:', {
+          service_name: mergedData.service_name,
+          service_description: mergedData.service_description,
+        });
+        
+        return normalizeHiringCode(mergedData);
+      } catch (publicError) {
+        // If public endpoint fails, just use admin data
+        console.warn('⚠️ No se pudo obtener datos del endpoint público, usando solo datos del admin');
+        return normalizeHiringCode(adminData);
+      }
     } catch (error) {
       // Fallback to public hiring endpoint
+      console.warn('⚠️ Endpoint admin falló, usando endpoint público');
       const data = await hiringService.getDetails(code);
       return normalizeHiringCode(data);
     }

@@ -9,7 +9,6 @@ import { Plus, Search, List, LayoutGrid } from 'lucide-react';
 import type { KommoLead, Pipeline } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { DollarSign, User, Calendar } from 'lucide-react';
-import { CRMHeader } from '@/components/CRM/CRMHeader';
 const LEAD_STATUSES = [
   { value: 'new', label: 'Nuevos', color: 'bg-blue-100 border-blue-300' },
   { value: 'contacted', label: 'Contactados', color: 'bg-yellow-100 border-yellow-300' },
@@ -128,19 +127,14 @@ export function CRMLeadList() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <CRMHeader />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center py-12">Cargando contactos...</div>
-        </div>
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+        <div className="text-center py-12">Cargando contactos...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CRMHeader />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="w-full">
         <div className="space-y-6">
           {/* Page Header */}
       <div className="flex justify-between items-center">
@@ -348,7 +342,6 @@ export function CRMLeadList() {
           </CardContent>
         </Card>
       )}
-        </div>
       </div>
     </div>
   );

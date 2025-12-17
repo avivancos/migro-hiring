@@ -486,5 +486,73 @@ export const adminService = {
     const { data } = await api.post('/users/', userData);
     return data;
   },
+
+  // ===== CALL TYPES =====
+
+  /**
+   * Obtener todos los tipos de llamadas
+   */
+  async getCallTypes(): Promise<any[]> {
+    try {
+      const { data } = await api.get('/admin/call-types');
+      return Array.isArray(data) ? data : data.items || [];
+    } catch (error: any) {
+      console.error('Error getting call types:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Crear un nuevo tipo de llamada
+   */
+  async createCallType(callType: {
+    name: string;
+    code: string;
+    description?: string;
+    is_active?: boolean;
+    sort_order?: number;
+  }): Promise<any> {
+    try {
+      const { data } = await api.post('/admin/call-types', callType);
+      return data;
+    } catch (error: any) {
+      console.error('Error creating call type:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Actualizar un tipo de llamada
+   */
+  async updateCallType(
+    id: string,
+    updates: {
+      name?: string;
+      code?: string;
+      description?: string;
+      is_active?: boolean;
+      sort_order?: number;
+    }
+  ): Promise<any> {
+    try {
+      const { data } = await api.patch(`/admin/call-types/${id}`, updates);
+      return data;
+    } catch (error: any) {
+      console.error('Error updating call type:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Eliminar un tipo de llamada
+   */
+  async deleteCallType(id: string): Promise<void> {
+    try {
+      await api.delete(`/admin/call-types/${id}`);
+    } catch (error: any) {
+      console.error('Error deleting call type:', error);
+      throw error;
+    }
+  },
 };
 

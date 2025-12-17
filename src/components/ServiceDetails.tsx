@@ -136,7 +136,7 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
           <Button
             onClick={onNext}
             disabled={loading}
-            className="w-full bg-emphasis hover:bg-emphasis/90 text-white py-6 text-lg font-semibold"
+            className="w-full bg-primary hover:bg-primary/90 text-white py-6 text-lg font-semibold"
             size="lg"
           >
             {loading ? 'Cargando...' : 'Comenzar Proceso de Contratación'}

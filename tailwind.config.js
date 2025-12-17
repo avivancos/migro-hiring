@@ -81,6 +81,11 @@ export default {
           light: '#DBEAFE',
           dark: '#1E40AF',
         },
+        // Emphasis color para textos de alta jerarquía
+        emphasis: {
+          DEFAULT: '#111827', // gray-900
+          900: '#111827', // gray-900
+        },
       },
       borderRadius: {
         lg: '12px',

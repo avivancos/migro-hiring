@@ -25,7 +25,6 @@ import {
   Activity,
   ExternalLink,
 } from 'lucide-react';
-import { CRMHeader } from '@/components/CRM/CRMHeader';
 import { CallForm } from '@/components/CRM/CallForm';
 import { TaskForm } from '@/components/CRM/TaskForm';
 import { NoteForm } from '@/components/CRM/NoteForm';
@@ -49,8 +48,12 @@ export function CRMContactDetail() {
   const [showNoteForm, setShowNoteForm] = useState(false);
 
   useEffect(() => {
-    if (id) {
+    // Solo cargar si el ID existe y no es "new" (que debe manejarse por la ruta específica)
+    if (id && id !== 'new') {
       loadContactData();
+    } else if (!id) {
+      // Si no hay ID, no hacer nada (puede ser un estado transitorio)
+      setLoading(false);
     }
   }, [id, searchParams.toString()]); // Recargar cuando cambia la query string (útil después de editar)
 
@@ -68,7 +71,7 @@ export function CRMContactDetail() {
   }, [id]);
 
   const loadContactData = async () => {
-    if (!id) return;
+    if (!id || id === 'new') return; // No cargar si es "new"
     setLoading(true);
     try {
       // Cargar datos en paralelo
@@ -339,12 +342,11 @@ export function CRMContactDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <CRMHeader />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando contacto...</p>
+      <div className="w-full">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Cargando contacto...</p>
           </div>
         </div>
       </div>
@@ -354,9 +356,8 @@ export function CRMContactDetail() {
   // Si hay error o no hay contacto, mostrar mensaje de error
   if (error || !contact) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <CRMHeader />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="w-full">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
           <Card className="border-red-200 bg-red-50">
             <CardContent className="pt-6">
               <div className="text-center">
@@ -377,9 +378,8 @@ export function CRMContactDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CRMHeader />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <>
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
@@ -1122,7 +1122,6 @@ export function CRMContactDetail() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
 
       {/* Modal de Formulario de Llamada */}
       {showCallForm && (
@@ -1205,6 +1204,7 @@ export function CRMContactDetail() {
         </div>
       )}
     </div>
+    </>
   );
 }
 

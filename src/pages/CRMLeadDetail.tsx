@@ -11,7 +11,6 @@ import { crmService } from '@/services/crmService';
 import { LeadForm } from '@/components/CRM/LeadForm';
 import { TaskForm } from '@/components/CRM/TaskForm';
 import { CallForm } from '@/components/CRM/CallForm';
-import { CRMHeader } from '@/components/CRM/CRMHeader';
 export function CRMLeadDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -470,11 +469,8 @@ export function CRMLeadDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <CRMHeader />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center py-12">Cargando lead...</div>
-        </div>
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+        <div className="text-center py-12">Cargando lead...</div>
       </div>
     );
   }
@@ -482,9 +478,7 @@ export function CRMLeadDetail() {
   // Mostrar error si existe
   if (error || (!loading && !lead && id !== 'new')) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <CRMHeader />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
           <Card className="border-red-300 bg-red-50">
             <CardContent className="pt-6">
               <div className="text-center py-8">
@@ -514,7 +508,6 @@ export function CRMLeadDetail() {
               </div>
             </CardContent>
           </Card>
-        </div>
       </div>
     );
   }
@@ -525,11 +518,8 @@ export function CRMLeadDetail() {
     if (!lead && id === 'new') {
       // Este caso ya debería estar manejado en loadLeadData, pero por si acaso:
       return (
-        <div className="min-h-screen bg-gray-50">
-          <CRMHeader />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="text-center py-12">Preparando formulario...</div>
-          </div>
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+          <div className="text-center py-12">Preparando formulario...</div>
         </div>
       );
     }
@@ -537,23 +527,18 @@ export function CRMLeadDetail() {
     // Mostrar formulario de edición
   if (!lead) {
     return (
-        <div className="min-h-screen bg-gray-50">
-          <CRMHeader />
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
         <div className="text-center py-12">
-              <p className="text-gray-500">Error al cargar el contacto</p>
+          <p className="text-gray-500">Error al cargar el contacto</p>
           <Button onClick={() => navigate('/crm/leads')} className="mt-4">
             Volver a Contactos
           </Button>
-            </div>
         </div>
       </div>
     );
   }
     return (
-      <div className="min-h-screen bg-gray-50">
-        <CRMHeader />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
           <div className="space-y-6">
         <Button
           variant="outline"
@@ -604,7 +589,6 @@ export function CRMLeadDetail() {
           onSave={handleSave}
           onCancel={() => setEditing(false)}
         />
-          </div>
         </div>
       </div>
     );
@@ -614,9 +598,7 @@ export function CRMLeadDetail() {
   const currentLead: KommoLead = lead!;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CRMHeader />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
           {/* Page Header */}
       <div className="flex justify-between items-start">
@@ -1156,7 +1138,6 @@ export function CRMLeadDetail() {
           </div>
         </div>
       )}
-        </div>
       </div>
     </div>
   );

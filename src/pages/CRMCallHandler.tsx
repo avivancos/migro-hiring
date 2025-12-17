@@ -29,7 +29,6 @@ import type {
 } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { ContactForm } from '@/components/CRM/ContactForm';
-import { CRMHeader } from '@/components/CRM/CRMHeader';
 import { useNavigate } from 'react-router-dom';
 import { Clock, ExternalLink } from 'lucide-react';
 
@@ -74,6 +73,9 @@ export function CRMCallHandler() {
   // Estado de guardado
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  
+  // Tipos de llamadas
+  const [callTypes, setCallTypes] = useState<Array<{ id: string; name: string; code: string; description?: string }>>([]);
 
   useEffect(() => {
     loadInitialData();
@@ -95,9 +97,10 @@ export function CRMCallHandler() {
 
   const loadInitialData = async () => {
     try {
-      const [usersData, pipelinesData] = await Promise.all([
+      const [usersData, pipelinesData, callTypesData] = await Promise.all([
         crmService.getUsers(true),
         crmService.getPipelines().catch(() => []),
+        crmService.getCallTypes().catch(() => []),
       ]);
       
       if (usersData.length > 0) {
@@ -109,6 +112,9 @@ export function CRMCallHandler() {
         ? pipelinesData.find((p: Pipeline) => p.is_main) || pipelinesData[0] || null
         : null;
       setCurrentPipeline(mainPipeline);
+      
+      // Cargar tipos de llamadas
+      setCallTypes(callTypesData);
     } catch (err) {
       console.error('Error loading initial data:', err);
     }
@@ -392,10 +398,8 @@ export function CRMCallHandler() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CRMHeader />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="space-y-6">
+    <div className="w-full">
+      <div className="space-y-6">
           {/* Page Header */}
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
@@ -798,6 +802,22 @@ export function CRMCallHandler() {
                 </div>
 
                 <div>
+                  <Label>Tipo de Llamada</Label>
+                  <select
+                    value={callData.call_type || ''}
+                    onChange={(e) => setCallData(prev => ({ ...prev, call_type: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 mt-1"
+                  >
+                    <option value="">Seleccionar tipo...</option>
+                    {callTypes.map((type) => (
+                      <option key={type.id} value={type.code}>
+                        {type.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
                   <Label>Resumen de la Llamada</Label>
                   <Textarea
                     value={callData.resumen_llamada || ''}
@@ -889,7 +909,6 @@ export function CRMCallHandler() {
           </div>
         </>
       )}
-        </div>
       </div>
     </div>
   );

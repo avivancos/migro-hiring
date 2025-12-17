@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import type { Task, KommoLead, KommoContact } from '@/types/crm';
 import { crmService } from '@/services/crmService';
-import { CRMHeader } from '@/components/CRM/CRMHeader';
 
 interface ActionItem {
   id: string;
@@ -188,9 +187,7 @@ export function CRMActions() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CRMHeader />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="w-full">
         <div className="space-y-6">
           {/* Page Header */}
           <div>
@@ -360,7 +357,6 @@ export function CRMActions() {
           )}
         </CardContent>
       </Card>
-        </div>
       </div>
     </div>
   );

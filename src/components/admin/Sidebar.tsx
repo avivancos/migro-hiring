@@ -6,13 +6,15 @@ import {
   FileText, 
   Shield, 
   MessageSquare, 
-  Bot
+  Bot,
+  Phone
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Usuarios', href: '/admin/users', icon: Users },
   { name: 'Contratos', href: '/admin/contracts', icon: FileText },
+  { name: 'Tipos de Llamadas', href: '/admin/call-types', icon: Phone },
   { name: 'Auditoría', href: '/admin/audit-logs', icon: Shield },
   { name: 'Conversaciones', href: '/admin/conversations', icon: MessageSquare },
   { name: 'Pili AI', href: '/admin/pili', icon: Bot },

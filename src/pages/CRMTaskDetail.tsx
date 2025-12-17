@@ -19,7 +19,6 @@ import {
   FileText,
   ExternalLink,
 } from 'lucide-react';
-import { CRMHeader } from '@/components/CRM/CRMHeader';
 import { TaskForm } from '@/components/CRM/TaskForm';
 export function CRMTaskDetail() {
   const { id } = useParams<{ id: string }>();
@@ -192,7 +191,6 @@ export function CRMTaskDetail() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <CRMHeader />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
@@ -207,7 +205,6 @@ export function CRMTaskDetail() {
   if (error || !task) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <CRMHeader />
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Card className="border-red-200 bg-red-50">
             <CardContent className="pt-6">
@@ -228,10 +225,8 @@ export function CRMTaskDetail() {
   const TaskTypeIcon = getTaskTypeIcon(task.task_type);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CRMHeader />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="space-y-6">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
+      <div className="space-y-6">
           {/* Botón volver */}
           <Button variant="outline" onClick={() => navigate('/crm/calendar')}>
             <ArrowLeft size={18} className="mr-2" />
@@ -436,7 +431,6 @@ export function CRMTaskDetail() {
               )}
             </>
           )}
-        </div>
       </div>
     </div>
   );

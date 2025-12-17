@@ -40,10 +40,15 @@ export function AdminContractDetail() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (code) {
+    if (code && code !== 'create') {
       loadContract();
+    } else if (code === 'create') {
+      // Redirigir a la lista de contratos ya que no hay página de creación todavía
+      navigate('/admin/contracts');
+    } else {
+      setLoading(false);
     }
-  }, [code]);
+  }, [code, navigate]);
 
   const loadContract = async () => {
     if (!code) return;
@@ -51,6 +56,9 @@ export function AdminContractDetail() {
     setLoading(true);
     try {
       const data = await contractsService.getContract(code);
+      console.log('📋 Contrato cargado:', data);
+      console.log('📋 service_name:', data.service_name);
+      console.log('📋 service_description:', data.service_description);
       setContract(data);
     } catch (error) {
       console.error('Error cargando contrato:', error);
@@ -58,6 +66,73 @@ export function AdminContractDetail() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const generateLocalContract = async (isFinal: boolean = false) => {
+    if (!contract) return;
+    
+    console.log('🔧 Generando contrato localmente...');
+    
+    // Importar dinámicamente para evitar problemas de bundle
+    const { generateContractPDF } = await import('@/utils/contractPdfGenerator');
+    
+    // Convertir Contract a HiringDetails para el generador de PDF
+    const hiringDetails = {
+      id: parseInt(contract.id) || 0,
+      hiring_code: contract.hiring_code,
+      client_name: contract.client_name,
+      client_email: contract.client_email,
+      service_name: contract.service_name,
+      service_description: contract.service_description || '',
+      amount: contract.amount,
+      currency: contract.currency,
+      status: (contract.status === 'pending' || contract.status === 'paid' || contract.status === 'completed')
+        ? contract.status as 'pending' | 'paid' | 'completed'
+        : 'pending' as const,
+      kyc_status: contract.kyc_status,
+      expires_at: contract.expires_at,
+      short_url: contract.short_url,
+      client_passport: contract.client_passport,
+      client_nie: contract.client_nie,
+      client_nationality: contract.client_nationality,
+      client_address: contract.client_address,
+      client_city: contract.client_city,
+      client_province: contract.client_province,
+      client_postal_code: contract.client_postal_code,
+      contract_date: contract.contract_date,
+      contract_accepted: contract.contract_accepted,
+      contract_accepted_at: contract.contract_accepted_at,
+      grade: contract.grade,
+      payment_type: contract.payment_type,
+      manual_payment_confirmed: contract.manual_payment_confirmed,
+      manual_payment_note: contract.manual_payment_note,
+      manual_payment_method: contract.manual_payment_method,
+      payment_intent_id: contract.payment_intent_id,
+      subscription_id: contract.subscription_id,
+      subscription_status: contract.subscription_status,
+      first_payment_amount: contract.first_payment_amount,
+    };
+    
+    // Generar PDF localmente
+    const contractBlob = generateContractPDF(hiringDetails, {
+      paymentIntentId: contract.payment_intent_id || 'admin_generated',
+      stripeTransactionId: contract.payment_intent_id || `admin_${Date.now()}`,
+      paymentDate: contract.contract_accepted_at || new Date().toISOString(),
+      paymentMethod: contract.manual_payment_method || 'Generado desde admin',
+      paymentNote: contract.manual_payment_note,
+      clientSignature: undefined, // No tenemos firma del cliente en el admin
+    }, !isFinal); // isDraft = true si no es final, false si es final
+    
+    // Descargar el PDF generado
+    const url = window.URL.createObjectURL(contractBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `contrato-${contract.hiring_code}${isFinal ? '-final' : ''}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(link);
+    console.log('✅ Contrato generado y descargado localmente');
   };
 
   const handleDownload = async (isFinal: boolean = false) => {
@@ -70,9 +145,33 @@ export function AdminContractDetail() {
         `contrato-${contract.hiring_code}${isFinal ? '-final' : ''}.pdf`,
         isFinal
       );
-    } catch (error) {
-      console.error('Error descargando contrato:', error);
-      alert('Error al descargar el contrato. Por favor intenta nuevamente.');
+      console.log('✅ Contrato descargado desde el backend');
+    } catch (error: any) {
+      console.warn('⚠️ No se pudo descargar desde el backend, generando localmente:', error);
+      
+      // Verificar si es un error 404 u otro error
+      const is404 = error?.response?.status === 404 || 
+                    error?.message?.includes('404') ||
+                    error?.message?.includes('no encontrado') ||
+                    error?.message?.includes('Recurso no encontrado');
+      
+      if (is404) {
+        console.log('🔧 Contrato no disponible en backend (404), generando localmente...');
+        try {
+          await generateLocalContract(isFinal);
+        } catch (localErr) {
+          console.error('❌ Error generando contrato local:', localErr);
+          alert('No se pudo generar el contrato. Por favor, contacta con soporte.');
+        }
+      } else {
+        // Para otros errores, también intentar generar localmente
+        try {
+          await generateLocalContract(isFinal);
+        } catch (localErr) {
+          console.error('❌ Error generando contrato local:', localErr);
+          alert('Error al descargar el contrato desde el servidor. Se intentó generar localmente pero falló. Por favor, contacta con soporte.');
+        }
+      }
     } finally {
       setDownloading(false);
     }
@@ -81,7 +180,8 @@ export function AdminContractDetail() {
   const handleCopyLink = () => {
     if (!contract) return;
     
-    const url = `${window.location.origin}/contratacion/${contract.hiring_code}`;
+    // Formato: migro.es/c/(codigo)
+    const url = `https://migro.es/c/${contract.hiring_code}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -89,6 +189,7 @@ export function AdminContractDetail() {
 
   const handleOpenLink = () => {
     if (!contract) return;
+    // Usar la ruta interna pero mostrar el formato corto
     window.open(`/contratacion/${contract.hiring_code}`, '_blank');
   };
 
@@ -103,7 +204,7 @@ export function AdminContractDetail() {
   if (!contract) {
     return (
       <EmptyState
-        icon={FileText}
+        icon={<FileText size={48} className="text-gray-400" />}
         title="Contrato no encontrado"
         description="El contrato que buscas no existe o ha sido eliminado."
         action={
@@ -175,7 +276,7 @@ export function AdminContractDetail() {
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Detalle de Contrato</h1>
             <p className="text-sm sm:text-base text-gray-600 mt-1">
-              Código: <span className="font-mono">{contract.hiring_code}</span>
+              Enlace: <span className="font-mono">migro.es/c/{contract.hiring_code}</span>
             </p>
           </div>
         </div>
@@ -348,14 +449,16 @@ export function AdminContractDetail() {
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-gray-500">Nombre del Servicio</label>
-                <div className="text-sm text-gray-900 mt-1">{contract.service_name}</div>
-              </div>
-              {contract.service_description && (
-                <div>
-                  <label className="text-sm font-medium text-gray-500">Descripción</label>
-                  <div className="text-sm text-gray-900 mt-1">{contract.service_description}</div>
+                <div className="text-base font-semibold text-gray-900 mt-1">
+                  {contract.service_name || 'No especificado'}
                 </div>
-              )}
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Descripción del Servicio</label>
+                <div className="text-sm text-gray-700 mt-1 bg-gray-50 p-3 rounded-lg">
+                  {contract.service_description || 'No hay descripción disponible'}
+                </div>
+              </div>
               <div className="flex items-center gap-4 flex-wrap">
                 {getGradeBadge(contract.grade)}
                 {contract.payment_type && (

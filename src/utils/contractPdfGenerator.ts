@@ -227,46 +227,103 @@ Que ambas partes acuerdan celebrar el presente contrato de INTERMEDIACIÓN, en a
   // El backend devuelve el monto en CÉNTIMOS
   const totalAmountCents = details.amount || 40000;
   const totalAmount = totalAmountCents / 100; // Convert to euros
-  const firstPayment = totalAmount / 2;
-  const secondPayment = totalAmount / 2;
+  const paymentType = (details.payment_type === 'subscription' || details.payment_type === 'one_time') 
+    ? details.payment_type 
+    : 'one_time';
+  const grade = (details.grade === 'A' || details.grade === 'B' || details.grade === 'C' || details.grade === 'T')
+    ? details.grade
+    : 'B';
   
-  // Amount in words
-  const amountInWords = totalAmount === 600 
-    ? 'SEISCIENTOS (600)' 
-    : totalAmount === 400
-    ? 'CUATROCIENTOS (400)'
-    : totalAmount === 300
-    ? 'TRESCIENTOS (300)'
-    : totalAmount === 200
-    ? 'DOSCIENTOS (200)'
-    : `${Math.round(totalAmount)} (${Math.round(totalAmount)})`;
+  // Determinar si es pago aplazado (subscription)
+  const isSubscription = paymentType === 'subscription';
   
-  const firstPaymentText = firstPayment === 300 
-    ? 'TRESCIENTOS (300)' 
-    : firstPayment === 200
-    ? 'DOSCIENTOS (200)'
-    : firstPayment === 150
-    ? 'CIENTO CINCUENTA (150)'
-    : firstPayment === 100
-    ? 'CIEN (100)'
-    : `${Math.round(firstPayment)} (${Math.round(firstPayment)})`;
+  let amountText = '';
   
-  const secondPaymentText = secondPayment === 300 
-    ? 'TRESCIENTOS (300)' 
-    : secondPayment === 200
-    ? 'DOSCIENTOS (200)'
-    : secondPayment === 150
-    ? 'CIENTO CINCUENTA (150)'
-    : secondPayment === 100
-    ? 'CIEN (100)'
-    : `${Math.round(secondPayment)} (${Math.round(secondPayment)})`;
-  
-  const amountText = `El precio del servicio contratado descrito en la cláusula primera se concreta correspondiente a la cantidad de ${amountInWords} EUROS (${totalAmount.toFixed(2)} €), IVA incluido. El CLIENTE abonará las siguientes cantidades mediante cargo en la tarjeta bancaria que éste autorizada de forma expresa y al efecto como medio de abono y garantía para la prestación del servicio.
+  if (isSubscription) {
+    // PAGO APLAZADO: 10 pagos mensuales
+    // Para Grading A y B: 48 euros x 10 meses = 480 euros
+    // Para Grading C: 68 euros x 10 meses = 680 euros
+    // Para Grading T: usar el monto base del totalAmount (testing)
+    let monthlyPayment: number;
+    let totalSubscription: number;
+    
+    if (grade === 'C') {
+      monthlyPayment = 68;
+      totalSubscription = 680;
+    } else if (grade === 'T') {
+      // Para testing, usar el monto base dividido entre 10
+      totalSubscription = totalAmount;
+      monthlyPayment = totalSubscription / 10;
+    } else {
+      // Para A y B (y cualquier otro caso)
+      monthlyPayment = 48;
+      totalSubscription = 480;
+    }
+    
+    // Convertir montos a palabras en español
+    const monthlyPaymentWords = monthlyPayment === 68 
+      ? 'SESENTA Y OCHO (68)'
+      : monthlyPayment === 48
+      ? 'CUARENTA Y OCHO (48)'
+      : `${Math.round(monthlyPayment)} (${Math.round(monthlyPayment)})`;
+    
+    const totalSubscriptionWords = totalSubscription === 680
+      ? 'SEISCIENTOS OCHENTA (680)'
+      : totalSubscription === 480
+      ? 'CUATROCIENTOS OCHENTA (480)'
+      : `${Math.round(totalSubscription)} (${Math.round(totalSubscription)})`;
+    
+    amountText = `El precio del servicio contratado descrito en la cláusula primera se concreta correspondiente a la cantidad de ${totalSubscriptionWords} EUROS (${totalSubscription.toFixed(2)} €), IVA incluido. El CLIENTE podrá optar por abonar dicho importe mediante un plan de pago aplazado en diez (10) plazos mensuales iguales de ${monthlyPaymentWords} EUROS (${monthlyPayment.toFixed(2)} €) cada uno.
+
+El CLIENTE abonará las siguientes cantidades mediante cargo automático en la tarjeta bancaria que éste autoriza de forma expresa y al efecto como medio de abono y garantía para la prestación del servicio:
+
+• ${monthlyPaymentWords} EUROS (${monthlyPayment.toFixed(2)} €) en el momento de la contratación (primer pago).
+• Nueve (9) pagos mensuales sucesivos de ${monthlyPaymentWords} EUROS (${monthlyPayment.toFixed(2)} €) cada uno, que se cargarán automáticamente en la tarjeta bancaria autorizada el mismo día de cada mes sucesivo hasta completar los diez (10) pagos.
+
+En caso de no atenderse los pagos anteriores en el medio, plazo y forma autorizado al efecto, previo requerimiento de pago realizado por la AGENCIA en el medio designado para recibir notificaciones, el CLIENTE autoriza expresamente para que la AGENCIA proceda a desistir del expediente administrativo para el que se la ha contratado, así como a dejar sin efecto y anular la prestación del servicio.`;
+  } else {
+    // PAGO ÚNICO: 2 pagos (50% + 50%)
+    const firstPayment = totalAmount / 2;
+    const secondPayment = totalAmount / 2;
+    
+    // Amount in words
+    const amountInWords = totalAmount === 600 
+      ? 'SEISCIENTOS (600)' 
+      : totalAmount === 400
+      ? 'CUATROCIENTOS (400)'
+      : totalAmount === 300
+      ? 'TRESCIENTOS (300)'
+      : totalAmount === 200
+      ? 'DOSCIENTOS (200)'
+      : `${Math.round(totalAmount)} (${Math.round(totalAmount)})`;
+    
+    const firstPaymentText = firstPayment === 300 
+      ? 'TRESCIENTOS (300)' 
+      : firstPayment === 200
+      ? 'DOSCIENTOS (200)'
+      : firstPayment === 150
+      ? 'CIENTO CINCUENTA (150)'
+      : firstPayment === 100
+      ? 'CIEN (100)'
+      : `${Math.round(firstPayment)} (${Math.round(firstPayment)})`;
+    
+    const secondPaymentText = secondPayment === 300 
+      ? 'TRESCIENTOS (300)' 
+      : secondPayment === 200
+      ? 'DOSCIENTOS (200)'
+      : secondPayment === 150
+      ? 'CIENTO CINCUENTA (150)'
+      : secondPayment === 100
+      ? 'CIEN (100)'
+      : `${Math.round(secondPayment)} (${Math.round(secondPayment)})`;
+    
+    amountText = `El precio del servicio contratado descrito en la cláusula primera se concreta correspondiente a la cantidad de ${amountInWords} EUROS (${totalAmount.toFixed(2)} €), IVA incluido. El CLIENTE abonará las siguientes cantidades mediante cargo en la tarjeta bancaria que éste autorizada de forma expresa y al efecto como medio de abono y garantía para la prestación del servicio.
 
 • ${firstPaymentText} EUROS (${firstPayment.toFixed(2)} €) en el momento de la contratación.
 • Otros ${secondPaymentText} EUROS (${secondPayment.toFixed(2)} €) tras la comunicación de aprobación por parte de la administración.
 
 En caso de no atenderse los pagos anteriores en el medio, plazo y forma autorizado al efecto, previo requerimiento de pago realizado por la AGENCIA en el medio designado para recibir notificaciones, el CLIENTE autoriza expresamente para que la AGENCIA proceda a desistir del expediente administrativo para el que se la ha contratado, así como a dejar sin efecto y anular la prestación del servicio.`;
+  }
   
   addText(amountText, 10, false);
   addSpace(2);

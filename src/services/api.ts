@@ -21,7 +21,8 @@ api.interceptors.request.use(
       '/auth/login', 
       '/auth/register', 
       '/auth/refresh',
-      '/ai/pili-openai/health' // Health check no requiere autenticación
+      '/ai/pili-openai/health', // Health check no requiere autenticación
+      '/hiring/' // Endpoints públicos de contratación (no requieren autenticación)
     ];
     const isPublicEndpoint = config.url && publicEndpoints.some(endpoint => config.url!.includes(endpoint));
     
@@ -105,8 +106,8 @@ api.interceptors.response.use(
       
       // Token expired or unauthorized - Intentar refresh token
       if (status === 401 && originalRequest && !originalRequest._retry) {
-        // Verificar si es una ruta pública
-        const isPublicRoute = window.location.pathname === '/' ||
+        // Verificar si es una ruta pública del frontend
+        const isPublicFrontendRoute = window.location.pathname === '/' ||
                              window.location.pathname.includes('/contratacion/') || 
                              window.location.pathname.includes('/hiring/') ||
                              window.location.pathname === '/expirado' ||
@@ -114,7 +115,12 @@ api.interceptors.response.use(
                              window.location.pathname === '/privacidad' ||
                              window.location.pathname === '/privacy';
         
-        if (isPublicRoute) {
+        // Verificar si es un endpoint público de la API
+        const publicApiEndpoints = ['/auth/login', '/auth/register', '/auth/refresh', '/hiring/', '/ai/pili-openai/health'];
+        const isPublicApiEndpoint = originalRequest.url && publicApiEndpoints.some(endpoint => originalRequest.url!.includes(endpoint));
+        
+        if (isPublicFrontendRoute || isPublicApiEndpoint) {
+          // En rutas públicas, simplemente rechazar el error sin intentar refresh
           return Promise.reject(error);
         }
         

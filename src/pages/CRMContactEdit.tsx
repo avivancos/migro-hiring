@@ -1,26 +1,29 @@
 // CRMContactEdit - Página para editar un contacto
 
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import type { KommoContact, ContactCreateRequest, NoteCreateRequest } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { ContactForm } from '@/components/CRM/ContactForm';
-import { CRMHeader } from '@/components/CRM/CRMHeader';
 export function CRMContactEdit() {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [contact, setContact] = useState<KommoContact | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  // Determinar si es nuevo contacto: si la ruta termina en "/new" o si id es "new" o undefined
+  const isNewContact = location.pathname.endsWith('/new') || !id || id === 'new';
+
   useEffect(() => {
     if (id && id !== 'new') {
       loadContactData();
-    } else if (id === 'new') {
+    } else {
       // Para nuevo contacto, no necesitamos cargar datos
       setLoading(false);
     }
@@ -47,12 +50,10 @@ export function CRMContactEdit() {
   };
 
   const handleSubmit = async (data: ContactCreateRequest) => {
-    if (!id) return;
-
     try {
       setSaveSuccess(false);
       
-      if (id === 'new') {
+      if (isNewContact) {
         // Crear nuevo contacto
         const newContact = await crmService.createContact(data);
         setSaveSuccess(true);
@@ -146,16 +147,18 @@ export function CRMContactEdit() {
         alert(errorMessage);
       } else {
         const errorMsg = err?.response?.data?.detail || err?.message || 'Error desconocido';
-        alert(`${id === 'new' ? 'Error al crear el contacto' : 'Error al actualizar el contacto'}: ${errorMsg}`);
+        alert(`${isNewContact ? 'Error al crear el contacto' : 'Error al actualizar el contacto'}: ${errorMsg}`);
       }
     }
   };
 
   const handleCancel = () => {
-    if (id === 'new') {
+    if (isNewContact) {
       navigate('/crm/contacts');
-    } else {
+    } else if (id) {
       navigate(`/crm/contacts/${id}`);
+    } else {
+      navigate('/crm/contacts');
     }
   };
 
@@ -163,25 +166,20 @@ export function CRMContactEdit() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <CRMHeader />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <Card>
-            <CardContent className="py-12 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Cargando contacto...</p>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+        <Card>
+          <CardContent className="py-12 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Cargando contacto...</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (error && !contact) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <CRMHeader />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-gray-500">{error}</p>
@@ -190,22 +188,19 @@ export function CRMContactEdit() {
               </Button>
             </CardContent>
           </Card>
-        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CRMHeader />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
           <Button
             variant="outline"
             onClick={handleCancel}
           >
             <ArrowLeft size={18} className="mr-2" />
-            {id === 'new' ? 'Cancelar' : 'Volver'}
+            {isNewContact ? 'Cancelar' : 'Volver'}
           </Button>
 
           {/* Mensaje de confirmación de guardado */}
@@ -216,10 +211,10 @@ export function CRMContactEdit() {
                   <CheckCircle2 className="text-green-600 flex-shrink-0" size={24} />
                   <div className="flex-1">
                     <p className="font-semibold text-green-900">
-                      {id === 'new' ? '¡Contacto creado exitosamente!' : '¡Contacto actualizado exitosamente!'}
+                      {isNewContact ? '¡Contacto creado exitosamente!' : '¡Contacto actualizado exitosamente!'}
                     </p>
                     <p className="text-sm text-green-700 mt-1">
-                      {id === 'new' 
+                      {isNewContact 
                         ? 'El Contacto ha sido creado correctamente. Redirigiendo...' 
                         : 'Los cambios se han guardado correctamente. Redirigiendo...'}
                     </p>
@@ -235,7 +230,6 @@ export function CRMContactEdit() {
             onCancel={handleCancel}
           />
         </div>
-      </div>
     </div>
   );
 }

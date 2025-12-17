@@ -23,7 +23,6 @@ import {
   FileText,
   ArrowRight,
 } from 'lucide-react';
-import { CRMHeader } from '@/components/CRM/CRMHeader';
 import { useAuth } from '@/providers/AuthProvider';
 
 export function CRMDashboardPage() {
@@ -88,7 +87,7 @@ export function CRMDashboardPage() {
     }
   };
 
-  // handleLogout ahora está en CRMHeader
+  // handleLogout ahora está en el layout
   // La autenticación se maneja con ProtectedRoute en App.tsx
 
   // Si está cargando datos del dashboard, mostrar loading
@@ -210,11 +209,7 @@ export function CRMDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header con navegación */}
-      <CRMHeader />
-
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 md:py-6 lg:py-8">
+    <div className="w-full">
         {/* Mis Contactos para Llamadas */}
         <Card className="mb-4 sm:mb-6 border-2 border-blue-200 bg-blue-50">
           <CardHeader className="p-3 sm:p-4 md:p-6">
@@ -654,7 +649,6 @@ export function CRMDashboardPage() {
               </Button>
             </CardContent>
           </Card>
-        </div>
       </div>
     </div>
   );

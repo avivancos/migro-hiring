@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Plus, Edit, Trash2, Eye, EyeOff, Lock } from 'lucide-react';
 import type { CustomField, EntityType } from '@/types/crm';
 import { crmService } from '@/services/crmService';
-import { CRMHeader } from '@/components/CRM/CRMHeader';
 import { CustomFieldModal } from '@/components/CRM/CustomFieldModal';
 
 export function CRMCustomFieldsSettings() {
@@ -121,19 +120,14 @@ export function CRMCustomFieldsSettings() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <CRMHeader />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center py-12">Cargando campos personalizados...</div>
-        </div>
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+        <div className="text-center py-12">Cargando campos personalizados...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CRMHeader />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
           {/* Header */}
           <div className="flex justify-between items-center">
@@ -284,7 +278,6 @@ export function CRMCustomFieldsSettings() {
               )}
             </CardContent>
           </Card>
-        </div>
       </div>
 
       {/* Modal de creación/edición */}

@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Plus, ExternalLink } from 'lucide-react';
 import type { Task } from '@/types/crm';
 import { crmService } from '@/services/crmService';
-import { CRMHeader } from '@/components/CRM/CRMHeader';
 
 type ViewMode = 'month' | 'week' | 'day';
 
@@ -330,9 +329,7 @@ export function CRMTaskCalendar() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CRMHeader />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="w-full">
         <div className="space-y-6">
           {/* Page Header */}
       <div className="flex justify-between items-center">
@@ -403,7 +400,6 @@ export function CRMTaskCalendar() {
           )}
         </CardContent>
       </Card>
-        </div>
       </div>
     </div>
   );

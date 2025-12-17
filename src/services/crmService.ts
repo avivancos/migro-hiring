@@ -1241,6 +1241,26 @@ export const crmService = {
   async deleteCustomFieldValue(id: string): Promise<void> {
     await api.delete(`${CRM_BASE_PATH}/custom-field-values/${id}`);
   },
+
+  // ===== CALL TYPES =====
+
+  /**
+   * Obtener tipos de llamadas activos
+   */
+  async getCallTypes(): Promise<Array<{ id: string; name: string; code: string; description?: string }>> {
+    try {
+      const { data } = await api.get('/crm/call-types');
+      return Array.isArray(data) ? data : [];
+    } catch (error: any) {
+      console.error('Error getting call types:', error);
+      // Fallback a tipos por defecto si falla
+      return [
+        { id: '1', name: 'Primera Llamada', code: 'primera_llamada' },
+        { id: '2', name: 'Seguimiento', code: 'seguimiento' },
+        { id: '3', name: 'Llamada de Venta', code: 'venta' },
+      ];
+    }
+  },
 };
 
 export default crmService;

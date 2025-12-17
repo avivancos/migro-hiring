@@ -99,6 +99,10 @@ export interface KommoContact {
     companies?: KommoCompany[];
     leads?: KommoLead[];
   };
+  
+  // Campos calculados (no vienen del backend, se calculan en el frontend)
+  ultima_llamada_fecha?: string; // Fecha de la última llamada realizada
+  proxima_llamada_fecha?: string; // Fecha de la próxima llamada programada (de calls.proxima_llamada_fecha o tasks.complete_till)
 }
 
 export interface KommoCompany {
@@ -220,6 +224,7 @@ export interface Call {
   duration: number; // segundos
   call_status: string; // 'completed', 'failed', 'busy', 'no_answer', 'missed'
   status?: string; // Legacy
+  call_type?: string; // 'seguimiento', 'venta', 'primera_llamada'
   call_result?: string; // Resultado de la llamada
   record_url?: string; // API usa 'record_url' en lugar de 'recording_url'
   recording_url?: string; // Legacy
@@ -442,6 +447,7 @@ export interface CallCreateRequest {
   phone_number?: string; // Legacy
   duration?: number; // segundos
   call_status: string; // 'completed', 'failed', 'busy', 'no_answer', 'missed'
+  call_type?: string; // 'seguimiento', 'venta', 'primera_llamada'
   call_result?: string; // Resultado de la llamada
   record_url?: string; // API usa 'record_url'
   recording_url?: string; // Legacy

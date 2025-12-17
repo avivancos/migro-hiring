@@ -34,6 +34,7 @@ export function CallForm({
   const [users, setUsers] = useState<CRMUser[]>([]);
   const [contacts, setContacts] = useState<KommoContact[]>([]);
   const [leads, setLeads] = useState<KommoLead[]>([]);
+  const [callTypes, setCallTypes] = useState<Array<{ id: string; name: string; code: string; description?: string }>>([]);
   const [isFirstCall, setIsFirstCall] = useState(false);
   
   // Estados para edición protegida de teléfono y responsable
@@ -84,6 +85,7 @@ export function CallForm({
     durationOption: secondsToDurationOption(call?.duration),
     phone: call?.phone || defaultPhone || '',
     call_status: call?.call_status || 'completed',
+    call_type: call?.call_type || '',
     call_result: call?.call_result || '',
     record_url: call?.record_url || '',
     entity_type: call?.entity_type || defaultEntityType || 'contacts',
@@ -101,7 +103,23 @@ export function CallForm({
   useEffect(() => {
     loadUsers();
     loadEntities();
+    loadCallTypes();
   }, []);
+
+  const loadCallTypes = async () => {
+    try {
+      const types = await crmService.getCallTypes();
+      setCallTypes(types);
+    } catch (err) {
+      console.error('Error loading call types:', err);
+      // Fallback a tipos por defecto
+      setCallTypes([
+        { id: '1', name: 'Primera Llamada', code: 'primera_llamada' },
+        { id: '2', name: 'Seguimiento', code: 'seguimiento' },
+        { id: '3', name: 'Llamada de Venta', code: 'venta' },
+      ]);
+    }
+  };
 
   // Cargar entidades cuando cambie el tipo
   useEffect(() => {
@@ -641,6 +659,24 @@ export function CallForm({
                 <option value="busy">Ocupado</option>
                 <option value="no_answer">Sin respuesta</option>
                 <option value="missed">Perdida</option>
+              </select>
+            </div>
+
+            {/* Tipo de Llamada */}
+            <div>
+              <Label htmlFor="call_type">Tipo de Llamada</Label>
+              <select
+                id="call_type"
+                value={formData.call_type}
+                onChange={(e) => handleChange('call_type', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              >
+                <option value="">Seleccionar tipo...</option>
+                {callTypes.map((type) => (
+                  <option key={type.id} value={type.code}>
+                    {type.name}
+                  </option>
+                ))}
               </select>
             </div>
 

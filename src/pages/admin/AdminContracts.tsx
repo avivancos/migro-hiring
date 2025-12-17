@@ -332,7 +332,7 @@ export function AdminContracts() {
         </div>
       ) : contracts.length === 0 ? (
         <EmptyState
-          icon={FileText}
+          icon={<FileText size={48} className="text-gray-400" />}
           title="No hay contratos"
           description={
             filters.search || filters.status !== 'all'

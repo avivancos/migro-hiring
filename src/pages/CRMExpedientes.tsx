@@ -10,7 +10,6 @@ import type { KommoLead, KommoContact, Task, Call, Note } from '@/types/crm';
 import * as LucideIcons from 'lucide-react';
 const { FileText, Search, Calendar, User, DollarSign, Clock } = LucideIcons;
 import { crmService } from '@/services/crmService';
-import { CRMHeader } from '@/components/CRM/CRMHeader';
 
 interface ExpedienteData {
   lead: KommoLead;
@@ -161,10 +160,8 @@ export function CRMExpedientes() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CRMHeader />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="space-y-6">
+    <div className="w-full">
+      <div className="space-y-6">
           {/* Page Header */}
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Expedientes Legales</h1>
@@ -299,7 +296,6 @@ export function CRMExpedientes() {
           </CardContent>
         </Card>
       )}
-        </div>
       </div>
     </div>
   );

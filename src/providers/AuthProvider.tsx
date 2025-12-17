@@ -1,6 +1,7 @@
 // AuthProvider - Sistema de autenticación unificado para Admin y CRM
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import type { ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { authService } from '@/services/authService';
 import { api } from '@/services/api';
 import type { User } from '@/types/auth';
@@ -32,13 +33,31 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
 
-  // Verificar autenticación al montar y cuando cambia la ruta
-  useEffect(() => {
-    checkAuth();
+  // Rutas públicas que no requieren autenticación
+  const isPublicRoute = useCallback((pathname: string): boolean => {
+    const publicRoutes = [
+      '/',
+      '/contratacion/',
+      '/hiring/',
+      '/expirado',
+      '/404',
+      '/privacidad',
+      '/privacy',
+      '/borrador',
+      '/colaboradores',
+      '/closer',
+      '/auth/login',
+    ];
+    
+    return publicRoutes.some(route => 
+      pathname === route || 
+      pathname.startsWith(route)
+    );
   }, []);
 
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     setIsLoading(true);
     
     const token = authService.getAccessToken();
@@ -100,7 +119,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  // Verificar autenticación al montar y cuando cambia la ruta
+  useEffect(() => {
+    // No verificar autenticación en rutas públicas
+    if (isPublicRoute(location.pathname)) {
+      setIsLoading(false);
+      return;
+    }
+    
+    checkAuth();
+  }, [location.pathname, isPublicRoute, checkAuth]);
 
   const clearAuth = () => {
     localStorage.removeItem('access_token');

@@ -27,7 +27,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { PiliChatModal } from './PiliChatModal';
 
-export function CRMHeader() {
+interface CRMHeaderProps {
+  onMenuClick?: () => void;
+}
+
+export function CRMHeader({ onMenuClick: _onMenuClick }: CRMHeaderProps = {}) {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -65,9 +69,10 @@ export function CRMHeader() {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    // Usar 'click' en lugar de 'mousedown' para evitar conflictos con los clicks en los resultados
+    document.addEventListener('click', handleClickOutside, true);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('click', handleClickOutside, true);
     };
   }, []);
 
@@ -89,7 +94,11 @@ export function CRMHeader() {
     }
   };
 
-  const handleContactSelect = (contactId: string) => {
+  const handleContactSelect = (contactId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setSearchQuery('');
     setShowSearchResults(false);
     navigate(`/crm/contacts/${contactId}`);
@@ -125,7 +134,7 @@ export function CRMHeader() {
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         {/* Primera fila: Logo, Buscador y User info */}
         <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
           {/* Logo y título */}
@@ -172,7 +181,11 @@ export function CRMHeader() {
                     {searchResults.map((contact) => (
                       <div
                         key={contact.id}
-                        onClick={() => handleContactSelect(contact.id)}
+                        onClick={(e) => handleContactSelect(contact.id, e)}
+                        onMouseDown={(e) => {
+                          e.preventDefault(); // Prevenir que el blur cierre el dropdown antes del click
+                          e.stopPropagation(); // Evitar que el click se propague al document
+                        }}
                         className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
                       >
                         <div className="flex items-start gap-3">
@@ -273,9 +286,13 @@ export function CRMHeader() {
                       {searchResults.map((contact) => (
                         <div
                           key={contact.id}
-                          onClick={() => {
-                            handleContactSelect(contact.id);
+                          onClick={(e) => {
+                            handleContactSelect(contact.id, e);
                             setMobileMenuOpen(false);
+                          }}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
                           }}
                           className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
                         >

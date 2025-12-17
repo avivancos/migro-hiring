@@ -18,6 +18,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 // CRM Pages
 import { CRMDashboardPage } from '@/pages/CRMDashboardPage';
 import { CRMContactList } from '@/pages/CRMContactList';
+import { CRMLayout } from '@/components/CRM/CRMLayout';
 import { CRMContactDetail } from '@/pages/CRMContactDetail';
 import { CRMContactEdit } from '@/pages/CRMContactEdit';
 import { CRMLeadList } from '@/pages/CRMLeadList';
@@ -42,6 +43,8 @@ import { AdminPili } from '@/pages/admin/AdminPili';
 import { AdminConversations } from '@/pages/admin/AdminConversations';
 import { AdminContracts } from '@/pages/admin/AdminContracts';
 import { AdminContractDetail } from '@/pages/admin/AdminContractDetail';
+import { AdminContractCreate } from '@/pages/admin/AdminContractCreate';
+import { AdminCallTypes } from '@/pages/admin/AdminCallTypes';
 
 function App() {
   return (
@@ -91,136 +94,50 @@ function App() {
             <Route path="conversations" element={<AdminConversations />} />
             <Route path="conversations/:id" element={<AdminConversations />} />
             <Route path="contracts" element={<AdminContracts />} />
+            <Route path="contracts/create" element={<AdminContractCreate />} />
             <Route path="contracts/:code" element={<AdminContractDetail />} />
+            <Route path="call-types" element={<AdminCallTypes />} />
           </Route>
           
-          {/* CRM Dashboard - Nuevo dashboard completo */}
+          {/* CRM Routes with Layout */}
           <Route
             path="/crm"
             element={
               <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
-                <CRMDashboardPage />
+                <CRMLayout />
               </ProtectedRoute>
             }
-          />
-          
-          {/* CRM Contacts */}
-          <Route
-            path="/crm/contacts"
-            element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
-                <CRMContactList />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/crm/contacts/:id/edit"
-            element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
-                <CRMContactEdit />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/crm/contacts/:id"
-            element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
-                <CRMContactDetail />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* CRM Leads */}
-          <Route
-            path="/crm/leads"
-            element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
-                <CRMLeadList />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/crm/leads/:id"
-            element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
-                <CRMLeadDetail />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* CRM Calendar */}
-          <Route
-            path="/crm/calendar"
-            element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
-                <CRMTaskCalendar />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* CRM Tasks */}
-          <Route
-            path="/crm/tasks/:id"
-            element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
-                <CRMTaskDetail />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* CRM Actions & Expedientes */}
-          <Route
-            path="/crm/actions"
-            element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
-                <CRMActions />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/crm/expedientes"
-            element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
-                <CRMExpedientes />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* CRM Call Handler */}
-          <Route
-            path="/crm/call"
-            element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
-                <CRMCallHandler />
-              </ProtectedRoute>
-            }
-          />
-          
-          {/* CRM Settings */}
-          <Route
-            path="/crm/settings"
-            element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
-                <CRMSettings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/crm/settings/task-templates"
-            element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
-                <CRMTaskTemplatesSettings />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/crm/settings/custom-fields"
-            element={
-              <ProtectedRoute allowedRoles={['lawyer', 'agent', 'admin']}>
-                <CRMCustomFieldsSettings />
-              </ProtectedRoute>
-            }
-          />
+          >
+            <Route index element={<CRMDashboardPage />} />
+            
+            {/* CRM Contacts */}
+            <Route path="contacts" element={<CRMContactList />} />
+            <Route path="contacts/new" element={<CRMContactEdit />} />
+            <Route path="contacts/:id/edit" element={<CRMContactEdit />} />
+            <Route path="contacts/:id" element={<CRMContactDetail />} />
+            
+            {/* CRM Leads */}
+            <Route path="leads" element={<CRMLeadList />} />
+            <Route path="leads/:id" element={<CRMLeadDetail />} />
+            
+            {/* CRM Calendar */}
+            <Route path="calendar" element={<CRMTaskCalendar />} />
+            
+            {/* CRM Tasks */}
+            <Route path="tasks/:id" element={<CRMTaskDetail />} />
+            
+            {/* CRM Actions & Expedientes */}
+            <Route path="actions" element={<CRMActions />} />
+            <Route path="expedientes" element={<CRMExpedientes />} />
+            
+            {/* CRM Call Handler */}
+            <Route path="call" element={<CRMCallHandler />} />
+            
+            {/* CRM Settings */}
+            <Route path="settings" element={<CRMSettings />} />
+            <Route path="settings/task-templates" element={<CRMTaskTemplatesSettings />} />
+            <Route path="settings/custom-fields" element={<CRMCustomFieldsSettings />} />
+          </Route>
           
           {/* Client login (futuro) */}
           <Route path="/login" element={<Login />} />

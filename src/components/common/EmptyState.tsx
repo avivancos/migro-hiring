@@ -26,7 +26,16 @@ export function EmptyState({
   const renderIcon = () => {
     if (!icon) return null;
     
-    // If it's a React component (function), render it
+    // Check if it's a React element (already rendered)
+    if (typeof icon === 'object' && icon !== null && '$$typeof' in icon) {
+      return (
+        <div className="text-gray-400 mb-4">
+          {icon}
+        </div>
+      );
+    }
+    
+    // If it's a React component (function or ComponentType), render it
     if (typeof icon === 'function') {
       const IconComponent = icon as ComponentType<{ size?: number; className?: string }>;
       return (
@@ -36,10 +45,10 @@ export function EmptyState({
       );
     }
     
-    // If it's already a React element, render it directly
+    // Fallback: try to render as is
     return (
       <div className="text-gray-400 mb-4">
-        {icon}
+        {icon as ReactNode}
       </div>
     );
   };

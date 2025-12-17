@@ -9,7 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus, Edit, Trash2, GripVertical } from 'lucide-react';
 import type { TaskTemplate } from '@/types/crm';
 import { crmService } from '@/services/crmService';
-import { CRMHeader } from '@/components/CRM/CRMHeader';
 
 export function CRMTaskTemplatesSettings() {
   const [loading, setLoading] = useState(true);
@@ -68,19 +67,14 @@ export function CRMTaskTemplatesSettings() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <CRMHeader />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
         <div className="text-center py-12">Cargando plantillas...</div>
-        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CRMHeader />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
         <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
@@ -174,7 +168,6 @@ export function CRMTaskTemplatesSettings() {
           )}
         </CardContent>
       </Card>
-        </div>
       </div>
     </div>
   );

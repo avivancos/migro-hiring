@@ -56,13 +56,13 @@ export function AdminDashboard() {
         // const users = await adminService.getAllUsers();
         // const contracts = await adminService.getAllContracts();
         // ... procesar datos
-      } catch (error) {
-        console.warn('No se pudieron cargar estadísticas reales, usando datos mock');
+      } catch (err) {
+        console.warn('No se pudieron cargar estadísticas reales, usando datos mock:', err);
       }
 
       setStats(mockStats);
-    } catch (error) {
-      console.error('Error cargando estadísticas:', error);
+    } catch (err) {
+      console.error('Error cargando estadísticas:', err);
     } finally {
       setLoading(false);
     }
