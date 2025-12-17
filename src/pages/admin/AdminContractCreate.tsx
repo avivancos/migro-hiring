@@ -45,7 +45,7 @@ export function AdminContractCreate() {
   const [contactSearchLoading, setContactSearchLoading] = useState(false);
   const [selectedContact, setSelectedContact] = useState<KommoContact | null>(null);
   const [showContactDropdown, setShowContactDropdown] = useState(false);
-  const contactSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const contactSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const contactSearchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
