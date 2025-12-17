@@ -13,6 +13,66 @@ interface ServiceDetailsProps {
 }
 
 export function ServiceDetails({ details, onNext, loading = false }: ServiceDetailsProps) {
+  // Detectar si es suscripción
+  const isSubscription = (): boolean => {
+    const totalAmount = details.amount || 0;
+    const firstPaymentAmount = details.first_payment_amount || 0;
+    
+    console.log('🔍 ServiceDetails - Detecting subscription:', {
+      payment_type: details.payment_type,
+      amount: totalAmount,
+      first_payment_amount: firstPaymentAmount,
+      grade: details.grade
+    });
+
+    // Prioridad 1: Detectar automáticamente basándose en montos (más confiable que el backend)
+    // Si el total es 48000 (480€) o 68000 (680€), DEBE ser suscripción
+    // porque los pagos únicos son 400€ o 600€ (40000 o 60000 centavos)
+    if (totalAmount === 48000 || totalAmount === 68000) {
+      console.log('✅ ServiceDetails - Detectado como suscripción (total = 480€ o 680€) - IGNORANDO payment_type del backend');
+      return true;
+    }
+    
+    if (totalAmount > 0 && firstPaymentAmount > 0) {
+      // Si el primer pago es exactamente el 10% del total (con tolerancia de 100 centavos), es suscripción
+      const expectedFirstPayment = totalAmount / 10;
+      if (Math.abs(firstPaymentAmount - expectedFirstPayment) < 100) {
+        console.log('✅ ServiceDetails - Detectado como suscripción (primer pago = 10% del total)');
+        return true;
+      }
+    }
+    
+    // Prioridad 2: Usar payment_type de details (solo si no contradice los montos)
+    if (details.payment_type === 'subscription') {
+      console.log('✅ ServiceDetails - Es suscripción (payment_type === subscription)');
+      return true;
+    }
+    if (details.payment_type === 'one_time') {
+      console.log('❌ ServiceDetails - Es pago único (payment_type === one_time)');
+      return false;
+    }
+    
+    console.log('❌ ServiceDetails - No es suscripción (default)');
+    return false;
+  };
+
+  const subscription = isSubscription();
+  const totalAmount = details.amount || 0;
+  const firstPaymentAmount = details.first_payment_amount || 0;
+  
+  // Calcular el pago mensual para suscripciones
+  // Si es suscripción, siempre calcular como 10% del total (aunque el backend envíe otro valor)
+  const monthlyPayment = subscription && totalAmount > 0 
+    ? Math.round(totalAmount / 10)  // Siempre 10% para suscripciones
+    : 0;
+
+  console.log('💰 ServiceDetails - Payment info:', {
+    subscription,
+    totalAmount,
+    firstPaymentAmount,
+    monthlyPayment
+  });
+
   return (
     <div className="max-w-3xl mx-auto p-6">
       <Card className="shadow-lg">
@@ -68,16 +128,16 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
             <p className="text-4xl font-bold text-primary">
               {formatCurrency(details.amount, details.currency)}
             </p>
-            {details.payment_type === 'subscription' && details.first_payment_amount ? (
+            {subscription && monthlyPayment > 0 ? (
               <div className="mt-3 space-y-1">
                 <p className="text-sm text-gray-600">
-                  <span className="font-bold">📅 Suscripción Mensual</span>
+                  <span className="font-bold">📅 Suscripción Mensual - 10 Pagos</span>
                 </p>
                 <p className="text-sm text-gray-600">
-                  <span className="font-bold">{formatCurrency(details.first_payment_amount, details.currency)} ahora</span> y {formatCurrency(details.first_payment_amount, details.currency)}/mes durante 10 meses
+                  <span className="font-bold">{formatCurrency(monthlyPayment, details.currency)} ahora</span> y 9 pagos mensuales de {formatCurrency(monthlyPayment, details.currency)} cada uno
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Los pagos se realizarán automáticamente cada mes
+                <p className="text-xs text-gray-500 mt-1 italic">
+                  El primer pago (10%) se cobrará ahora. Los siguientes 9 pagos del 10% cada uno se cobrarán automáticamente cada mes hasta completar los 10 pagos.
                 </p>
               </div>
             ) : (

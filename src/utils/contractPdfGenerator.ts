@@ -227,51 +227,58 @@ Que ambas partes acuerdan celebrar el presente contrato de INTERMEDIACIÓN, en a
   // El backend devuelve el monto en CÉNTIMOS
   const totalAmountCents = details.amount || 40000;
   const totalAmount = totalAmountCents / 100; // Convert to euros
-  const paymentType = (details.payment_type === 'subscription' || details.payment_type === 'one_time') 
-    ? details.payment_type 
-    : 'one_time';
   const grade = (details.grade === 'A' || details.grade === 'B' || details.grade === 'C' || details.grade === 'T')
     ? details.grade
     : 'B';
   
   // Determinar si es pago aplazado (subscription)
-  const isSubscription = paymentType === 'subscription';
+  // Prioridad 1: Detectar automáticamente basándose en montos (más confiable que el backend)
+  // Si el total es 48000 (480€) o 68000 (680€), DEBE ser suscripción
+  let isSubscription = false;
+  if (totalAmountCents === 48000 || totalAmountCents === 68000) {
+    isSubscription = true;
+  } else if (details.payment_type === 'subscription') {
+    // Prioridad 2: Usar payment_type solo si no contradice los montos
+    isSubscription = true;
+  } else if (details.first_payment_amount && totalAmountCents > 0) {
+    // Prioridad 3: Si el primer pago es 10% del total, es suscripción
+    const expectedFirstPayment = totalAmountCents / 10;
+    if (Math.abs(details.first_payment_amount - expectedFirstPayment) < 100) {
+      isSubscription = true;
+    }
+  }
+  
+  console.log('📄 ContractPDF - Payment detection:', {
+    totalAmountCents,
+    totalAmount,
+    payment_type: details.payment_type,
+    first_payment_amount: details.first_payment_amount,
+    grade,
+    isSubscription
+  });
   
   let amountText = '';
   
   if (isSubscription) {
     // PAGO APLAZADO: 10 pagos mensuales
-    // Para Grading A y B: 48 euros x 10 meses = 480 euros
-    // Para Grading C: 68 euros x 10 meses = 680 euros
-    // Para Grading T: usar el monto base del totalAmount (testing)
-    let monthlyPayment: number;
-    let totalSubscription: number;
+    // Calcular basándose en el total real del backend
+    const totalSubscription = totalAmount; // Ya está en euros
+    const monthlyPayment = totalSubscription / 10; // Siempre 10% para suscripciones
+    const roundedMonthly = Math.round(monthlyPayment);
+    const roundedTotal = Math.round(totalSubscription);
     
-    if (grade === 'C') {
-      monthlyPayment = 68;
-      totalSubscription = 680;
-    } else if (grade === 'T') {
-      // Para testing, usar el monto base dividido entre 10
-      totalSubscription = totalAmount;
-      monthlyPayment = totalSubscription / 10;
-    } else {
-      // Para A y B (y cualquier otro caso)
-      monthlyPayment = 48;
-      totalSubscription = 480;
-    }
-    
-    // Convertir montos a palabras en español
-    const monthlyPaymentWords = monthlyPayment === 68 
+    // Convertir montos a palabras en español (solo para los valores esperados)
+    const monthlyPaymentWords = roundedMonthly === 68 
       ? 'SESENTA Y OCHO (68)'
-      : monthlyPayment === 48
+      : roundedMonthly === 48
       ? 'CUARENTA Y OCHO (48)'
-      : `${Math.round(monthlyPayment)} (${Math.round(monthlyPayment)})`;
+      : `${roundedMonthly} (${roundedMonthly})`;
     
-    const totalSubscriptionWords = totalSubscription === 680
+    const totalSubscriptionWords = roundedTotal === 680
       ? 'SEISCIENTOS OCHENTA (680)'
-      : totalSubscription === 480
+      : roundedTotal === 480
       ? 'CUATROCIENTOS OCHENTA (480)'
-      : `${Math.round(totalSubscription)} (${Math.round(totalSubscription)})`;
+      : `${roundedTotal} (${roundedTotal})`;
     
     amountText = `El precio del servicio contratado descrito en la cláusula primera se concreta correspondiente a la cantidad de ${totalSubscriptionWords} EUROS (${totalSubscription.toFixed(2)} €), IVA incluido. El CLIENTE podrá optar por abonar dicho importe mediante un plan de pago aplazado en diez (10) plazos mensuales iguales de ${monthlyPaymentWords} EUROS (${monthlyPayment.toFixed(2)} €) cada uno.
 

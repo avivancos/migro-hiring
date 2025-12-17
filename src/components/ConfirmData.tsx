@@ -24,6 +24,48 @@ export function ConfirmData({ details, onConfirm, onBack }: ConfirmDataProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Detectar si es suscripción (misma lógica que ServiceDetails)
+  const isSubscription = (): boolean => {
+    const totalAmount = details.amount || 0;
+    const firstPaymentAmount = details.first_payment_amount || 0;
+    
+    // Si el total es 48000 (480€) o 68000 (680€), DEBE ser suscripción
+    if (totalAmount === 48000 || totalAmount === 68000) {
+      return true;
+    }
+    
+    // Si el primer pago es exactamente el 10% del total, es suscripción
+    if (totalAmount > 0 && firstPaymentAmount > 0) {
+      const expectedFirstPayment = totalAmount / 10;
+      if (Math.abs(firstPaymentAmount - expectedFirstPayment) < 100) {
+        return true;
+      }
+    }
+    
+    // Usar payment_type como respaldo
+    if (details.payment_type === 'subscription') {
+      return true;
+    }
+    
+    return false;
+  };
+
+  // Generar texto de condiciones de pago dinámicamente
+  const getPaymentConditionsText = (): string => {
+    const subscription = isSubscription();
+    const totalAmount = details.amount || 0;
+    const totalInEuros = totalAmount / 100;
+    
+    if (subscription) {
+      const monthlyPayment = Math.round(totalAmount / 10) / 100; // En euros
+      return `${totalInEuros.toFixed(2)}€ (10 pagos de ${monthlyPayment.toFixed(2)}€)`;
+    } else {
+      // Pago único: 2 pagos del 50%
+      const firstPayment = Math.round(totalAmount / 2) / 100; // En euros
+      return `${totalInEuros.toFixed(2)}€ (2 pagos de ${firstPayment.toFixed(2)}€)`;
+    }
+  };
+
   // Generate contract PDF on mount
   useEffect(() => {
     try {
@@ -179,7 +221,7 @@ export function ConfirmData({ details, onConfirm, onBack }: ConfirmDataProps) {
               >
                 He leído y acepto los términos y condiciones del{' '}
                 <strong>Contrato de Prestación de Servicios</strong> mostrado arriba,
-                incluyendo las condiciones de pago de 400€ (2 pagos de 200€).
+                incluyendo las condiciones de pago de {getPaymentConditionsText()}.
               </Label>
             </div>
           </div>

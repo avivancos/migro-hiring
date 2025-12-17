@@ -30,6 +30,9 @@ export function PaymentForm(props: PaymentFormProps) {
   const adminManualNote = props.hiringDetails?.manual_payment_note || '';
   
   console.log('💰 PaymentForm - hiringDetails recibidos:', props.hiringDetails);
+  console.log('💰 PaymentForm - payment_type en hiringDetails:', props.hiringDetails?.payment_type);
+  console.log('💰 PaymentForm - amount en hiringDetails:', props.hiringDetails?.amount);
+  console.log('💰 PaymentForm - grade en hiringDetails:', props.hiringDetails?.grade);
   console.log('💰 PaymentForm - manual_payment_confirmed:', adminManualPayment);
   console.log('💰 PaymentForm - manual_payment_note:', adminManualNote);
   
@@ -38,6 +41,24 @@ export function PaymentForm(props: PaymentFormProps) {
 
   // Obtener el monto del primer pago del backend (en centavos) o calcularlo como fallback
   const getFirstPaymentAmount = (): number => {
+    const paymentType = getPaymentType();
+    const totalAmount = checkoutInfo?.total_amount || props.hiringDetails?.amount || 0;
+    
+    // Si es suscripción, el primer pago es el 10% del total (pago mensual)
+    if (paymentType === 'subscription' && totalAmount > 0) {
+      // Prioridad 1: Usar amount del checkout response (que debería ser el pago mensual)
+      if (checkoutInfo?.amount !== undefined && checkoutInfo.amount > 0) {
+        return checkoutInfo.amount;
+      }
+      // Prioridad 2: Usar first_payment_amount del backend si es válido
+      if (props.hiringDetails?.first_payment_amount !== undefined && props.hiringDetails.first_payment_amount > 0) {
+        return props.hiringDetails.first_payment_amount;
+      }
+      // Fallback: Calcular como 10% del total (10 pagos mensuales)
+      return Math.round(totalAmount / 10);
+    }
+    
+    // Para pago único (one_time), usar 50% del total
     // Prioridad 1: Usar first_payment_amount del backend
     if (props.hiringDetails?.first_payment_amount !== undefined) {
       return props.hiringDetails.first_payment_amount;
@@ -59,19 +80,58 @@ export function PaymentForm(props: PaymentFormProps) {
   };
 
   // Obtener el tipo de pago del backend
-  const getPaymentType = (): 'one_time' | 'subscription' | null => {
-    // Prioridad 1: Usar payment_type del backend
-    if (props.hiringDetails?.payment_type) {
-      return props.hiringDetails.payment_type;
-    }
-    // Prioridad 2: Inferir del checkout response
-    if (checkoutInfo?.payment_type === 'subscription') {
+  const getPaymentType = (): 'one_time' | 'subscription' => {
+    const totalAmount = checkoutInfo?.total_amount || props.hiringDetails?.amount || 0;
+    const firstPaymentAmount = props.hiringDetails?.first_payment_amount;
+    const hiringPaymentType = props.hiringDetails?.payment_type;
+    const checkoutPaymentType = checkoutInfo?.payment_type;
+    
+    console.log('🔍 PaymentForm - Detecting payment type:', {
+      hiringPaymentType,
+      checkoutPaymentType,
+      totalAmount,
+      firstPaymentAmount
+    });
+    
+    // Prioridad 1: Detectar automáticamente basándose en montos (más confiable)
+    // Si el total es 48000 (480€) o 68000 (680€), DEBE ser suscripción
+    // porque los pagos únicos son 400€ (40000) o 600€ (60000)
+    if (totalAmount === 48000 || totalAmount === 68000) {
+      console.log('✅ PaymentForm - Detectado como subscription: total = 480€ o 680€');
       return 'subscription';
     }
-    if (checkoutInfo?.payment_type === 'first') {
+    
+    // Si el primer pago es exactamente el 10% del total (con tolerancia de 100 centavos), es suscripción
+    if (totalAmount > 0 && firstPaymentAmount && Math.abs(firstPaymentAmount - (totalAmount / 10)) < 100) {
+      console.log('✅ PaymentForm - Detectado como subscription: primer pago = 10% del total');
+      return 'subscription';
+    }
+    
+    // Prioridad 2: Usar payment_type de hiringDetails (solo si no contradice los montos)
+    if (hiringPaymentType === 'subscription') {
+      console.log('✅ PaymentForm - Usando payment_type de hiringDetails: subscription');
+      return 'subscription';
+    }
+    if (hiringPaymentType === 'one_time') {
+      console.log('✅ PaymentForm - Usando payment_type de hiringDetails: one_time');
       return 'one_time';
     }
-    return null;
+    
+    // Prioridad 3: Inferir del checkout response
+    if (checkoutPaymentType === 'subscription') {
+      console.log('✅ PaymentForm - Usando payment_type de checkoutInfo: subscription');
+      return 'subscription';
+    }
+    
+    // 'first' significa pago único
+    if (checkoutPaymentType === 'first') {
+      console.log('✅ PaymentForm - Usando payment_type de checkoutInfo: one_time (first)');
+      return 'one_time';
+    }
+    
+    // Default: pago único
+    console.log('⚠️ PaymentForm - No se detectó payment_type, usando default: one_time');
+    return 'one_time';
   };
 
   // Helper para formatear el monto en euros
@@ -82,30 +142,38 @@ export function PaymentForm(props: PaymentFormProps) {
   // Helper para renderizar información de pago según el tipo
   const renderPaymentInfo = () => {
     const paymentType = getPaymentType();
-    const firstPayment = getFirstPaymentAmount();
     const totalAmount = checkoutInfo?.total_amount || props.hiringDetails?.amount || 0;
-    const installments = checkoutInfo?.installments;
+    const installments = checkoutInfo?.installments || (paymentType === 'subscription' ? 10 : 2);
     const isSubscription = paymentType === 'subscription';
+    
+    console.log('🎨 renderPaymentInfo - paymentType:', paymentType);
+    console.log('🎨 renderPaymentInfo - isSubscription:', isSubscription);
+    console.log('🎨 renderPaymentInfo - totalAmount:', totalAmount);
+    console.log('🎨 renderPaymentInfo - installments:', installments);
 
-    if (isSubscription && installments) {
+    if (isSubscription) {
+      // Para suscripción: 10 pagos del 10% cada uno
+      const monthlyPayment = checkoutInfo?.amount || (totalAmount > 0 ? Math.round(totalAmount / 10) : 0);
       return (
         <>
           <p><strong>Servicio:</strong> {props.serviceName}</p>
-          <p><strong>Tipo:</strong> <span className="font-semibold text-primary">📅 Suscripción Mensual</span></p>
-          <p><strong>Primer pago:</strong> €{formatAmount(firstPayment)}</p>
-          <p><strong>Pagos mensuales:</strong> {installments} cuotas de €{formatAmount(firstPayment)}</p>
-          <p><strong>Total:</strong> €{formatAmount(totalAmount)}</p>
+          <p><strong>Tipo:</strong> <span className="font-semibold text-primary">📅 Suscripción Mensual - 10 Pagos</span></p>
+          <p><strong>Primer pago (10%):</strong> €{formatAmount(monthlyPayment)}</p>
+          <p><strong>Pagos mensuales:</strong> 10 cuotas de €{formatAmount(monthlyPayment)} cada una</p>
+          <p><strong>Total del servicio:</strong> €{formatAmount(totalAmount)}</p>
           <p className="text-xs text-gray-600 mt-2 italic">
-            El primer pago se cobrará ahora. Los siguientes {installments - 1} pagos se cobrarán automáticamente cada mes.
+            El primer pago (10%) se cobrará ahora. Los siguientes 9 pagos del 10% cada uno se cobrarán automáticamente cada mes hasta completar los 10 pagos.
           </p>
         </>
       );
     } else {
+      // Para pago único: 2 pagos (50% + 50%)
+      const firstPayment = getFirstPaymentAmount();
       return (
         <>
           <p><strong>Servicio:</strong> {props.serviceName} - Primer Pago</p>
           <p><strong>Tipo:</strong> <span className="font-semibold text-primary">💳 Pago Único</span></p>
-          <p><strong>Primer pago:</strong> €{formatAmount(firstPayment)}</p>
+          <p><strong>Primer pago (50%):</strong> €{formatAmount(firstPayment)}</p>
           <p><strong>Total del servicio:</strong> €{formatAmount(totalAmount)}</p>
           <p className="text-xs text-gray-600 mt-2 italic">
             El segundo pago (50%) se realizará después de la comunicación favorable.
@@ -124,10 +192,17 @@ export function PaymentForm(props: PaymentFormProps) {
     const createCheckoutSession = async () => {
       try {
         console.log('🛒 Creando sesión de Stripe Checkout...');
+        console.log('📋 hiringDetails antes de crear checkout:', props.hiringDetails);
+        console.log('📋 payment_type esperado:', props.hiringDetails?.payment_type);
         
         const response = await hiringService.createCheckoutSession(props.hiringCode);
         
         console.log('✅ Checkout session creada:', response);
+        console.log('📋 payment_type en response:', response.payment_type);
+        console.log('📋 installments en response:', response.installments);
+        console.log('📋 amount en response:', response.amount);
+        console.log('📋 total_amount en response:', response.total_amount);
+        
         setCheckoutUrl(response.checkout_url);
         // Guardar información del checkout para mostrar en la UI
         setCheckoutInfo({
