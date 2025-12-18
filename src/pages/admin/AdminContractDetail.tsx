@@ -20,6 +20,9 @@ import {
   ExternalLink,
   Copy,
   Check,
+  History,
+  File,
+  CreditCard,
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -483,13 +486,34 @@ export function AdminContractDetail() {
                 {contract.payment_intent_id && (
                   <div>
                     <label className="text-sm font-medium text-gray-500">Payment Intent ID</label>
-                    <div className="text-sm text-gray-900 mt-1 font-mono">{contract.payment_intent_id}</div>
+                    <div className="text-sm text-gray-900 mt-1 font-mono break-all">{contract.payment_intent_id}</div>
+                    <a
+                      href={`https://dashboard.stripe.com/payments/${contract.payment_intent_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-green-600 hover:text-green-700 mt-1 inline-flex items-center gap-1"
+                    >
+                      Ver en Stripe <ExternalLink size={14} />
+                    </a>
                   </div>
                 )}
                 {contract.subscription_id && (
                   <div>
                     <label className="text-sm font-medium text-gray-500">Subscription ID</label>
-                    <div className="text-sm text-gray-900 mt-1 font-mono">{contract.subscription_id}</div>
+                    <div className="text-sm text-gray-900 mt-1 font-mono break-all">{contract.subscription_id}</div>
+                    {contract.subscription_status && (
+                      <div className="text-sm text-gray-600 mt-1">
+                        Estado: <Badge variant="outline">{contract.subscription_status}</Badge>
+                      </div>
+                    )}
+                    <a
+                      href={`https://dashboard.stripe.com/subscriptions/${contract.subscription_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-green-600 hover:text-green-700 mt-1 inline-flex items-center gap-1"
+                    >
+                      Ver en Stripe <ExternalLink size={14} />
+                    </a>
                   </div>
                 )}
                 {contract.manual_payment_confirmed && (
@@ -515,6 +539,158 @@ export function AdminContractDetail() {
               </CardContent>
             </Card>
           )}
+
+          {/* Contract History */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History size={20} />
+                Historial del Contrato
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Timeline */}
+                <div className="relative">
+                  {/* Created / Draft */}
+                  <div className="flex gap-4 pb-6">
+                    <div className="flex flex-col items-center">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <FileText className="text-blue-600" size={20} />
+                      </div>
+                      <div className="w-0.5 h-full bg-gray-200 mt-2" />
+                    </div>
+                    <div className="flex-1 pb-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-semibold text-gray-900">Borrador Creado</p>
+                          <p className="text-sm text-gray-500 mt-1">{formatDate(contract.created_at)}</p>
+                        </div>
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          Borrador
+                        </Badge>
+                      </div>
+                      {contract.contract_pdf_url && (
+                        <div className="mt-2">
+                          <a
+                            href={contract.contract_pdf_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-green-600 hover:text-green-700 inline-flex items-center gap-1"
+                          >
+                            <File size={14} />
+                            Ver PDF del borrador
+                            <ExternalLink size={12} />
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Signed / Contract Accepted */}
+                  {contract.contract_accepted_at && (
+                    <div className="flex gap-4 pb-6">
+                      <div className="flex flex-col items-center">
+                        <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                          <CheckCircle className="text-green-600" size={20} />
+                        </div>
+                        {(contract.payment_intent_id || contract.subscription_id || contract.manual_payment_confirmed) && (
+                          <div className="w-0.5 h-full bg-gray-200 mt-2" />
+                        )}
+                      </div>
+                      <div className="flex-1 pb-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-semibold text-gray-900">Contrato Firmado</p>
+                            <p className="text-sm text-gray-500 mt-1">{formatDate(contract.contract_accepted_at)}</p>
+                          </div>
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                            Firmado
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Payment */}
+                  {(contract.payment_intent_id || contract.subscription_id || contract.manual_payment_confirmed) && (
+                    <div className="flex gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                          <CreditCard className="text-purple-600" size={20} />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-semibold text-gray-900">
+                              {contract.manual_payment_confirmed ? 'Pago Manual Confirmado' : 'Pago Procesado'}
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {contract.updated_at ? formatDate(contract.updated_at) : 'Fecha no disponible'}
+                            </p>
+                          </div>
+                          <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                            Pagado
+                          </Badge>
+                        </div>
+                        <div className="mt-3 space-y-2">
+                          {contract.payment_intent_id && (
+                            <div className="text-sm bg-gray-50 p-2 rounded border">
+                              <p className="font-medium text-gray-700">Stripe Payment Intent:</p>
+                              <p className="text-gray-600 font-mono text-xs break-all mt-1">
+                                {contract.payment_intent_id}
+                              </p>
+                              <a
+                                href={`https://dashboard.stripe.com/payments/${contract.payment_intent_id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-green-600 hover:text-green-700 mt-1 inline-flex items-center gap-1"
+                              >
+                                Ver en Stripe <ExternalLink size={12} />
+                              </a>
+                            </div>
+                          )}
+                          {contract.subscription_id && (
+                            <div className="text-sm bg-gray-50 p-2 rounded border">
+                              <p className="font-medium text-gray-700">Stripe Subscription:</p>
+                              <p className="text-gray-600 font-mono text-xs break-all mt-1">
+                                {contract.subscription_id}
+                              </p>
+                              {contract.subscription_status && (
+                                <p className="text-gray-600 text-xs mt-1">
+                                  Estado: <span className="font-semibold">{contract.subscription_status}</span>
+                                </p>
+                              )}
+                              <a
+                                href={`https://dashboard.stripe.com/subscriptions/${contract.subscription_id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-green-600 hover:text-green-700 mt-1 inline-flex items-center gap-1"
+                              >
+                                Ver en Stripe <ExternalLink size={12} />
+                              </a>
+                            </div>
+                          )}
+                          {contract.manual_payment_confirmed && (
+                            <div className="text-sm bg-gray-50 p-2 rounded border">
+                              <p className="font-medium text-gray-700">Pago Manual:</p>
+                              <p className="text-gray-600 mt-1">
+                                {contract.manual_payment_method || 'Método no especificado'}
+                              </p>
+                              {contract.manual_payment_note && (
+                                <p className="text-gray-600 text-xs mt-1 italic">{contract.manual_payment_note}</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right Column - Metadata */}

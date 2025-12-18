@@ -2,6 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { API_BASE_URL, API_TIMEOUT } from '@/config/constants';
+import { isTokenExpired, isTokenExpiringSoon, getTokenTimeRemaining } from '@/utils/jwt';
 
 // Create axios instance
 export const api = axios.create({
@@ -13,9 +14,9 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor - Add JWT token (except for login endpoint and admin password endpoints)
+// Request interceptor - Add JWT token and check expiration proactively
 api.interceptors.request.use(
-  (config) => {
+  async (config) => {
     // No añadir token en endpoints de autenticación pública o health checks
     const publicEndpoints = [
       '/auth/login', 
@@ -30,8 +31,43 @@ api.interceptors.request.use(
     const hasAdminPassword = config.headers && 'X-Admin-Password' in config.headers;
     
     if (!isPublicEndpoint && !hasAdminPassword) {
-      const token = localStorage.getItem('access_token');
+      let token = localStorage.getItem('access_token');
+      
       if (token) {
+        // Verificar si el token está expirado o cerca de expirar
+        if (isTokenExpired(token)) {
+          console.warn('⚠️ Token expirado, intentando refrescar...');
+          const newToken = await refreshTokenProactively();
+          if (newToken) {
+            token = newToken;
+          } else {
+            // Si no se pudo refrescar, limpiar y redirigir
+            if (window.location.pathname.startsWith('/admin') || 
+                window.location.pathname.startsWith('/crm') ||
+                window.location.pathname.startsWith('/contrato')) {
+              window.location.href = '/auth/login';
+            }
+            return Promise.reject(new Error('Token expirado y no se pudo refrescar'));
+          }
+        } else if (isTokenExpiringSoon(token, 2)) {
+          // Token expirará en menos de 2 minutos, refrescar proactivamente
+          // Reducido de 5 a 2 minutos para evitar refreshes demasiado frecuentes
+          const timeRemaining = getTokenTimeRemaining(token);
+          if (timeRemaining !== null) {
+            const minutesRemaining = Math.floor(timeRemaining / 60);
+            const secondsRemaining = timeRemaining % 60;
+            if (minutesRemaining > 0) {
+              console.log(`🔄 Token expirará en ${minutesRemaining} min ${secondsRemaining} seg, refrescando proactivamente...`);
+            } else {
+              console.log(`🔄 Token expirará en ${secondsRemaining} segundos, refrescando proactivamente...`);
+            }
+          }
+          const newToken = await refreshTokenProactively();
+          if (newToken) {
+            token = newToken;
+          }
+        }
+        
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
@@ -70,6 +106,70 @@ const processQueue = (error: any, token: string | null = null) => {
     }
   });
   failedQueue = [];
+};
+
+/**
+ * Refresca el token de acceso proactivamente
+ * @returns Promise con el nuevo token o null si falla
+ */
+const refreshTokenProactively = async (): Promise<string | null> => {
+  // Evitar múltiples llamadas de refresh simultáneas
+  if (isRefreshing) {
+    return new Promise((resolve) => {
+      failedQueue.push({ 
+        resolve: (token) => resolve(token || null), 
+        reject: () => resolve(null) 
+      });
+    });
+  }
+
+  const refreshToken = localStorage.getItem('refresh_token');
+  
+  if (!refreshToken) {
+    console.warn('⚠️ No hay refresh token disponible');
+    return null;
+  }
+
+  isRefreshing = true;
+
+  try {
+    console.log('🔄 Refrescando token proactivamente...');
+    const response = await axios.post(
+      `${API_BASE_URL}/auth/refresh`,
+      { refresh_token: refreshToken },
+      { timeout: API_TIMEOUT }
+    );
+    
+    const { access_token, refresh_token: newRefreshToken } = response.data;
+    
+    // Guardar nuevos tokens
+    localStorage.setItem('access_token', access_token);
+    if (newRefreshToken) {
+      localStorage.setItem('refresh_token', newRefreshToken);
+    }
+    localStorage.setItem('admin_token', access_token);
+    
+    console.log('✅ Token refrescado exitosamente');
+    
+    // Procesar cola de peticiones en espera
+    processQueue(null, access_token);
+    isRefreshing = false;
+    
+    return access_token;
+  } catch (refreshError) {
+    console.error('❌ Error refrescando token:', refreshError);
+    
+    // Refresh falló, limpiar tokens
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('admin_token');
+    localStorage.removeItem('admin_user');
+    
+    processQueue(refreshError, null);
+    isRefreshing = false;
+    
+    return null;
+  }
 };
 
 api.interceptors.response.use(
@@ -124,79 +224,33 @@ api.interceptors.response.use(
           return Promise.reject(error);
         }
         
-        // Evitar múltiples llamadas de refresh simultáneas
-        if (isRefreshing) {
-          return new Promise((resolve, reject) => {
-            failedQueue.push({ resolve, reject });
-          })
-            .then((token) => {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-              return api(originalRequest);
-            })
-            .catch((err) => {
-              return Promise.reject(err);
-            });
-        }
-        
+        // Marcar que este request ya se está reintentando
         originalRequest._retry = true;
-        isRefreshing = true;
-        
-        const refreshToken = localStorage.getItem('refresh_token');
-        
-        if (!refreshToken) {
-          // No hay refresh token, limpiar y redirigir a login
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          localStorage.removeItem('admin_token');
-          localStorage.removeItem('admin_user');
-          processQueue(new Error('No refresh token'), null);
-          isRefreshing = false;
-          
-          // Solo redirigir si estamos en rutas de admin
-          if (window.location.pathname.startsWith('/admin') || 
-              window.location.pathname.startsWith('/crm') ||
-              window.location.pathname.startsWith('/contrato')) {
-            window.location.href = '/auth/login';
-          }
-          
-          return Promise.reject(error);
-        }
         
         try {
-          // Intentar refrescar el token
-          const response = await axios.post(
-            `${API_BASE_URL}/auth/refresh`,
-            { refresh_token: refreshToken },
-            { timeout: API_TIMEOUT }
-          );
+          // Intentar refrescar el token usando la función reutilizable
+          // Esta función maneja internamente el flag isRefreshing y la cola
+          const newToken = await refreshTokenProactively();
           
-          const { access_token, refresh_token: newRefreshToken } = response.data;
-          
-          // Guardar nuevos tokens
-          localStorage.setItem('access_token', access_token);
-          if (newRefreshToken) {
-            localStorage.setItem('refresh_token', newRefreshToken);
+          if (newToken) {
+            // Actualizar header de la petición original
+            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+            
+            // Reintentar petición original
+            return api(originalRequest);
+          } else {
+            // Refresh falló, limpiar tokens y redirigir
+            // Solo redirigir si estamos en rutas de admin
+            if (window.location.pathname.startsWith('/admin') || 
+                window.location.pathname.startsWith('/crm') ||
+                window.location.pathname.startsWith('/contrato')) {
+              window.location.href = '/auth/login';
+            }
+            
+            return Promise.reject(new Error('No se pudo refrescar el token'));
           }
-          localStorage.setItem('admin_token', access_token);
-          
-          // Actualizar header de la petición original
-          originalRequest.headers.Authorization = `Bearer ${access_token}`;
-          
-          // Procesar cola de peticiones fallidas
-          processQueue(null, access_token);
-          isRefreshing = false;
-          
-          // Reintentar petición original
-          return api(originalRequest);
         } catch (refreshError) {
           // Refresh falló, limpiar tokens y redirigir
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          localStorage.removeItem('admin_token');
-          localStorage.removeItem('admin_user');
-          processQueue(refreshError, null);
-          isRefreshing = false;
-          
           // Solo redirigir si estamos en rutas de admin
           if (window.location.pathname.startsWith('/admin') || 
               window.location.pathname.startsWith('/crm') ||

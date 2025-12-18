@@ -240,6 +240,13 @@ export const crmService = {
       if (filters?.grading_llamada) params.grading_llamada = filters.grading_llamada;
       if (filters?.grading_situacion) params.grading_situacion = filters.grading_situacion;
       if (filters?.nacionalidad) params.nacionalidad = filters.nacionalidad;
+      if (filters?.responsible_user_id) params.responsible_user_id = filters.responsible_user_id;
+      if (filters?.empadronado !== undefined) params.empadronado = filters.empadronado;
+      if (filters?.tiene_ingresos !== undefined) params.tiene_ingresos = filters.tiene_ingresos;
+      if (filters?.ultima_llamada_desde) params.ultima_llamada_desde = filters.ultima_llamada_desde;
+      if (filters?.ultima_llamada_hasta) params.ultima_llamada_hasta = filters.ultima_llamada_hasta;
+      if (filters?.proxima_llamada_desde) params.proxima_llamada_desde = filters.proxima_llamada_desde;
+      if (filters?.proxima_llamada_hasta) params.proxima_llamada_hasta = filters.proxima_llamada_hasta;
 
       const { data } = await api.get<{ total: number }>(`${CRM_BASE_PATH}/contacts/count`, {
         params,

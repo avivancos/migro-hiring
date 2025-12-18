@@ -57,3 +57,4 @@ Ejemplo de cómo debería funcionar:
 - El modal y los estados funcionan correctamente
 - Los cambios se persisten en localStorage
 
+

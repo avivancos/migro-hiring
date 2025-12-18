@@ -164,3 +164,4 @@ Todos estos endpoints están cubiertos por el patrón `/hiring/` en la lista de 
 - [ ] Añadir tests unitarios para verificar el comportamiento en rutas públicas
 - [ ] Documentar en el README principal que los endpoints de hiring son públicos
 
+

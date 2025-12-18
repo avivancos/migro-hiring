@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { KommoLead, LeadCreateRequest, CRMUser, KommoContact } from '@/types/crm';
 import { crmService } from '@/services/crmService';
+import { adminService } from '@/services/adminService';
 import { Save, X } from 'lucide-react';
 
 interface LeadFormProps {
@@ -74,7 +75,20 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
       const usersData = await crmService.getUsers(true);
       console.log('Usuarios cargados en LeadForm:', usersData);
       if (Array.isArray(usersData)) {
-        setUsers(usersData.filter(u => u && u.id)); // Filtrar usuarios válidos
+        const validUsers = usersData.filter(u => u && u.id);
+        setUsers(validUsers);
+        
+        // Pre-llenar responsable con el usuario actual si no hay uno ya asignado
+        if (!formData.responsible_user_id) {
+          const currentUser = adminService.getUser();
+          if (currentUser?.id) {
+            // Buscar el usuario actual en la lista de usuarios del CRM
+            const currentCRMUser = validUsers.find(u => u.id === currentUser.id || u.email === currentUser.email);
+            if (currentCRMUser) {
+              setFormData(prev => ({ ...prev, responsible_user_id: currentCRMUser.id }));
+            }
+          }
+        }
       } else {
         setUsers([]);
       }
@@ -105,26 +119,39 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
 
   // Si es nuevo lead (id='new' o lead undefined/null), cargar defaults del backend
   useEffect(() => {
-    if ((!lead || lead.id === 'new') && !loadingDefaults) {
+    if ((!lead || lead.id === 'new') && !loadingDefaults && !loadingUsers) {
       setLoadingDefaults(true);
       crmService.getLeadDefaults()
         .then(defaults => {
           if (defaults) {
             // Inicializar formulario con defaults de /crm/leads/new
-            setFormData({
-              name: defaults.name ?? '',
-              status: defaults.status ?? 'new',
-              pipeline_id: defaults.pipeline_id ?? undefined,
-              contact_id: defaults.contact_id ?? undefined,
-              responsible_user_id: defaults.responsible_user_id ?? undefined,
+            // Si no hay responsible_user_id en defaults, usar el usuario actual
+            let responsibleUserId = defaults.responsible_user_id;
+            if (!responsibleUserId && users.length > 0) {
+              const currentUser = adminService.getUser();
+              if (currentUser?.id) {
+                const currentCRMUser = users.find(u => u.id === currentUser.id || u.email === currentUser.email);
+                if (currentCRMUser) {
+                  responsibleUserId = currentCRMUser.id;
+                }
+              }
+            }
+            
+            setFormData(prev => ({
+              ...prev,
+              name: (defaults.name ?? prev.name) || '',
+              status: (defaults.status ?? prev.status) || 'new',
+              pipeline_id: defaults.pipeline_id ?? prev.pipeline_id,
+              contact_id: defaults.contact_id ?? prev.contact_id,
+              responsible_user_id: responsibleUserId ?? prev.responsible_user_id,
               currency: defaults.currency ?? 'EUR',
               priority: defaults.priority || 'medium',
               service_type: defaults.service_type || '',
               service_description: defaults.service_description || '',
               source: defaults.source || '',
               description: defaults.description || '',
-              company_id: defaults.company_id ?? undefined,
-            });
+              company_id: defaults.company_id ?? prev.company_id,
+            }));
             setPrice(defaults.price ?? null);
           }
         })

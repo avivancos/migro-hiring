@@ -13,9 +13,12 @@ export interface CreateHiringRequest {
   payment_type?: PaymentType; // Tipo de pago: "one_time" o "subscription" (default: "one_time")
   expires_in_days?: number; // Días de expiración
   notes?: string; // Notas adicionales
+  // Asociación con contacto del CRM
+  contact_id?: string; // ID del contacto en el CRM (UUID) - opcional
   // Datos del cliente (información de contacto principal)
   client_name: string; // Nombre completo del cliente (requerido)
   client_email: string; // Email del cliente (requerido)
+  client_nationality?: string; // Nacionalidad del cliente
   // Datos del cliente (información adicional del documento)
   client_passport?: string; // Pasaporte del cliente
   client_nie?: string; // NIE del cliente
@@ -23,6 +26,10 @@ export interface CreateHiringRequest {
   client_city?: string; // Ciudad del cliente
   client_province?: string; // Provincia del cliente
   client_postal_code?: string; // Código postal del cliente
+  // Pago manual (si el admin lo marca)
+  manual_payment_confirmed?: boolean; // Si el pago ya fue realizado manualmente
+  manual_payment_note?: string; // Nota sobre el pago manual
+  manual_payment_method?: string; // Método de pago manual
 }
 
 export interface HiringCodeResponse {

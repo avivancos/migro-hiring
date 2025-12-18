@@ -1,42 +1,179 @@
-// CRMTaskCalendar - Vista de calendario para tareas (mensual/semanal/diaria)
+// CRMTaskCalendar - Vista de calendario para tareas y llamadas (mensual/semanal/diaria)
 
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Plus, ExternalLink } from 'lucide-react';
-import type { Task } from '@/types/crm';
+import { ChevronLeft, ChevronRight, Plus, ExternalLink, Phone } from 'lucide-react';
+import type { Task, Call, KommoContact, KommoLead } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 
 type ViewMode = 'month' | 'week' | 'day';
 
 export function CRMTaskCalendar() {
   const navigate = useNavigate();
-  const [view, setView] = useState<ViewMode>('month');
+  const [searchParams, setSearchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [calls, setCalls] = useState<Call[]>([]);
+  const [entityNames, setEntityNames] = useState<Record<string, string>>({});
+
+  // Leer parámetros de URL
+  const view = useMemo(() => {
+    const viewParam = searchParams.get('view');
+    if (viewParam === 'month' || viewParam === 'week' || viewParam === 'day') {
+      return viewParam;
+    }
+    return 'month';
+  }, [searchParams]);
+
+  const currentDate = useMemo(() => {
+    const dateParam = searchParams.get('date');
+    if (dateParam) {
+      try {
+        // Parsear fecha en formato YYYY-MM-DD como fecha local (no UTC)
+        // Esto evita problemas de zona horaria
+        const [year, month, day] = dateParam.split('-').map(Number);
+        if (year && month && day) {
+          const parsedDate = new Date(year, month - 1, day);
+          if (!isNaN(parsedDate.getTime())) {
+            return parsedDate;
+          }
+        }
+      } catch (e) {
+        console.warn('⚠️ [CRMTaskCalendar] Error parseando fecha de URL:', dateParam, e);
+      }
+    }
+    return new Date();
+  }, [searchParams]);
+
+  // Actualizar URL cuando cambien view o currentDate
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set('view', view);
+    params.set('date', currentDate.toISOString().split('T')[0]);
+    setSearchParams(params, { replace: true });
+  }, [view, currentDate, setSearchParams]);
 
   useEffect(() => {
-    loadTasks();
+    loadData();
   }, [currentDate, view]);
 
-  const loadTasks = async () => {
+  const loadData = async () => {
     setLoading(true);
     try {
       const startDate = getStartDate();
       const endDate = getEndDate();
       
-      const tasksData = await crmService.getCalendarTasks({
-        start_date: startDate.toISOString(),
-        end_date: endDate.toISOString(),
+      console.log('📅 [CRMTaskCalendar] Cargando datos para:', {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        view,
       });
+      
+      // Cargar tareas y llamadas en paralelo
+      // NOTA: El backend no soporta date_from/date_to todavía (error 422),
+      // así que cargamos todas las llamadas y las filtramos en el frontend por created_at
+      const [tasksData, callsResponse] = await Promise.all([
+        crmService.getCalendarTasks({
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
+        }),
+        crmService.getCalls({
+          // El endpoint /crm/calls está devolviendo 422
+          // Intentar con parámetros que funcionan en otros componentes
+          limit: 50,
+          skip: 0,
+        }).catch((err) => {
+          console.warn('⚠️ [CRMTaskCalendar] Error cargando llamadas:', err);
+          if (err?.response?.status === 422) {
+            console.warn('⚠️ [CRMTaskCalendar] El backend rechaza la petición (422). El endpoint /crm/calls puede requerir parámetros específicos o tener un problema de validación.');
+            console.warn('⚠️ [CRMTaskCalendar] Por ahora, las llamadas no se mostrarán en el calendario hasta que el backend sea corregido.');
+          }
+          return { items: [], total: 0, skip: 0, limit: 0 };
+        }),
+      ]);
+      
+      // Filtrar llamadas en el frontend por rango de fechas usando created_at
+      const filteredCalls = (callsResponse.items || []).filter(call => {
+        const callDate = call.created_at || call.started_at;
+        if (!callDate) return false;
+        try {
+          const callDateTime = new Date(callDate).getTime();
+          const startTime = startDate.getTime();
+          const endTime = endDate.getTime();
+          return callDateTime >= startTime && callDateTime <= endTime;
+        } catch (err) {
+          console.warn('⚠️ [CRMTaskCalendar] Error parseando fecha de llamada:', call.id, callDate);
+          return false;
+        }
+      });
+      
+      console.log('📅 [CRMTaskCalendar] Tareas cargadas:', tasksData.length);
+      console.log('📞 [CRMTaskCalendar] Llamadas totales del backend:', callsResponse.items?.length || 0);
+      console.log('📞 [CRMTaskCalendar] Llamadas filtradas por rango:', filteredCalls.length);
+      if (filteredCalls.length > 0) {
+        console.log('📞 [CRMTaskCalendar] Primeras llamadas filtradas:', filteredCalls.slice(0, 3).map(c => ({
+          id: c.id,
+          created_at: c.created_at,
+          started_at: c.started_at,
+          entity_type: c.entity_type,
+        })));
+      }
+      
       setTasks(tasksData);
+      setCalls(filteredCalls);
+      
+      // Cargar nombres de contactos/leads para llamadas salientes
+      await loadEntityNames(filteredCalls);
     } catch (err) {
-      console.error('Error loading tasks:', err);
+      console.error('❌ [CRMTaskCalendar] Error loading data:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadEntityNames = async (calls: Call[]) => {
+    // Obtener IDs únicos de entidades de llamadas salientes
+    const entityIds = new Set<string>();
+    calls.forEach(call => {
+      if (call.direction === 'outbound' && call.entity_id) {
+        entityIds.add(call.entity_id);
+      }
+    });
+
+    if (entityIds.size === 0) return;
+
+    const names: Record<string, string> = {};
+    const loadPromises: Promise<void>[] = [];
+
+    entityIds.forEach(entityId => {
+      // Determinar el tipo de entidad basándose en las llamadas
+      const call = calls.find(c => c.entity_id === entityId);
+      if (!call) return;
+
+      const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
+      
+      const promise = (entityType === 'contacts' 
+        ? crmService.getContact(entityId)
+        : crmService.getLead(entityId)
+      )
+        .then((entity: KommoContact | KommoLead) => {
+          const name = entity.name || 
+            (('first_name' in entity) ? `${entity.first_name || ''} ${entity.last_name || ''}`.trim() : '') ||
+            'Sin nombre';
+          names[entityId] = name;
+        })
+        .catch((err) => {
+          console.warn(`⚠️ [CRMTaskCalendar] Error cargando ${entityType} ${entityId}:`, err);
+          names[entityId] = 'Sin nombre';
+        });
+      
+      loadPromises.push(promise);
+    });
+
+    await Promise.all(loadPromises);
+    setEntityNames(prev => ({ ...prev, ...names }));
   };
 
   const getStartDate = (): Date => {
@@ -79,11 +216,26 @@ export function CRMTaskCalendar() {
     } else {
       newDate.setDate(newDate.getDate() + (direction === 'next' ? 1 : -1));
     }
-    setCurrentDate(newDate);
+    // Actualizar URL (el useEffect se encargará de actualizar el estado)
+    const params = new URLSearchParams();
+    params.set('view', view);
+    params.set('date', newDate.toISOString().split('T')[0]);
+    setSearchParams(params, { replace: true });
   };
 
   const goToToday = () => {
-    setCurrentDate(new Date());
+    const today = new Date();
+    const params = new URLSearchParams();
+    params.set('view', view);
+    params.set('date', today.toISOString().split('T')[0]);
+    setSearchParams(params, { replace: true });
+  };
+
+  const handleViewChange = (newView: ViewMode) => {
+    const params = new URLSearchParams();
+    params.set('view', newView);
+    params.set('date', currentDate.toISOString().split('T')[0]);
+    setSearchParams(params, { replace: true });
   };
 
   const getTasksForDate = (date: Date): Task[] => {
@@ -93,6 +245,31 @@ export function CRMTaskCalendar() {
       const taskDate = new Date(task.complete_till).toISOString().split('T')[0];
       return taskDate === dateStr;
     });
+  };
+
+  const getCallsForDate = (date: Date): Call[] => {
+    const dateStr = date.toISOString().split('T')[0];
+    const filtered = calls.filter(call => {
+      // Usar created_at como fecha de referencia (cuando se graba en el sistema)
+      const callCreatedAt = call.created_at || call.started_at;
+      if (!callCreatedAt) {
+        console.warn('⚠️ [CRMTaskCalendar] Llamada sin fecha:', call.id);
+        return false;
+      }
+      try {
+        const callDate = new Date(callCreatedAt).toISOString().split('T')[0];
+        return callDate === dateStr;
+      } catch (err) {
+        console.warn('⚠️ [CRMTaskCalendar] Error parseando fecha de llamada:', call.id, callCreatedAt, err);
+        return false;
+      }
+    });
+    
+    if (filtered.length > 0 && dateStr === new Date().toISOString().split('T')[0]) {
+      console.log(`📞 [CRMTaskCalendar] ${filtered.length} llamadas para hoy (${dateStr})`);
+    }
+    
+    return filtered;
   };
 
   const renderMonthView = () => {
@@ -138,20 +315,31 @@ export function CRMTaskCalendar() {
               }
               const date = new Date(year, month, day);
               const dayTasks = getTasksForDate(date);
+              const dayCalls = getCallsForDate(date);
               const isToday = date.toDateString() === new Date().toDateString();
+              const totalItems = dayTasks.length + dayCalls.length;
+              const maxDisplay = 3;
               
               return (
                 <div
                   key={dayIdx}
-                  className={`p-2 border rounded min-h-[100px] ${
+                  className={`p-2 border rounded min-h-[100px] cursor-pointer hover:bg-gray-50 transition-colors ${
                     isToday ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200'
                   }`}
+                  onClick={() => {
+                    // Al hacer clic en un día, cambiar a vista diaria y mostrar ese día
+                    const params = new URLSearchParams();
+                    params.set('view', 'day');
+                    params.set('date', date.toISOString().split('T')[0]);
+                    setSearchParams(params, { replace: true });
+                  }}
                 >
                   <div className={`text-sm font-semibold mb-1 ${isToday ? 'text-blue-600' : 'text-gray-700'}`}>
                     {day}
                   </div>
-                  <div className="space-y-1">
-                    {dayTasks.slice(0, 3).map(task => (
+                  <div className="space-y-1" onClick={(e) => e.stopPropagation()}>
+                    {/* Mostrar tareas primero */}
+                    {dayTasks.slice(0, Math.min(maxDisplay, dayTasks.length)).map(task => (
                       <div
                         key={task.id}
                         className="text-xs p-1 bg-green-100 rounded cursor-pointer hover:bg-green-200"
@@ -160,9 +348,28 @@ export function CRMTaskCalendar() {
                         {task.text}
                       </div>
                     ))}
-                    {dayTasks.length > 3 && (
+                    {/* Mostrar llamadas */}
+                    {dayCalls.slice(0, Math.max(0, maxDisplay - dayTasks.length)).map(call => {
+                      const displayText = call.direction === 'inbound' 
+                        ? 'Entrante' 
+                        : (entityNames[call.entity_id] || 'Saliente');
+                      return (
+                        <div
+                          key={call.id}
+                          className="text-xs p-1 bg-blue-100 rounded cursor-pointer hover:bg-blue-200 flex items-center gap-1"
+                          onClick={() => {
+                            const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
+                            navigate(`/crm/${entityType}/${call.entity_id}`);
+                          }}
+                        >
+                          <Phone className="w-3 h-3" />
+                          <span className="truncate">{displayText}</span>
+                        </div>
+                      );
+                    })}
+                    {totalItems > maxDisplay && (
                       <div className="text-xs text-gray-500">
-                        +{dayTasks.length - 3} más
+                        +{totalItems - maxDisplay} más
                       </div>
                     )}
                   </div>
@@ -189,14 +396,28 @@ export function CRMTaskCalendar() {
       <div className="grid grid-cols-7 gap-4">
         {weekDays.map((date, idx) => {
           const dayTasks = getTasksForDate(date);
+          const dayCalls = getCallsForDate(date);
           const isToday = date.toDateString() === new Date().toDateString();
           
           return (
-            <div key={idx} className="border rounded p-3">
+            <div 
+              key={idx} 
+              className={`border rounded p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
+                isToday ? 'bg-blue-50 border-blue-300' : ''
+              }`}
+              onClick={() => {
+                // Al hacer clic en un día, cambiar a vista diaria y mostrar ese día
+                const params = new URLSearchParams();
+                params.set('view', 'day');
+                params.set('date', date.toISOString().split('T')[0]);
+                setSearchParams(params, { replace: true });
+              }}
+            >
               <div className={`text-sm font-semibold mb-2 ${isToday ? 'text-blue-600' : 'text-gray-700'}`}>
                 {date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric' })}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                {/* Tareas */}
                 {dayTasks.map(task => (
                   <div
                     key={task.id}
@@ -232,6 +453,40 @@ export function CRMTaskCalendar() {
                     </div>
                   </div>
                 ))}
+                {/* Llamadas */}
+                {dayCalls.map(call => {
+                  const callDate = new Date(call.created_at || call.started_at);
+                  const displayTitle = call.direction === 'inbound' 
+                        ? 'Llamada Entrante' 
+                        : (entityNames[call.entity_id] || 'Llamada Saliente');
+                  return (
+                    <div
+                      key={call.id}
+                      className="text-xs p-2 bg-blue-100 rounded cursor-pointer hover:bg-blue-200"
+                      onClick={() => {
+                        const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
+                        navigate(`/crm/${entityType}/${call.entity_id}`);
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 flex-1">
+                          <Phone className="w-3 h-3" />
+                          <div className="flex-1">
+                            <div className="font-semibold truncate">
+                              {displayTitle}
+                            </div>
+                            <div className="text-gray-600 mt-1">
+                              {callDate.toLocaleTimeString('es-ES', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );
@@ -242,7 +497,9 @@ export function CRMTaskCalendar() {
 
   const renderDayView = () => {
     const dayTasks = getTasksForDate(currentDate);
+    const dayCalls = getCallsForDate(currentDate);
     const isToday = currentDate.toDateString() === new Date().toDateString();
+    const hasItems = dayTasks.length > 0 || dayCalls.length > 0;
     
     return (
       <div className="space-y-3">
@@ -254,8 +511,9 @@ export function CRMTaskCalendar() {
             day: 'numeric',
           })}
         </div>
-        {dayTasks.length > 0 ? (
+        {hasItems ? (
           <div className="space-y-2">
+            {/* Tareas */}
             {dayTasks.map(task => (
               <Card
                 key={task.id}
@@ -301,10 +559,60 @@ export function CRMTaskCalendar() {
                 </CardContent>
               </Card>
             ))}
+            {/* Llamadas */}
+            {dayCalls.map(call => {
+              const callDate = new Date(call.created_at || call.started_at);
+              const displayTitle = call.direction === 'inbound' 
+                        ? 'Llamada Entrante' 
+                        : (entityNames[call.entity_id] || 'Llamada Saliente');
+              return (
+                <Card
+                  key={call.id}
+                  className="cursor-pointer hover:shadow-md bg-blue-50 border-blue-200"
+                  onClick={() => {
+                    const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
+                    navigate(`/crm/${entityType}/${call.entity_id}`);
+                  }}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3 flex-1">
+                        <Phone className="w-5 h-5 text-blue-600" />
+                        <div className="flex-1">
+                          <h3 className="font-semibold">
+                            {displayTitle}
+                          </h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Grabada: {callDate.toLocaleString('es-ES')}
+                          </p>
+                          {call.phone && (
+                            <p className="text-sm text-gray-500 mt-1">
+                              Tel: {call.phone}
+                            </p>
+                          )}
+                          {call.duration && (
+                            <p className="text-sm text-gray-500 mt-1">
+                              Duración: {Math.floor(call.duration / 60)}:{(call.duration % 60).toString().padStart(2, '0')}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2 ml-4">
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          call.call_status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        }`}>
+                          {call.call_status || 'Desconocido'}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-12 text-gray-500">
-            No hay tareas para este día
+            No hay tareas ni llamadas para este día
           </div>
         )}
       </div>
@@ -334,8 +642,8 @@ export function CRMTaskCalendar() {
           {/* Page Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Calendario de Tareas</h1>
-          <p className="text-gray-600 mt-1">Gestiona tus tareas por fecha</p>
+          <h1 className="text-3xl font-bold text-gray-900">Calendario</h1>
+          <p className="text-gray-600 mt-1">Gestiona tus tareas y llamadas por fecha</p>
         </div>
         <Button
           onClick={() => navigate('/crm/tasks/new')}
@@ -365,19 +673,19 @@ export function CRMTaskCalendar() {
             <div className="flex gap-2">
               <Button
                 variant={view === 'month' ? 'default' : 'outline'}
-                onClick={() => setView('month')}
+                onClick={() => handleViewChange('month')}
               >
                 Mes
               </Button>
               <Button
                 variant={view === 'week' ? 'default' : 'outline'}
-                onClick={() => setView('week')}
+                onClick={() => handleViewChange('week')}
               >
                 Semana
               </Button>
               <Button
                 variant={view === 'day' ? 'default' : 'outline'}
-                onClick={() => setView('day')}
+                onClick={() => handleViewChange('day')}
               >
                 Día
               </Button>
@@ -390,7 +698,7 @@ export function CRMTaskCalendar() {
       <Card>
         <CardContent className="pt-6">
           {loading ? (
-            <div className="text-center py-12">Cargando tareas...</div>
+            <div className="text-center py-12">Cargando tareas y llamadas...</div>
           ) : (
             <>
               {view === 'month' && renderMonthView()}

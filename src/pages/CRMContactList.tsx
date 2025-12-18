@@ -252,8 +252,29 @@ export function CRMContactList() {
 
       const response = await crmService.getContacts(filters);
       
-      // Actualizar total
-      setTotalContacts(response.total || 0);
+      // Obtener el total real de contactos usando el endpoint de count (sin paginación)
+      // Esto asegura que el total sea correcto independientemente de los filtros
+      try {
+        const totalCount = await crmService.getContactsCount({
+          search: filters.search,
+          grading_llamada: filters.grading_llamada,
+          grading_situacion: filters.grading_situacion,
+          nacionalidad: filters.nacionalidad,
+          responsible_user_id: filters.responsible_user_id,
+          empadronado: filters.empadronado,
+          tiene_ingresos: filters.tiene_ingresos,
+          ultima_llamada_desde: filters.ultima_llamada_desde,
+          ultima_llamada_hasta: filters.ultima_llamada_hasta,
+          proxima_llamada_desde: filters.proxima_llamada_desde,
+          proxima_llamada_hasta: filters.proxima_llamada_hasta,
+        });
+        console.log('📊 [CRMContactList] Total count from API:', totalCount);
+        setTotalContacts(totalCount);
+      } catch (countError) {
+        console.warn('⚠️ [CRMContactList] Error getting total count, using response total:', countError);
+        // Fallback al total de la respuesta si el endpoint de count falla
+        setTotalContacts(response.total ?? response.items?.length ?? 0);
+      }
       
       // Enriquecer contactos con información de llamadas para mostrar las columnas
       // Solo enriquecer los contactos de la página actual
@@ -558,6 +579,230 @@ export function CRMContactList() {
       console.warn('Error saving column visibility to localStorage:', e);
     }
   }, [columnVisibility]);
+
+  // Calcular columnas visibles basándose en columnVisibility y columnOrder
+  const visibleColumns = columnOrder.filter(col => columnVisibility[col] !== false);
+
+  // Helper para renderizar header de columna
+  const renderColumnHeader = (columnKey: ColumnKey) => {
+    const labels: Record<ColumnKey, string> = {
+      name: 'Nombre',
+      email: 'Email',
+      phone: 'Teléfono',
+      nacionalidad: 'Nacionalidad',
+      grading_llamada: 'Grading Llamada',
+      grading_situacion: 'Grading Situación',
+      created_at: 'Fecha Creación',
+      updated_at: 'Fecha Modificación',
+      ultima_llamada: 'Última Llamada',
+      proxima_llamada: 'Próxima Llamada',
+      acciones: 'Acciones',
+    };
+
+    const classNameMap: Record<ColumnKey, string> = {
+      name: '',
+      email: 'hidden lg:table-cell',
+      phone: '',
+      nacionalidad: 'hidden xl:table-cell',
+      grading_llamada: 'hidden xl:table-cell',
+      grading_situacion: 'hidden xl:table-cell',
+      created_at: 'hidden lg:table-cell',
+      updated_at: 'hidden lg:table-cell',
+      ultima_llamada: 'hidden lg:table-cell',
+      proxima_llamada: 'hidden lg:table-cell',
+      acciones: 'text-right',
+    };
+
+    const sortableFields = ['name', 'email', 'phone', 'nacionalidad', 'grading_llamada', 'grading_situacion', 'created_at', 'updated_at', 'ultima_llamada', 'proxima_llamada'];
+    const isSortable = sortableFields.includes(columnKey);
+
+    if (columnKey === 'acciones') {
+      return (
+        <ResizableHeader key={columnKey} columnKey={columnKey} className={classNameMap[columnKey]}>
+          {labels[columnKey]}
+        </ResizableHeader>
+      );
+    }
+
+    return (
+      <ResizableHeader
+        key={columnKey}
+        columnKey={columnKey}
+        onSort={isSortable ? () => handleSort(columnKey) : undefined}
+        sortField={isSortable ? columnKey : undefined}
+        className={classNameMap[columnKey]}
+      >
+        {labels[columnKey]}
+      </ResizableHeader>
+    );
+  };
+
+  // Helper para renderizar celda de columna
+  const renderColumnCell = (contact: KommoContact, columnKey: ColumnKey) => {
+    const classNameMap: Record<ColumnKey, string> = {
+      name: 'px-3 sm:px-6 py-4 overflow-hidden',
+      email: 'px-3 sm:px-6 py-4 hidden lg:table-cell overflow-hidden',
+      phone: 'px-3 sm:px-6 py-4 overflow-hidden',
+      nacionalidad: 'px-3 sm:px-6 py-4 hidden xl:table-cell overflow-hidden',
+      grading_llamada: 'px-3 sm:px-6 py-4 hidden xl:table-cell',
+      grading_situacion: 'px-3 sm:px-6 py-4 hidden xl:table-cell',
+      created_at: 'px-3 sm:px-6 py-4 hidden lg:table-cell text-sm text-gray-600 overflow-hidden',
+      updated_at: 'px-3 sm:px-6 py-4 hidden lg:table-cell text-sm text-gray-600 overflow-hidden',
+      ultima_llamada: 'px-3 sm:px-6 py-4 hidden lg:table-cell text-sm text-gray-600 overflow-hidden',
+      proxima_llamada: 'px-3 sm:px-6 py-4 hidden lg:table-cell text-sm text-gray-600 overflow-hidden',
+      acciones: 'px-3 sm:px-6 py-4 text-right text-sm font-medium',
+    };
+
+    const style = { width: columnWidths[columnKey], maxWidth: columnWidths[columnKey] };
+
+    switch (columnKey) {
+      case 'name':
+        return (
+          <td key={columnKey} className={classNameMap[columnKey]} style={style}>
+            <div className="flex items-center min-w-0">
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium text-gray-900 font-sans truncate" title={contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim() || 'Sin nombre'}>
+                  {contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim() || 'Sin nombre'}
+                </div>
+              </div>
+            </div>
+          </td>
+        );
+      case 'email':
+        return (
+          <td key={columnKey} className={classNameMap[columnKey]} style={style}>
+            <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
+              {contact.email ? (
+                <>
+                  <Mail className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate min-w-0" title={contact.email}>{contact.email}</span>
+                </>
+              ) : (
+                <span className="text-gray-400">—</span>
+              )}
+            </div>
+          </td>
+        );
+      case 'phone':
+        return (
+          <td key={columnKey} className={classNameMap[columnKey]} style={style}>
+            <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
+              {contact.phone ? (
+                <>
+                  <Phone className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate min-w-0" title={contact.phone}>{contact.phone}</span>
+                </>
+              ) : (
+                <span className="text-gray-400">—</span>
+              )}
+            </div>
+          </td>
+        );
+      case 'nacionalidad':
+        return (
+          <td key={columnKey} className={classNameMap[columnKey]} style={style}>
+            <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
+              {contact.nacionalidad ? (
+                <>
+                  <Flag className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate min-w-0" title={contact.nacionalidad}>{contact.nacionalidad}</span>
+                </>
+              ) : (
+                <span className="text-gray-400">—</span>
+              )}
+            </div>
+          </td>
+        );
+      case 'grading_llamada':
+        return (
+          <td key={columnKey} className={classNameMap[columnKey]} style={{ width: columnWidths[columnKey] }}>
+            {contact.grading_llamada ? (
+              <Badge variant={getGradingVariant(contact.grading_llamada)} className="text-xs">
+                {contact.grading_llamada}
+              </Badge>
+            ) : (
+              <span className="text-gray-400">—</span>
+            )}
+          </td>
+        );
+      case 'grading_situacion':
+        return (
+          <td key={columnKey} className={classNameMap[columnKey]} style={{ width: columnWidths[columnKey] }}>
+            {contact.grading_situacion ? (
+              <Badge variant={getGradingVariant(contact.grading_situacion)} className="text-xs">
+                {contact.grading_situacion}
+              </Badge>
+            ) : (
+              <span className="text-gray-400">—</span>
+            )}
+          </td>
+        );
+      case 'created_at':
+        return (
+          <td key={columnKey} className={classNameMap[columnKey]} style={style}>
+            <div className="flex items-center gap-2 min-w-0">
+              <Calendar className="w-4 h-4 flex-shrink-0" />
+              <span className="truncate min-w-0" title={formatDate(contact.created_at)}>{formatDate(contact.created_at)}</span>
+            </div>
+          </td>
+        );
+      case 'updated_at':
+        return (
+          <td key={columnKey} className={classNameMap[columnKey]} style={style}>
+            <div className="flex items-center gap-2 min-w-0">
+              <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <span className="truncate min-w-0" title={formatDate(contact.updated_at)}>{formatDate(contact.updated_at)}</span>
+            </div>
+          </td>
+        );
+      case 'ultima_llamada':
+        return (
+          <td key={columnKey} className={classNameMap[columnKey]} style={style}>
+            {contact.ultima_llamada_fecha ? (
+              <div className="flex items-center gap-2 min-w-0">
+                <Phone className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate min-w-0" title={formatDate(contact.ultima_llamada_fecha)}>{formatDate(contact.ultima_llamada_fecha)}</span>
+              </div>
+            ) : (
+              <span className="text-gray-400">—</span>
+            )}
+          </td>
+        );
+      case 'proxima_llamada':
+        return (
+          <td key={columnKey} className={classNameMap[columnKey]} style={style}>
+            {contact.proxima_llamada_fecha ? (
+              <div className="flex items-center gap-2 min-w-0">
+                <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <span className={`truncate min-w-0 ${new Date(contact.proxima_llamada_fecha).getTime() < new Date().getTime() ? 'text-red-600 font-semibold' : ''}`} title={formatDate(contact.proxima_llamada_fecha)}>
+                  {formatDate(contact.proxima_llamada_fecha)}
+                </span>
+              </div>
+            ) : (
+              <span className="text-gray-400">—</span>
+            )}
+          </td>
+        );
+      case 'acciones':
+        return (
+          <td key={columnKey} className={classNameMap[columnKey]} style={{ width: columnWidths[columnKey] }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/crm/contacts/${contact.id}`);
+              }}
+            >
+              Ver
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </td>
+        );
+      default:
+        return null;
+    }
+  };
 
   // Handlers para redimensionamiento de columnas
   const handleResizeStart = useRef<(columnKey: ColumnKey, startX: number, startWidth: number) => void>(() => {});
@@ -981,90 +1226,7 @@ export function CRMContactList() {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <ResizableHeader 
-                              columnKey="name" 
-                              onSort={() => handleSort('name')} 
-                              sortField="name"
-                            >
-                              Nombre
-                            </ResizableHeader>
-                            <ResizableHeader 
-                              columnKey="email" 
-                              onSort={() => handleSort('email')} 
-                              sortField="email"
-                              className="hidden lg:table-cell"
-                            >
-                              Email
-                            </ResizableHeader>
-                            <ResizableHeader 
-                              columnKey="phone" 
-                              onSort={() => handleSort('phone')} 
-                              sortField="phone"
-                            >
-                              Teléfono
-                            </ResizableHeader>
-                            <ResizableHeader 
-                              columnKey="nacionalidad" 
-                              onSort={() => handleSort('nacionalidad')} 
-                              sortField="nacionalidad"
-                              className="hidden xl:table-cell"
-                            >
-                              Nacionalidad
-                            </ResizableHeader>
-                            <ResizableHeader 
-                              columnKey="grading_llamada" 
-                              onSort={() => handleSort('grading_llamada')} 
-                              sortField="grading_llamada"
-                              className="hidden xl:table-cell"
-                            >
-                              Grading Llamada
-                            </ResizableHeader>
-                            <ResizableHeader 
-                              columnKey="grading_situacion" 
-                              onSort={() => handleSort('grading_situacion')} 
-                              sortField="grading_situacion"
-                              className="hidden xl:table-cell"
-                            >
-                              Grading Situación
-                            </ResizableHeader>
-                            <ResizableHeader 
-                              columnKey="created_at" 
-                              onSort={() => handleSort('created_at')} 
-                              sortField="created_at"
-                              className="hidden lg:table-cell"
-                            >
-                              Fecha Creación
-                            </ResizableHeader>
-                            <ResizableHeader 
-                              columnKey="updated_at" 
-                              onSort={() => handleSort('updated_at')} 
-                              sortField="updated_at"
-                              className="hidden lg:table-cell"
-                            >
-                              Fecha Modificación
-                            </ResizableHeader>
-                            <ResizableHeader 
-                              columnKey="ultima_llamada" 
-                              onSort={() => handleSort('ultima_llamada')} 
-                              sortField="ultima_llamada"
-                              className="hidden lg:table-cell"
-                            >
-                              Última Llamada
-                            </ResizableHeader>
-                            <ResizableHeader 
-                              columnKey="proxima_llamada" 
-                              onSort={() => handleSort('proxima_llamada')} 
-                              sortField="proxima_llamada"
-                              className="hidden lg:table-cell"
-                            >
-                              Próxima Llamada
-                            </ResizableHeader>
-                            <ResizableHeader 
-                              columnKey="acciones"
-                              className="text-right"
-                            >
-                              Acciones
-                            </ResizableHeader>
+                            {visibleColumns.map(columnKey => renderColumnHeader(columnKey))}
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -1074,116 +1236,7 @@ export function CRMContactList() {
                               className="hover:bg-gray-50 cursor-pointer"
                               onClick={() => navigate(`/crm/contacts/${contact.id}`)}
                             >
-                              <td className="px-3 sm:px-6 py-4 overflow-hidden" style={{ width: columnWidths.name, maxWidth: columnWidths.name }}>
-                                <div className="flex items-center min-w-0">
-                                  <div className="min-w-0 flex-1">
-                                    <div className="text-sm font-medium text-gray-900 font-sans truncate" title={contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim() || 'Sin nombre'}>
-                                      {contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim() || 'Sin nombre'}
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-3 sm:px-6 py-4 hidden lg:table-cell overflow-hidden" style={{ width: columnWidths.email, maxWidth: columnWidths.email }}>
-                                <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
-                                  {contact.email ? (
-                                    <>
-                                      <Mail className="w-4 h-4 flex-shrink-0" />
-                                      <span className="truncate min-w-0" title={contact.email}>{contact.email}</span>
-                                    </>
-                                  ) : (
-                                    <span className="text-gray-400">—</span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-3 sm:px-6 py-4 overflow-hidden" style={{ width: columnWidths.phone, maxWidth: columnWidths.phone }}>
-                                <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
-                                  {contact.phone ? (
-                                    <>
-                                      <Phone className="w-4 h-4 flex-shrink-0" />
-                                      <span className="truncate min-w-0" title={contact.phone}>{contact.phone}</span>
-                                    </>
-                                  ) : (
-                                    <span className="text-gray-400">—</span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-3 sm:px-6 py-4 hidden xl:table-cell overflow-hidden" style={{ width: columnWidths.nacionalidad, maxWidth: columnWidths.nacionalidad }}>
-                                <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
-                                  {contact.nacionalidad ? (
-                                    <>
-                                      <Flag className="w-4 h-4 flex-shrink-0" />
-                                      <span className="truncate min-w-0" title={contact.nacionalidad}>{contact.nacionalidad}</span>
-                                    </>
-                                  ) : (
-                                    <span className="text-gray-400">—</span>
-                                  )}
-                                </div>
-                              </td>
-                              <td className="px-3 sm:px-6 py-4 hidden xl:table-cell" style={{ width: columnWidths.grading_llamada }}>
-                                {contact.grading_llamada ? (
-                                  <Badge variant={getGradingVariant(contact.grading_llamada)} className="text-xs">
-                                    {contact.grading_llamada}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-gray-400">—</span>
-                                )}
-                              </td>
-                              <td className="px-3 sm:px-6 py-4 hidden xl:table-cell" style={{ width: columnWidths.grading_situacion }}>
-                                {contact.grading_situacion ? (
-                                  <Badge variant={getGradingVariant(contact.grading_situacion)} className="text-xs">
-                                    {contact.grading_situacion}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-gray-400">—</span>
-                                )}
-                              </td>
-                              <td className="px-3 sm:px-6 py-4 hidden lg:table-cell text-sm text-gray-600 overflow-hidden" style={{ width: columnWidths.created_at, maxWidth: columnWidths.created_at }}>
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <Calendar className="w-4 h-4 flex-shrink-0" />
-                                  <span className="truncate min-w-0" title={formatDate(contact.created_at)}>{formatDate(contact.created_at)}</span>
-                                </div>
-                              </td>
-                              <td className="px-3 sm:px-6 py-4 hidden lg:table-cell text-sm text-gray-600 overflow-hidden" style={{ width: columnWidths.updated_at, maxWidth: columnWidths.updated_at }}>
-                                <div className="flex items-center gap-2 min-w-0">
-                                  <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                                  <span className="truncate min-w-0" title={formatDate(contact.updated_at)}>{formatDate(contact.updated_at)}</span>
-                                </div>
-                              </td>
-                              <td className="px-3 sm:px-6 py-4 hidden lg:table-cell text-sm text-gray-600 overflow-hidden" style={{ width: columnWidths.ultima_llamada, maxWidth: columnWidths.ultima_llamada }}>
-                                {contact.ultima_llamada_fecha ? (
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    <Phone className="w-4 h-4 flex-shrink-0" />
-                                    <span className="truncate min-w-0" title={formatDate(contact.ultima_llamada_fecha)}>{formatDate(contact.ultima_llamada_fecha)}</span>
-                                  </div>
-                                ) : (
-                                  <span className="text-gray-400">—</span>
-                                )}
-                              </td>
-                              <td className="px-3 sm:px-6 py-4 hidden lg:table-cell text-sm text-gray-600 overflow-hidden" style={{ width: columnWidths.proxima_llamada, maxWidth: columnWidths.proxima_llamada }}>
-                                {contact.proxima_llamada_fecha ? (
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                                    <span className={`truncate min-w-0 ${new Date(contact.proxima_llamada_fecha).getTime() < new Date().getTime() ? 'text-red-600 font-semibold' : ''}`} title={formatDate(contact.proxima_llamada_fecha)}>
-                                      {formatDate(contact.proxima_llamada_fecha)}
-                                    </span>
-                                  </div>
-                                ) : (
-                                  <span className="text-gray-400">—</span>
-                                )}
-                              </td>
-                              <td className="px-3 sm:px-6 py-4 text-right text-sm font-medium" style={{ width: columnWidths.acciones }}>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/crm/contacts/${contact.id}`);
-                                  }}
-                                >
-                                  Ver
-                                  <ChevronRight className="w-4 h-4 ml-1" />
-                                </Button>
-                              </td>
+                              {visibleColumns.map(columnKey => renderColumnCell(contact, columnKey))}
                             </tr>
                           ))}
                         </tbody>

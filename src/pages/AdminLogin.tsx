@@ -56,7 +56,41 @@ export function AdminLogin() {
       }
     } catch (err: any) {
       console.error('❌ Error en login:', err);
-      const errorMessage = err?.response?.data?.detail || err?.message || 'Error al iniciar sesión. Verifica tus credenciales.';
+      
+      // Extraer mensaje de error del formato de FastAPI/Pydantic
+      let errorMessage = 'Error al iniciar sesión. Verifica tus credenciales.';
+      
+      const errorDetail = err?.response?.data?.detail;
+      
+      if (errorDetail) {
+        // Si es un array (formato de validación de FastAPI)
+        if (Array.isArray(errorDetail)) {
+          // Extraer el primer mensaje de validación
+          const firstError = errorDetail[0];
+          if (firstError?.msg) {
+            errorMessage = firstError.msg;
+            // Si hay location, añadirlo para más contexto
+            if (firstError.loc && Array.isArray(firstError.loc) && firstError.loc.length > 1) {
+              errorMessage = `${firstError.loc[firstError.loc.length - 1]}: ${firstError.msg}`;
+            }
+          } else {
+            errorMessage = 'Error de validación. Por favor, verifica los datos ingresados.';
+          }
+        } 
+        // Si es un string, usarlo directamente
+        else if (typeof errorDetail === 'string') {
+          errorMessage = errorDetail;
+        }
+        // Si es un objeto con mensaje
+        else if (errorDetail.message) {
+          errorMessage = errorDetail.message;
+        }
+      } 
+      // Fallback a message del error
+      else if (err?.message) {
+        errorMessage = err.message;
+      }
+      
       setError(errorMessage);
     } finally {
       setLoading(false);

@@ -190,9 +190,12 @@ export function AdminContractCreate() {
         payment_type: paymentType, // Tipo de pago: "one_time" o "subscription"
         expires_in_days: 30,
         notes: `Código creado por administrador - Grado ${grade} - ${paymentType === 'subscription' ? 'Suscripción' : 'Pago Único'}`,
+        // Asociación con contacto del CRM (si se seleccionó uno)
+        contact_id: selectedContact?.id || undefined,
         // Datos del cliente (información de contacto principal) - REQUERIDOS
         client_name: userName,
         client_email: userEmail,
+        client_nationality: userNationality || undefined,
         // Datos del cliente (información adicional del documento)
         client_passport: userPassport || undefined,
         client_nie: userNie || undefined,
@@ -209,6 +212,11 @@ export function AdminContractCreate() {
       console.log('📤 REQUEST COMPLETO A ENVIAR:', JSON.stringify(requestBody, null, 2));
       console.log('📤 client_name:', requestBody.client_name);
       console.log('📤 client_email:', requestBody.client_email);
+      if (requestBody.contact_id) {
+        console.log('🔗 contact_id asociado:', requestBody.contact_id);
+      } else {
+        console.log('⚠️ No se asoció ningún contacto del CRM (se creará nota si el backend encuentra el contacto por email)');
+      }
 
       const response = await adminService.createHiringCode(requestBody);
 
@@ -253,6 +261,8 @@ export function AdminContractCreate() {
       setPaymentType('one_time');
       setManualPaymentMode(false);
       setManualPaymentNote('');
+      // Limpiar contacto seleccionado
+      handleClearContact();
     } catch (err: any) {
       console.error('Error creando contrato:', err);
       setError(err.message || 'Error al crear el código de contratación');

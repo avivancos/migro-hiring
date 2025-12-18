@@ -160,3 +160,4 @@ const enrichContactWithCallInfo = async (contact: KommoContact): Promise<KommoCo
 5. **Leads nuevos sin primera llamada**: Filtrar última llamada vacía y ordenar por fecha creación
 
 
+

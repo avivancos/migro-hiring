@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { Task, CRMUser, KommoContact, KommoLead } from '@/types/crm';
 import { crmService } from '@/services/crmService';
+import { adminService } from '@/services/adminService';
 
 interface TaskFormProps {
   task?: Task;
@@ -80,9 +81,21 @@ export function TaskForm({
       const usersData = await crmService.getUsers(true);
       setUsers(usersData);
       
-      // Asignar primer usuario activo si no hay uno seleccionado
-      if (!formData.responsible_user_id && usersData.length > 0) {
-        setFormData(prev => ({ ...prev, responsible_user_id: usersData[0].id }));
+      // Pre-llenar responsable con el usuario actual si no hay uno ya asignado
+      if (!formData.responsible_user_id) {
+        const currentUser = adminService.getUser();
+        if (currentUser?.id) {
+          // Buscar el usuario actual en la lista de usuarios del CRM
+          const currentCRMUser = usersData.find(u => u.id === currentUser.id || u.email === currentUser.email);
+          if (currentCRMUser) {
+            setFormData(prev => ({ ...prev, responsible_user_id: currentCRMUser.id }));
+          } else if (usersData.length > 0) {
+            // Si no se encuentra, usar el primero disponible
+            setFormData(prev => ({ ...prev, responsible_user_id: usersData[0].id }));
+          }
+        } else if (usersData.length > 0) {
+          setFormData(prev => ({ ...prev, responsible_user_id: usersData[0].id }));
+        }
       }
     } catch (err) {
       console.error('Error loading users:', err);
