@@ -245,6 +245,10 @@ export function CRMContactList() {
       if (responsibleUserId) filters.responsible_user_id = responsibleUserId;
       if (empadronado) filters.empadronado = empadronado === 'true';
       if (tieneIngresos) filters.tiene_ingresos = tieneIngresos === 'true';
+      if (ultimaLlamadaDesde) filters.ultima_llamada_desde = ultimaLlamadaDesde;
+      if (ultimaLlamadaHasta) filters.ultima_llamada_hasta = ultimaLlamadaHasta;
+      if (proximaLlamadaDesde) filters.proxima_llamada_desde = proximaLlamadaDesde;
+      if (proximaLlamadaHasta) filters.proxima_llamada_hasta = proximaLlamadaHasta;
       if (sortField) {
         filters.sort_by = sortField;
         filters.sort_order = sortOrder;

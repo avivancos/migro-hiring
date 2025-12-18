@@ -576,6 +576,11 @@ export interface ContactFilters {
   empadronado?: boolean;
   tiene_ingresos?: boolean;
   trabaja_b?: boolean;
+  // Filtros de fechas de llamadas
+  ultima_llamada_desde?: string;
+  ultima_llamada_hasta?: string;
+  proxima_llamada_desde?: string;
+  proxima_llamada_hasta?: string;
 }
 
 export interface TaskFilters {

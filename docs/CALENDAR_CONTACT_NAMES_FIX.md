@@ -60,21 +60,26 @@ const displayText = call.direction === 'inbound'
 
 **Después:**
 ```typescript
-const displayText = entityNames[call.entity_id] || 
-  (call.direction === 'inbound' ? 'Primera llamada al cliente' : 'Llamada saliente');
+// Mostrar el nombre del contacto si está cargado, sino mostrar el teléfono
+let displayText = call.phone || call.phone_number || 'Sin nombre';
+if (call.entity_id && entityNames[call.entity_id]) {
+  displayText = entityNames[call.entity_id];
+}
 ```
 
 **Cambios aplicados en:**
-- Vista mensual (línea ~339-354)
-- Vista semanal (línea ~443-475)
-- Vista diaria (línea ~549-597)
+- Vista mensual (línea ~362-373)
+- Vista semanal (línea ~477-488)
+- Vista diaria (línea ~590-599)
 
 ## ✅ Resultado
 
 Ahora el calendario muestra correctamente:
-- **Nombre del contacto**: Para todas las llamadas que tengan un `entity_id` asociado
-- **"Primera llamada al cliente"**: Como fallback para llamadas entrantes sin nombre cargado
-- **"Llamada saliente"**: Como fallback para llamadas salientes sin nombre cargado
+- **Nombre del contacto**: Para todas las llamadas que tengan un `entity_id` asociado y el nombre se haya cargado
+- **Número de teléfono**: Como fallback cuando el nombre aún no se ha cargado o no está disponible (más útil que texto genérico)
+- **"Sin nombre"**: Solo si no hay teléfono ni nombre disponible
+
+**Nota**: Ya no se muestra "Llamada saliente" o "Llamada entrante" porque el icono de teléfono ya indica el tipo de llamada, y es más útil ver el número de teléfono.
 
 ## 📝 Notas Técnicas
 
@@ -102,10 +107,10 @@ Para verificar el funcionamiento:
 1. Navegar al calendario (`/crm/calendar`)
 2. Abrir la consola del navegador (F12) para ver los logs de debugging
 3. Verificar que las llamadas muestren nombres de contactos
-4. Las llamadas entrantes deben mostrar el nombre del contacto si tienen `entity_id`
-5. Las llamadas salientes deben mostrar el nombre del contacto si tienen `entity_id`
-6. Si una llamada no tiene `entity_id`, mostrará "Llamada entrante" o "Llamada saliente"
-7. Si una llamada tiene `entity_id` pero no se pudo cargar el nombre, mostrará "Primera llamada al cliente" o "Llamada saliente"
+4. Las llamadas entrantes deben mostrar el nombre del contacto si tienen `entity_id` y el nombre se cargó
+5. Las llamadas salientes deben mostrar el nombre del contacto si tienen `entity_id` y el nombre se cargó
+6. Si el nombre no está disponible, se muestra el número de teléfono (más útil que texto genérico)
+7. El icono de teléfono ya indica si es entrante o saliente, por lo que no se repite esa información
 
 ### Logs de Debugging
 

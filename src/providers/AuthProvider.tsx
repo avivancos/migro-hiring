@@ -141,7 +141,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (email: string, password: string) => {
     try {
-      const tokens = await authService.login(email, password);
+      await authService.login(email, password);
       
       // Obtener información del usuario
       const response = await api.get('/users/me');

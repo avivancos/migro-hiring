@@ -171,7 +171,13 @@ export function CRMTaskCalendar() {
         })
         .catch((err) => {
           console.warn(`⚠️ [CRMTaskCalendar] Error cargando ${entityType} ${entityId}:`, err);
-          // No asignar 'Sin nombre' aquí, dejarlo undefined para que use el fallback
+          // Si falla la carga, usar el teléfono de la llamada como fallback temporal
+          const call = calls.find(c => c.entity_id === entityId);
+          if (call?.phone || call?.phone_number) {
+            names[entityId] = call.phone || call.phone_number || 'Contacto';
+          } else {
+            names[entityId] = 'Contacto';
+          }
         });
       
       loadPromises.push(promise);
@@ -360,16 +366,13 @@ export function CRMTaskCalendar() {
                     ))}
                     {/* Mostrar llamadas */}
                     {dayCalls.slice(0, Math.max(0, maxDisplay - dayTasks.length)).map(call => {
-                      // Si tiene entity_id, intentar obtener el nombre; si no, usar texto descriptivo
-                      let displayText = 'Sin nombre';
+                      // Siempre mostrar el nombre del contacto si está disponible
+                      let displayText = 'Contacto';
                       if (call.entity_id && entityNames[call.entity_id]) {
                         displayText = entityNames[call.entity_id];
-                      } else if (call.entity_id) {
-                        // Tiene entity_id pero aún no se ha cargado el nombre
-                        displayText = call.direction === 'inbound' ? 'Primera llamada al cliente' : 'Llamada saliente';
-                      } else {
-                        // No tiene entity_id
-                        displayText = call.direction === 'inbound' ? 'Llamada entrante' : 'Llamada saliente';
+                      } else if (!call.entity_id) {
+                        // Solo si no hay entity_id, mostrar el teléfono como fallback
+                        displayText = call.phone || call.phone_number || 'Sin nombre';
                       }
                       return (
                         <div
@@ -476,13 +479,13 @@ export function CRMTaskCalendar() {
                 {/* Llamadas */}
                 {dayCalls.map(call => {
                   const callDate = new Date(call.created_at || call.started_at);
-                  let displayTitle = 'Sin nombre';
+                  // Siempre mostrar el nombre del contacto si está disponible
+                  let displayTitle = 'Contacto';
                   if (call.entity_id && entityNames[call.entity_id]) {
                     displayTitle = entityNames[call.entity_id];
-                  } else if (call.entity_id) {
-                    displayTitle = call.direction === 'inbound' ? 'Primera llamada al cliente' : 'Llamada saliente';
-                  } else {
-                    displayTitle = call.direction === 'inbound' ? 'Llamada entrante' : 'Llamada saliente';
+                  } else if (!call.entity_id) {
+                    // Solo si no hay entity_id, mostrar el teléfono como fallback
+                    displayTitle = call.phone || call.phone_number || 'Sin nombre';
                   }
                   return (
                     <div
@@ -589,13 +592,13 @@ export function CRMTaskCalendar() {
             {/* Llamadas */}
             {dayCalls.map(call => {
               const callDate = new Date(call.created_at || call.started_at);
-              let displayTitle = 'Sin nombre';
+              // Siempre mostrar el nombre del contacto si está disponible
+              let displayTitle = 'Contacto';
               if (call.entity_id && entityNames[call.entity_id]) {
                 displayTitle = entityNames[call.entity_id];
-              } else if (call.entity_id) {
-                displayTitle = call.direction === 'inbound' ? 'Primera llamada al cliente' : 'Llamada saliente';
-              } else {
-                displayTitle = call.direction === 'inbound' ? 'Llamada entrante' : 'Llamada saliente';
+              } else if (!call.entity_id) {
+                // Solo si no hay entity_id, mostrar el teléfono como fallback
+                displayTitle = call.phone || call.phone_number || 'Sin nombre';
               }
               return (
                 <Card

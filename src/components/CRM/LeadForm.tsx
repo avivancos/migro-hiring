@@ -85,7 +85,7 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
             // Buscar el usuario actual en la lista de usuarios del CRM
             const currentCRMUser = validUsers.find(u => u.id === currentUser.id || u.email === currentUser.email);
             if (currentCRMUser) {
-              setFormData(prev => ({ ...prev, responsible_user_id: currentCRMUser.id }));
+              setFormData((prev: any) => ({ ...prev, responsible_user_id: currentCRMUser.id }));
             }
           }
         }
@@ -137,7 +137,7 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
               }
             }
             
-            setFormData(prev => ({
+            setFormData((prev: any) => ({
               ...prev,
               name: (defaults.name ?? prev.name) || '',
               status: (defaults.status ?? prev.status) || 'new',

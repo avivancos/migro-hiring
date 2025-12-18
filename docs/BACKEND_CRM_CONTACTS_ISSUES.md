@@ -2,19 +2,36 @@
 
 ## 📋 Resumen Ejecutivo
 
-**Estado**: ✅ **RESUELTO** - Ambos problemas han sido corregidos
+**Estado**: ⚠️ **PARCIALMENTE RESUELTO** - El endpoint de lista funciona, pero el endpoint individual aún tiene problemas
 
 **Fecha de Resolución**: 18 de Diciembre, 2025
 
+**⚠️ URGENTE**: Ver `docs/BACKEND_CRM_CONTACTS_INDIVIDUAL_ENDPOINT_FIX.md` para el fix del endpoint individual
+
 ---
 
-## ✅ Problema 1: ERROR 500 en GET /api/crm/contacts - RESUELTO
+## ✅ Problema 1: ERROR 500 en GET /api/crm/contacts - PARCIALMENTE RESUELTO ⚠️
 
 ### Problema Original
 - El modelo SQLAlchemy estaba intentando seleccionar columnas que no existían en la tabla `crm_contacts`
 - Columnas problemáticas: `max_contact_attempts`, `current_attempt_number`, `last_attempt_at`, `next_attempt_scheduled_at`, `remarketing_status`, `remarketing_started_at`, `total_attempts_made`, `successful_contact`, `preferred_channel`
 
-### Solución Implementada
+### Estado Actual
+
+#### ✅ Resuelto: GET /api/crm/contacts (lista)
+El endpoint de lista funciona correctamente.
+
+#### ⚠️ PENDIENTE: GET /api/crm/contacts/{id} (individual)
+El endpoint individual **AÚN tiene el mismo problema** y devuelve error 500 cuando se intenta obtener un contacto por ID.
+
+**Error actual**:
+```
+GET /api/crm/contacts/{id}
+Status: 500
+Error: column crm_contacts.max_contact_attempts does not exist
+```
+
+### Solución Implementada (Solo en lista)
 
 #### 1. Fix Temporal (Inmediato) ✅
 **Archivo**: `app/api/endpoints/crm.py` - Función `list_contacts()`
@@ -34,7 +51,33 @@ query = select(Contact).options(
 ).where(Contact.is_deleted == False)
 ```
 
-**Resultado**: El endpoint ahora funciona incluso si las columnas no existen en la base de datos.
+**Resultado**: El endpoint de lista ahora funciona incluso si las columnas no existen en la base de datos.
+
+### ⚠️ ACCIÓN REQUERIDA: Aplicar mismo fix en endpoint individual
+
+**Archivo**: `app/api/endpoints/crm.py` - Función `get_contact(id: str)`
+
+El mismo fix de `defer()` debe aplicarse en el endpoint que obtiene un contacto individual:
+
+```python
+@router.get("/contacts/{contact_id}")
+async def get_contact(contact_id: str, ...):
+    query = select(Contact).options(
+        defer(Contact.max_contact_attempts),
+        defer(Contact.current_attempt_number),
+        defer(Contact.last_attempt_at),
+        defer(Contact.next_attempt_scheduled_at),
+        defer(Contact.remarketing_status),
+        defer(Contact.remarketing_started_at),
+        defer(Contact.total_attempts_made),
+        defer(Contact.successful_contact),
+        defer(Contact.preferred_channel),
+    ).where(
+        Contact.id == contact_id,
+        Contact.is_deleted == False
+    )
+    # ... resto del código
+```
 
 #### 2. Migración Permanente ✅
 **Archivo**: `migrations/versions/z99_fix_contact_remarketing_columns.py`
@@ -141,7 +184,8 @@ docker compose exec app python scripts/associate_calls_with_contacts.py
 ## ✅ Estado Actual
 
 ### Problema 1: Error 500 en /crm/contacts
-- ✅ **RESUELTO** - El endpoint funciona con el fix temporal
+- ✅ **RESUELTO** - El endpoint de lista (`GET /crm/contacts`) funciona con el fix temporal
+- ⚠️ **PENDIENTE** - El endpoint individual (`GET /crm/contacts/{id}`) **AÚN necesita el mismo fix**
 - ⚠️ **Pendiente**: Ejecutar migración en producción para solución permanente
 
 ### Problema 2: Llamadas sin entity_id

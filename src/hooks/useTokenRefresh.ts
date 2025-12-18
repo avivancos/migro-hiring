@@ -12,7 +12,7 @@ import { authService } from '@/services/authService';
  * Verifica cada 5 minutos si el token necesita refresh
  */
 export function useTokenRefresh() {
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
   useEffect(() => {
     const checkAndRefresh = async () => {
