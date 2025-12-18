@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { authService } from '@/services/authService';
 import { api } from '@/services/api';
+import TokenStorage from '@/utils/tokenStorage';
 import type { User } from '@/types/auth';
 
 interface AuthContextType {
@@ -133,10 +134,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [location.pathname, isPublicRoute, checkAuth]);
 
   const clearAuth = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
+    TokenStorage.clearTokens();
+    localStorage.removeItem('admin_user'); // Mantener admin_user por compatibilidad
     setUser(null);
   };
 
@@ -172,7 +171,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(mappedUser);
       
       // Guardar también en formato admin_user para compatibilidad
-      localStorage.setItem('admin_token', tokens.access_token);
+      // admin_token ya está guardado por TokenStorage.saveTokens()
       localStorage.setItem('admin_user', JSON.stringify({
         id: mappedUser.id,
         email: mappedUser.email,

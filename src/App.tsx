@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { useTokenRefresh } from '@/hooks/useTokenRefresh';
 import { Home } from '@/pages/Home';
 import { HiringFlow } from '@/pages/HiringFlow';
 import { Login } from '@/pages/Login';
@@ -46,12 +47,12 @@ import { AdminContractDetail } from '@/pages/admin/AdminContractDetail';
 import { AdminContractCreate } from '@/pages/admin/AdminContractCreate';
 import { AdminCallTypes } from '@/pages/admin/AdminCallTypes';
 
-function App() {
+function AppContent() {
+  // Activar refresh automático de tokens
+  useTokenRefresh();
+  
   return (
-    <ErrorBoundary>
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
+    <Routes>
           {/* Public routes - NO requieren autenticación */}
           <Route path="/" element={<Home />} />
           <Route path="/contratacion/:code" element={<HiringFlow />} />
@@ -142,9 +143,18 @@ function App() {
           {/* Client login (futuro) */}
           <Route path="/login" element={<Login />} />
           
-          {/* Catch all - 404 */}
-          <Route path="*" element={<NotFound />} />
-          </Routes>
+      {/* Catch all - 404 */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppContent />
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>

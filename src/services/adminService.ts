@@ -1,6 +1,7 @@
 // Admin Service - Administrative endpoints
 
 import { api } from './api';
+import TokenStorage from '@/utils/tokenStorage';
 import type { CreateHiringRequest, HiringCodeResponse } from '@/types/admin';
 
 interface LoginResponse {
@@ -50,12 +51,16 @@ export const adminService = {
         };
       }
 
-      // Guardar tokens primero
-      localStorage.setItem('admin_token', data.access_token);
-      localStorage.setItem('access_token', data.access_token);
-      if (data.refresh_token) {
-        localStorage.setItem('refresh_token', data.refresh_token);
-      }
+      // Guardar tokens usando TokenStorage (usa expires_in del servidor si está disponible)
+      // La respuesta puede no incluir expires_in, así que usamos valores por defecto
+      const tokenData = {
+        access_token: data.access_token,
+        refresh_token: data.refresh_token || '',
+        token_type: data.token_type || 'bearer',
+        expires_in: (data as any).expires_in || 1209600, // 14 días por defecto
+        refresh_expires_in: (data as any).refresh_expires_in || 2592000, // 30 días por defecto
+      };
+      TokenStorage.saveTokens(tokenData);
 
       console.log('✅ Tokens guardados en localStorage');
       console.log('✅ Token:', data.access_token.substring(0, 20) + '...');

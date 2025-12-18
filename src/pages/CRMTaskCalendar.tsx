@@ -48,12 +48,21 @@ export function CRMTaskCalendar() {
   }, [searchParams]);
 
   // Actualizar URL cuando cambien view o currentDate
+  // Solo actualizar si los parámetros actuales son diferentes
   useEffect(() => {
-    const params = new URLSearchParams();
-    params.set('view', view);
-    params.set('date', currentDate.toISOString().split('T')[0]);
-    setSearchParams(params, { replace: true });
-  }, [view, currentDate, setSearchParams]);
+    const currentView = searchParams.get('view') || 'month';
+    const currentDateParam = searchParams.get('date');
+    const currentDateStr = currentDate.toISOString().split('T')[0];
+    
+    // Solo actualizar si hay diferencia
+    if (currentView !== view || currentDateParam !== currentDateStr) {
+      const params = new URLSearchParams();
+      params.set('view', view);
+      params.set('date', currentDateStr);
+      setSearchParams(params, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, currentDate]);
 
   useEffect(() => {
     loadData();
@@ -71,61 +80,49 @@ export function CRMTaskCalendar() {
         view,
       });
       
-      // Cargar tareas y llamadas en paralelo
-      // NOTA: El backend no soporta date_from/date_to todavía (error 422),
-      // así que cargamos todas las llamadas y las filtramos en el frontend por created_at
-      const [tasksData, callsResponse] = await Promise.all([
+      // Cargar tareas y llamadas en paralelo usando endpoints específicos del calendario
+      const [tasksData, callsData] = await Promise.all([
         crmService.getCalendarTasks({
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
         }),
-        crmService.getCalls({
-          // El endpoint /crm/calls está devolviendo 422
-          // Intentar con parámetros que funcionan en otros componentes
-          limit: 50,
-          skip: 0,
+        // Usar el nuevo endpoint específico para calendario que permite filtrar por fechas
+        crmService.getCalendarCalls({
+          start_date: startDate.toISOString(),
+          end_date: endDate.toISOString(),
         }).catch((err) => {
-          console.warn('⚠️ [CRMTaskCalendar] Error cargando llamadas:', err);
-          if (err?.response?.status === 422) {
-            console.warn('⚠️ [CRMTaskCalendar] El backend rechaza la petición (422). El endpoint /crm/calls puede requerir parámetros específicos o tener un problema de validación.');
-            console.warn('⚠️ [CRMTaskCalendar] Por ahora, las llamadas no se mostrarán en el calendario hasta que el backend sea corregido.');
-          }
-          return { items: [], total: 0, skip: 0, limit: 0 };
+          console.warn('⚠️ [CRMTaskCalendar] Error cargando llamadas del calendario:', err);
+          return [];
         }),
       ]);
       
-      // Filtrar llamadas en el frontend por rango de fechas usando created_at
-      const filteredCalls = (callsResponse.items || []).filter(call => {
-        const callDate = call.created_at || call.started_at;
-        if (!callDate) return false;
-        try {
-          const callDateTime = new Date(callDate).getTime();
-          const startTime = startDate.getTime();
-          const endTime = endDate.getTime();
-          return callDateTime >= startTime && callDateTime <= endTime;
-        } catch (err) {
-          console.warn('⚠️ [CRMTaskCalendar] Error parseando fecha de llamada:', call.id, callDate);
-          return false;
-        }
-      });
+      // Los endpoints /tasks/calendar y /calls/calendar ya filtran por fechas
+      // Retornan arrays directos (List[TaskResponse] y List[CallResponse])
       
       console.log('📅 [CRMTaskCalendar] Tareas cargadas:', tasksData.length);
-      console.log('📞 [CRMTaskCalendar] Llamadas totales del backend:', callsResponse.items?.length || 0);
-      console.log('📞 [CRMTaskCalendar] Llamadas filtradas por rango:', filteredCalls.length);
-      if (filteredCalls.length > 0) {
-        console.log('📞 [CRMTaskCalendar] Primeras llamadas filtradas:', filteredCalls.slice(0, 3).map(c => ({
-          id: c.id,
-          created_at: c.created_at,
-          started_at: c.started_at,
-          entity_type: c.entity_type,
+      console.log('📞 [CRMTaskCalendar] Llamadas cargadas:', callsData.length);
+      console.log('📅 [CRMTaskCalendar] Rango de fechas:', {
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        view,
+      });
+      
+      // Log detallado de las llamadas para debugging
+      if (callsData.length > 0) {
+        console.log('📞 [CRMTaskCalendar] Ejemplo de llamadas cargadas:', callsData.slice(0, 3).map(call => ({
+          id: call.id,
+          direction: call.direction,
+          entity_id: call.entity_id,
+          entity_type: call.entity_type,
+          phone: call.phone || call.phone_number,
         })));
       }
       
       setTasks(tasksData);
-      setCalls(filteredCalls);
+      setCalls(callsData);
       
-      // Cargar nombres de contactos/leads para llamadas salientes
-      await loadEntityNames(filteredCalls);
+      // Cargar nombres de contactos/leads para todas las llamadas con entity_id
+      await loadEntityNames(callsData);
     } catch (err) {
       console.error('❌ [CRMTaskCalendar] Error loading data:', err);
     } finally {
@@ -134,15 +131,22 @@ export function CRMTaskCalendar() {
   };
 
   const loadEntityNames = async (calls: Call[]) => {
-    // Obtener IDs únicos de entidades de llamadas salientes
+    // Obtener IDs únicos de entidades de todas las llamadas (entrantes y salientes)
     const entityIds = new Set<string>();
     calls.forEach(call => {
-      if (call.direction === 'outbound' && call.entity_id) {
+      if (call.entity_id) {
         entityIds.add(call.entity_id);
+      } else {
+        console.warn('⚠️ [CRMTaskCalendar] Llamada sin entity_id:', call.id, call.direction);
       }
     });
 
-    if (entityIds.size === 0) return;
+    if (entityIds.size === 0) {
+      console.log('📞 [CRMTaskCalendar] No hay llamadas con entity_id para cargar nombres');
+      return;
+    }
+
+    console.log(`📞 [CRMTaskCalendar] Cargando nombres para ${entityIds.size} entidades únicas`);
 
     const names: Record<string, string> = {};
     const loadPromises: Promise<void>[] = [];
@@ -163,17 +167,23 @@ export function CRMTaskCalendar() {
             (('first_name' in entity) ? `${entity.first_name || ''} ${entity.last_name || ''}`.trim() : '') ||
             'Sin nombre';
           names[entityId] = name;
+          console.log(`✅ [CRMTaskCalendar] Nombre cargado para ${entityType} ${entityId}:`, name);
         })
         .catch((err) => {
           console.warn(`⚠️ [CRMTaskCalendar] Error cargando ${entityType} ${entityId}:`, err);
-          names[entityId] = 'Sin nombre';
+          // No asignar 'Sin nombre' aquí, dejarlo undefined para que use el fallback
         });
       
       loadPromises.push(promise);
     });
 
     await Promise.all(loadPromises);
-    setEntityNames(prev => ({ ...prev, ...names }));
+    console.log(`📞 [CRMTaskCalendar] Nombres cargados (${Object.keys(names).length} entidades):`, names);
+    setEntityNames(prev => {
+      const updated = { ...prev, ...names };
+      console.log(`📞 [CRMTaskCalendar] Estado entityNames actualizado. Total: ${Object.keys(updated).length} entidades`);
+      return updated;
+    });
   };
 
   const getStartDate = (): Date => {
@@ -350,16 +360,26 @@ export function CRMTaskCalendar() {
                     ))}
                     {/* Mostrar llamadas */}
                     {dayCalls.slice(0, Math.max(0, maxDisplay - dayTasks.length)).map(call => {
-                      const displayText = call.direction === 'inbound' 
-                        ? 'Entrante' 
-                        : (entityNames[call.entity_id] || 'Saliente');
+                      // Si tiene entity_id, intentar obtener el nombre; si no, usar texto descriptivo
+                      let displayText = 'Sin nombre';
+                      if (call.entity_id && entityNames[call.entity_id]) {
+                        displayText = entityNames[call.entity_id];
+                      } else if (call.entity_id) {
+                        // Tiene entity_id pero aún no se ha cargado el nombre
+                        displayText = call.direction === 'inbound' ? 'Primera llamada al cliente' : 'Llamada saliente';
+                      } else {
+                        // No tiene entity_id
+                        displayText = call.direction === 'inbound' ? 'Llamada entrante' : 'Llamada saliente';
+                      }
                       return (
                         <div
                           key={call.id}
                           className="text-xs p-1 bg-blue-100 rounded cursor-pointer hover:bg-blue-200 flex items-center gap-1"
                           onClick={() => {
-                            const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
-                            navigate(`/crm/${entityType}/${call.entity_id}`);
+                            if (call.entity_id) {
+                              const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
+                              navigate(`/crm/${entityType}/${call.entity_id}`);
+                            }
                           }}
                         >
                           <Phone className="w-3 h-3" />
@@ -456,16 +476,23 @@ export function CRMTaskCalendar() {
                 {/* Llamadas */}
                 {dayCalls.map(call => {
                   const callDate = new Date(call.created_at || call.started_at);
-                  const displayTitle = call.direction === 'inbound' 
-                        ? 'Llamada Entrante' 
-                        : (entityNames[call.entity_id] || 'Llamada Saliente');
+                  let displayTitle = 'Sin nombre';
+                  if (call.entity_id && entityNames[call.entity_id]) {
+                    displayTitle = entityNames[call.entity_id];
+                  } else if (call.entity_id) {
+                    displayTitle = call.direction === 'inbound' ? 'Primera llamada al cliente' : 'Llamada saliente';
+                  } else {
+                    displayTitle = call.direction === 'inbound' ? 'Llamada entrante' : 'Llamada saliente';
+                  }
                   return (
                     <div
                       key={call.id}
                       className="text-xs p-2 bg-blue-100 rounded cursor-pointer hover:bg-blue-200"
                       onClick={() => {
-                        const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
-                        navigate(`/crm/${entityType}/${call.entity_id}`);
+                        if (call.entity_id) {
+                          const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
+                          navigate(`/crm/${entityType}/${call.entity_id}`);
+                        }
                       }}
                     >
                       <div className="flex items-center justify-between">
@@ -562,16 +589,23 @@ export function CRMTaskCalendar() {
             {/* Llamadas */}
             {dayCalls.map(call => {
               const callDate = new Date(call.created_at || call.started_at);
-              const displayTitle = call.direction === 'inbound' 
-                        ? 'Llamada Entrante' 
-                        : (entityNames[call.entity_id] || 'Llamada Saliente');
+              let displayTitle = 'Sin nombre';
+              if (call.entity_id && entityNames[call.entity_id]) {
+                displayTitle = entityNames[call.entity_id];
+              } else if (call.entity_id) {
+                displayTitle = call.direction === 'inbound' ? 'Primera llamada al cliente' : 'Llamada saliente';
+              } else {
+                displayTitle = call.direction === 'inbound' ? 'Llamada entrante' : 'Llamada saliente';
+              }
               return (
                 <Card
                   key={call.id}
                   className="cursor-pointer hover:shadow-md bg-blue-50 border-blue-200"
                   onClick={() => {
-                    const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
-                    navigate(`/crm/${entityType}/${call.entity_id}`);
+                    if (call.entity_id) {
+                      const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
+                      navigate(`/crm/${entityType}/${call.entity_id}`);
+                    }
                   }}
                 >
                   <CardContent className="p-4">

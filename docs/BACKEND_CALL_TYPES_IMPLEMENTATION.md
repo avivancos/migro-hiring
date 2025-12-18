@@ -595,3 +595,5 @@ async def get_active_call_types(
 5. **Ordenamiento**: El campo `sort_order` permite controlar el orden de visualización en los selects del frontend.
 
 
+
+

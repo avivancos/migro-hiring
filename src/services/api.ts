@@ -3,6 +3,7 @@
 import axios, { AxiosError } from 'axios';
 import { API_BASE_URL, API_TIMEOUT } from '@/config/constants';
 import { isTokenExpired, isTokenExpiringSoon, getTokenTimeRemaining } from '@/utils/jwt';
+import TokenStorage from '@/utils/tokenStorage';
 
 // Create axios instance
 export const api = axios.create({
@@ -31,11 +32,11 @@ api.interceptors.request.use(
     const hasAdminPassword = config.headers && 'X-Admin-Password' in config.headers;
     
     if (!isPublicEndpoint && !hasAdminPassword) {
-      let token = localStorage.getItem('access_token');
+      let token = TokenStorage.getAccessToken();
       
       if (token) {
-        // Verificar si el token está expirado o cerca de expirar
-        if (isTokenExpired(token)) {
+        // Verificar si el token está expirado usando TokenStorage (con buffer de 2 minutos)
+        if (TokenStorage.isTokenExpired()) {
           console.warn('⚠️ Token expirado, intentando refrescar...');
           const newToken = await refreshTokenProactively();
           if (newToken) {
@@ -49,22 +50,31 @@ api.interceptors.request.use(
             }
             return Promise.reject(new Error('Token expirado y no se pudo refrescar'));
           }
-        } else if (isTokenExpiringSoon(token, 2)) {
-          // Token expirará en menos de 2 minutos, refrescar proactivamente
-          // Reducido de 5 a 2 minutos para evitar refreshes demasiado frecuentes
-          const timeRemaining = getTokenTimeRemaining(token);
-          if (timeRemaining !== null) {
-            const minutesRemaining = Math.floor(timeRemaining / 60);
-            const secondsRemaining = timeRemaining % 60;
-            if (minutesRemaining > 0) {
-              console.log(`🔄 Token expirará en ${minutesRemaining} min ${secondsRemaining} seg, refrescando proactivamente...`);
-            } else {
-              console.log(`🔄 Token expirará en ${secondsRemaining} segundos, refrescando proactivamente...`);
+        } else {
+          // Verificar también usando JWT para compatibilidad (si el token tiene exp en el payload)
+          // TokenStorage usa expires_in del servidor, pero también verificamos el JWT
+          if (isTokenExpired(token)) {
+            console.warn('⚠️ Token JWT expirado, intentando refrescar...');
+            const newToken = await refreshTokenProactively();
+            if (newToken) {
+              token = newToken;
             }
-          }
-          const newToken = await refreshTokenProactively();
-          if (newToken) {
-            token = newToken;
+          } else if (isTokenExpiringSoon(token, 2)) {
+            // Token expirará en menos de 2 minutos, refrescar proactivamente
+            const timeRemaining = getTokenTimeRemaining(token);
+            if (timeRemaining !== null) {
+              const minutesRemaining = Math.floor(timeRemaining / 60);
+              const secondsRemaining = timeRemaining % 60;
+              if (minutesRemaining > 0) {
+                console.log(`🔄 Token expirará en ${minutesRemaining} min ${secondsRemaining} seg, refrescando proactivamente...`);
+              } else {
+                console.log(`🔄 Token expirará en ${secondsRemaining} segundos, refrescando proactivamente...`);
+              }
+            }
+            const newToken = await refreshTokenProactively();
+            if (newToken) {
+              token = newToken;
+            }
           }
         }
         
@@ -123,10 +133,16 @@ const refreshTokenProactively = async (): Promise<string | null> => {
     });
   }
 
-  const refreshToken = localStorage.getItem('refresh_token');
+  const refreshToken = TokenStorage.getRefreshToken();
   
   if (!refreshToken) {
     console.warn('⚠️ No hay refresh token disponible');
+    return null;
+  }
+
+  if (TokenStorage.isRefreshTokenExpired()) {
+    console.warn('⚠️ Refresh token expirado');
+    TokenStorage.clearTokens();
     return null;
   }
 
@@ -140,30 +156,29 @@ const refreshTokenProactively = async (): Promise<string | null> => {
       { timeout: API_TIMEOUT }
     );
     
-    const { access_token, refresh_token: newRefreshToken } = response.data;
+    const data = response.data;
     
-    // Guardar nuevos tokens
-    localStorage.setItem('access_token', access_token);
-    if (newRefreshToken) {
-      localStorage.setItem('refresh_token', newRefreshToken);
-    }
-    localStorage.setItem('admin_token', access_token);
+    // Guardar nuevos tokens usando TokenStorage (usa expires_in del servidor)
+    TokenStorage.saveTokens({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token || refreshToken, // Usar el nuevo o mantener el anterior
+      token_type: data.token_type || 'bearer',
+      expires_in: data.expires_in || 1209600, // 14 días por defecto
+      refresh_expires_in: data.refresh_expires_in || 2592000, // 30 días por defecto
+    });
     
     console.log('✅ Token refrescado exitosamente');
     
     // Procesar cola de peticiones en espera
-    processQueue(null, access_token);
+    processQueue(null, data.access_token);
     isRefreshing = false;
     
-    return access_token;
+    return data.access_token;
   } catch (refreshError) {
     console.error('❌ Error refrescando token:', refreshError);
     
     // Refresh falló, limpiar tokens
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
+    TokenStorage.clearTokens();
     
     processQueue(refreshError, null);
     isRefreshing = false;

@@ -72,4 +72,22 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 - Dashboard, Gestión de Usuarios, CRM Pipeline, Contactos.
 - Integración completa Backend/Frontend.
 
+### ✅ Correcciones y Mejoras (Diciembre 2025)
+- [x] Calendario CRM: Corregido problema de nombres de contactos en llamadas ✅
+  - Las llamadas entrantes y salientes ahora muestran el nombre del contacto relacionado
+  - Se eliminó el texto genérico "Sin nombre" 
+  - Documentación en `docs/CALENDAR_CONTACT_NAMES_FIX.md` ✅
+- [x] Backend CRM: Problemas resueltos en endpoints de contacts y calls ✅
+  - Error 500 en `/api/crm/contacts` resuelto (columnas faltantes con defer())
+  - Llamadas sin `entity_id` resueltas (asociación automática por teléfono)
+  - Documentación en `docs/BACKEND_CRM_CONTACTS_ISSUES.md` ✅
+
+### ✅ Fix: Registro de Pagos y Contratos en Historial (Enero 2025)
+- [x] Implementado registro automático de pagos completados en historial del contacto ✅
+  - Notas automáticas cuando se completa un pago en Stripe
+  - Notas automáticas cuando se sube el contrato definitivo
+  - Guardado correcto de `external_id` y `payment_method`
+  - Endpoint administrativo para procesar pagos manualmente
+  - Documentación en `docs/BACKEND_PAYMENT_CONTRACT_HISTORY_FIX.md` ✅
+
 ---

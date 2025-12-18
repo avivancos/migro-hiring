@@ -1,5 +1,6 @@
 // Auth Service - Autenticación completa
 import { api } from './api';
+import TokenStorage from '@/utils/tokenStorage';
 import type {
   LoginRequest,
   UserRegister,
@@ -25,9 +26,14 @@ export const authService = {
       password,
     } as LoginRequest);
     
-    // Guardar tokens
-    localStorage.setItem('access_token', data.access_token);
-    localStorage.setItem('refresh_token', data.refresh_token);
+    // Guardar tokens usando TokenStorage (usa expires_in del servidor)
+    TokenStorage.saveTokens({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      token_type: data.token_type || 'bearer',
+      expires_in: data.expires_in || 1209600, // 14 días por defecto si no viene
+      refresh_expires_in: data.refresh_expires_in || 2592000, // 30 días por defecto
+    });
     
     return data;
   },
@@ -46,10 +52,15 @@ export const authService = {
       accept_terms: true,
     } as UserRegister);
     
-    // Guardar tokens
+    // Guardar tokens usando TokenStorage
     if (data.tokens) {
-      localStorage.setItem('access_token', data.tokens.access_token);
-      localStorage.setItem('refresh_token', data.tokens.refresh_token);
+      TokenStorage.saveTokens({
+        access_token: data.tokens.access_token,
+        refresh_token: data.tokens.refresh_token,
+        token_type: data.tokens.token_type || 'bearer',
+        expires_in: data.tokens.expires_in || 1209600,
+        refresh_expires_in: data.tokens.refresh_expires_in || 2592000,
+      });
     }
     
     return data;
@@ -59,19 +70,28 @@ export const authService = {
    * Refrescar access token
    */
   async refreshToken(): Promise<TokenPair> {
-    const refreshToken = localStorage.getItem('refresh_token');
+    const refreshToken = TokenStorage.getRefreshToken();
     
     if (!refreshToken) {
       throw new Error('No refresh token available');
+    }
+
+    if (TokenStorage.isRefreshTokenExpired()) {
+      throw new Error('Refresh token expired');
     }
 
     const { data } = await api.post<TokenPair>('/auth/refresh', {
       refresh_token: refreshToken,
     } as RefreshTokenRequest);
     
-    // Actualizar tokens
-    localStorage.setItem('access_token', data.access_token);
-    localStorage.setItem('refresh_token', data.refresh_token);
+    // Actualizar tokens usando TokenStorage
+    TokenStorage.saveTokens({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      token_type: data.token_type || 'bearer',
+      expires_in: data.expires_in || 1209600,
+      refresh_expires_in: data.refresh_expires_in || 2592000,
+    });
     
     return data;
   },
@@ -80,7 +100,7 @@ export const authService = {
    * Logout (individual)
    */
   async logout(): Promise<MessageResponse> {
-    const refreshToken = localStorage.getItem('refresh_token');
+    const refreshToken = TokenStorage.getRefreshToken();
     
     if (refreshToken) {
       try {
@@ -92,11 +112,8 @@ export const authService = {
       }
     }
     
-    // Limpiar tokens locales
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
+    // Limpiar tokens locales usando TokenStorage
+    TokenStorage.clearTokens();
     
     return { message: 'Successfully logged out' };
   },
@@ -107,11 +124,8 @@ export const authService = {
   async logoutAll(): Promise<MessageResponse> {
     const { data } = await api.post<MessageResponse>('/auth/logout/all');
     
-    // Limpiar tokens locales
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
+    // Limpiar tokens locales usando TokenStorage
+    TokenStorage.clearTokens();
     
     return data;
   },
@@ -122,9 +136,14 @@ export const authService = {
   async loginWithGoogle(request: GoogleLoginRequest): Promise<OAuthTokenResponse> {
     const { data } = await api.post<OAuthTokenResponse>('/auth/google/login', request);
     
-    // Guardar tokens
-    localStorage.setItem('access_token', data.access_token);
-    localStorage.setItem('refresh_token', data.refresh_token);
+    // Guardar tokens usando TokenStorage
+    TokenStorage.saveTokens({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      token_type: data.token_type || 'bearer',
+      expires_in: data.expires_in || 1209600,
+      refresh_expires_in: data.refresh_expires_in || 2592000,
+    });
     
     return data;
   },
@@ -135,9 +154,14 @@ export const authService = {
   async loginWithFacebook(code: string): Promise<OAuthTokenResponse> {
     const { data } = await api.post<OAuthTokenResponse>('/auth/facebook/login', { code });
     
-    // Guardar tokens
-    localStorage.setItem('access_token', data.access_token);
-    localStorage.setItem('refresh_token', data.refresh_token);
+    // Guardar tokens usando TokenStorage
+    TokenStorage.saveTokens({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      token_type: data.token_type || 'bearer',
+      expires_in: data.expires_in || 1209600,
+      refresh_expires_in: data.refresh_expires_in || 2592000,
+    });
     
     return data;
   },
@@ -148,9 +172,14 @@ export const authService = {
   async loginWithApple(request: AppleLoginRequest): Promise<OAuthTokenResponse> {
     const { data } = await api.post<OAuthTokenResponse>('/auth/apple/login', request);
     
-    // Guardar tokens
-    localStorage.setItem('access_token', data.access_token);
-    localStorage.setItem('refresh_token', data.refresh_token);
+    // Guardar tokens usando TokenStorage
+    TokenStorage.saveTokens({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      token_type: data.token_type || 'bearer',
+      expires_in: data.expires_in || 1209600,
+      refresh_expires_in: data.refresh_expires_in || 2592000,
+    });
     
     return data;
   },
@@ -161,9 +190,14 @@ export const authService = {
   async oauthLogin(request: OAuthLoginRequest): Promise<OAuthTokenResponse> {
     const { data } = await api.post<OAuthTokenResponse>('/auth/oauth/login', request);
     
-    // Guardar tokens
-    localStorage.setItem('access_token', data.access_token);
-    localStorage.setItem('refresh_token', data.refresh_token);
+    // Guardar tokens usando TokenStorage
+    TokenStorage.saveTokens({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      token_type: data.token_type || 'bearer',
+      expires_in: data.expires_in || 1209600,
+      refresh_expires_in: data.refresh_expires_in || 2592000,
+    });
     
     return data;
   },
@@ -174,11 +208,8 @@ export const authService = {
   async deleteAccount(): Promise<MessageResponse> {
     const { data } = await api.delete<MessageResponse>('/auth/delete-account');
     
-    // Limpiar tokens
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('admin_user');
+    // Limpiar tokens usando TokenStorage
+    TokenStorage.clearTokens();
     
     return data;
   },
@@ -187,22 +218,21 @@ export const authService = {
    * Verificar si está autenticado
    */
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('access_token');
-    return !!token;
+    return TokenStorage.hasTokens() && !TokenStorage.isTokenExpired();
   },
 
   /**
    * Obtener token de acceso
    */
   getAccessToken(): string | null {
-    return localStorage.getItem('access_token');
+    return TokenStorage.getAccessToken();
   },
 
   /**
    * Obtener token de refresh
    */
   getRefreshToken(): string | null {
-    return localStorage.getItem('refresh_token');
+    return TokenStorage.getRefreshToken();
   },
 
   /**

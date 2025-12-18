@@ -861,11 +861,29 @@ export const crmService = {
   /**
    * Obtener tareas para calendario
    */
+  /**
+   * Obtener tareas para calendario
+   * Endpoint específico que permite filtrar por rango de fechas
+   * Retorna solo tareas con is_completed: false
+   */
   async getCalendarTasks(filters: { start_date: string; end_date?: string; entity_type?: string; responsible_user_id?: string }): Promise<Task[]> {
-    const { data } = await api.get<{ items: Task[] }>(`${CRM_BASE_PATH}/tasks/calendar`, {
+    const { data } = await api.get<Task[]>(`${CRM_BASE_PATH}/tasks/calendar`, {
       params: filters,
     });
-    return data.items || data;
+    // El endpoint retorna un array directo (List[TaskResponse])
+    return Array.isArray(data) ? data : [];
+  },
+
+  /**
+   * Obtener llamadas para calendario
+   * Endpoint específico que permite filtrar por rango de fechas sin requerir entity_id
+   */
+  async getCalendarCalls(filters: { start_date: string; end_date?: string }): Promise<Call[]> {
+    const { data } = await api.get<Call[]>(`${CRM_BASE_PATH}/calls/calendar`, {
+      params: filters,
+    });
+    // El endpoint retorna un array directo, no un objeto con items
+    return Array.isArray(data) ? data : [];
   },
 
   // ===== DASHBOARD STATS =====
