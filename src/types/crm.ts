@@ -172,6 +172,7 @@ export interface Task {
   task_type: string; // 'call', 'meeting', 'email', 'deadline', 'follow_up', 'reminder'
   entity_id: string; // UUID
   entity_type: 'lead' | 'contact' | 'company' | 'contacts' | 'leads'; // API usa 'contacts'/'leads'
+  contact_id?: string; // UUID - Alias directo cuando entity_type == "contacts" (solo en endpoints de calendario)
   responsible_user_id: string; // UUID
   due_date?: string; // Legacy
   complete_till?: string; // Fecha límite calculada
@@ -218,6 +219,7 @@ export interface Call {
   cloudtalk_id?: string;
   entity_id: string; // UUID
   entity_type: 'lead' | 'contact' | 'contacts' | 'leads'; // API usa 'contacts'/'leads'
+  contact_id?: string; // UUID - Alias directo cuando entity_type == "contacts" (solo en endpoints de calendario)
   direction: 'inbound' | 'outbound';
   phone?: string; // API usa 'phone' en lugar de 'phone_number'
   phone_number?: string; // Legacy

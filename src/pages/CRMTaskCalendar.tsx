@@ -156,10 +156,12 @@ export function CRMTaskCalendar() {
       const call = calls.find(c => c.entity_id === entityId);
       if (!call) return;
 
-      const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
+      // Usar contact_id si está disponible (endpoints de calendario), sino determinar por entity_type
+      const contactId = call.contact_id || (call.entity_type === 'contacts' || call.entity_type === 'contact' ? call.entity_id : null);
+      const isContact = !!contactId;
       
-      const promise = (entityType === 'contacts' 
-        ? crmService.getContact(entityId)
+      const promise = (isContact
+        ? crmService.getContact(contactId)
         : crmService.getLead(entityId)
       )
         .then((entity: KommoContact | KommoLead) => {
@@ -167,7 +169,11 @@ export function CRMTaskCalendar() {
             (('first_name' in entity) ? `${entity.first_name || ''} ${entity.last_name || ''}`.trim() : '') ||
             'Sin nombre';
           names[entityId] = name;
-          console.log(`✅ [CRMTaskCalendar] Nombre cargado para ${entityType} ${entityId}:`, name);
+          // También mapear por contact_id si está disponible
+          if (contactId && contactId !== entityId) {
+            names[contactId] = name;
+          }
+          console.log(`✅ [CRMTaskCalendar] Nombre cargado para ${isContact ? 'contact' : 'lead'} ${entityId}:`, name);
         })
         .catch((err) => {
           console.warn(`⚠️ [CRMTaskCalendar] Error cargando ${entityType} ${entityId}:`, err);
@@ -368,8 +374,10 @@ export function CRMTaskCalendar() {
                     {dayCalls.slice(0, Math.max(0, maxDisplay - dayTasks.length)).map(call => {
                       // Siempre mostrar el nombre del contacto si está disponible
                       let displayText = 'Contacto';
-                      if (call.entity_id && entityNames[call.entity_id]) {
-                        displayText = entityNames[call.entity_id];
+                      // Usar contact_id primero si está disponible, sino usar entity_id
+                      const nameKey = call.contact_id || call.entity_id;
+                      if (nameKey && entityNames[nameKey]) {
+                        displayText = entityNames[nameKey];
                       } else if (!call.entity_id) {
                         // Solo si no hay entity_id, mostrar el teléfono como fallback
                         displayText = call.phone || call.phone_number || 'Sin nombre';
@@ -379,7 +387,10 @@ export function CRMTaskCalendar() {
                           key={call.id}
                           className="text-xs p-1 bg-blue-100 rounded cursor-pointer hover:bg-blue-200 flex items-center gap-1"
                           onClick={() => {
-                            if (call.entity_id) {
+                            // Usar contact_id si está disponible (endpoints de calendario), sino usar entity_id con entity_type
+                            if (call.contact_id) {
+                              navigate(`/crm/contacts/${call.contact_id}`);
+                            } else if (call.entity_id) {
                               const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
                               navigate(`/crm/${entityType}/${call.entity_id}`);
                             }
@@ -481,8 +492,10 @@ export function CRMTaskCalendar() {
                   const callDate = new Date(call.created_at || call.started_at);
                   // Siempre mostrar el nombre del contacto si está disponible
                   let displayTitle = 'Contacto';
-                  if (call.entity_id && entityNames[call.entity_id]) {
-                    displayTitle = entityNames[call.entity_id];
+                  // Usar contact_id primero si está disponible, sino usar entity_id
+                  const nameKey = call.contact_id || call.entity_id;
+                  if (nameKey && entityNames[nameKey]) {
+                    displayTitle = entityNames[nameKey];
                   } else if (!call.entity_id) {
                     // Solo si no hay entity_id, mostrar el teléfono como fallback
                     displayTitle = call.phone || call.phone_number || 'Sin nombre';
@@ -492,7 +505,10 @@ export function CRMTaskCalendar() {
                       key={call.id}
                       className="text-xs p-2 bg-blue-100 rounded cursor-pointer hover:bg-blue-200"
                       onClick={() => {
-                        if (call.entity_id) {
+                        // Usar contact_id si está disponible (endpoints de calendario), sino usar entity_id con entity_type
+                        if (call.contact_id) {
+                          navigate(`/crm/contacts/${call.contact_id}`);
+                        } else if (call.entity_id) {
                           const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
                           navigate(`/crm/${entityType}/${call.entity_id}`);
                         }
@@ -605,7 +621,10 @@ export function CRMTaskCalendar() {
                   key={call.id}
                   className="cursor-pointer hover:shadow-md bg-blue-50 border-blue-200"
                   onClick={() => {
-                    if (call.entity_id) {
+                    // Usar contact_id si está disponible (endpoints de calendario), sino usar entity_id con entity_type
+                    if (call.contact_id) {
+                      navigate(`/crm/contacts/${call.contact_id}`);
+                    } else if (call.entity_id) {
                       const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
                       navigate(`/crm/${entityType}/${call.entity_id}`);
                     }
