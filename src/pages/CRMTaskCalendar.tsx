@@ -131,32 +131,39 @@ export function CRMTaskCalendar() {
   };
 
   const loadEntityNames = async (calls: Call[]) => {
-    // Obtener IDs únicos de entidades de todas las llamadas (entrantes y salientes)
-    const entityIds = new Set<string>();
+    // Primero, mapear contact_name directamente si está disponible (endpoints de calendario)
+    const names: Record<string, string> = {};
     calls.forEach(call => {
-      if (call.entity_id) {
-        entityIds.add(call.entity_id);
-      } else {
-        console.warn('⚠️ [CRMTaskCalendar] Llamada sin entity_id:', call.id, call.direction);
+      if (call.contact_name && call.entity_id) {
+        names[call.entity_id] = call.contact_name;
+        if (call.contact_id && call.contact_id !== call.entity_id) {
+          names[call.contact_id] = call.contact_name;
+        }
       }
     });
 
-    if (entityIds.size === 0) {
-      console.log('📞 [CRMTaskCalendar] No hay llamadas con entity_id para cargar nombres');
+    // Obtener IDs únicos de entidades que NO tienen contact_name (necesitan cargarse)
+    const entityIdsToLoad = new Set<string>();
+    calls.forEach(call => {
+      if (call.entity_id && !call.contact_name) {
+        entityIdsToLoad.add(call.entity_id);
+      }
+    });
+
+    if (entityIdsToLoad.size === 0) {
+      console.log('📞 [CRMTaskCalendar] Todos los nombres ya están disponibles (contact_name)');
+      setEntityNames(prev => ({ ...prev, ...names }));
       return;
     }
 
-    console.log(`📞 [CRMTaskCalendar] Cargando nombres para ${entityIds.size} entidades únicas`);
+    console.log(`📞 [CRMTaskCalendar] Cargando nombres para ${entityIdsToLoad.size} entidades que no tienen contact_name`);
 
-    const names: Record<string, string> = {};
     const loadPromises: Promise<void>[] = [];
 
-    entityIds.forEach(entityId => {
-      // Determinar el tipo de entidad basándose en las llamadas
+    entityIdsToLoad.forEach(entityId => {
       const call = calls.find(c => c.entity_id === entityId);
       if (!call) return;
 
-      // Usar contact_id si está disponible (endpoints de calendario), sino determinar por entity_type
       const contactId = call.contact_id || (call.entity_type === 'contacts' || call.entity_type === 'contact' ? call.entity_id : null);
       const isContact = !!contactId;
       
@@ -169,15 +176,14 @@ export function CRMTaskCalendar() {
             (('first_name' in entity) ? `${entity.first_name || ''} ${entity.last_name || ''}`.trim() : '') ||
             'Sin nombre';
           names[entityId] = name;
-          // También mapear por contact_id si está disponible
           if (contactId && contactId !== entityId) {
             names[contactId] = name;
           }
           console.log(`✅ [CRMTaskCalendar] Nombre cargado para ${isContact ? 'contact' : 'lead'} ${entityId}:`, name);
         })
         .catch((err) => {
-          console.warn(`⚠️ [CRMTaskCalendar] Error cargando ${entityType} ${entityId}:`, err);
-          // Si falla la carga, usar el teléfono de la llamada como fallback temporal
+          console.warn(`⚠️ [CRMTaskCalendar] Error cargando ${isContact ? 'contact' : 'lead'} ${entityId}:`, err);
+          // Usar teléfono como fallback
           const call = calls.find(c => c.entity_id === entityId);
           if (call?.phone || call?.phone_number) {
             names[entityId] = call.phone || call.phone_number || 'Contacto';
@@ -372,16 +378,13 @@ export function CRMTaskCalendar() {
                     ))}
                     {/* Mostrar llamadas */}
                     {dayCalls.slice(0, Math.max(0, maxDisplay - dayTasks.length)).map(call => {
-                      // Siempre mostrar el nombre del contacto si está disponible
-                      let displayText = 'Contacto';
-                      // Usar contact_id primero si está disponible, sino usar entity_id
-                      const nameKey = call.contact_id || call.entity_id;
-                      if (nameKey && entityNames[nameKey]) {
-                        displayText = entityNames[nameKey];
-                      } else if (!call.entity_id) {
-                        // Solo si no hay entity_id, mostrar el teléfono como fallback
-                        displayText = call.phone || call.phone_number || 'Sin nombre';
-                      }
+                      // Usar contact_name directamente si está disponible (endpoints de calendario), 
+                      // sino usar entityNames, sino mostrar teléfono como fallback
+                      let displayText = call.contact_name || 
+                        (call.entity_id && entityNames[call.entity_id] ? entityNames[call.entity_id] : null) ||
+                        call.phone || 
+                        call.phone_number || 
+                        'Contacto';
                       return (
                         <div
                           key={call.id}
@@ -490,16 +493,13 @@ export function CRMTaskCalendar() {
                 {/* Llamadas */}
                 {dayCalls.map(call => {
                   const callDate = new Date(call.created_at || call.started_at);
-                  // Siempre mostrar el nombre del contacto si está disponible
-                  let displayTitle = 'Contacto';
-                  // Usar contact_id primero si está disponible, sino usar entity_id
-                  const nameKey = call.contact_id || call.entity_id;
-                  if (nameKey && entityNames[nameKey]) {
-                    displayTitle = entityNames[nameKey];
-                  } else if (!call.entity_id) {
-                    // Solo si no hay entity_id, mostrar el teléfono como fallback
-                    displayTitle = call.phone || call.phone_number || 'Sin nombre';
-                  }
+                  // Usar contact_name directamente si está disponible (endpoints de calendario),
+                  // sino usar entityNames, sino mostrar teléfono como fallback
+                  let displayTitle = call.contact_name || 
+                    (call.entity_id && entityNames[call.entity_id] ? entityNames[call.entity_id] : null) ||
+                    call.phone || 
+                    call.phone_number || 
+                    'Contacto';
                   return (
                     <div
                       key={call.id}
@@ -608,14 +608,13 @@ export function CRMTaskCalendar() {
             {/* Llamadas */}
             {dayCalls.map(call => {
               const callDate = new Date(call.created_at || call.started_at);
-              // Siempre mostrar el nombre del contacto si está disponible
-              let displayTitle = 'Contacto';
-              if (call.entity_id && entityNames[call.entity_id]) {
-                displayTitle = entityNames[call.entity_id];
-              } else if (!call.entity_id) {
-                // Solo si no hay entity_id, mostrar el teléfono como fallback
-                displayTitle = call.phone || call.phone_number || 'Sin nombre';
-              }
+              // Usar contact_name directamente si está disponible (endpoints de calendario),
+              // sino usar entityNames, sino mostrar teléfono como fallback
+              let displayTitle = call.contact_name || 
+                (call.entity_id && entityNames[call.entity_id] ? entityNames[call.entity_id] : null) ||
+                call.phone || 
+                call.phone_number || 
+                'Contacto';
               return (
                 <Card
                   key={call.id}

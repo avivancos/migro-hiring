@@ -35,46 +35,61 @@ api.interceptors.request.use(
       let token = TokenStorage.getAccessToken();
       
       if (token) {
-        // Verificar si el token está expirado usando TokenStorage (con buffer de 2 minutos)
-        if (TokenStorage.isTokenExpired()) {
-          console.warn('⚠️ Token expirado, intentando refrescar...');
+        // Usar TokenStorage como fuente de verdad (usa expires_in del servidor con buffer de 2 min)
+        // TokenStorage.isTokenExpired() ya incluye el buffer de 2 minutos para refresh proactivo
+        const tokenExpired = TokenStorage.isTokenExpired();
+        
+        // Solo verificar JWT como fallback si TokenStorage no tiene información de expiración
+        // (esto puede pasar si el token fue guardado antes de implementar TokenStorage)
+        let jwtExpired = false;
+        if (tokenExpired) {
+          // Si TokenStorage dice que está expirado, verificar también el JWT para confirmar
+          jwtExpired = isTokenExpired(token);
+        }
+        
+        // Si TokenStorage dice que está expirado Y el JWT confirma, refrescar
+        // Esto evita refreshes innecesarios cuando hay discrepancias menores
+        if (tokenExpired && jwtExpired) {
+          console.warn('⚠️ Token expirado (confirmado por TokenStorage y JWT), intentando refrescar...');
           const newToken = await refreshTokenProactively();
           if (newToken) {
             token = newToken;
           } else {
-            // Si no se pudo refrescar, limpiar y redirigir
-            if (window.location.pathname.startsWith('/admin') || 
-                window.location.pathname.startsWith('/crm') ||
-                window.location.pathname.startsWith('/contrato')) {
-              window.location.href = '/auth/login';
+            // Si no se pudo refrescar, solo redirigir si realmente no hay refresh token
+            const refreshToken = TokenStorage.getRefreshToken();
+            if (!refreshToken || TokenStorage.isRefreshTokenExpired()) {
+              if (window.location.pathname.startsWith('/admin') || 
+                  window.location.pathname.startsWith('/crm') ||
+                  window.location.pathname.startsWith('/contrato')) {
+                window.location.href = '/auth/login';
+              }
             }
             return Promise.reject(new Error('Token expirado y no se pudo refrescar'));
           }
-        } else {
-          // Verificar también usando JWT para compatibilidad (si el token tiene exp en el payload)
-          // TokenStorage usa expires_in del servidor, pero también verificamos el JWT
-          if (isTokenExpired(token)) {
-            console.warn('⚠️ Token JWT expirado, intentando refrescar...');
-            const newToken = await refreshTokenProactively();
-            if (newToken) {
-              token = newToken;
+        } else if (tokenExpired && !jwtExpired) {
+          // TokenStorage dice expirado pero JWT dice válido - puede ser un problema de sincronización
+          // Intentar refrescar de todas formas para estar seguros
+          console.warn('⚠️ TokenStorage indica expiración pero JWT es válido, refrescando preventivamente...');
+          const newToken = await refreshTokenProactively();
+          if (newToken) {
+            token = newToken;
+          }
+        } else if (!tokenExpired && isTokenExpiringSoon(token, 2)) {
+          // TokenStorage dice que no está expirado pero JWT indica que expirará pronto
+          // Refrescar proactivamente
+          const timeRemaining = getTokenTimeRemaining(token);
+          if (timeRemaining !== null) {
+            const minutesRemaining = Math.floor(timeRemaining / 60);
+            const secondsRemaining = timeRemaining % 60;
+            if (minutesRemaining > 0) {
+              console.log(`🔄 Token expirará en ${minutesRemaining} min ${secondsRemaining} seg, refrescando proactivamente...`);
+            } else {
+              console.log(`🔄 Token expirará en ${secondsRemaining} segundos, refrescando proactivamente...`);
             }
-          } else if (isTokenExpiringSoon(token, 2)) {
-            // Token expirará en menos de 2 minutos, refrescar proactivamente
-            const timeRemaining = getTokenTimeRemaining(token);
-            if (timeRemaining !== null) {
-              const minutesRemaining = Math.floor(timeRemaining / 60);
-              const secondsRemaining = timeRemaining % 60;
-              if (minutesRemaining > 0) {
-                console.log(`🔄 Token expirará en ${minutesRemaining} min ${secondsRemaining} seg, refrescando proactivamente...`);
-              } else {
-                console.log(`🔄 Token expirará en ${secondsRemaining} segundos, refrescando proactivamente...`);
-              }
-            }
-            const newToken = await refreshTokenProactively();
-            if (newToken) {
-              token = newToken;
-            }
+          }
+          const newToken = await refreshTokenProactively();
+          if (newToken) {
+            token = newToken;
           }
         }
         

@@ -173,6 +173,7 @@ export interface Task {
   entity_id: string; // UUID
   entity_type: 'lead' | 'contact' | 'company' | 'contacts' | 'leads'; // API usa 'contacts'/'leads'
   contact_id?: string; // UUID - Alias directo cuando entity_type == "contacts" (solo en endpoints de calendario)
+  contact_name?: string; // Nombre del contacto cuando entity_type == "contacts" (solo en endpoints de calendario)
   responsible_user_id: string; // UUID
   due_date?: string; // Legacy
   complete_till?: string; // Fecha límite calculada
@@ -220,6 +221,7 @@ export interface Call {
   entity_id: string; // UUID
   entity_type: 'lead' | 'contact' | 'contacts' | 'leads'; // API usa 'contacts'/'leads'
   contact_id?: string; // UUID - Alias directo cuando entity_type == "contacts" (solo en endpoints de calendario)
+  contact_name?: string; // Nombre del contacto cuando entity_type == "contacts" (solo en endpoints de calendario)
   direction: 'inbound' | 'outbound';
   phone?: string; // API usa 'phone' en lugar de 'phone_number'
   phone_number?: string; // Legacy

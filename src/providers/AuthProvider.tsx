@@ -111,18 +111,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error: any) {
       console.error('Error verificando autenticación:', error);
       
-      // Si es 401, limpiar tokens
+      // Solo limpiar tokens si es 401 y no hay refresh token disponible
+      // Si hay refresh token, el interceptor de axios debería manejarlo
       if (error.response?.status === 401) {
-        clearAuth();
+        const refreshToken = TokenStorage.getRefreshToken();
+        if (!refreshToken || TokenStorage.isRefreshTokenExpired()) {
+          // Solo limpiar si realmente no hay forma de refrescar
+          clearAuth();
+        } else {
+          // Hay refresh token disponible, dejar que el interceptor lo maneje
+          // No limpiar la sesión todavía
+          console.log('⚠️ Error 401 pero hay refresh token disponible, esperando refresh automático');
+        }
       }
       
-      setUser(null);
+      // No establecer user como null inmediatamente si hay refresh token
+      // Dejar que el siguiente intento funcione
+      if (error.response?.status !== 401 || !TokenStorage.getRefreshToken()) {
+        setUser(null);
+      }
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // Verificar autenticación al montar y cuando cambia la ruta
+  // Verificar autenticación al montar y cuando cambia la ruta (con debounce)
   useEffect(() => {
     // No verificar autenticación en rutas públicas
     if (isPublicRoute(location.pathname)) {
@@ -130,8 +143,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return;
     }
     
-    checkAuth();
-  }, [location.pathname, isPublicRoute, checkAuth]);
+    // Verificar si hay token antes de hacer la verificación
+    const token = TokenStorage.getAccessToken();
+    if (!token) {
+      setUser(null);
+      setIsLoading(false);
+      return;
+    }
+    
+    // Solo verificar si no hay usuario cargado todavía
+    // El interceptor de axios ya maneja el refresh de tokens proactivamente
+    // No verificar en cada cambio de ruta si ya tenemos usuario
+    if (!user) {
+      checkAuth();
+    }
+  }, [location.pathname, isPublicRoute, checkAuth, user]);
 
   const clearAuth = () => {
     TokenStorage.clearTokens();

@@ -185,12 +185,13 @@ export const adminService = {
 
   /**
    * Admin logout
+   * IMPORTANTE: Usar TokenStorage.clearTokens() para limpiar todos los tokens y timestamps
    */
   logout(): void {
-    localStorage.removeItem('admin_token');
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('admin_user');
+    // Usar TokenStorage para limpiar todos los tokens correctamente
+    // Esto incluye access_token, refresh_token, admin_token y los timestamps de expiración
+    TokenStorage.clearTokens();
+    // admin_user se limpia en TokenStorage.clearTokens()
   },
 
   /**
