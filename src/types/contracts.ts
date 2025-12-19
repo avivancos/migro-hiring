@@ -46,6 +46,8 @@ export interface Contract {
   // Metadata
   notes?: string;
   created_by?: string;
+  // Relación con CRM
+  contact_id?: string; // UUID del contacto en el CRM
 }
 
 export interface ContractListResponse {

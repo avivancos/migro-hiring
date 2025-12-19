@@ -3,6 +3,7 @@ import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/providers/AuthProvider';
 import { LogOut, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { MigroLogo } from '@/components/common/MigroLogo';
 
 interface AdminHeaderProps {
   isAdminMode: boolean;
@@ -22,7 +23,7 @@ export function AdminHeader({ isAdminMode, onModeSwitch, onMenuClick }: AdminHea
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-40 lg:pl-64">
       <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-gray-500"
@@ -31,7 +32,8 @@ export function AdminHeader({ isAdminMode, onModeSwitch, onMenuClick }: AdminHea
             <Menu className="h-6 w-6" />
           </button>
           
-          <h1 className="ml-2 lg:ml-0 text-xl font-display font-bold text-gray-900 truncate">
+          <MigroLogo variant="header" />
+          <h1 className="text-xl font-display font-bold text-gray-900 truncate">
              {isAdminMode ? 'Panel de Administración' : 'CRM Comercial'}
           </h1>
         </div>

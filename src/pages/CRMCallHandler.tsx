@@ -31,6 +31,7 @@ import { crmService } from '@/services/crmService';
 import { ContactForm } from '@/components/CRM/ContactForm';
 import { useNavigate } from 'react-router-dom';
 import { Clock, ExternalLink } from 'lucide-react';
+import { formatCallStatus, formatLeadStatus } from '@/utils/statusTranslations';
 
 export function CRMCallHandler() {
   const navigate = useNavigate();
@@ -280,17 +281,6 @@ export function CRMCallHandler() {
     return `Llamada a ${contactName} a las ${hour} horas`;
   };
 
-  // Helper para formatear el estado de la llamada
-  const formatCallStatus = (status: string | undefined): string => {
-    if (!status) return 'Desconocido';
-    if (status === 'completed') return 'Llamada efectiva';
-    if (status === 'no_answer') return 'Sin respuesta';
-    if (status === 'failed') return 'Fallida';
-    if (status === 'busy') return 'Ocupado';
-    if (status === 'missed') return 'Perdida';
-    if (status === 'answered') return 'Respondida';
-    return status;
-  };
 
   // Helper para obtener badge del tipo de llamada
   const getCallTypeBadge = (callType: string | undefined) => {
@@ -665,7 +655,7 @@ export function CRMCallHandler() {
                             </div>
                           )}
                           <div className="text-xs text-gray-400 mt-1">
-                            Estado: {lead.status || 'N/A'}
+                            Estado: {formatLeadStatus(lead.status) || 'N/A'}
                           </div>
                         </div>
                         <TrendingUp size={16} className="text-green-600 mt-1" />
@@ -910,7 +900,7 @@ export function CRMCallHandler() {
                       <div>
                         <Label className="text-xs text-gray-500">Estado</Label>
                         <div className="text-sm font-medium">
-                          {(selectedEntity.data as KommoLead).status || 'N/A'}
+                          {formatLeadStatus((selectedEntity.data as KommoLead).status) || 'N/A'}
                         </div>
                       </div>
                       <div>

@@ -23,6 +23,8 @@ import {
   History,
   File,
   CreditCard,
+  Users,
+  Link as LinkIcon,
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -391,6 +393,25 @@ export function AdminContractDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {contract.contact_id && (
+                <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-900">Vinculado con Contacto del CRM</span>
+                    </div>
+                    <Button
+                      onClick={() => navigate(`/crm/contacts/${contract.contact_id}`)}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-100"
+                    >
+                      <LinkIcon size={14} />
+                      Ver Contacto
+                    </Button>
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-sm font-medium text-gray-500">Nombre</label>

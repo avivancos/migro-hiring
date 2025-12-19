@@ -11,6 +11,7 @@ import { crmService } from '@/services/crmService';
 import { LeadForm } from '@/components/CRM/LeadForm';
 import { TaskForm } from '@/components/CRM/TaskForm';
 import { CallForm } from '@/components/CRM/CallForm';
+import { formatLeadStatus, formatCallStatus } from '@/utils/statusTranslations';
 export function CRMLeadDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -721,7 +722,7 @@ export function CRMLeadDetail() {
           <CardContent>
             <div className="space-y-2">
               <span className="px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800">
-                {currentLead.status}
+                {formatLeadStatus(currentLead.status)}
               </span>
               {currentLead.initial_contact_completed ? (
                 <div className="flex items-center gap-2 mt-2">
@@ -1028,7 +1029,7 @@ export function CRMLeadDetail() {
                             ? 'bg-yellow-100 text-yellow-800'
                             : 'bg-blue-100 text-blue-800'
                         }`}>
-                          {call.call_status === 'no_answer' ? 'Sin respuesta' : call.call_status}
+                          {formatCallStatus(call.call_status)}
                         </span>
                       </div>
                       <p className="text-xs text-gray-500 mt-2">

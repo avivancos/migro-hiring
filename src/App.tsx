@@ -32,6 +32,7 @@ import { CRMActions } from '@/pages/CRMActions';
 import { CRMExpedientes } from '@/pages/CRMExpedientes';
 import { CRMCallHandler } from '@/pages/CRMCallHandler';
 import { CRMTaskDetail } from '@/pages/CRMTaskDetail';
+import { CRMContracts } from '@/pages/CRMContracts';
 
 // Admin Pages
 import { AdminLayout } from '@/pages/admin/AdminLayout';
@@ -116,6 +117,9 @@ function AppContent() {
             <Route path="contacts/new" element={<CRMContactEdit />} />
             <Route path="contacts/:id/edit" element={<CRMContactEdit />} />
             <Route path="contacts/:id" element={<CRMContactDetail />} />
+            
+            {/* CRM Contracts */}
+            <Route path="contracts" element={<CRMContracts />} />
             
             {/* CRM Leads */}
             <Route path="leads" element={<CRMLeadList />} />

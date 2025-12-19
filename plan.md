@@ -90,4 +90,13 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - Endpoint administrativo para procesar pagos manualmente
   - Documentación en `docs/BACKEND_PAYMENT_CONTRACT_HISTORY_FIX.md` ✅
 
+### ✅ Mejoras del Dashboard CRM (Enero 2025)
+- [x] Dashboard CRM mejorado con estadísticas y nuevas secciones ✅
+  - Cards de estadísticas (contactos totales, contratos totales, últimas llamadas, contactos activos)
+  - Sección de últimas llamadas con información detallada y navegación
+  - Mini calendario interactivo mensual con navegación
+  - Módulo de contratos integrado en el CRM (ruta, sidebar, página)
+  - Diseño completamente responsive (mobile-first)
+  - Documentación en `docs/CRM_DASHBOARD_IMPROVEMENTS.md` ✅
+
 ---

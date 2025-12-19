@@ -65,6 +65,7 @@ function normalizeHiringCode(hiringCode: any): Contract {
       subscription_id: hiringCode.subscription_id,
       subscription_status: hiringCode.subscription_status,
       first_payment_amount: hiringCode.first_payment_amount,
+      contact_id: hiringCode.contact_id,
     };
 }
 

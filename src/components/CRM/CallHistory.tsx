@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { formatCallStatus } from '@/utils/statusTranslations';
 import type { Call } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import {
@@ -75,18 +76,6 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
     if (status === 'no_answer') return 'text-yellow-600';
     if (call.direction === 'inbound') return 'text-green-600';
     return 'text-blue-600';
-  };
-
-  // Helper para formatear el estado de la llamada
-  const formatCallStatus = (status: string | undefined): string => {
-    if (!status) return 'Desconocido';
-    if (status === 'completed') return 'Llamada efectiva';
-    if (status === 'no_answer') return 'Sin respuesta';
-    if (status === 'failed') return 'Fallida';
-    if (status === 'busy') return 'Ocupado';
-    if (status === 'missed') return 'Perdida';
-    if (status === 'answered') return 'Respondida';
-    return status;
   };
 
   // Helper para obtener badge del tipo de llamada

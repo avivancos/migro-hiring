@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { Task, KommoLead, KommoContact } from '@/types/crm';
 import { crmService } from '@/services/crmService';
+import { formatLeadStatus } from '@/utils/statusTranslations';
 
 interface ActionItem {
   id: string;
@@ -339,7 +340,7 @@ export function CRMActions() {
                           {action.relatedLead && (
                             <div className="flex items-center gap-1">
                               <TrendingUp size={14} />
-                              {action.relatedLead.status}
+                              {formatLeadStatus(action.relatedLead.status)}
                             </div>
                           )}
                         </div>

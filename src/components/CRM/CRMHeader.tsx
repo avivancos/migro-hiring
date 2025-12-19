@@ -7,7 +7,6 @@ import { useAuth } from '@/providers/AuthProvider';
 import { crmService } from '@/services/crmService';
 import type { KommoContact } from '@/types/crm';
 import {
-  Building2,
   LayoutDashboard,
   Users,
   Calendar,
@@ -23,6 +22,7 @@ import {
   Flag,
   Loader2,
 } from 'lucide-react';
+import { MigroLogo } from '@/components/common/MigroLogo';
 import { useState, useEffect, useRef } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { PiliChatModal } from './PiliChatModal';
@@ -140,8 +140,8 @@ export function CRMHeader({ onMenuClick: _onMenuClick }: CRMHeaderProps = {}) {
           {/* Logo y título */}
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             <Link to="/crm" className="flex items-center gap-2">
-              <Building2 className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-primary" />
-              <h1 className="text-base sm:text-lg md:text-xl font-display font-bold text-gray-900 hidden sm:block">CRM Migro</h1>
+              <MigroLogo variant="header" />
+              <h1 className="text-base sm:text-lg md:text-xl font-display font-bold text-gray-900 hidden sm:block">CRM</h1>
             </Link>
           </div>
 

@@ -37,7 +37,7 @@ export function Sidebar({ className, onClose }: SidebarProps) {
           alt="Migro"
         />
         <span className="ml-3 text-xl font-display font-bold text-migro-green-darker">
-          Migro Admin
+          Admin
         </span>
       </div>
       <nav className="mt-5 flex-1 px-2 space-y-1">

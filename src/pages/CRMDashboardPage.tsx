@@ -6,10 +6,13 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { crmService } from '@/services/crmService';
-import type { KommoLead, PipelineStatus } from '@/types/crm';
+import { contractsService } from '@/services/contractsService';
+import type { KommoLead, PipelineStatus, Call, Task } from '@/types/crm';
+import type { Contract } from '@/types/contracts';
 import {
   Users,
   DollarSign,
+  Euro,
   Calendar,
   Phone,
   Mail,
@@ -22,8 +25,13 @@ import {
   AlertCircle,
   FileText,
   ArrowRight,
+  Clock,
+  PhoneIncoming,
+  PhoneOutgoing,
+  PhoneMissed,
 } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
+import { formatContractStatus, formatCallStatus, formatLeadStatus, formatTaskStatus, formatPriority } from '@/utils/statusTranslations';
 
 export function CRMDashboardPage() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -35,6 +43,11 @@ export function CRMDashboardPage() {
   const [leads, setLeads] = useState<KommoLead[]>([]);
   const [stages, setStages] = useState<PipelineStatus[]>([]);
   const [totalContactsCount, setTotalContactsCount] = useState<number>(0);
+  const [totalContractsCount, setTotalContractsCount] = useState<number>(0);
+  const [lastContracts, setLastContracts] = useState<Contract[]>([]);
+  const [currentDate, setCurrentDate] = useState<Date>(new Date());
+  const [weekCalls, setWeekCalls] = useState<Record<string, Call[]>>({});
+  const [weekTasks, setWeekTasks] = useState<Record<string, Task[]>>({});
 
   // Solo cargar datos si está autenticado
   useEffect(() => {
@@ -42,23 +55,77 @@ export function CRMDashboardPage() {
       console.log('✅ Sesión válida, cargando datos del dashboard...');
       loadDashboardData();
     }
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, isLoading, currentDate]);
 
   const loadDashboardData = async () => {
     setLoading(true);
     try {
+      // Calcular inicio y fin de la semana basada en currentDate
+      const dateForWeek = new Date(currentDate);
+      const startOfWeek = new Date(dateForWeek);
+      startOfWeek.setDate(dateForWeek.getDate() - dateForWeek.getDay()); // Domingo
+      startOfWeek.setHours(0, 0, 0, 0);
+      
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6); // Sábado
+      endOfWeek.setHours(23, 59, 59, 999);
+
       // Cargar datos en paralelo desde el backend
       // Usar contactos directamente ya que los leads están unificados con contactos
-      const [allContacts, pipelinesData, totalCount] = await Promise.all([
+      const [allContacts, pipelinesData, totalCount, contractsResponse, weekCallsData, weekTasksData] = await Promise.all([
         crmService.getAllContacts().catch(() => []), // Cargar todos los contactos (los leads ahora son contactos)
         crmService.getPipelines().catch(() => []), // Si pipelines no está implementado, usar array vacío
         crmService.getContactsCount().catch(() => 0), // Obtener el conteo real del backend
+        contractsService.getContracts({ limit: 10, skip: 0 }).catch(() => ({ items: [], total: 0 })), // Obtener últimos contratos
+        crmService.getCalendarCalls({
+          start_date: startOfWeek.toISOString(),
+          end_date: endOfWeek.toISOString(),
+        }).catch(() => []), // Obtener llamadas de la semana actual
+        crmService.getCalendarTasks({
+          start_date: startOfWeek.toISOString(),
+          end_date: endOfWeek.toISOString(),
+        }).catch(() => []), // Obtener tareas de la semana actual
       ]);
 
       // Los contactos ahora incluyen todos los campos de leads (service_type, status, etc.)
       // Usar contactos directamente como "leads" (son lo mismo ahora)
       setLeads(allContacts as any);
       setTotalContactsCount(totalCount);
+      setTotalContractsCount(contractsResponse.total || 0);
+      
+      // Ordenar contratos por fecha (más recientes primero)
+      const sortedContracts = (contractsResponse.items || []).sort((a, b) => {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return dateB - dateA;
+      });
+      setLastContracts(sortedContracts.slice(0, 5)); // Solo los 5 más recientes
+
+      // Agrupar llamadas de la semana por día
+      const callsByDate: Record<string, Call[]> = {};
+      weekCallsData.forEach((call: Call) => {
+        const callDate = new Date(call.started_at || call.created_at);
+        const dateKey = callDate.toISOString().split('T')[0]; // YYYY-MM-DD
+        if (!callsByDate[dateKey]) {
+          callsByDate[dateKey] = [];
+        }
+        callsByDate[dateKey].push(call);
+      });
+      setWeekCalls(callsByDate);
+
+      // Agrupar tareas de la semana por día
+      const tasksByDate: Record<string, Task[]> = {};
+      weekTasksData.forEach((task: Task) => {
+        if (task.complete_till) {
+          const taskDate = new Date(task.complete_till);
+          const dateKey = taskDate.toISOString().split('T')[0]; // YYYY-MM-DD
+          if (!tasksByDate[dateKey]) {
+            tasksByDate[dateKey] = [];
+          }
+          tasksByDate[dateKey].push(task);
+        }
+      });
+      setWeekTasks(tasksByDate);
 
       // Obtener stages del pipeline principal
       if (pipelinesData.length > 0) {
@@ -138,11 +205,15 @@ export function CRMDashboardPage() {
     return acc;
   }, {} as Record<string | number, KommoLead[]>);
 
-  const formatCurrency = (amount: number): string => {
+  const formatCurrency = (amount: number, currency: string = 'EUR', inCents: boolean = true): string => {
+    // Si inCents es true (contratos), dividir entre 100. Si es false (leads), usar directamente
+    const amountInUnits = inCents ? amount / 100 : amount;
+    // Normalizar moneda: siempre usar EUR para evitar símbolo de dólar
+    const normalizedCurrency = currency?.toUpperCase() === 'USD' ? 'EUR' : (currency?.toUpperCase() || 'EUR');
     return new Intl.NumberFormat('es-ES', {
       style: 'currency',
-      currency: 'EUR',
-    }).format(amount);
+      currency: normalizedCurrency,
+    }).format(amountInUnits);
   };
 
   const formatDate = (dateString: string): string => {
@@ -185,6 +256,94 @@ export function CRMDashboardPage() {
     }
   };
 
+  // Funciones para el mini calendario semanal
+  const getWeekDays = () => {
+    const dateForWeek = new Date(currentDate);
+    const startOfWeek = new Date(dateForWeek);
+    startOfWeek.setDate(dateForWeek.getDate() - dateForWeek.getDay()); // Domingo
+    
+    const days: Array<{ date: Date; dayNumber: number; dateKey: string }> = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek);
+      date.setDate(startOfWeek.getDate() + i);
+      const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      days.push({
+        date,
+        dayNumber: date.getDate(),
+        dateKey,
+      });
+    }
+    return days;
+  };
+
+  const navigateWeek = (direction: 'prev' | 'next') => {
+    setCurrentDate(prev => {
+      const newDate = new Date(prev);
+      if (direction === 'prev') {
+        newDate.setDate(newDate.getDate() - 7);
+      } else {
+        newDate.setDate(newDate.getDate() + 7);
+      }
+      return newDate;
+    });
+  };
+
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
+  const getDayName = (date: Date) => {
+    return date.toLocaleDateString('es-ES', { weekday: 'short' });
+  };
+
+  const getCallsForDay = (dateKey: string): Call[] => {
+    return weekCalls[dateKey] || [];
+  };
+
+  const getTasksForDay = (dateKey: string): Task[] => {
+    return weekTasks[dateKey] || [];
+  };
+
+  const getCallIcon = (call: Call) => {
+    if (call.direction === 'inbound') {
+      return call.call_status === 'missed' || call.status === 'missed' ? PhoneMissed : PhoneIncoming;
+    }
+    return PhoneOutgoing;
+  };
+
+  const getCallStatusColor = (call: Call): string => {
+    const status = call.call_status || call.status;
+    if (status === 'missed') return 'text-red-600';
+    if (status === 'no_answer') return 'text-yellow-600';
+    if (call.direction === 'inbound') return 'text-green-600';
+    return 'text-blue-600';
+  };
+
+  // Helper para formatear el título de la llamada en lenguaje natural
+  const getCallTitle = (call: Call): string => {
+    const callDate = new Date(call.started_at || call.created_at);
+    const hour = callDate.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    
+    // Obtener nombre del contacto - prioridad: contact_name > phone > fallback
+    let contactName = call.contact_name;
+    
+    if (!contactName) {
+      contactName = call.phone || call.phone_number || 'Cliente';
+    }
+    
+    const direction = call.direction === 'inbound' ? 'de' : 'a';
+    return `Llamada ${direction} ${contactName} a las ${hour} horas`;
+  };
+
+
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -209,7 +368,322 @@ export function CRMDashboardPage() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-4 sm:space-y-6">
+        {/* Cards de Estadísticas */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <Card className="border-l-4 border-l-blue-500">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Contactos Totales</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">{totalContactsCount}</p>
+                </div>
+                <div className="p-3 bg-blue-100 rounded-full">
+                  <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-l-4 border-l-green-500">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Contratos Totales</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">{totalContractsCount}</p>
+                </div>
+                <div className="p-3 bg-green-100 rounded-full">
+                  <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-l-4 border-l-purple-500">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Últimos Contratos</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">{lastContracts.length}</p>
+                </div>
+                <div className="p-3 bg-purple-100 rounded-full">
+                  <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-l-4 border-l-orange-500">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Contactos Activos</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">
+                    {leads.filter(l => l.status !== 'won' && l.status !== 'lost').length}
+                  </p>
+                </div>
+                <div className="p-3 bg-orange-100 rounded-full">
+                  <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Grid Principal: Mini Calendario y Últimos Contratos */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Mini Calendario Semanal */}
+          <Card className="lg:col-span-2">
+            <CardHeader className="p-3 sm:p-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base sm:text-lg font-bold">Semana Actual</CardTitle>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 sm:h-8 sm:w-8"
+                    onClick={() => navigateWeek('prev')}
+                  >
+                    <ArrowRight className="w-4 h-4 rotate-180" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 sm:h-8 sm:w-8"
+                    onClick={() => navigateWeek('next')}
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+              <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                {(() => {
+                  const weekDays = getWeekDays();
+                  const start = weekDays[0].date;
+                  const end = weekDays[6].date;
+                  return `${start.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - ${end.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+                })()}
+              </p>
+            </CardHeader>
+            <CardContent className="p-3 sm:p-4">
+              <div className="space-y-2">
+                {getWeekDays().map((dayInfo) => {
+                  const dayCalls = getCallsForDay(dayInfo.dateKey);
+                  const dayTasks = getTasksForDay(dayInfo.dateKey);
+                  const today = isToday(dayInfo.date);
+                  const totalItems = dayCalls.length + dayTasks.length;
+                  
+                  return (
+                    <div
+                      key={dayInfo.dateKey}
+                      className={`
+                        p-2 sm:p-3 rounded-lg border transition-colors cursor-pointer
+                        ${today 
+                          ? 'bg-primary/10 border-primary' 
+                          : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                        }
+                      `}
+                      onClick={() => navigate('/crm/calendar')}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <span className={`
+                            text-xs sm:text-sm font-semibold
+                            ${today ? 'text-primary' : 'text-gray-700'}
+                          `}>
+                            {getDayName(dayInfo.date)}
+                          </span>
+                          <span className={`
+                            text-sm sm:text-base font-bold
+                            ${today ? 'text-primary' : 'text-gray-900'}
+                          `}>
+                            {dayInfo.dayNumber}
+                          </span>
+                        </div>
+                        {totalItems > 0 && (
+                          <span className="text-xs font-medium text-gray-600">
+                            {totalItems} {totalItems === 1 ? 'item' : 'items'}
+                          </span>
+                        )}
+                      </div>
+                      {totalItems > 0 ? (
+                        <div className="space-y-1.5 mt-2">
+                          {/* Llamadas en lenguaje natural */}
+                          {dayCalls.slice(0, 3).map((call) => {
+                            const CallIcon = getCallIcon(call);
+                            const iconColor = getCallStatusColor(call);
+                            const callTitle = getCallTitle(call);
+                            const callStatus = formatCallStatus(call.call_status || call.status);
+                            return (
+                              <div
+                                key={`call-${call.id}`}
+                                className={`
+                                  p-2 rounded-md bg-white border text-xs
+                                  ${call.direction === 'inbound' ? 'border-green-200 bg-green-50/50' : 'border-blue-200 bg-blue-50/50'}
+                                  hover:shadow-sm transition-all cursor-pointer
+                                `}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (call.entity_id && call.entity_type) {
+                                    const entityType = call.entity_type === 'contacts' ? 'contacts' : 'leads';
+                                    navigate(`/crm/${entityType}/${call.entity_id}`);
+                                  }
+                                }}
+                              >
+                                <div className="flex items-start gap-2">
+                                  <CallIcon className={`w-3 h-3 sm:w-4 sm:h-4 ${iconColor} flex-shrink-0 mt-0.5`} />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-gray-900 truncate">
+                                      {callTitle}
+                                    </p>
+                                    <p className="text-gray-500 text-[10px] mt-0.5">
+                                      {callStatus}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {/* Tareas */}
+                          {dayTasks.slice(0, 3 - dayCalls.length).map((task) => {
+                            const taskIcon = task.task_type === 'call' ? Phone : 
+                                            task.task_type === 'meeting' ? Calendar :
+                                            task.task_type === 'email' ? Mail : FileText;
+                            const taskTime = task.complete_till 
+                              ? new Date(task.complete_till).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+                              : '';
+                            return (
+                              <div
+                                key={`task-${task.id}`}
+                                className="p-2 rounded-md bg-white border border-purple-200 bg-purple-50/50 hover:shadow-sm transition-all cursor-pointer text-xs"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (task.entity_id && task.entity_type) {
+                                    const entityType = task.entity_type === 'contacts' ? 'contacts' : 'leads';
+                                    navigate(`/crm/${entityType}/${task.entity_id}`);
+                                  }
+                                }}
+                              >
+                                <div className="flex items-start gap-2">
+                                  {taskIcon === Phone && <Phone className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0 mt-0.5" />}
+                                  {taskIcon === Calendar && <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0 mt-0.5" />}
+                                  {taskIcon === Mail && <Mail className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0 mt-0.5" />}
+                                  {taskIcon === FileText && <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0 mt-0.5" />}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-gray-900 truncate">
+                                      {task.text}
+                                    </p>
+                                    {taskTime && (
+                                      <p className="text-gray-500 text-[10px] mt-0.5">
+                                        {taskTime}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {/* Indicador de más items */}
+                          {totalItems > 3 && (
+                            <div className="p-2 rounded-md bg-gray-100 border border-gray-200 text-center">
+                              <span className="text-xs font-medium text-gray-600">
+                                +{totalItems - 3} {totalItems - 3 === 1 ? 'evento más' : 'eventos más'}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-xs text-gray-400 mt-1">Sin eventos</div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full mt-3 text-xs sm:text-sm"
+                onClick={() => navigate('/crm/calendar')}
+              >
+                Ver Calendario Completo
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Últimos Contratos */}
+          <Card>
+            <CardHeader className="p-3 sm:p-4 md:p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-purple-600" />
+                  <CardTitle className="text-base sm:text-lg md:text-xl font-bold">Últimos Contratos</CardTitle>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/crm/contracts')}
+                  className="text-xs sm:text-sm"
+                >
+                  Ver todos
+                  <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              {lastContracts.length > 0 ? (
+                <div className="space-y-3">
+                  {lastContracts.map((contract) => {
+                    const statusColors: Record<string, string> = {
+                      pending: 'bg-yellow-100 text-yellow-700',
+                      paid: 'bg-green-100 text-green-700',
+                      completed: 'bg-blue-100 text-blue-700',
+                      expired: 'bg-red-100 text-red-700',
+                      cancelled: 'bg-gray-100 text-gray-700',
+                    };
+                    return (
+                      <div
+                        key={contract.id}
+                        className="flex items-start gap-3 sm:gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                        onClick={() => navigate(`/admin/contracts/${contract.hiring_code}`)}
+                      >
+                        <div className="p-2 rounded-full bg-white text-purple-600 flex-shrink-0">
+                          <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <p className="font-semibold text-sm sm:text-base text-gray-900">
+                              Contrato {contract.hiring_code} - {contract.client_name}
+                            </p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[contract.status] || 'bg-gray-100 text-gray-700'}`}>
+                              {formatContractStatus(contract.status)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-1">
+                            <span className="text-gray-500">{contract.service_name}</span>
+                            <span>•</span>
+                            <span className="font-semibold text-green-600">
+                              {formatCurrency(contract.amount, contract.currency)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                            <span>Creado: {formatDate(contract.created_at)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-8 text-center text-gray-500">
+                  <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <p className="text-sm">No hay contratos recientes</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Mis Contactos para Llamadas */}
         <Card className="mb-4 sm:mb-6 border-2 border-blue-200 bg-blue-50">
           <CardHeader className="p-3 sm:p-4 md:p-6">
@@ -257,12 +731,12 @@ export function CRMDashboardPage() {
                               lead.priority
                             )}`}
                           >
-                            {lead.priority}
+                            {formatPriority(lead.priority)}
                           </span>
                         )}
                         {lead.status && (
                           <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-300">
-                            {lead.status}
+                            {formatLeadStatus(lead.status)}
                           </span>
                         )}
                       </div>
@@ -297,7 +771,7 @@ export function CRMDashboardPage() {
                       {lead.price > 0 && (
                         <div className="text-right">
                           <p className="text-sm sm:text-base md:text-lg font-bold text-green-600">
-                            {formatCurrency(lead.price)}
+                            {formatCurrency(lead.price, lead.currency || 'EUR', false)}
                           </p>
                         </div>
                       )}
@@ -397,7 +871,7 @@ export function CRMDashboardPage() {
                               <div className="flex items-center gap-2">
                                 <DollarSign className="w-3 h-3 text-green-600" />
                                 <span className="font-semibold text-green-600">
-                                  {formatCurrency(lead.price)}
+                                  {formatCurrency(lead.price, lead.currency || 'EUR', false)}
                                 </span>
                               </div>
                             )}

@@ -8,14 +8,16 @@ import {
   Phone,
   FileText,
   Settings,
-  Building2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  FileCheck
 } from 'lucide-react';
+import { MigroLogo } from '@/components/common/MigroLogo';
 
 const navigation = [
   { name: 'Dashboard', href: '/crm', icon: LayoutDashboard },
   { name: 'Contactos', href: '/crm/contacts', icon: Users },
+  { name: 'Contratos', href: '/crm/contracts', icon: FileCheck },
   { name: 'Calendario', href: '/crm/calendar', icon: Calendar },
   { name: 'Llamadas', href: '/crm/call', icon: Phone },
   { name: 'Expedientes', href: '/crm/expedientes', icon: FileText },
@@ -41,14 +43,14 @@ export function CRMSidebar({ className, onClose, isCollapsed = false, onToggle }
       )}>
         {!isCollapsed && (
           <div className="flex items-center flex-1">
-            <Building2 className="h-8 w-8 text-primary" />
-            <span className="ml-3 text-xl font-display font-bold text-primary">
-              CRM Migro
+            <MigroLogo variant="sidebar" />
+            <span className="ml-2 text-xl font-display font-bold text-primary">
+              CRM
             </span>
           </div>
         )}
         {isCollapsed && (
-          <Building2 className="h-8 w-8 text-primary" />
+          <MigroLogo variant="sidebar" />
         )}
         {onToggle && (
           <Button

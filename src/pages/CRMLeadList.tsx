@@ -9,6 +9,7 @@ import { Plus, Search, List, LayoutGrid } from 'lucide-react';
 import type { KommoLead, Pipeline } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { DollarSign, User, Calendar } from 'lucide-react';
+import { formatLeadStatus } from '@/utils/statusTranslations';
 const LEAD_STATUSES = [
   { value: 'new', label: 'Nuevos', color: 'bg-blue-100 border-blue-300' },
   { value: 'contacted', label: 'Contactados', color: 'bg-yellow-100 border-yellow-300' },
@@ -320,7 +321,7 @@ export function CRMLeadList() {
                         <span className={`px-2 py-1 rounded-full text-xs ${
                           LEAD_STATUSES.find(s => s.value === lead.status)?.color || 'bg-gray-100'
                         }`}>
-                          {LEAD_STATUSES.find(s => s.value === lead.status)?.label || lead.status}
+                          {LEAD_STATUSES.find(s => s.value === lead.status)?.label || formatLeadStatus(lead.status)}
                         </span>
                       </td>
                       <td className="p-3 font-semibold text-green-600">

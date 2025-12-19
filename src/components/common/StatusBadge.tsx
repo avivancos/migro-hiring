@@ -1,6 +1,7 @@
 // StatusBadge - Badge para estados con colores semánticos
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { formatContractStatus, formatCallStatus, formatLeadStatus, formatTaskStatus, formatKYCStatus, formatPriority } from '@/utils/statusTranslations';
 
 export type StatusVariant = 
   | 'success' 
@@ -81,11 +82,44 @@ export function StatusBadge({
   const finalVariant = variant || statusToVariant[status.toLowerCase()] || 'default';
   const config = statusConfig[finalVariant];
   
-  // Formatear label del status
-  const label = status
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+  // Formatear label del status usando funciones de traducción
+  const getTranslatedLabel = (status: string): string => {
+    const statusLower = status.toLowerCase();
+    
+    // Intentar traducir según el tipo de estado
+    // Contratos
+    if (['pending', 'paid', 'completed', 'expired', 'cancelled'].includes(statusLower)) {
+      return formatContractStatus(status);
+    }
+    // Llamadas
+    if (['completed', 'no_answer', 'failed', 'busy', 'missed', 'answered'].includes(statusLower)) {
+      return formatCallStatus(status);
+    }
+    // Leads/Contactos
+    if (['new', 'contacted', 'proposal', 'negotiation', 'won', 'lost', 'in_progress', 'on_hold'].includes(statusLower)) {
+      return formatLeadStatus(status);
+    }
+    // Tareas
+    if (['pending', 'in_progress', 'completed', 'cancelled', 'overdue'].includes(statusLower)) {
+      return formatTaskStatus(status);
+    }
+    // KYC
+    if (['pending', 'verified', 'failed', 'null'].includes(statusLower) || status === null) {
+      return formatKYCStatus(status as any);
+    }
+    // Prioridades
+    if (['urgent', 'high', 'medium', 'low'].includes(statusLower)) {
+      return formatPriority(status);
+    }
+    
+    // Si no coincide con ningún tipo conocido, formatear como antes
+    return status
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+  
+  const label = getTranslatedLabel(status);
 
   return (
     <Badge

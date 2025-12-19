@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Plus, ExternalLink, Phone } from 'lucide-react';
 import type { Task, Call, KommoContact, KommoLead } from '@/types/crm';
 import { crmService } from '@/services/crmService';
+import { formatCallStatus } from '@/utils/statusTranslations';
 
 type ViewMode = 'month' | 'week' | 'day';
 
@@ -284,17 +285,6 @@ export function CRMTaskCalendar() {
     });
   };
 
-  // Helper para formatear el estado de la llamada
-  const formatCallStatus = (status: string | undefined): string => {
-    if (!status) return 'Desconocido';
-    if (status === 'completed') return 'Llamada efectiva';
-    if (status === 'no_answer') return 'Sin respuesta';
-    if (status === 'failed') return 'Fallida';
-    if (status === 'busy') return 'Ocupado';
-    if (status === 'missed') return 'Perdida';
-    if (status === 'answered') return 'Respondida';
-    return status;
-  };
 
   // Helper para obtener clases CSS según el estado de la llamada
   const getCallStatusClasses = (call: Call): string => {

@@ -32,6 +32,7 @@ import { ContactCustomFields } from '@/components/CRM/ContactCustomFields';
 import type { CRMUser } from '@/types/crm';
 import { useAuth } from '@/providers/AuthProvider';
 import { Trash2 } from 'lucide-react';
+import { formatCallStatus } from '@/utils/statusTranslations';
 export function CRMContactDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -1069,7 +1070,7 @@ export function CRMContactDetail() {
                                         </div>
                                       )}
                                       <div className="flex items-center gap-1 text-gray-600">
-                                        <span>Estado: {call.call_status || call.status || 'unknown'}</span>
+                                        <span>Estado: {formatCallStatus(call.call_status || call.status)}</span>
                                       </div>
                                     </div>
                                     {call.resumen_llamada && (
