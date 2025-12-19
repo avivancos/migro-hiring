@@ -1,7 +1,7 @@
 // CRM Contracts - Lista de contratos para el módulo CRM
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -23,9 +23,6 @@ import { EmptyState } from '@/components/common/EmptyState';
 import type {
   Contract,
   ContractFilters,
-  ContractStatus,
-  KYCStatus,
-  ClientGrade,
 } from '@/types/contracts';
 import {
   CONTRACT_STATUS_COLORS,
@@ -100,15 +97,26 @@ export function CRMContracts() {
   };
 
   const handlePageChange = (direction: 'prev' | 'next') => {
-    if (direction === 'prev' && filters.skip > 0) {
-      setFilters((prev) => ({ ...prev, skip: Math.max(0, prev.skip - prev.limit) }));
-    } else if (direction === 'next' && filters.skip + filters.limit < total) {
-      setFilters((prev) => ({ ...prev, skip: prev.skip + prev.limit }));
+    const currentSkip = filters.skip ?? 0;
+    const currentLimit = filters.limit ?? 20;
+    
+    if (direction === 'prev' && currentSkip > 0) {
+      setFilters((prev) => ({ 
+        ...prev, 
+        skip: Math.max(0, (prev.skip ?? 0) - (prev.limit ?? 20)) 
+      }));
+    } else if (direction === 'next' && currentSkip + currentLimit < total) {
+      setFilters((prev) => ({ 
+        ...prev, 
+        skip: (prev.skip ?? 0) + (prev.limit ?? 20) 
+      }));
     }
   };
 
-  const currentPage = Math.floor(filters.skip / filters.limit) + 1;
-  const totalPages = Math.ceil(total / filters.limit);
+  const currentSkip = filters.skip ?? 0;
+  const currentLimit = filters.limit ?? 20;
+  const currentPage = Math.floor(currentSkip / currentLimit) + 1;
+  const totalPages = Math.ceil(total / currentLimit);
 
   // Estadísticas rápidas
   const stats = {
@@ -347,14 +355,14 @@ export function CRMContracts() {
               <CardContent className="p-4">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                   <p className="text-sm text-gray-600">
-                    Mostrando {filters.skip + 1} - {Math.min(filters.skip + filters.limit, total)} de {total} contratos
+                    Mostrando {currentSkip + 1} - {Math.min(currentSkip + currentLimit, total)} de {total} contratos
                   </p>
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handlePageChange('prev')}
-                      disabled={filters.skip === 0}
+                      disabled={currentSkip === 0}
                     >
                       <ChevronLeft className="w-4 h-4" />
                       Anterior
@@ -366,7 +374,7 @@ export function CRMContracts() {
                       variant="outline"
                       size="sm"
                       onClick={() => handlePageChange('next')}
-                      disabled={filters.skip + filters.limit >= total}
+                      disabled={currentSkip + currentLimit >= total}
                     >
                       Siguiente
                       <ChevronRight className="w-4 h-4" />

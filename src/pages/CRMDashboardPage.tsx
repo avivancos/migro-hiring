@@ -12,7 +12,6 @@ import type { Contract } from '@/types/contracts';
 import {
   Users,
   DollarSign,
-  Euro,
   Calendar,
   Phone,
   Mail,
@@ -25,13 +24,12 @@ import {
   AlertCircle,
   FileText,
   ArrowRight,
-  Clock,
   PhoneIncoming,
   PhoneOutgoing,
   PhoneMissed,
 } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
-import { formatContractStatus, formatCallStatus, formatLeadStatus, formatTaskStatus, formatPriority } from '@/utils/statusTranslations';
+import { formatContractStatus, formatCallStatus, formatLeadStatus, formatPriority } from '@/utils/statusTranslations';
 
 export function CRMDashboardPage() {
   const { isAuthenticated, isLoading, user } = useAuth();
