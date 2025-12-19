@@ -114,14 +114,23 @@ export function CRMTaskCalendar() {
           direction: call.direction,
           entity_id: call.entity_id,
           entity_type: call.entity_type,
+          contact_id: call.contact_id,
+          contact_name: call.contact_name,
           phone: call.phone || call.phone_number,
+          created_at: call.created_at,
         })));
+        
+        // Verificar cuántas tienen contact_name
+        const withContactName = callsData.filter(c => c.contact_name).length;
+        console.log(`📞 [CRMTaskCalendar] Llamadas con contact_name: ${withContactName}/${callsData.length}`);
+      } else {
+        console.warn('⚠️ [CRMTaskCalendar] No se cargaron llamadas. Verificar endpoint y filtros de fecha.');
       }
       
       setTasks(tasksData);
       setCalls(callsData);
       
-      // Cargar nombres de contactos/leads para todas las llamadas con entity_id
+      // Cargar nombres de contactos/leads para todas las llamadas con entity_id que no tienen contact_name
       await loadEntityNames(callsData);
     } catch (err) {
       console.error('❌ [CRMTaskCalendar] Error loading data:', err);
@@ -275,6 +284,27 @@ export function CRMTaskCalendar() {
     });
   };
 
+  // Helper para formatear el estado de la llamada
+  const formatCallStatus = (status: string | undefined): string => {
+    if (!status) return 'Desconocido';
+    if (status === 'completed') return 'Llamada efectiva';
+    if (status === 'no_answer') return 'Sin respuesta';
+    if (status === 'failed') return 'Fallida';
+    if (status === 'busy') return 'Ocupado';
+    if (status === 'missed') return 'Perdida';
+    if (status === 'answered') return 'Respondida';
+    return status;
+  };
+
+  // Helper para obtener clases CSS según el estado de la llamada
+  const getCallStatusClasses = (call: Call): string => {
+    const status = call.call_status || call.status;
+    if (status === 'no_answer') {
+      return 'bg-yellow-100 hover:bg-yellow-200';
+    }
+    return 'bg-blue-100 hover:bg-blue-200';
+  };
+
   const getCallsForDate = (date: Date): Call[] => {
     const dateStr = date.toISOString().split('T')[0];
     const filtered = calls.filter(call => {
@@ -293,8 +323,14 @@ export function CRMTaskCalendar() {
       }
     });
     
-    if (filtered.length > 0 && dateStr === new Date().toISOString().split('T')[0]) {
-      console.log(`📞 [CRMTaskCalendar] ${filtered.length} llamadas para hoy (${dateStr})`);
+    // Log detallado para debugging
+    if (filtered.length > 0) {
+      console.log(`📞 [CRMTaskCalendar] ${filtered.length} llamadas para ${dateStr}:`, filtered.map(c => ({
+        id: c.id,
+        contact_name: c.contact_name || 'Sin nombre',
+        phone: c.phone || c.phone_number,
+        entity_id: c.entity_id,
+      })));
     }
     
     return filtered;
@@ -378,17 +414,17 @@ export function CRMTaskCalendar() {
                     ))}
                     {/* Mostrar llamadas */}
                     {dayCalls.slice(0, Math.max(0, maxDisplay - dayTasks.length)).map(call => {
-                      // Usar contact_name directamente si está disponible (endpoints de calendario), 
-                      // sino usar entityNames, sino mostrar teléfono como fallback
+                      // Prioridad: contact_name (del endpoint) > entityNames (cargado) > teléfono > fallback
                       let displayText = call.contact_name || 
                         (call.entity_id && entityNames[call.entity_id] ? entityNames[call.entity_id] : null) ||
                         call.phone || 
                         call.phone_number || 
-                        'Contacto';
+                        (call.direction === 'inbound' ? 'Llamada entrante' : 'Llamada saliente');
+                      
                       return (
                         <div
                           key={call.id}
-                          className="text-xs p-1 bg-blue-100 rounded cursor-pointer hover:bg-blue-200 flex items-center gap-1"
+                          className={`text-xs p-1 rounded cursor-pointer flex items-center gap-1 ${getCallStatusClasses(call)}`}
                           onClick={() => {
                             // Usar contact_id si está disponible (endpoints de calendario), sino usar entity_id con entity_type
                             if (call.contact_id) {
@@ -396,10 +432,14 @@ export function CRMTaskCalendar() {
                             } else if (call.entity_id) {
                               const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
                               navigate(`/crm/${entityType}/${call.entity_id}`);
+                            } else if (call.phone || call.phone_number) {
+                              // Si no hay entity_id, al menos mostrar información de la llamada
+                              console.log('📞 [CRMTaskCalendar] Llamada sin contacto asociado:', call);
                             }
                           }}
+                          title={call.contact_name ? `Llamada con ${call.contact_name}` : (call.phone || call.phone_number || 'Llamada')}
                         >
-                          <Phone className="w-3 h-3" />
+                          <Phone className="w-3 h-3 flex-shrink-0" />
                           <span className="truncate">{displayText}</span>
                         </div>
                       );
@@ -493,17 +533,17 @@ export function CRMTaskCalendar() {
                 {/* Llamadas */}
                 {dayCalls.map(call => {
                   const callDate = new Date(call.created_at || call.started_at);
-                  // Usar contact_name directamente si está disponible (endpoints de calendario),
-                  // sino usar entityNames, sino mostrar teléfono como fallback
+                  // Prioridad: contact_name (del endpoint) > entityNames (cargado) > teléfono > fallback
                   let displayTitle = call.contact_name || 
                     (call.entity_id && entityNames[call.entity_id] ? entityNames[call.entity_id] : null) ||
                     call.phone || 
                     call.phone_number || 
-                    'Contacto';
+                    (call.direction === 'inbound' ? 'Llamada entrante' : 'Llamada saliente');
+                  
                   return (
                     <div
                       key={call.id}
-                      className="text-xs p-2 bg-blue-100 rounded cursor-pointer hover:bg-blue-200"
+                      className={`text-xs p-2 rounded cursor-pointer ${getCallStatusClasses(call)}`}
                       onClick={() => {
                         // Usar contact_id si está disponible (endpoints de calendario), sino usar entity_id con entity_type
                         if (call.contact_id) {
@@ -511,13 +551,16 @@ export function CRMTaskCalendar() {
                         } else if (call.entity_id) {
                           const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
                           navigate(`/crm/${entityType}/${call.entity_id}`);
+                        } else {
+                          console.log('📞 [CRMTaskCalendar] Llamada sin contacto asociado:', call);
                         }
                       }}
+                      title={call.contact_name ? `Llamada con ${call.contact_name}` : (call.phone || call.phone_number || 'Llamada')}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 flex-1">
-                          <Phone className="w-3 h-3" />
-                          <div className="flex-1">
+                          <Phone className="w-3 h-3 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
                             <div className="font-semibold truncate">
                               {displayTitle}
                             </div>
@@ -608,17 +651,18 @@ export function CRMTaskCalendar() {
             {/* Llamadas */}
             {dayCalls.map(call => {
               const callDate = new Date(call.created_at || call.started_at);
-              // Usar contact_name directamente si está disponible (endpoints de calendario),
-              // sino usar entityNames, sino mostrar teléfono como fallback
+              // Prioridad: contact_name (del endpoint) > entityNames (cargado) > teléfono > fallback
               let displayTitle = call.contact_name || 
                 (call.entity_id && entityNames[call.entity_id] ? entityNames[call.entity_id] : null) ||
                 call.phone || 
                 call.phone_number || 
-                'Contacto';
+                (call.direction === 'inbound' ? 'Llamada entrante' : 'Llamada saliente');
+              
+              const isNoAnswer = (call.call_status || call.status) === 'no_answer';
               return (
                 <Card
                   key={call.id}
-                  className="cursor-pointer hover:shadow-md bg-blue-50 border-blue-200"
+                  className={`cursor-pointer hover:shadow-md ${isNoAnswer ? 'bg-yellow-50 border-yellow-200' : 'bg-blue-50 border-blue-200'}`}
                   onClick={() => {
                     // Usar contact_id si está disponible (endpoints de calendario), sino usar entity_id con entity_type
                     if (call.contact_id) {
@@ -626,26 +670,28 @@ export function CRMTaskCalendar() {
                     } else if (call.entity_id) {
                       const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
                       navigate(`/crm/${entityType}/${call.entity_id}`);
+                    } else {
+                      console.log('📞 [CRMTaskCalendar] Llamada sin contacto asociado:', call);
                     }
                   }}
                 >
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-3 flex-1">
-                        <Phone className="w-5 h-5 text-blue-600" />
-                        <div className="flex-1">
-                          <h3 className="font-semibold">
+                        <Phone className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold truncate">
                             {displayTitle}
                           </h3>
                           <p className="text-sm text-gray-600 mt-1">
                             Grabada: {callDate.toLocaleString('es-ES')}
                           </p>
-                          {call.phone && (
+                          {(call.phone || call.phone_number) && (
                             <p className="text-sm text-gray-500 mt-1">
-                              Tel: {call.phone}
+                              Tel: {call.phone || call.phone_number}
                             </p>
                           )}
-                          {call.duration && (
+                          {call.duration && call.duration > 0 && (
                             <p className="text-sm text-gray-500 mt-1">
                               Duración: {Math.floor(call.duration / 60)}:{(call.duration % 60).toString().padStart(2, '0')}
                             </p>
@@ -654,9 +700,13 @@ export function CRMTaskCalendar() {
                       </div>
                       <div className="flex flex-col items-end gap-2 ml-4">
                         <span className={`px-2 py-1 rounded text-xs ${
-                          call.call_status === 'completed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                          call.call_status === 'completed' || call.status === 'completed' 
+                            ? 'bg-green-100 text-green-800' 
+                            : (call.call_status === 'no_answer' || call.status === 'no_answer')
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-gray-100 text-gray-800'
                         }`}>
-                          {call.call_status || 'Desconocido'}
+                          {formatCallStatus(call.call_status || call.status)}
                         </span>
                       </div>
                     </div>

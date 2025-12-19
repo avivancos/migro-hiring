@@ -877,13 +877,32 @@ export const crmService = {
   /**
    * Obtener llamadas para calendario
    * Endpoint específico que permite filtrar por rango de fechas sin requerir entity_id
+   * El endpoint ahora incluye contact_id y contact_name directamente en la respuesta
    */
   async getCalendarCalls(filters: { start_date: string; end_date?: string }): Promise<Call[]> {
-    const { data } = await api.get<Call[]>(`${CRM_BASE_PATH}/calls/calendar`, {
-      params: filters,
-    });
-    // El endpoint retorna un array directo, no un objeto con items
-    return Array.isArray(data) ? data : [];
+    try {
+      const { data } = await api.get<Call[]>(`${CRM_BASE_PATH}/calls/calendar`, {
+        params: filters,
+      });
+      // El endpoint retorna un array directo, no un objeto con items
+      const calls = Array.isArray(data) ? data : [];
+      
+      // Log para debugging
+      if (calls.length > 0) {
+        const withContactName = calls.filter(c => c.contact_name).length;
+        console.log(`📞 [crmService] getCalendarCalls: ${calls.length} llamadas cargadas, ${withContactName} con contact_name`);
+      }
+      
+      return calls;
+    } catch (error: any) {
+      console.error('❌ [crmService] Error en getCalendarCalls:', error);
+      // Si es un 404, el endpoint no existe aún - retornar array vacío
+      if (error.response?.status === 404) {
+        console.warn('⚠️ [crmService] Endpoint /calls/calendar no encontrado (404). El backend puede no estar actualizado.');
+      }
+      // Retornar array vacío en lugar de lanzar error
+      return [];
+    }
   },
 
   // ===== DASHBOARD STATS =====

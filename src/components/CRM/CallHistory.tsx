@@ -70,9 +70,52 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
   };
 
   const getCallIconColor = (call: Call): string => {
+    const status = call.call_status || call.status;
     if (call.status === 'missed') return 'text-red-600';
+    if (status === 'no_answer') return 'text-yellow-600';
     if (call.direction === 'inbound') return 'text-green-600';
     return 'text-blue-600';
+  };
+
+  // Helper para formatear el estado de la llamada
+  const formatCallStatus = (status: string | undefined): string => {
+    if (!status) return 'Desconocido';
+    if (status === 'completed') return 'Llamada efectiva';
+    if (status === 'no_answer') return 'Sin respuesta';
+    if (status === 'failed') return 'Fallida';
+    if (status === 'busy') return 'Ocupado';
+    if (status === 'missed') return 'Perdida';
+    if (status === 'answered') return 'Respondida';
+    return status;
+  };
+
+  // Helper para obtener badge del tipo de llamada
+  const getCallTypeBadge = (callType: string | undefined) => {
+    if (!callType) return null;
+    
+    const typeConfig: Record<string, { label: string; bg: string; text: string }> = {
+      'primera_llamada': { label: 'Contacto Inicial', bg: 'bg-blue-100', text: 'text-blue-800' },
+      'contacto_inicial': { label: 'Contacto Inicial', bg: 'bg-blue-100', text: 'text-blue-800' },
+      'seguimiento': { label: 'Seguimiento', bg: 'bg-green-100', text: 'text-green-800' },
+      'venta': { label: 'Venta', bg: 'bg-purple-100', text: 'text-purple-800' },
+    };
+
+    const config = typeConfig[callType] || { label: callType, bg: 'bg-gray-100', text: 'text-gray-800' };
+    
+    return (
+      <span className={`text-xs px-2 py-1 rounded-full ${config.bg} ${config.text}`}>
+        {config.label}
+      </span>
+    );
+  };
+
+  // Helper para obtener clases CSS del fondo según el estado
+  const getCallBackgroundClasses = (call: Call): string => {
+    const status = call.call_status || call.status;
+    if (status === 'no_answer') {
+      return 'bg-yellow-50 hover:bg-yellow-100';
+    }
+    return 'bg-gray-50 hover:bg-gray-100';
   };
 
   const formatDuration = (seconds: number): string => {
@@ -139,7 +182,7 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
               return (
                 <div
                   key={call.id}
-                  className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  className={`flex items-center gap-4 p-4 rounded-lg transition-colors ${getCallBackgroundClasses(call)}`}
                 >
                   {/* Icon */}
                   <div className={`p-2 rounded-full bg-white ${iconColor}`}>
@@ -148,17 +191,20 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
 
                   {/* Call Info */}
                   <div className="flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-medium text-gray-900">
                         {call.phone_number}
                       </span>
                       <span className={`text-xs px-2 py-1 rounded-full ${
-                        call.status === 'answered'
+                        call.status === 'answered' || call.call_status === 'completed'
                           ? 'bg-green-100 text-green-800'
+                          : (call.status === 'no_answer' || call.call_status === 'no_answer')
+                          ? 'bg-yellow-100 text-yellow-800'
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {call.status}
+                        {formatCallStatus(call.call_status || call.status)}
                       </span>
+                      {getCallTypeBadge(call.call_type)}
                     </div>
                     
                     <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">

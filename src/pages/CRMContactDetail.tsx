@@ -30,6 +30,8 @@ import { TaskForm } from '@/components/CRM/TaskForm';
 import { NoteForm } from '@/components/CRM/NoteForm';
 import { ContactCustomFields } from '@/components/CRM/ContactCustomFields';
 import type { CRMUser } from '@/types/crm';
+import { useAuth } from '@/providers/AuthProvider';
+import { Trash2 } from 'lucide-react';
 export function CRMContactDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -46,6 +48,8 @@ export function CRMContactDetail() {
   const [showCallForm, setShowCallForm] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [showNoteForm, setShowNoteForm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     // Solo cargar si el ID existe y no es "new" (que debe manejarse por la ruta específica)
@@ -340,6 +344,35 @@ export function CRMContactDetail() {
 
   // La autenticación se maneja con ProtectedRoute en App.tsx
 
+  const handleDeleteContact = async () => {
+    if (!id || !contact) return;
+    
+    // Confirmación doble para evitar eliminaciones accidentales
+    const confirmMessage = `¿Estás seguro de que deseas eliminar el contacto "${contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim()}"?\n\nEsta acción no se puede deshacer.`;
+    
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+    
+    // Segunda confirmación
+    if (!window.confirm('Esta acción es permanente. ¿Continuar con la eliminación?')) {
+      return;
+    }
+    
+    setDeleting(true);
+    try {
+      await crmService.deleteContact(id);
+      // Navegar a la lista de contactos después de eliminar
+      navigate('/crm/contacts');
+    } catch (err: any) {
+      console.error('Error deleting contact:', err);
+      const errorMessage = err?.response?.data?.detail || err?.message || 'Error al eliminar el contacto';
+      alert(`Error al eliminar el contacto: ${errorMessage}`);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="w-full">
@@ -407,6 +440,17 @@ export function CRMContactDetail() {
                 <Edit className="w-4 h-4 sm:mr-2" />
                 <span className="sm:inline">Editar</span>
               </Button>
+              {isAdmin && (
+                <Button 
+                  variant="outline" 
+                  onClick={handleDeleteContact}
+                  disabled={deleting}
+                  className="flex-1 sm:flex-initial border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400"
+                >
+                  <Trash2 className="w-4 h-4 sm:mr-2" />
+                  <span className="sm:inline">{deleting ? 'Eliminando...' : 'Eliminar'}</span>
+                </Button>
+              )}
           </div>
         </div>
         {/* Datos Básicos Destacados */}
@@ -816,10 +860,14 @@ export function CRMContactDetail() {
                             className={`text-xs px-2 py-1 rounded ${
                               (call.call_status === 'completed' || call.status === 'answered' || call.status === 'completed')
                                 ? 'bg-green-100 text-green-800'
+                                : (call.call_status === 'no_answer' || call.status === 'no_answer')
+                                ? 'bg-yellow-100 text-yellow-800'
                                 : 'bg-red-100 text-red-800'
                             }`}
                           >
-                            {call.call_status || call.status || 'unknown'}
+                            {(call.call_status || call.status || 'unknown') === 'completed' ? 'Llamada efectiva' : 
+                             (call.call_status || call.status || 'unknown') === 'no_answer' ? 'Sin respuesta' : 
+                             (call.call_status || call.status || 'unknown')}
                           </span>
                           {call.entity_id && (
                             <Button

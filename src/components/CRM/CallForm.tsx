@@ -654,7 +654,7 @@ export function CallForm({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 required
               >
-                <option value="completed">Completada</option>
+                <option value="completed">Llamada efectiva</option>
                 <option value="failed">Fallida</option>
                 <option value="busy">Ocupado</option>
                 <option value="no_answer">Sin respuesta</option>

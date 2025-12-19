@@ -47,6 +47,7 @@ export function CRMCallHandler() {
   const [searching, setSearching] = useState(false);
   const [recentCalls, setRecentCalls] = useState<Call[]>([]);
   const [loadingCalls, setLoadingCalls] = useState(true);
+  const [callEntityNames, setCallEntityNames] = useState<Record<string, string>>({});
   
   // Datos del formulario
   const [callData, setCallData] = useState<Partial<CallCreateRequest>>({
@@ -65,6 +66,7 @@ export function CRMCallHandler() {
   
   // Usuarios responsables
   const [currentUserId, setCurrentUserId] = useState<string>('');
+  const [users, setUsers] = useState<Array<{ id: string; name: string; email: string }>>([]);
   
   // Edición de datos del cliente
   const [editingContact, setEditingContact] = useState(false);
@@ -103,7 +105,14 @@ export function CRMCallHandler() {
         crmService.getCallTypes().catch(() => []),
       ]);
       
+      setUsers(usersData);
+      console.log('👥 [CRMCallHandler] Usuarios cargados:', usersData.length);
       if (usersData.length > 0) {
+        console.log('👥 [CRMCallHandler] Ejemplo de usuario:', {
+          id: usersData[0].id,
+          name: usersData[0].name,
+          email: usersData[0].email,
+        });
         setCurrentUserId(usersData[0].id);
       }
       
@@ -133,12 +142,206 @@ export function CRMCallHandler() {
       });
       
       setRecentCalls(sortedCalls);
+      
+      // Log para debugging
+      console.log('📞 [CRMCallHandler] Llamadas cargadas:', sortedCalls.length);
+      if (sortedCalls.length > 0) {
+        console.log('📞 [CRMCallHandler] Ejemplo de llamada:', {
+          id: sortedCalls[0].id,
+          contact_name: sortedCalls[0].contact_name,
+          contact_id: sortedCalls[0].contact_id,
+          entity_id: sortedCalls[0].entity_id,
+          entity_type: sortedCalls[0].entity_type,
+          phone: sortedCalls[0].phone || sortedCalls[0].phone_number,
+          responsible_user_id: sortedCalls[0].responsible_user_id,
+        });
+        
+        // Verificar responsables únicos
+        const responsibleIds = sortedCalls
+          .filter(c => c.responsible_user_id)
+          .map(c => c.responsible_user_id)
+          .filter((id, index, self) => self.indexOf(id) === index);
+        console.log('👥 [CRMCallHandler] IDs de responsables únicos en llamadas:', responsibleIds);
+        console.log('👥 [CRMCallHandler] Usuarios disponibles:', users.length);
+        if (users.length > 0) {
+          console.log('👥 [CRMCallHandler] IDs de usuarios disponibles:', users.map(u => u.id).slice(0, 5));
+        }
+      }
+      
+      // Cargar nombres de contactos/leads para las llamadas
+      await loadCallEntityNames(sortedCalls);
     } catch (err) {
       console.error('Error loading recent calls:', err);
       setRecentCalls([]);
     } finally {
       setLoadingCalls(false);
     }
+  };
+
+  const loadCallEntityNames = async (calls: Call[]) => {
+    const names: Record<string, string> = {};
+    
+    // Primero, usar contact_name si está disponible
+    calls.forEach(call => {
+      if (call.contact_name) {
+        // Usar contact_id si está disponible, sino entity_id
+        const idToUse = call.contact_id || call.entity_id;
+        if (idToUse) {
+          names[idToUse] = call.contact_name;
+          // También mapear ambos IDs si son diferentes
+          if (call.contact_id && call.entity_id && call.contact_id !== call.entity_id) {
+            names[call.entity_id] = call.contact_name;
+            names[call.contact_id] = call.contact_name;
+          }
+        }
+      }
+    });
+
+    // Obtener IDs únicos de entidades que NO tienen contact_name
+    const entityIdsToLoad = new Set<string>();
+    calls.forEach(call => {
+      // Intentar usar contact_id primero, sino entity_id
+      const idToLoad = call.contact_id || call.entity_id;
+      if (idToLoad && !call.contact_name) {
+        entityIdsToLoad.add(idToLoad);
+      }
+    });
+
+    if (entityIdsToLoad.size === 0) {
+      console.log('📞 [CRMCallHandler] Todos los nombres ya están disponibles (contact_name)');
+      setCallEntityNames(names);
+      return;
+    }
+
+    console.log(`📞 [CRMCallHandler] Cargando nombres para ${entityIdsToLoad.size} entidades que no tienen contact_name`);
+
+    // Cargar nombres de contactos/leads
+    const loadPromises: Promise<void>[] = [];
+    entityIdsToLoad.forEach(entityId => {
+      const call = calls.find(c => (c.contact_id || c.entity_id) === entityId);
+      if (!call) return;
+
+      // Determinar si es contacto o lead
+      const isContact = call.entity_type === 'contacts' || call.entity_type === 'contact' || !!call.contact_id;
+      const promise = (isContact
+        ? crmService.getContact(entityId)
+        : crmService.getLead(entityId)
+      )
+        .then((entity: KommoContact | KommoLead) => {
+          const name = entity.name || 
+            (('first_name' in entity) ? `${entity.first_name || ''} ${entity.last_name || ''}`.trim() : '') ||
+            'Sin nombre';
+          names[entityId] = name;
+          console.log(`✅ [CRMCallHandler] Nombre cargado para ${isContact ? 'contact' : 'lead'} ${entityId}:`, name);
+        })
+        .catch((err) => {
+          console.warn(`⚠️ [CRMCallHandler] Error cargando ${isContact ? 'contact' : 'lead'} ${entityId}:`, err);
+          // Usar teléfono como fallback
+          const call = calls.find(c => (c.contact_id || c.entity_id) === entityId);
+          if (call?.phone || call?.phone_number) {
+            names[entityId] = call.phone || call.phone_number || 'Contacto';
+          } else {
+            names[entityId] = 'Contacto';
+          }
+        });
+      
+      loadPromises.push(promise);
+    });
+
+    await Promise.all(loadPromises);
+    console.log(`📞 [CRMCallHandler] Nombres cargados (${Object.keys(names).length} entidades):`, names);
+    setCallEntityNames(names);
+  };
+
+  // Helper para formatear el título de la llamada
+  const getCallTitle = (call: Call): string => {
+    const callDate = new Date(call.started_at || call.created_at);
+    const hour = callDate.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    
+    // Obtener nombre del contacto - prioridad: contact_name > callEntityNames (por contact_id o entity_id) > teléfono > fallback
+    let contactName = call.contact_name;
+    
+    if (!contactName) {
+      // Intentar obtener de callEntityNames usando contact_id primero, luego entity_id
+      const idToUse = call.contact_id || call.entity_id;
+      if (idToUse && callEntityNames[idToUse]) {
+        contactName = callEntityNames[idToUse];
+      }
+    }
+    
+    // Si aún no hay nombre, usar teléfono como fallback
+    if (!contactName) {
+      contactName = call.phone || call.phone_number || 'Cliente';
+    }
+    
+    return `Llamada a ${contactName} a las ${hour} horas`;
+  };
+
+  // Helper para formatear el estado de la llamada
+  const formatCallStatus = (status: string | undefined): string => {
+    if (!status) return 'Desconocido';
+    if (status === 'completed') return 'Llamada efectiva';
+    if (status === 'no_answer') return 'Sin respuesta';
+    if (status === 'failed') return 'Fallida';
+    if (status === 'busy') return 'Ocupado';
+    if (status === 'missed') return 'Perdida';
+    if (status === 'answered') return 'Respondida';
+    return status;
+  };
+
+  // Helper para obtener badge del tipo de llamada
+  const getCallTypeBadge = (callType: string | undefined) => {
+    if (!callType) return null;
+    
+    const typeConfig: Record<string, { label: string; bg: string; text: string }> = {
+      'primera_llamada': { label: 'Contacto Inicial', bg: 'bg-blue-100', text: 'text-blue-800' },
+      'contacto_inicial': { label: 'Contacto Inicial', bg: 'bg-blue-100', text: 'text-blue-800' },
+      'seguimiento': { label: 'Seguimiento', bg: 'bg-green-100', text: 'text-green-800' },
+      'venta': { label: 'Venta', bg: 'bg-purple-100', text: 'text-purple-800' },
+    };
+
+    const config = typeConfig[callType] || { label: callType, bg: 'bg-gray-100', text: 'text-gray-800' };
+    
+    return (
+      <span className={`text-xs px-2 py-1 rounded ${config.bg} ${config.text}`}>
+        {config.label}
+      </span>
+    );
+  };
+
+  // Helper para obtener nombre del responsable
+  const getResponsibleName = (userId: string | undefined): string => {
+    if (!userId) return 'Sin asignar';
+    
+    // Si no hay usuarios cargados aún, mostrar mensaje temporal
+    if (users.length === 0) {
+      return 'Cargando...';
+    }
+    
+    // Buscar usuario en el array - comparación estricta de strings
+    const user = users.find(u => {
+      // Comparar IDs como strings, normalizando espacios
+      const uId = String(u.id || '').trim();
+      const searchId = String(userId || '').trim();
+      return uId === searchId;
+    });
+    
+    if (user) {
+      const name = user.name?.trim() || user.email?.trim() || 'Usuario sin nombre';
+      return name;
+    }
+    
+    // Si no se encuentra, puede ser que los usuarios aún no se hayan cargado
+    // o que el ID no coincida exactamente
+    console.warn(`⚠️ [CRMCallHandler] Usuario no encontrado para ID: "${userId}". Total usuarios cargados: ${users.length}`);
+    if (users.length > 0) {
+      console.log('📋 [CRMCallHandler] IDs de usuarios disponibles:', users.map(u => ({ id: u.id, name: u.name })).slice(0, 5));
+    }
+    
+    return 'Usuario desconocido';
   };
 
   const loadLeadPipelineData = async (lead: KommoLead) => {
@@ -534,12 +737,29 @@ export function CRMCallHandler() {
                   {recentCalls.map((call) => (
                     <div
                       key={call.id}
-                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                      onClick={() => {
+                        // Navegar al contacto asociado a la llamada
+                        const contactId = call.contact_id || call.entity_id;
+                        if (contactId) {
+                          const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
+                          navigate(`/crm/${entityType}/${contactId}`, { 
+                            state: { 
+                              activeTab: 'calls',
+                              highlightCallId: call.id 
+                            } 
+                          });
+                        } else {
+                          console.warn('⚠️ [CRMCallHandler] Llamada sin contacto asociado:', call.id);
+                        }
+                      }}
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
                           <div className={`p-2 rounded-full ${
-                            call.direction === 'inbound' 
+                            (call.call_status === 'no_answer' || call.status === 'no_answer')
+                              ? 'bg-yellow-100 text-yellow-600'
+                              : call.direction === 'inbound' 
                               ? 'bg-green-100 text-green-600' 
                               : 'bg-blue-100 text-blue-600'
                           }`}>
@@ -547,7 +767,7 @@ export function CRMCallHandler() {
                           </div>
                           <div>
                             <div className="font-medium text-gray-900">
-                              {call.phone || call.phone_number || 'N/A'}
+                              {getCallTitle(call)}
                             </div>
                             <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
                               <span className="flex items-center gap-1">
@@ -569,10 +789,19 @@ export function CRMCallHandler() {
                               <span className={`text-xs px-2 py-1 rounded ${
                                 call.call_status === 'completed' || call.status === 'answered' || call.status === 'completed'
                                   ? 'bg-green-100 text-green-800'
+                                  : (call.call_status === 'no_answer' || call.status === 'no_answer')
+                                  ? 'bg-yellow-100 text-yellow-800'
                                   : 'bg-red-100 text-red-800'
                               }`}>
-                                {call.call_status || call.status || 'unknown'}
+                                {formatCallStatus(call.call_status || call.status)}
                               </span>
+                              {getCallTypeBadge(call.call_type)}
+                              {call.responsible_user_id && (
+                                <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800 flex items-center gap-1">
+                                  <User size={12} />
+                                  {getResponsibleName(call.responsible_user_id)}
+                                </span>
+                              )}
                             </div>
                             {call.resumen_llamada && (
                               <p className="text-sm text-gray-700 mt-2 line-clamp-2">
@@ -586,7 +815,17 @@ export function CRMCallHandler() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => navigate(`/crm/contacts/${call.entity_id}`)}
+                          onClick={(e) => {
+                            e.stopPropagation(); // Evitar que se active el onClick del contenedor
+                            const contactId = call.contact_id || call.entity_id;
+                            const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
+                            navigate(`/crm/${entityType}/${contactId}`, { 
+                              state: { 
+                                activeTab: 'calls',
+                                highlightCallId: call.id 
+                              } 
+                            });
+                          }}
                           className="ml-4"
                         >
                           <ExternalLink className="w-3 h-3 mr-1" />
@@ -782,7 +1021,7 @@ export function CRMCallHandler() {
                       onChange={(e) => setCallData(prev => ({ ...prev, call_status: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 mt-1"
                     >
-                      <option value="completed">Completada</option>
+                      <option value="completed">Llamada efectiva</option>
                       <option value="failed">Fallida</option>
                       <option value="busy">Ocupado</option>
                       <option value="no_answer">Sin respuesta</option>

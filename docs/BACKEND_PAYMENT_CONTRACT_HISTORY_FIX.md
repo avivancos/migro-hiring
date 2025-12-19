@@ -632,3 +632,4 @@ Para verificar que todo funciona correctamente:
 - [Stripe Webhooks](../BACKEND_STRIPE_CHECKOUT_COMPLETE.md)
 - [Admin Contracts Endpoints](../ADMIN_MODULE_BACKEND_INTEGRATION.md)
 
+

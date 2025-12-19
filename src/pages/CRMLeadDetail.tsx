@@ -1021,8 +1021,14 @@ export function CRMLeadDetail() {
                             </p>
                           )}
                         </div>
-                        <span className="px-2 py-1 rounded text-xs bg-blue-100 text-blue-800">
-                          {call.call_status}
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          call.call_status === 'completed'
+                            ? 'bg-green-100 text-green-800'
+                            : call.call_status === 'no_answer'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}>
+                          {call.call_status === 'no_answer' ? 'Sin respuesta' : call.call_status}
                         </span>
                       </div>
                       <p className="text-xs text-gray-500 mt-2">
