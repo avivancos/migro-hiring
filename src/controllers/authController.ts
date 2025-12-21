@@ -143,10 +143,25 @@ class AuthController {
     } catch (error: any) {
       console.error('Error verificando sesión:', error);
       
-      // Si es 401, limpiar sesión
-      if (error.response?.status === 401) {
-        this.clearSession();
+      // Solo limpiar sesión si es un error de autenticación real (401/403) 
+      // Y no hay refresh token disponible para recuperar la sesión
+      // NO limpiar en errores temporales (500, 404, timeout, etc.)
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        // Verificar si hay refresh token disponible antes de limpiar
+        const refreshToken = localStorage.getItem('refresh_token');
+        const refreshExpiresAt = localStorage.getItem('refresh_expires_at');
+        
+        // Solo limpiar si realmente no hay forma de recuperar la sesión
+        if (!refreshToken || (refreshExpiresAt && Date.now() >= parseInt(refreshExpiresAt))) {
+          console.warn('⚠️ Error 401/403 y no hay refresh token disponible, limpiando sesión');
+          this.clearSession();
+        } else {
+          // Hay refresh token disponible, el interceptor de axios debería manejarlo
+          console.log('⚠️ Error 401/403 pero hay refresh token disponible, manteniendo sesión');
+        }
       }
+      // Para otros errores (500, 404, timeout, etc.), mantener la sesión
+      // Los tokens no se descartan en errores temporales
       
       return this.session;
     }
@@ -169,9 +184,28 @@ class AuthController {
       localStorage.setItem('admin_token', tokens.access_token);
       
       return tokens.access_token;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error refrescando token:', error);
-      this.clearSession();
+      
+      // Solo limpiar sesión si es un error de autenticación real
+      // NO limpiar en errores temporales (red, timeout, 500, etc.)
+      const shouldClearSession = 
+        error.response?.status === 401 ||
+        error.response?.status === 403 ||
+        (error.response?.status === 400 && 
+         (error.response?.data?.detail?.includes('token') || 
+          error.response?.data?.detail?.includes('invalid'))) ||
+        error.message?.includes('Refresh token expired') ||
+        error.message?.includes('No refresh token available');
+      
+      if (shouldClearSession) {
+        console.warn('⚠️ Error de autenticación al refrescar token, limpiando sesión');
+        this.clearSession();
+      } else {
+        // Error temporal, mantener sesión y tokens
+        console.warn('⚠️ Error temporal al refrescar token, manteniendo sesión:', error.message || error.response?.status);
+      }
+      
       return null;
     }
   }

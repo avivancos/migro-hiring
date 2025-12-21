@@ -327,7 +327,7 @@ export function CRMContracts() {
                     <div className="flex flex-col sm:flex-row items-start sm:items-end gap-2 sm:gap-4 w-full sm:w-auto">
                       <div className="text-right">
                         <p className="text-lg sm:text-xl font-bold text-green-600">
-                          {formatCurrency(contract.amount / 100, contract.currency)}
+                          {formatCurrency(contract.amount, contract.currency)}
                         </p>
                       </div>
                       <Button

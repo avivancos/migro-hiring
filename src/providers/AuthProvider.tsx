@@ -111,9 +111,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     } catch (error: any) {
       console.error('Error verificando autenticación:', error);
       
-      // Solo limpiar tokens si es 401 y no hay refresh token disponible
+      // Solo limpiar tokens si es un error de autenticación (401/403) y no hay refresh token disponible
       // Si hay refresh token, el interceptor de axios debería manejarlo
-      if (error.response?.status === 401) {
+      // NO limpiar en errores temporales (500, 404, timeout, etc.)
+      if (error.response?.status === 401 || error.response?.status === 403) {
         const refreshToken = TokenStorage.getRefreshToken();
         if (!refreshToken || TokenStorage.isRefreshTokenExpired()) {
           // Solo limpiar si realmente no hay forma de refrescar
@@ -121,15 +122,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         } else {
           // Hay refresh token disponible, dejar que el interceptor lo maneje
           // No limpiar la sesión todavía
-          console.log('⚠️ Error 401 pero hay refresh token disponible, esperando refresh automático');
+          console.log('⚠️ Error 401/403 pero hay refresh token disponible, esperando refresh automático');
         }
       }
-      
-      // No establecer user como null inmediatamente si hay refresh token
-      // Dejar que el siguiente intento funcione
-      if (error.response?.status !== 401 || !TokenStorage.getRefreshToken()) {
-        setUser(null);
-      }
+      // Para otros errores (500, 404, timeout, etc.), mantener la sesión
+      // Los tokens NO se descartan en errores temporales
     } finally {
       setIsLoading(false);
     }

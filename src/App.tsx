@@ -1,4 +1,5 @@
 // Main App component with routing
+import { lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
@@ -15,6 +16,7 @@ import { BorradorPDF } from '@/pages/BorradorPDF';
 import { Colaboradores } from '@/pages/Colaboradores';
 import { Closer } from '@/pages/Closer';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { LazyLoadWrapper } from '@/components/common/LazyLoadWrapper';
 
 // CRM Pages
 import { CRMDashboardPage } from '@/pages/CRMDashboardPage';
@@ -29,7 +31,10 @@ import { CRMSettings } from '@/pages/CRMSettings';
 import { CRMTaskTemplatesSettings } from '@/pages/CRMTaskTemplatesSettings';
 import { CRMCustomFieldsSettings } from '@/pages/CRMCustomFieldsSettings';
 import { CRMActions } from '@/pages/CRMActions';
-import { CRMExpedientes } from '@/pages/CRMExpedientes';
+// import { CRMExpedientes } from '@/pages/CRMExpedientes'; // No usado
+// Lazy load de componentes pesados
+const CRMExpedientesList = lazy(() => import('@/pages/CRMExpedientesList').then(m => ({ default: m.CRMExpedientesList })));
+const CRMExpedienteDetail = lazy(() => import('@/pages/CRMExpedienteDetail').then(m => ({ default: m.CRMExpedienteDetail })));
 import { CRMCallHandler } from '@/pages/CRMCallHandler';
 import { CRMTaskDetail } from '@/pages/CRMTaskDetail';
 import { CRMContracts } from '@/pages/CRMContracts';
@@ -41,7 +46,8 @@ import { AdminUsers } from '@/pages/admin/AdminUsers';
 import { AdminUserDetail } from '@/pages/admin/AdminUserDetail';
 import { AdminUserCreate } from '@/pages/admin/AdminUserCreate';
 import { AdminAuditLogs } from '@/pages/admin/AdminAuditLogs';
-import { AdminPili } from '@/pages/admin/AdminPili';
+// Pili LLM deshabilitado - movido a repositorio externo
+// import { AdminPili } from '@/pages/admin/AdminPili';
 import { AdminConversations } from '@/pages/admin/AdminConversations';
 import { AdminContracts } from '@/pages/admin/AdminContracts';
 import { AdminContractDetail } from '@/pages/admin/AdminContractDetail';
@@ -92,7 +98,8 @@ function AppContent() {
             <Route path="users/create" element={<AdminUserCreate />} />
             <Route path="users/:id" element={<AdminUserDetail />} />
             <Route path="audit-logs" element={<AdminAuditLogs />} />
-            <Route path="pili" element={<AdminPili />} />
+            {/* Pili LLM deshabilitado - movido a repositorio externo */}
+            {/* <Route path="pili" element={<AdminPili />} /> */}
             <Route path="conversations" element={<AdminConversations />} />
             <Route path="conversations/:id" element={<AdminConversations />} />
             <Route path="contracts" element={<AdminContracts />} />
@@ -133,7 +140,30 @@ function AppContent() {
             
             {/* CRM Actions & Expedientes */}
             <Route path="actions" element={<CRMActions />} />
-            <Route path="expedientes" element={<CRMExpedientes />} />
+            <Route
+              path="expedientes"
+              element={
+                <LazyLoadWrapper fallback="skeleton" skeletonCount={5}>
+                  <CRMExpedientesList />
+                </LazyLoadWrapper>
+              }
+            />
+            <Route
+              path="expedientes/:id"
+              element={
+                <LazyLoadWrapper fallback="spinner">
+                  <CRMExpedienteDetail />
+                </LazyLoadWrapper>
+              }
+            />
+            <Route
+              path="expedientes/new"
+              element={
+                <LazyLoadWrapper fallback="spinner">
+                  <CRMExpedienteDetail />
+                </LazyLoadWrapper>
+              }
+            />
             
             {/* CRM Call Handler */}
             <Route path="call" element={<CRMCallHandler />} />

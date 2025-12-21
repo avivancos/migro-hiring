@@ -110,6 +110,11 @@ export interface ContractUpdateRequest {
   manual_payment_confirmed?: boolean;
   manual_payment_note?: string;
   manual_payment_method?: string;
+  // Suscripción
+  subscription_id?: string;
+  subscription_status?: string;
+  // Pago parcial
+  first_payment_amount?: number;
 }
 
 export const CONTRACT_STATUS_COLORS = {

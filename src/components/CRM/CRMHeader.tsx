@@ -25,7 +25,8 @@ import {
 import { MigroLogo } from '@/components/common/MigroLogo';
 import { useState, useEffect, useRef } from 'react';
 import { Switch } from '@/components/ui/switch';
-import { PiliChatModal } from './PiliChatModal';
+// Pili LLM deshabilitado - movido a repositorio externo
+// import { PiliChatModal } from './PiliChatModal';
 
 interface CRMHeaderProps {
   onMenuClick?: () => void;
@@ -342,8 +343,8 @@ export function CRMHeader({ onMenuClick: _onMenuClick }: CRMHeaderProps = {}) {
               </div>
             </div>
             
-            {/* Botón de Chat con Pili */}
-            <PiliChatModal variant="header" />
+            {/* Pili LLM deshabilitado - movido a repositorio externo */}
+            {/* <PiliChatModal variant="header" /> */}
 
             {/* Menú hamburguesa - Visible en todas las pantallas */}
             <Button

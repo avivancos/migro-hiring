@@ -28,7 +28,10 @@ import {
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
-import type { Contract } from '@/types/contracts';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import type { Contract, ContractStatus } from '@/types/contracts';
 import {
   CONTRACT_STATUS_COLORS,
   KYC_STATUS_COLORS,
@@ -43,6 +46,19 @@ export function AdminContractDetail() {
   const [contract, setContract] = useState<Contract | null>(null);
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showUpdateStatusModal, setShowUpdateStatusModal] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [updateForm, setUpdateForm] = useState({
+    status: 'pending' as ContractStatus,
+    amount: '',
+    payment_type: 'one_time' as 'one_time' | 'subscription',
+    manual_payment_confirmed: false,
+    manual_payment_method: '',
+    manual_payment_note: '',
+    subscription_id: '',
+    subscription_status: '',
+    first_payment_amount: '',
+  });
 
   useEffect(() => {
     if (code && code !== 'create') {
@@ -196,6 +212,95 @@ export function AdminContractDetail() {
     if (!contract) return;
     // Usar la ruta interna pero mostrar el formato corto
     window.open(`/contratacion/${contract.hiring_code}`, '_blank');
+  };
+
+  const handleOpenUpdateStatusModal = () => {
+    if (!contract) return;
+    setUpdateForm({
+      status: contract.status,
+      amount: (contract.amount / 100).toFixed(2),
+      payment_type: contract.payment_type || 'one_time',
+      manual_payment_confirmed: contract.manual_payment_confirmed || false,
+      manual_payment_method: contract.manual_payment_method || '',
+      manual_payment_note: contract.manual_payment_note || '',
+      subscription_id: contract.subscription_id || '',
+      subscription_status: contract.subscription_status || '',
+      first_payment_amount: contract.first_payment_amount ? (contract.first_payment_amount / 100).toFixed(2) : '',
+    });
+    setShowUpdateStatusModal(true);
+  };
+
+  const handleCloseUpdateStatusModal = () => {
+    setShowUpdateStatusModal(false);
+    setUpdateForm({
+      status: 'pending',
+      amount: '',
+      payment_type: 'one_time',
+      manual_payment_confirmed: false,
+      manual_payment_method: '',
+      manual_payment_note: '',
+      subscription_id: '',
+      subscription_status: '',
+      first_payment_amount: '',
+    });
+  };
+
+  const handleUpdateStatus = async () => {
+    if (!contract || !code) return;
+    
+    setUpdating(true);
+    try {
+      const updateData: any = {
+        status: updateForm.status,
+      };
+
+      // Siempre actualizar el importe (el usuario puede confirmarlo explícitamente)
+      if (updateForm.amount && parseFloat(updateForm.amount) > 0) {
+        updateData.amount = parseFloat(updateForm.amount);
+      } else if (contract.amount) {
+        // Si no se especifica, mantener el importe actual
+        updateData.amount = contract.amount / 100;
+      }
+
+      // Tipo de pago
+      if (updateForm.payment_type) {
+        updateData.payment_type = updateForm.payment_type;
+      }
+
+      // Pago parcial (primer pago)
+      if (updateForm.first_payment_amount && parseFloat(updateForm.first_payment_amount) > 0) {
+        updateData.first_payment_amount = parseFloat(updateForm.first_payment_amount);
+      }
+
+      // Suscripción
+      if (updateForm.subscription_id) {
+        updateData.subscription_id = updateForm.subscription_id;
+      }
+      if (updateForm.subscription_status) {
+        updateData.subscription_status = updateForm.subscription_status;
+      }
+
+      // Si el estado es 'paid' o 'completed', y se marca como pago manual
+      if ((updateForm.status === 'paid' || updateForm.status === 'completed') && updateForm.manual_payment_confirmed) {
+        updateData.manual_payment_confirmed = true;
+        if (updateForm.manual_payment_method) {
+          updateData.manual_payment_method = updateForm.manual_payment_method;
+        }
+        if (updateForm.manual_payment_note) {
+          updateData.manual_payment_note = updateForm.manual_payment_note;
+        }
+      }
+
+      const updatedContract = await contractsService.updateContract(code, updateData);
+      setContract(updatedContract);
+      setShowUpdateStatusModal(false);
+      alert('Estado del contrato actualizado correctamente');
+    } catch (error: any) {
+      console.error('Error actualizando contrato:', error);
+      alert(error?.response?.data?.detail || error?.message || 'Error al actualizar el estado del contrato');
+    } finally {
+      setUpdating(false);
+    }
   };
 
   if (loading) {
@@ -756,6 +861,15 @@ export function AdminContractDetail() {
             </CardHeader>
             <CardContent className="space-y-2">
               <Button
+                onClick={handleOpenUpdateStatusModal}
+                variant="default"
+                className="w-full justify-start bg-green-600 hover:bg-green-700 text-white"
+                size="sm"
+              >
+                <DollarSign size={16} className="mr-2" />
+                Modificar Estado y Pago
+              </Button>
+              <Button
                 onClick={() => navigate(`/admin/contracts/${code}/edit`)}
                 variant="outline"
                 className="w-full justify-start"
@@ -799,6 +913,189 @@ export function AdminContractDetail() {
           )}
         </div>
       </div>
+
+      {/* Modal para Modificar Estado y Pago */}
+      {showUpdateStatusModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <CardHeader>
+              <CardTitle>Modificar Estado y Pago</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="status">Estado del Contrato *</Label>
+                <select
+                  id="status"
+                  value={updateForm.status}
+                  onChange={(e) => setUpdateForm({ ...updateForm, status: e.target.value as ContractStatus })}
+                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="pending">Pendiente</option>
+                  <option value="paid">Pagado</option>
+                  <option value="completed">Completado</option>
+                  <option value="expired">Expirado</option>
+                  <option value="cancelled">Cancelado</option>
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="payment_type">Tipo de Pago *</Label>
+                <select
+                  id="payment_type"
+                  value={updateForm.payment_type}
+                  onChange={(e) => setUpdateForm({ ...updateForm, payment_type: e.target.value as 'one_time' | 'subscription' })}
+                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="one_time">Pago Único</option>
+                  <option value="subscription">Suscripción</option>
+                </select>
+              </div>
+
+              <div>
+                <Label htmlFor="amount">Importe Total (€) *</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={updateForm.amount}
+                  onChange={(e) => setUpdateForm({ ...updateForm, amount: e.target.value })}
+                  placeholder="0.00"
+                  required
+                />
+                {contract && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Importe actual: {formatCurrency(contract.amount, contract.currency)}
+                  </p>
+                )}
+              </div>
+
+              {updateForm.payment_type === 'subscription' && (
+                <>
+                  <div>
+                    <Label htmlFor="first_payment_amount">Primer Pago / Pago Parcial (€)</Label>
+                    <Input
+                      id="first_payment_amount"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={updateForm.first_payment_amount}
+                      onChange={(e) => setUpdateForm({ ...updateForm, first_payment_amount: e.target.value })}
+                      placeholder="0.00"
+                    />
+                    {contract?.first_payment_amount && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Primer pago actual: {formatCurrency(contract.first_payment_amount, contract.currency)}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      Monto del primer pago en suscripciones (normalmente 10% del total)
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="subscription_id">Subscription ID (Stripe)</Label>
+                    <Input
+                      id="subscription_id"
+                      value={updateForm.subscription_id}
+                      onChange={(e) => setUpdateForm({ ...updateForm, subscription_id: e.target.value })}
+                      placeholder="sub_xxxxxxxxxxxxx"
+                    />
+                    {contract?.subscription_id && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        ID actual: {contract.subscription_id}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="subscription_status">Estado de Suscripción</Label>
+                    <select
+                      id="subscription_status"
+                      value={updateForm.subscription_status}
+                      onChange={(e) => setUpdateForm({ ...updateForm, subscription_status: e.target.value })}
+                      className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    >
+                      <option value="">Seleccionar estado...</option>
+                      <option value="active">Activa</option>
+                      <option value="canceled">Cancelada</option>
+                      <option value="past_due">Pago Vencido</option>
+                      <option value="unpaid">No Pagada</option>
+                      <option value="incomplete">Incompleta</option>
+                      <option value="trialing">En Prueba</option>
+                    </select>
+                    {contract?.subscription_status && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Estado actual: {contract.subscription_status}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              {(updateForm.status === 'paid' || updateForm.status === 'completed') && (
+                <>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="manual_payment_confirmed"
+                      checked={updateForm.manual_payment_confirmed}
+                      onChange={(e) => setUpdateForm({ ...updateForm, manual_payment_confirmed: e.target.checked })}
+                      className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    />
+                    <Label htmlFor="manual_payment_confirmed" className="cursor-pointer">
+                      Pago realizado externamente
+                    </Label>
+                  </div>
+
+                  {updateForm.manual_payment_confirmed && (
+                    <>
+                      <div>
+                        <Label htmlFor="manual_payment_method">Método de Pago</Label>
+                        <Input
+                          id="manual_payment_method"
+                          value={updateForm.manual_payment_method}
+                          onChange={(e) => setUpdateForm({ ...updateForm, manual_payment_method: e.target.value })}
+                          placeholder="Ej: Transferencia bancaria, Efectivo, etc."
+                        />
+                      </div>
+
+                      <div>
+                        <Label htmlFor="manual_payment_note">Nota sobre el Pago</Label>
+                        <Textarea
+                          id="manual_payment_note"
+                          value={updateForm.manual_payment_note}
+                          onChange={(e) => setUpdateForm({ ...updateForm, manual_payment_note: e.target.value })}
+                          placeholder="Ej: Transferencia bancaria del 24/11/2025 - Referencia 123456"
+                          rows={3}
+                        />
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={handleCloseUpdateStatusModal}
+                  variant="outline"
+                  className="flex-1"
+                  disabled={updating}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={handleUpdateStatus}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                  disabled={updating || !updateForm.amount || parseFloat(updateForm.amount) <= 0}
+                >
+                  {updating ? 'Guardando...' : 'Guardar Cambios'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

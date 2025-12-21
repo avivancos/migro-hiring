@@ -64,7 +64,7 @@ const COLUMN_ORDER_STORAGE_KEY = 'crm_contacts_table_column_order';
 export function CRMContactList() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [contacts, setContacts] = useState<KommoContact[]>([]);
   const [users, setUsers] = useState<CRMUser[]>([]);
@@ -872,9 +872,15 @@ export function CRMContactList() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-gray-900">Contactos</h1>
-            <p className="text-gray-600 mt-1 text-xs sm:text-sm md:text-base font-sans">
-              {totalContacts} {totalContacts === 1 ? 'contacto' : 'contactos'} total{filteredAndSortedContacts.length < totalContacts ? ` (mostrando ${filteredAndSortedContacts.length} de ${totalContacts})` : ''}
-            </p>
+            {user?.role === 'agent' ? (
+              <p className="text-gray-600 mt-1 text-xs sm:text-sm md:text-base font-sans">
+                {filteredAndSortedContacts.length} {filteredAndSortedContacts.length === 1 ? 'contacto' : 'contactos'} mostrados
+              </p>
+            ) : (
+              <p className="text-gray-600 mt-1 text-xs sm:text-sm md:text-base font-sans">
+                {totalContacts} {totalContacts === 1 ? 'contacto' : 'contactos'} total{filteredAndSortedContacts.length < totalContacts ? ` (mostrando ${filteredAndSortedContacts.length} de ${totalContacts})` : ''}
+              </p>
+            )}
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
             {viewMode === 'table' && (
@@ -1363,14 +1369,20 @@ export function CRMContactList() {
         )}
 
         {/* Controles de Paginación */}
-        {!loading && totalContacts > 0 && (
+        {!loading && (user?.role === 'agent' ? filteredAndSortedContacts.length > 0 : totalContacts > 0) && (
           <Card className="mt-4">
             <CardContent className="pt-4 pb-4">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="text-sm text-gray-600">
-                    Mostrando {pagination.skip + 1} - {Math.min(pagination.skip + pagination.limit, totalContacts)} de {totalContacts}
-                  </div>
+                  {user?.role === 'agent' ? (
+                    <div className="text-sm text-gray-600">
+                      Mostrando {pagination.skip + 1} - {Math.min(pagination.skip + pagination.limit, filteredAndSortedContacts.length)} de {filteredAndSortedContacts.length}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-600">
+                      Mostrando {pagination.skip + 1} - {Math.min(pagination.skip + pagination.limit, totalContacts)} de {totalContacts}
+                    </div>
+                  )}
                   <div className="flex items-center gap-2">
                     <Label htmlFor="items-per-page" className="text-sm text-gray-600 whitespace-nowrap">
                       Por página:
@@ -1401,9 +1413,15 @@ export function CRMContactList() {
                     <ChevronLeft className="w-4 h-4 mr-1" />
                     Anterior
                   </Button>
-                  <span className="text-sm text-gray-600 px-3 min-w-[100px] text-center">
-                    Página {Math.floor(pagination.skip / pagination.limit) + 1} de {Math.ceil(totalContacts / pagination.limit)}
-                  </span>
+                  {user?.role === 'agent' ? (
+                    <span className="text-sm text-gray-600 px-3 min-w-[100px] text-center">
+                      Página {Math.floor(pagination.skip / pagination.limit) + 1} de {Math.ceil(filteredAndSortedContacts.length / pagination.limit)}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-600 px-3 min-w-[100px] text-center">
+                      Página {Math.floor(pagination.skip / pagination.limit) + 1} de {Math.ceil(totalContacts / pagination.limit)}
+                    </span>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
@@ -1411,7 +1429,7 @@ export function CRMContactList() {
                       const newSkip = pagination.skip + pagination.limit;
                       setPagination({ ...pagination, skip: newSkip });
                     }}
-                    disabled={pagination.skip + pagination.limit >= totalContacts}
+                    disabled={user?.role === 'agent' ? pagination.skip + pagination.limit >= filteredAndSortedContacts.length : pagination.skip + pagination.limit >= totalContacts}
                   >
                     Siguiente
                     <ChevronRight className="w-4 h-4 ml-1" />

@@ -23,7 +23,8 @@ api.interceptors.request.use(
       '/auth/login', 
       '/auth/register', 
       '/auth/refresh',
-      '/ai/pili-openai/health', // Health check no requiere autenticación
+      // Pili LLM deshabilitado - movido a repositorio externo
+      // '/ai/pili-openai/health', // Health check no requiere autenticación
       '/hiring/' // Endpoints públicos de contratación (no requieren autenticación)
     ];
     const isPublicEndpoint = config.url && publicEndpoints.some(endpoint => config.url!.includes(endpoint));
@@ -189,11 +190,28 @@ const refreshTokenProactively = async (): Promise<string | null> => {
     isRefreshing = false;
     
     return data.access_token;
-  } catch (refreshError) {
+  } catch (refreshError: any) {
     console.error('❌ Error refrescando token:', refreshError);
     
-    // Refresh falló, limpiar tokens
-    TokenStorage.clearTokens();
+    // Solo limpiar tokens si:
+    // 1. El refresh token está realmente expirado
+    // 2. El servidor responde con 401/403 (no autorizado)
+    // 3. Es un error 400 que indica token inválido
+    // NO limpiar en errores temporales (red, timeout, 500, etc.)
+    const shouldClearTokens = 
+      TokenStorage.isRefreshTokenExpired() ||
+      (refreshError.response?.status === 401) ||
+      (refreshError.response?.status === 403) ||
+      (refreshError.response?.status === 400 && 
+       (refreshError.response?.data?.detail?.includes('token') || 
+        refreshError.response?.data?.detail?.includes('invalid')));
+    
+    if (shouldClearTokens) {
+      console.warn('⚠️ Limpiando tokens debido a error de refresh:', refreshError.response?.status || 'refresh token expirado');
+      TokenStorage.clearTokens();
+    } else {
+      console.warn('⚠️ Error temporal al refrescar token, manteniendo tokens:', refreshError.message || refreshError.response?.status);
+    }
     
     processQueue(refreshError, null);
     isRefreshing = false;
@@ -246,7 +264,7 @@ api.interceptors.response.use(
                              window.location.pathname === '/privacy';
         
         // Verificar si es un endpoint público de la API
-        const publicApiEndpoints = ['/auth/login', '/auth/register', '/auth/refresh', '/hiring/', '/ai/pili-openai/health'];
+        const publicApiEndpoints = ['/auth/login', '/auth/register', '/auth/refresh', '/hiring/']; // Pili deshabilitado
         const isPublicApiEndpoint = originalRequest.url && publicApiEndpoints.some(endpoint => originalRequest.url!.includes(endpoint));
         
         if (isPublicFrontendRoute || isPublicApiEndpoint) {
@@ -269,23 +287,47 @@ api.interceptors.response.use(
             // Reintentar petición original
             return api(originalRequest);
           } else {
-            // Refresh falló, limpiar tokens y redirigir
+            // Refresh falló - verificar si los tokens todavía existen
+            // Si existen, fue un error temporal y no debemos redirigir
+            // Si no existen, refreshTokenProactively() ya los limpió (error de autenticación real)
+            const stillHasTokens = TokenStorage.hasTokens() && 
+                                  TokenStorage.getRefreshToken() && 
+                                  !TokenStorage.isRefreshTokenExpired();
+            
+            if (!stillHasTokens) {
+              // Los tokens fueron limpiados, significa error de autenticación real
+              // Solo redirigir si estamos en rutas de admin
+              if (window.location.pathname.startsWith('/admin') || 
+                  window.location.pathname.startsWith('/crm') ||
+                  window.location.pathname.startsWith('/contrato')) {
+                window.location.href = '/auth/login';
+              }
+            } else {
+              // Los tokens todavía existen, fue un error temporal
+              // No redirigir, solo rechazar el error para que el componente lo maneje
+              console.warn('⚠️ Error temporal al refrescar token, manteniendo sesión y rechazando request');
+            }
+            
+            return Promise.reject(new Error('No se pudo refrescar el token'));
+          }
+        } catch (refreshError) {
+          // Error al intentar refrescar - verificar si los tokens todavía existen
+          const stillHasTokens = TokenStorage.hasTokens() && 
+                                TokenStorage.getRefreshToken() && 
+                                !TokenStorage.isRefreshTokenExpired();
+          
+          if (!stillHasTokens) {
+            // Los tokens fueron limpiados, significa error de autenticación real
             // Solo redirigir si estamos en rutas de admin
             if (window.location.pathname.startsWith('/admin') || 
                 window.location.pathname.startsWith('/crm') ||
                 window.location.pathname.startsWith('/contrato')) {
               window.location.href = '/auth/login';
             }
-            
-            return Promise.reject(new Error('No se pudo refrescar el token'));
-          }
-        } catch (refreshError) {
-          // Refresh falló, limpiar tokens y redirigir
-          // Solo redirigir si estamos en rutas de admin
-          if (window.location.pathname.startsWith('/admin') || 
-              window.location.pathname.startsWith('/crm') ||
-              window.location.pathname.startsWith('/contrato')) {
-            window.location.href = '/auth/login';
+          } else {
+            // Los tokens todavía existen, fue un error temporal
+            // No redirigir, solo rechazar el error
+            console.warn('⚠️ Error temporal al refrescar token, manteniendo sesión y rechazando request');
           }
           
           return Promise.reject(refreshError);

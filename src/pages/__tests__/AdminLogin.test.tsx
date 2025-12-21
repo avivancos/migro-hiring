@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AdminLogin } from '@/pages/AdminLogin';
 import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from '@/providers/AuthProvider';
 
 // Mock de react-router-dom
 const mockNavigate = vi.fn();
@@ -35,12 +36,16 @@ describe('AdminLogin - Tests Automatizados', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(adminService.isAuthenticated).mockReturnValue(false);
+    // Limpiar el DOM antes de cada test
+    document.body.innerHTML = '';
   });
 
   it('debe renderizar el formulario de login', () => {
     render(
       <BrowserRouter>
-        <AdminLogin />
+        <AuthProvider>
+          <AdminLogin />
+        </AuthProvider>
       </BrowserRouter>
     );
 
@@ -53,12 +58,14 @@ describe('AdminLogin - Tests Automatizados', () => {
     const user = userEvent.setup();
     render(
       <BrowserRouter>
-        <AdminLogin />
+        <AuthProvider>
+          <AdminLogin />
+        </AuthProvider>
       </BrowserRouter>
     );
 
-    const submitButton = screen.getByRole('button', { name: /acceder/i });
-    await user.click(submitButton);
+    const submitButtons = screen.getAllByRole('button', { name: /acceder/i });
+    await user.click(submitButtons[0]);
 
     await waitFor(() => {
       expect(screen.getByText(/por favor.*email y contraseña/i)).toBeInTheDocument();
@@ -75,15 +82,17 @@ describe('AdminLogin - Tests Automatizados', () => {
 
     render(
       <BrowserRouter>
-        <AdminLogin />
+        <AuthProvider>
+          <AdminLogin />
+        </AuthProvider>
       </BrowserRouter>
     );
 
     await user.type(screen.getByLabelText(/email/i), 'agusvc@gmail.com');
     await user.type(screen.getByLabelText(/contraseña/i), 'pomelo2005');
 
-    const submitButton = screen.getByRole('button', { name: /acceder/i });
-    await user.click(submitButton);
+    const submitButtons = screen.getAllByRole('button', { name: /acceder/i });
+    await user.click(submitButtons[0]);
 
     await waitFor(() => {
       expect(adminService.login).toHaveBeenCalledWith('agusvc@gmail.com', 'pomelo2005');
@@ -100,15 +109,17 @@ describe('AdminLogin - Tests Automatizados', () => {
 
     render(
       <BrowserRouter>
-        <AdminLogin />
+        <AuthProvider>
+          <AdminLogin />
+        </AuthProvider>
       </BrowserRouter>
     );
 
     await user.type(screen.getByLabelText(/email/i), 'agusvc@gmail.com');
     await user.type(screen.getByLabelText(/contraseña/i), 'password-incorrecto');
 
-    const submitButton = screen.getByRole('button', { name: /acceder/i });
-    await user.click(submitButton);
+    const submitButtons = screen.getAllByRole('button', { name: /acceder/i });
+    await user.click(submitButtons[0]);
 
     await waitFor(() => {
       expect(screen.getByText(/credenciales incorrectas/i)).toBeInTheDocument();

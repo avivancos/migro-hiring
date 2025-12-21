@@ -28,6 +28,26 @@ global.localStorage = localStorageMock as any;
   },
 };
 
+// Mock navigator.clipboard para user-event
+// Necesario porque user-event intenta acceder a navigator.clipboard
+const mockClipboard = {
+  writeText: vi.fn().mockResolvedValue(undefined),
+  readText: vi.fn().mockResolvedValue(''),
+};
+
+// Asegurar que navigator existe y tiene clipboard
+if (!global.navigator) {
+  (global as any).navigator = {
+    clipboard: mockClipboard,
+  };
+} else {
+  Object.defineProperty(global.navigator, 'clipboard', {
+    value: mockClipboard,
+    writable: true,
+    configurable: true,
+  });
+}
+
 // Mock fetch
 global.fetch = vi.fn();
 
