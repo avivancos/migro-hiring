@@ -1,10 +1,19 @@
-# Frontend: Pili LLM Deshabilitado
+# Frontend: Pili LLM - Estado Anterior (Deshabilitado)
 
-## 📋 Resumen
+## ⚠️ NOTA IMPORTANTE
 
-Se han eliminado/deshabilitado todas las referencias a Pili LLM en el frontend, ya que el servicio ha sido movido a un repositorio externo.
+**Este documento describe el estado ANTERIOR cuando Pili estaba deshabilitado.**
 
-**Fecha:** 2025-01-27
+**Estado actual:** ✅ **Pili está HABILITADO** - Ver `docs/PILI_ENABLED.md` para la configuración actual.
+
+---
+
+## 📋 Resumen (Estado Anterior)
+
+Se habían eliminado/deshabilitado todas las referencias a Pili LLM en el frontend, ya que el servicio había sido movido a un repositorio externo.
+
+**Fecha deshabilitación:** 2025-01-27  
+**Fecha re-habilitación:** 2025-01-27
 
 ---
 

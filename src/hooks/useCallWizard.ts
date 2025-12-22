@@ -2,7 +2,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { wizardApi } from '@/services/wizardApi';
-import type { CallDataWizard } from '@/types/wizard';
 
 export function useCallWizard(callId: string | undefined) {
   const queryClient = useQueryClient();

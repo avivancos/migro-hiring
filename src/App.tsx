@@ -26,6 +26,8 @@ import { CRMContactDetail } from '@/pages/CRMContactDetail';
 import { CRMContactEdit } from '@/pages/CRMContactEdit';
 import { CRMLeadList } from '@/pages/CRMLeadList';
 import { CRMLeadDetail } from '@/pages/CRMLeadDetail';
+import { CRMOpportunities } from '@/pages/CRMOpportunities';
+import { CRMOpportunityDetail } from '@/pages/CRMOpportunityDetail';
 import { CRMTaskCalendar } from '@/pages/CRMTaskCalendar';
 import { CRMSettings } from '@/pages/CRMSettings';
 import { CRMTaskTemplatesSettings } from '@/pages/CRMTaskTemplatesSettings';
@@ -46,8 +48,7 @@ import { AdminUsers } from '@/pages/admin/AdminUsers';
 import { AdminUserDetail } from '@/pages/admin/AdminUserDetail';
 import { AdminUserCreate } from '@/pages/admin/AdminUserCreate';
 import { AdminAuditLogs } from '@/pages/admin/AdminAuditLogs';
-// Pili LLM deshabilitado - movido a repositorio externo
-// import { AdminPili } from '@/pages/admin/AdminPili';
+import { AdminPili } from '@/pages/admin/AdminPili';
 import { AdminConversations } from '@/pages/admin/AdminConversations';
 import { AdminContracts } from '@/pages/admin/AdminContracts';
 import { AdminContractDetail } from '@/pages/admin/AdminContractDetail';
@@ -71,6 +72,7 @@ function AppContent() {
           <Route path="/borrador" element={<BorradorPDF />} />
           <Route path="/colaboradores" element={<Colaboradores />} />
           <Route path="/closer" element={<Closer />} />
+          <Route path="/pili" element={<AdminPili />} />
           
           {/* Servicio de contratación y firma - RUTAS ANTIGUAS (mantener para compatibilidad) */}
           <Route path="/contrato-old/login" element={<AdminLogin />} />
@@ -98,8 +100,6 @@ function AppContent() {
             <Route path="users/create" element={<AdminUserCreate />} />
             <Route path="users/:id" element={<AdminUserDetail />} />
             <Route path="audit-logs" element={<AdminAuditLogs />} />
-            {/* Pili LLM deshabilitado - movido a repositorio externo */}
-            {/* <Route path="pili" element={<AdminPili />} /> */}
             <Route path="conversations" element={<AdminConversations />} />
             <Route path="conversations/:id" element={<AdminConversations />} />
             <Route path="contracts" element={<AdminContracts />} />
@@ -131,6 +131,10 @@ function AppContent() {
             {/* CRM Leads */}
             <Route path="leads" element={<CRMLeadList />} />
             <Route path="leads/:id" element={<CRMLeadDetail />} />
+            
+            {/* CRM Opportunities */}
+            <Route path="opportunities" element={<CRMOpportunities />} />
+            <Route path="opportunities/:id" element={<CRMOpportunityDetail />} />
             
             {/* CRM Calendar */}
             <Route path="calendar" element={<CRMTaskCalendar />} />

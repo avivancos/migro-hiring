@@ -2,7 +2,6 @@
 
 import { useNavigate } from 'react-router-dom';
 import { OpportunityList } from '@/components/opportunities/OpportunityList';
-import { useOpportunities } from '@/hooks/useOpportunities';
 import { crmService } from '@/services/crmService';
 import { useEffect, useState } from 'react';
 

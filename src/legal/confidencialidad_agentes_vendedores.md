@@ -115,16 +115,14 @@ CLÁUSULAS
 
 8. INCUMPLIMIENTO Y REMEDIOS
 
-8.1. El incumplimiento por parte de EL ASPIRANTE de cualquiera de las obligaciones establecidas en este Contrato constituirá una falta grave que podrá dar lugar a:
-   (a) La exclusión inmediata del proceso de formación y selección, sin derecho a indemnización alguna.
-   (b) La resolución inmediata de cualquier contrato de colaboración freelance vigente, sin perjuicio de las acciones de daños y perjuicios que puedan corresponder a MIGRO.
-   (c) La exigencia del cese inmediato de las actividades contrarias a este Contrato.
-   (d) La adopción de medidas cautelares y la reclamación de daños y perjuicios íntegros, incluyendo lucro cesante y daño emergente.
-   (e) La reclamación de las cantidades que hubiera percibido EL ASPIRANTE como consecuencia de actividades contrarias a este Contrato.
+8.1. En caso de incumplimiento por parte de EL ASPIRANTE de cualquiera de las obligaciones establecidas en este Contrato, MIGRO podrá:
+   (a) Excluir a EL ASPIRANTE del proceso de formación y selección.
+   (b) Resolver cualquier contrato de colaboración freelance vigente, sin perjuicio de las acciones de daños y perjuicios que puedan corresponder a MIGRO.
+   (c) Exigir el cese de las actividades contrarias a este Contrato.
+   (d) Adoptar las medidas legales necesarias y reclamar los daños y perjuicios que correspondan.
+   (e) Reclamar las cantidades que hubiera percibido EL ASPIRANTE como consecuencia de actividades contrarias a este Contrato.
 
 8.2. MIGRO se reserva el derecho de ejercitar todas las acciones legales que estime oportunas para la protección de sus derechos, incluyendo, sin limitación, acciones por competencia desleal, violación de secretos empresariales, infracción de propiedad intelectual, y cualquier otra acción que en Derecho proceda.
-
-8.3. EL ASPIRANTE reconoce que el incumplimiento de las obligaciones de confidencialidad y no competencia causaría un daño irreparable a MIGRO, por lo que MIGRO tendrá derecho a solicitar medidas cautelares y órdenes judiciales de cesación inmediata, sin necesidad de acreditar daño específico.
 
 9. VIGENCIA Y TERMINACIÓN
 
@@ -148,9 +146,7 @@ CLÁUSULAS
 
 10.5. Ley aplicable. Este Contrato se rige por la legislación española.
 
-10.6. Jurisdicción. Las partes, con renuncia expresa a cualquier otro fuero que pudiera corresponderles, se someten a los Juzgados y Tribunales de Salamanca para cualquier controversia derivada de la interpretación, ejecución o cumplimiento de este Contrato. Con carácter previo, intentarán resolver amistosamente cualquier controversia.
-
-10.7. Fuero específico. Las partes acuerdan de forma expresa que, para cualquier controversia derivada de la interpretación, ejecución o cumplimiento del presente Contrato, serán exclusivamente competentes los Juzgados y Tribunales de Salamanca capital. Esta cláusula se entenderá sin perjuicio de lo dispuesto en la cláusula 10.6 respecto al sometimiento previo a negociación amistosa.
+10.6. Jurisdicción. Las partes se someten a la jurisdicción de los Juzgados y Tribunales que resulten competentes conforme a la legislación aplicable, tanto nacionales como internacionales, pudiendo ejercitar las acciones legales que estimen oportunas ante cualquier jurisdicción, incluida la internacional, que sea de utilidad para proteger los intereses de las partes y prevenir cualquier perjuicio. Con carácter previo, intentarán resolver amistosamente cualquier controversia derivada de la interpretación, ejecución o cumplimiento de este Contrato.
 
 Y en prueba de conformidad, firman el presente Contrato, por duplicado y a un solo efecto, en el lugar y fecha indicados en el encabezamiento.
 

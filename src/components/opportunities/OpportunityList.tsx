@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { useOpportunities } from '@/hooks/useOpportunities';
 import type { OpportunityFilters as OpportunityFiltersType } from '@/types/opportunity';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface OpportunityListProps {
@@ -45,11 +46,60 @@ export function OpportunityList({
   }
 
   if (error) {
+    // Log detallado del error para debugging
+    console.error('❌ [OpportunityList] Error renderizado:', {
+      error,
+      errorType: error instanceof Error ? error.constructor.name : typeof error,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      errorStack: error instanceof Error ? error.stack : undefined,
+      filters,
+    });
+
+    // Intentar extraer más información del error si es un error de axios
+    let errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+    let errorDetails = '';
+
+    // Si es un error de axios, extraer más detalles
+    if (error && typeof error === 'object' && 'response' in error) {
+      const axiosError = error as any;
+      if (axiosError.response) {
+        errorMessage = `Error ${axiosError.response.status}: ${axiosError.response.statusText || 'Error del servidor'}`;
+        if (axiosError.response.data) {
+          if (typeof axiosError.response.data === 'string') {
+            errorDetails = axiosError.response.data;
+          } else if (axiosError.response.data.detail) {
+            errorDetails = axiosError.response.data.detail;
+          } else if (axiosError.response.data.message) {
+            errorDetails = axiosError.response.data.message;
+          } else {
+            errorDetails = JSON.stringify(axiosError.response.data);
+          }
+        }
+      } else if (axiosError.request) {
+        errorMessage = 'No se recibió respuesta del servidor';
+        errorDetails = 'Verifica tu conexión y que el servidor esté disponible';
+      }
+    }
+
     return (
-      <EmptyState
-        title="Error al cargar oportunidades"
-        description={error instanceof Error ? error.message : 'Error desconocido'}
-      />
+      <div className="space-y-4">
+        <EmptyState
+          title="Error al cargar oportunidades"
+          description={errorMessage}
+        />
+        {errorDetails && (
+          <Card className="bg-red-50 border-red-200">
+            <CardContent className="p-4">
+              <p className="text-sm font-semibold text-red-800 mb-2">
+                Detalles del error:
+              </p>
+              <pre className="text-xs text-red-700 whitespace-pre-wrap break-words">
+                {errorDetails}
+              </pre>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     );
   }
 

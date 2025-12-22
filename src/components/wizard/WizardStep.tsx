@@ -1,7 +1,7 @@
 // WizardStep - Paso individual del wizard
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { WizardField } from './WizardField';
 import { WizardGuidance } from './WizardGuidance';

@@ -1,5 +1,5 @@
 // Admin Pili - Chat con IA
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,20 @@ import { Send, Bot, User, Activity } from 'lucide-react';
 import type { Message, HealthResponse } from '@/types/pili';
 import { format } from 'date-fns';
 
+// Función helper para obtener/generar un user_id único persistente
+const getUserId = (): string => {
+  const STORAGE_KEY = 'pili_user_id';
+  let userId = localStorage.getItem(STORAGE_KEY);
+  
+  if (!userId) {
+    // Generar un ID único basado en timestamp y random
+    userId = `pili-user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    localStorage.setItem(STORAGE_KEY, userId);
+  }
+  
+  return userId;
+};
+
 export function AdminPili() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -16,7 +30,11 @@ export function AdminPili() {
   const [isTyping, setIsTyping] = useState(false);
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Obtener user_id único (persistente en localStorage)
+  const userId = useMemo(() => getUserId(), []);
 
   useEffect(() => {
     checkHealth();
@@ -40,11 +58,27 @@ export function AdminPili() {
   };
 
   const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+    // Validar input antes de enviar
+    if (!input.trim() || isLoading) {
+      if (!input.trim()) {
+        setError('Por favor, ingresa una pregunta');
+      }
+      return;
+    }
 
+    // Validar longitud
+    if (input.length > 5000) {
+      setError('La pregunta es demasiado larga (máximo 5000 caracteres)');
+      return;
+    }
+
+    // Limpiar error anterior
+    setError(null);
+
+    const queryText = input.trim();
     const userMessage: Message = {
       role: 'user',
-      content: input,
+      content: queryText,
       timestamp: new Date().toISOString(),
     };
 
@@ -55,14 +89,9 @@ export function AdminPili() {
 
     try {
       const response = await piliService.chat({
-        message: input,
+        query: queryText,
+        user_id: userId,
         conversation_id: conversationId || undefined,
-        context: {
-          conversation_history: messages.slice(-5).map((m) => ({
-            role: m.role,
-            content: m.content,
-          })),
-        },
       });
 
       const assistantMessage: Message = {
@@ -72,17 +101,25 @@ export function AdminPili() {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-      if (!conversationId) {
+      
+      // Guardar conversation_id si es la primera respuesta
+      if (!conversationId && response.conversation_id) {
         setConversationId(response.conversation_id);
       }
     } catch (error: any) {
       console.error('Error enviando mensaje:', error);
-      const errorMessage: Message = {
+      
+      // Mostrar error de validación o error general
+      const errorMessage = error.message || 'Error al procesar tu mensaje. Por favor intenta de nuevo.';
+      setError(errorMessage);
+      
+      // También mostrar en el chat
+      const errorChatMessage: Message = {
         role: 'assistant',
-        content: 'Lo siento, hubo un error al procesar tu mensaje. Por favor intenta de nuevo.',
+        content: `Error: ${errorMessage}`,
         timestamp: new Date().toISOString(),
       };
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorChatMessage]);
     } finally {
       setIsLoading(false);
       setIsTyping(false);
@@ -199,24 +236,54 @@ export function AdminPili() {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-800">{error}</p>
+              <button
+                onClick={() => setError(null)}
+                className="text-xs text-red-600 hover:text-red-800 mt-1 underline"
+              >
+                Cerrar
+              </button>
+            </div>
+          )}
+
           {/* Input */}
           <div className="flex gap-2">
             <Input
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+              onChange={(e) => {
+                setInput(e.target.value);
+                // Limpiar error al escribir
+                if (error) setError(null);
+              }}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
+                  e.preventDefault();
+                  sendMessage();
+                }
+              }}
               placeholder="Escribe tu pregunta..."
               disabled={isLoading || !health || health.status !== 'healthy'}
               className="flex-1"
+              maxLength={5000}
             />
             <Button
               onClick={sendMessage}
               disabled={isLoading || !input.trim() || !health || health.status !== 'healthy'}
               className="flex items-center gap-2"
             >
-              <Send size={18} />
+              {isLoading ? 'Enviando...' : <Send size={18} />}
             </Button>
           </div>
+          
+          {/* Character count */}
+          {input.length > 4500 && (
+            <p className="text-xs text-amber-600 mt-1">
+              {input.length}/5000 caracteres
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

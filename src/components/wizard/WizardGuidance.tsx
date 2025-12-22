@@ -6,12 +6,10 @@ import type { WizardGuidance as WizardGuidanceType } from '@/types/wizard';
 
 interface WizardGuidanceProps {
   guidance: WizardGuidanceType;
-  showScript?: boolean;
 }
 
 export function WizardGuidance({
   guidance,
-  showScript = true,
 }: WizardGuidanceProps) {
   return (
     <div className="space-y-4">

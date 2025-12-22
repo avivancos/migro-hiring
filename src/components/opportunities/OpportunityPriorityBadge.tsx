@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import type { LeadOpportunity } from '@/types/opportunity';
 
 interface OpportunityPriorityBadgeProps {
-  priority: LeadOpportunity['priority'];
+  priority?: LeadOpportunity['priority']; // Opcional porque el backend puede no enviarlo
   className?: string;
 }
 
@@ -27,7 +27,11 @@ export function OpportunityPriorityBadge({
   priority,
   className,
 }: OpportunityPriorityBadgeProps) {
-  const config = priorityConfig[priority];
+  // Si priority es undefined o no está en el config, usar 'medium' por defecto
+  const validPriority = priority && priority in priorityConfig 
+    ? priority 
+    : 'medium';
+  const config = priorityConfig[validPriority];
 
   return (
     <Badge variant={config.variant} className={className}>

@@ -1,20 +1,32 @@
 // Types for Pili (AI Chat) Module
 
 export interface PiliChatRequest {
-  message: string;
+  query: string;
+  user_id: string;
   conversation_id?: string | null;
-  context?: {
-    conversation_history?: Array<{
-      role: 'user' | 'assistant';
-      content: string;
-    }>;
-    [key: string]: any;
-  } | null;
 }
 
 export interface PiliChatResponse {
   response: string;
   conversation_id: string;
+}
+
+export interface PiliValidationError {
+  detail: string;
+  errors: Array<{
+    field: string;
+    message: string;
+    type: string;
+  }>;
+  help: {
+    required_fields: string[];
+    optional_fields: string[];
+    example: {
+      query: string;
+      user_id: string;
+      conversation_id?: string;
+    };
+  };
 }
 
 export interface HealthResponse {

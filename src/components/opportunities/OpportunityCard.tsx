@@ -11,7 +11,6 @@ import { Phone, Mail, MapPin, User, ChevronRight } from 'lucide-react';
 interface OpportunityCardProps {
   opportunity: LeadOpportunity;
   onSelect?: (id: string) => void;
-  onAssign?: (id: string, userId: string) => void;
   showActions?: boolean;
 }
 
@@ -27,7 +26,6 @@ const statusConfig = {
 export function OpportunityCard({
   opportunity,
   onSelect,
-  onAssign,
   showActions = true,
 }: OpportunityCardProps) {
   const contact = opportunity.contact;
@@ -94,25 +92,30 @@ export function OpportunityCard({
         {/* Razón de detección */}
         <div className="pt-2 border-t">
           <p className="text-sm text-gray-600 line-clamp-2">
-            {opportunity.detection_reason}
+            {typeof opportunity.detection_reason === 'string'
+              ? opportunity.detection_reason
+              : (() => {
+                  const reason = opportunity.detection_reason as Record<string, any>;
+                  const reasons: string[] = [];
+                  if (reason.has_no_situation) reasons.push('Sin situación conocida');
+                  if (reason.not_contacted) reasons.push('No contactado');
+                  if (reason.has_attempts !== undefined) {
+                    reasons.push(`${reason.attempts_remaining || 0} intentos restantes`);
+                  }
+                  return reasons.length > 0 ? reasons.join(' • ') : 'Oportunidad detectada';
+                })()}
           </p>
         </div>
 
         {/* Información de intentos */}
-        {contact && (
+        {contact && opportunity.assigned_to && (
           <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t">
-            <span>
-              Intentos: {contact.current_attempt_number || 0}/
-              {contact.max_contact_attempts || 5}
-            </span>
-            {opportunity.assigned_to && (
-              <div className="flex items-center gap-1">
-                <User className="h-3 w-3" />
-                <span className="truncate max-w-[100px]">
-                  {opportunity.assigned_to.name || 'Sin asignar'}
-                </span>
-              </div>
-            )}
+            <div className="flex items-center gap-1">
+              <User className="h-3 w-3" />
+              <span className="truncate max-w-[100px]">
+                {opportunity.assigned_to.name || 'Sin asignar'}
+              </span>
+            </div>
           </div>
         )}
 

@@ -7,7 +7,7 @@ import { useOpportunityDetail } from '@/hooks/useOpportunityDetail';
 import { OpportunityPriorityBadge } from '@/components/opportunities/OpportunityPriorityBadge';
 import { OpportunityScore } from '@/components/opportunities/OpportunityScore';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { ArrowLeft, User, Phone, Mail, MapPin } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin } from 'lucide-react';
 
 export function CRMOpportunityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -17,8 +17,6 @@ export function CRMOpportunityDetail() {
     opportunity,
     isLoading,
     error,
-    assign,
-    update,
     createPipeline,
     isUpdating,
   } = useOpportunityDetail(id);

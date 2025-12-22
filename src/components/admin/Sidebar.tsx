@@ -6,7 +6,6 @@ import {
   FileText, 
   Shield, 
   MessageSquare, 
-  // Bot, // Pili deshabilitado
   Phone
 } from 'lucide-react';
 
@@ -17,8 +16,6 @@ const navigation = [
   { name: 'Tipos de Llamadas', href: '/admin/call-types', icon: Phone },
   { name: 'Auditoría', href: '/admin/audit-logs', icon: Shield },
   { name: 'Conversaciones', href: '/admin/conversations', icon: MessageSquare },
-  // Pili LLM deshabilitado - movido a repositorio externo
-  // { name: 'Pili AI', href: '/admin/pili', icon: Bot },
 ];
 
 interface SidebarProps {

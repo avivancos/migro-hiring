@@ -1,7 +1,7 @@
 // Query Provider - Configuración de TanStack Query
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 // Crear QueryClient con configuración optimizada
 const queryClient = new QueryClient({

@@ -7,6 +7,14 @@ export const APP_URL = import.meta.env.VITE_APP_URL || 'http://localhost:5173';
 export const API_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT) || 30000;
 export const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 
+// API de Pili - Servicio externo
+// En producción: https://pili.migro.es/api
+// En desarrollo: http://localhost:8001/api
+export const PILI_API_BASE_URL = import.meta.env.VITE_PILI_API_URL || 
+  (import.meta.env.PROD 
+    ? 'https://pili.migro.es/api' 
+    : 'http://localhost:8001/api');
+
 export const HIRING_STEPS = [
   { id: 1, name: 'Detalles', description: 'Información del servicio' },
   { id: 2, name: 'Confirmar', description: 'Datos personales' },

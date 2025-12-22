@@ -12,9 +12,9 @@ export interface LeadOpportunity {
   contact?: KommoContact; // Relación expandida
   detected_at: string; // ISO 8601
   opportunity_score: number; // 0-100
-  priority: 'high' | 'medium' | 'low';
+  priority?: 'high' | 'medium' | 'low'; // Opcional porque el backend puede no enviarlo
   status: 'pending' | 'assigned' | 'contacted' | 'converted' | 'expired' | 'lost';
-  detection_reason: string;
+  detection_reason: string | Record<string, any>; // Puede ser string o objeto con detalles
   assigned_to_id?: string; // UUID
   assigned_to?: CRMUser; // Relación expandida
   pipeline_stage_id?: string; // UUID

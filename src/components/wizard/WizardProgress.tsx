@@ -38,7 +38,6 @@ export function WizardProgress({
         {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => {
           const isCompleted = step < currentStep;
           const isCurrent = step === currentStep;
-          const isPending = step > currentStep;
 
           return (
             <div
