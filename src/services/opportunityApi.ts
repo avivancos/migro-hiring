@@ -8,7 +8,8 @@ import type {
   OpportunityAssignRequest,
   OpportunityUpdateRequest,
 } from '@/types/opportunity';
-import type { PipelineStageRead } from '@/types/pipeline';
+import type { PipelineStageRead, PipelineStageCreate } from '@/types/pipeline';
+import { pipelineApi } from './pipelineApi';
 
 const CRM_BASE_PATH = '/crm';
 
@@ -28,6 +29,9 @@ export const opportunityApi = {
     if (filters?.min_score !== undefined) params.append('min_score', filters.min_score.toString());
     if (filters?.max_score !== undefined) params.append('max_score', filters.max_score.toString());
     
+    // Nota: El backend ahora siempre incluye el contacto expandido automáticamente
+    // No es necesario el parámetro 'expand', pero lo mantenemos por compatibilidad
+    
     const url = `${CRM_BASE_PATH}/opportunities?${params.toString()}`;
     console.log('🔍 [opportunityApi] GET', url);
     console.log('🔍 [opportunityApi] Filters:', JSON.stringify(filters, null, 2));
@@ -41,6 +45,20 @@ export const opportunityApi = {
       console.log('🔍 [opportunityApi] Is array?:', Array.isArray(data));
       if (data && typeof data === 'object') {
         console.log('🔍 [opportunityApi] Keys:', Object.keys(data));
+        if ('items' in data) {
+          console.log('🔍 [opportunityApi] items type:', typeof data.items);
+          console.log('🔍 [opportunityApi] items is array?:', Array.isArray(data.items));
+          console.log('🔍 [opportunityApi] items length:', data.items?.length);
+          // Log detallado de la primera oportunidad del raw response
+          if (Array.isArray(data.items) && data.items.length > 0) {
+            const firstItem = data.items[0];
+            console.log('🔍 [opportunityApi] PRIMERA OPORTUNIDAD RAW (items[0]):', JSON.stringify(firstItem, null, 2));
+            console.log('🔍 [opportunityApi] Keys de primera oportunidad:', Object.keys(firstItem));
+            console.log('🔍 [opportunityApi] Tiene contact?:', 'contact' in firstItem);
+            console.log('🔍 [opportunityApi] contact value:', firstItem.contact);
+            console.log('🔍 [opportunityApi] contact_id:', firstItem.contact_id);
+          }
+        }
         if ('opportunities' in data) {
           console.log('🔍 [opportunityApi] opportunities type:', typeof data.opportunities);
           console.log('🔍 [opportunityApi] opportunities is array?:', Array.isArray(data.opportunities));
@@ -81,6 +99,9 @@ export const opportunityApi = {
       else if (data && typeof data === 'object' && 'opportunities' in data) {
         console.log('🔍 [opportunityApi] Formato: Campo opportunities');
         const opportunities = Array.isArray(data.opportunities) ? data.opportunities : [];
+        
+        // El backend ahora siempre incluye el contacto expandido
+        // Ya no es necesario obtener contactos individualmente
         const total = data.total ?? opportunities.length;
         const page = data.page || filters?.page || 1;
         const limit = data.limit || filters?.limit || 50;
@@ -96,6 +117,24 @@ export const opportunityApi = {
       else if (data && typeof data === 'object' && 'items' in data) {
         console.log('🔍 [opportunityApi] Formato: Campo items');
         const opportunities = Array.isArray(data.items) ? data.items : [];
+        
+        // Log detallado de la primera oportunidad para debugging
+        if (opportunities.length > 0) {
+          const firstOpp = opportunities[0];
+          console.log('🔍 [opportunityApi] Primera oportunidad (muestra):', {
+            id: firstOpp.id,
+            contact_id: firstOpp.contact_id,
+            hasContact: !!firstOpp.contact,
+            contactType: typeof firstOpp.contact,
+            contactKeys: firstOpp.contact ? Object.keys(firstOpp.contact) : null,
+            contactName: firstOpp.contact?.name,
+            contactFirstName: firstOpp.contact?.first_name,
+            contactEmail: firstOpp.contact?.email,
+          });
+        }
+        
+        // El backend ahora siempre incluye el contacto expandido
+        // Ya no es necesario obtener contactos individualmente
         const total = data.total ?? opportunities.length;
         const page = data.page || filters?.page || 1;
         const limit = data.limit || filters?.limit || 50;
@@ -178,12 +217,22 @@ export const opportunityApi = {
 
   /**
    * Crear pipeline para oportunidad
+   * 
+   * NOTA: Usa el endpoint alternativo de pipelines ya que el endpoint específico
+   * POST /crm/opportunities/{id}/pipeline no existe aún en el backend.
+   * 
+   * @see docs/BACKEND_OPPORTUNITIES_PIPELINE_ENDPOINT_404.md
    */
   async createPipeline(id: string): Promise<PipelineStageRead> {
-    const { data } = await api.post<PipelineStageRead>(
-      `${CRM_BASE_PATH}/opportunities/${id}/pipeline`
-    );
-    return data;
+    // Usar el endpoint genérico de pipelines como alternativa
+    // Las oportunidades se manejan como 'leads' en el sistema de pipelines
+    const stageData: PipelineStageCreate = {
+      entity_id: id,
+      entity_type: 'leads', // Las oportunidades se tratan como leads en pipelines
+      current_stage: 'agent_initial', // Stage inicial por defecto
+    };
+    
+    return pipelineApi.createOrUpdateStage(stageData);
   },
 };
 

@@ -7,7 +7,8 @@ import { useOpportunityDetail } from '@/hooks/useOpportunityDetail';
 import { OpportunityPriorityBadge } from '@/components/opportunities/OpportunityPriorityBadge';
 import { OpportunityScore } from '@/components/opportunities/OpportunityScore';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { ArrowLeft, Phone, Mail, MapPin } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, User } from 'lucide-react';
+import { formatDetectionReason } from '@/utils/opportunity';
 
 export function CRMOpportunityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -125,7 +126,9 @@ export function CRMOpportunityDetail() {
               <CardTitle>Razón de Detección</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700">{opportunity.detection_reason}</p>
+              <p className="text-gray-700">
+                {formatDetectionReason(opportunity.detection_reason)}
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -166,6 +169,30 @@ export function CRMOpportunityDetail() {
               </p>
             </CardContent>
           </Card>
+
+          {/* Responsable asignado */}
+          {opportunity.assigned_to && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Responsable</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100">
+                      <User className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-blue-600 font-medium mb-1">Asignado a</p>
+                      <p className="text-sm text-blue-900 font-semibold truncate">
+                        {opportunity.assigned_to.name || 'Sin asignar'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

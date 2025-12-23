@@ -36,6 +36,7 @@ export function useOpportunityDetail(opportunityId: string | undefined) {
     mutationFn: () => opportunityApi.createPipeline(opportunityId!),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['opportunity', opportunityId] });
+      queryClient.invalidateQueries({ queryKey: ['pipelines'] });
     },
   });
 
