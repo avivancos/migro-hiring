@@ -111,6 +111,25 @@ La caja del responsable se muestra cuando:
 - `opportunity.assigned_to` existe y no es `null` o `undefined`
 - En el caso de `OpportunityCard`, también requiere que `contact` exista
 
+## Cambios Adicionales - Badges de Razón de Detección
+
+### Implementación de Badges
+Se modificó la visualización de la razón de detección para mostrar badges/tags individuales en lugar de texto plano con separadores.
+
+**Archivos modificados:**
+- `src/utils/opportunity.ts`: Agregada función `getDetectionReasonBadges()` que devuelve un array de razones
+- `src/components/opportunities/OpportunityCard.tsx`: Actualizado para mostrar badges
+- `src/pages/CRMOpportunityDetail.tsx`: Actualizado para mostrar badges
+
+**Ejemplo de visualización:**
+- Antes: "Sin situación conocida • No contactado • 5 intentos restantes"
+- Después: [Badge: "Sin situación conocida"] [Badge: "No contactado"] [Badge: "5 intentos restantes"]
+
+**Estilo:**
+- Variante: `neutral` (fondo gris claro, texto gris oscuro)
+- Tamaño: `text-xs` en cards, `text-sm` en detalle
+- Layout: `flex flex-wrap gap-2` para distribución automática
+
 ## Fecha de Implementación
 2024-12-19
 

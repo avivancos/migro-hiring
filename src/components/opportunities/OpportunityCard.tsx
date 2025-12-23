@@ -7,7 +7,7 @@ import { OpportunityScore } from './OpportunityScore';
 import { Badge } from '@/components/ui/badge';
 import type { LeadOpportunity } from '@/types/opportunity';
 import { Phone, Mail, MapPin, User, ChevronRight } from 'lucide-react';
-import { formatDetectionReason } from '@/utils/opportunity';
+import { getDetectionReasonBadges } from '@/utils/opportunity';
 
 interface OpportunityCardProps {
   opportunity: LeadOpportunity;
@@ -152,9 +152,13 @@ export function OpportunityCard({
 
         {/* Razón de detección */}
         <div className="pt-2 border-t">
-          <p className="text-sm text-gray-600 line-clamp-2">
-            {formatDetectionReason(opportunity.detection_reason)}
-          </p>
+          <div className="flex flex-wrap gap-2">
+            {getDetectionReasonBadges(opportunity.detection_reason).map((badge, index) => (
+              <Badge key={index} variant="neutral" className="text-xs">
+                {badge}
+              </Badge>
+            ))}
+          </div>
         </div>
 
         {/* Responsable asignado */}

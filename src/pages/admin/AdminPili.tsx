@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { piliService } from '@/services/piliService';
 import { StatusBadge } from '@/components/common/StatusBadge';
-import { Send, Bot, User, Activity } from 'lucide-react';
-import type { Message, HealthResponse } from '@/types/pili';
+import { Send, Bot, User, Activity, Lightbulb, AlertTriangle } from 'lucide-react';
+import type { Message, HealthResponse, ParsedPiliResponse } from '@/types/pili';
 import { format } from 'date-fns';
+import { parsePiliResponse } from '@/hooks/usePiliChat';
 
 // Función helper para obtener/generar un user_id único persistente
 const getUserId = (): string => {
@@ -57,25 +58,25 @@ export function AdminPili() {
     }
   };
 
-  const sendMessage = async () => {
+  const sendMessage = async (messageText?: string) => {
+    const queryText = messageText || input.trim();
+    
     // Validar input antes de enviar
-    if (!input.trim() || isLoading) {
-      if (!input.trim()) {
+    if (!queryText || isLoading) {
+      if (!queryText) {
         setError('Por favor, ingresa una pregunta');
       }
       return;
     }
 
     // Validar longitud
-    if (input.length > 5000) {
+    if (queryText.length > 5000) {
       setError('La pregunta es demasiado larga (máximo 5000 caracteres)');
       return;
     }
 
     // Limpiar error anterior
     setError(null);
-
-    const queryText = input.trim();
     const userMessage: Message = {
       role: 'user',
       content: queryText,
@@ -94,10 +95,15 @@ export function AdminPili() {
         conversation_id: conversationId || undefined,
       });
 
+      // Parsear respuesta para extraer pregunta de seguimiento y estado truncado
+      const parsed = parsePiliResponse(response.response);
+
       const assistantMessage: Message = {
         role: 'assistant',
-        content: response.response,
+        content: parsed.content,
         timestamp: new Date().toISOString(),
+        followUpQuestion: parsed.followUpQuestion,
+        isTruncated: parsed.isTruncated,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
@@ -201,6 +207,34 @@ export function AdminPili() {
                     }`}
                   >
                     <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    
+                    {/* Nota de truncado */}
+                    {message.isTruncated && (
+                      <div className="mt-2 p-2 bg-amber-50 border-l-3 border-amber-400 rounded text-xs text-amber-800 flex items-start gap-2">
+                        <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                        <span>Respuesta truncada. Puedes pedir que continúe.</span>
+                      </div>
+                    )}
+                    
+                    {/* Pregunta de seguimiento */}
+                    {message.followUpQuestion && (
+                      <div className="mt-3 p-3 bg-blue-50 border-l-3 border-blue-400 rounded">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Lightbulb className="w-3 h-3 text-blue-600" />
+                          <span className="text-xs font-semibold text-blue-700">
+                            ¿Te gustaría que profundice?
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => sendMessage(message.followUpQuestion!)}
+                          disabled={isLoading}
+                          className="w-full text-left text-sm text-blue-700 hover:text-blue-900 hover:underline disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {message.followUpQuestion}
+                        </button>
+                      </div>
+                    )}
+                    
                     {message.timestamp && (
                       <p
                         className={`text-xs mt-1 ${

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { usePiliChat } from '@/hooks/usePiliChat';
-import { Send, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
+import { Send, Loader2, AlertCircle, RefreshCw, Lightbulb, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface PiliChatProps {
@@ -20,6 +20,7 @@ export function PiliChat({ initialConversationId, className }: PiliChatProps) {
     sendMessage,
     clearChat,
     retryLastMessage,
+    sendFollowUp,
   } = usePiliChat(initialConversationId);
 
   // Auto-scroll al final cuando hay nuevos mensajes
@@ -103,6 +104,34 @@ export function PiliChat({ initialConversationId, className }: PiliChatProps) {
                   <p className="whitespace-pre-wrap break-words">
                     {message.content}
                   </p>
+                  
+                  {/* Nota de truncado */}
+                  {message.isTruncated && (
+                    <div className="mt-2 p-2 bg-amber-50 border-l-3 border-amber-400 rounded text-xs text-amber-800 flex items-start gap-2">
+                      <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                      <span>Respuesta truncada. Puedes pedir que continúe.</span>
+                    </div>
+                  )}
+                  
+                  {/* Pregunta de seguimiento */}
+                  {message.followUpQuestion && (
+                    <div className="mt-3 p-3 bg-blue-50 border-l-3 border-blue-400 rounded">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Lightbulb className="w-3 h-3 text-blue-600" />
+                        <span className="text-xs font-semibold text-blue-700">
+                          ¿Te gustaría que profundice?
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => sendFollowUp(message.followUpQuestion!)}
+                        disabled={isLoading}
+                        className="w-full text-left text-sm text-blue-700 hover:text-blue-900 hover:underline disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      >
+                        {message.followUpQuestion}
+                      </button>
+                    </div>
+                  )}
+                  
                   <p
                     className={`text-xs mt-1 ${
                       message.sender === 'user'

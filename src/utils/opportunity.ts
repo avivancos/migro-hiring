@@ -1,14 +1,18 @@
 // Opportunity Utilities - Funciones helper para el módulo de oportunidades
 
 /**
- * Formatea la razón de detección de una oportunidad
+ * Obtiene las razones de detección como un array de strings
  * Puede ser un string o un objeto con propiedades específicas
  */
-export function formatDetectionReason(
+export function getDetectionReasonBadges(
   detectionReason: string | Record<string, any>
-): string {
+): string[] {
   if (typeof detectionReason === 'string') {
-    return detectionReason;
+    // Si es un string, intentar dividirlo por " • " o devolverlo como único elemento
+    if (detectionReason.includes(' • ')) {
+      return detectionReason.split(' • ').filter(Boolean);
+    }
+    return detectionReason ? [detectionReason] : ['Oportunidad detectada'];
   }
 
   const reason = detectionReason as Record<string, any>;
@@ -24,6 +28,18 @@ export function formatDetectionReason(
     reasons.push(`${reason.attempts_remaining || 0} intentos restantes`);
   }
 
-  return reasons.length > 0 ? reasons.join(' • ') : 'Oportunidad detectada';
+  return reasons.length > 0 ? reasons : ['Oportunidad detectada'];
+}
+
+/**
+ * Formatea la razón de detección de una oportunidad
+ * Puede ser un string o un objeto con propiedades específicas
+ * @deprecated Usar getDetectionReasonBadges para obtener un array de badges
+ */
+export function formatDetectionReason(
+  detectionReason: string | Record<string, any>
+): string {
+  const badges = getDetectionReasonBadges(detectionReason);
+  return badges.join(' • ');
 }
 

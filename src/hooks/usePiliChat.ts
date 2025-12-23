@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { piliService } from '@/services/piliService';
-import type { PiliChatRequest } from '@/types/pili';
+import type { PiliChatRequest, PiliMessage, ParsedPiliResponse } from '@/types/pili';
 
 // Función helper para obtener/generar un user_id único persistente
 const getUserId = (): string => {
@@ -18,13 +18,42 @@ const getUserId = (): string => {
   return userId;
 };
 
-export interface Message {
-  id: string;
-  content: string;
-  sender: 'user' | 'pili';
-  timestamp: string;
-  isLoading?: boolean;
+/**
+ * Parsea la respuesta de Pili para extraer:
+ * - Contenido principal (sin pregunta de seguimiento)
+ * - Pregunta de seguimiento (si existe)
+ * - Estado de truncado
+ */
+export function parsePiliResponse(response: string): ParsedPiliResponse {
+  const result: ParsedPiliResponse = {
+    content: response,
+    isTruncated: false,
+  };
+
+  // Detectar si está truncada
+  if (response.includes('[Respuesta truncada por longitud')) {
+    result.isTruncated = true;
+  }
+
+  // Extraer pregunta de seguimiento
+  // Busca el patrón: **¿Te gustaría que profundice en algún aspecto?** [pregunta]
+  const followUpMatch = response.match(
+    /\*\*¿Te gustaría que profundice en algún aspecto\?\*\*\s*(.+?)(?:\n|$)/i
+  );
+  
+  if (followUpMatch) {
+    result.followUpQuestion = followUpMatch[1].trim();
+    // Remover pregunta de seguimiento del contenido principal
+    result.content = response.replace(
+      /\n\n\*\*¿Te gustaría que profundice en algún aspecto\?\*\*.*$/i,
+      ''
+    ).trim();
+  }
+
+  return result;
 }
+
+export type Message = PiliMessage;
 
 interface UsePiliChatReturn {
   messages: Message[];
@@ -34,6 +63,7 @@ interface UsePiliChatReturn {
   sendMessage: (message: string) => Promise<void>;
   clearChat: () => void;
   retryLastMessage: () => Promise<void>;
+  sendFollowUp: (question: string) => Promise<void>;
 }
 
 export function usePiliChat(initialConversationId?: string): UsePiliChatReturn {
@@ -86,6 +116,9 @@ export function usePiliChat(initialConversationId?: string): UsePiliChatReturn {
           setConversationId(response.conversation_id);
         }
 
+        // Parsear respuesta para extraer pregunta de seguimiento y estado truncado
+        const parsed = parsePiliResponse(response.response);
+
         // Reemplazar mensaje de carga con respuesta real
         setMessages((prev) => {
           const filtered = prev.filter((msg) => msg.id !== loadingMessage.id);
@@ -93,9 +126,11 @@ export function usePiliChat(initialConversationId?: string): UsePiliChatReturn {
             ...filtered,
             {
               id: `pili_${Date.now()}`,
-              content: response.response,
+              content: parsed.content,
               sender: 'pili',
               timestamp: new Date().toISOString(),
+              followUpQuestion: parsed.followUpQuestion,
+              isTruncated: parsed.isTruncated,
             },
           ];
         });
@@ -127,6 +162,13 @@ export function usePiliChat(initialConversationId?: string): UsePiliChatReturn {
     }
   }, [sendMessage]);
 
+  const sendFollowUp = useCallback(
+    async (question: string) => {
+      await sendMessage(question);
+    },
+    [sendMessage]
+  );
+
   return {
     messages,
     conversationId,
@@ -135,6 +177,7 @@ export function usePiliChat(initialConversationId?: string): UsePiliChatReturn {
     sendMessage,
     clearChat,
     retryLastMessage,
+    sendFollowUp,
   };
 }
 

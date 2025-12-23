@@ -8,7 +8,8 @@ import { OpportunityPriorityBadge } from '@/components/opportunities/Opportunity
 import { OpportunityScore } from '@/components/opportunities/OpportunityScore';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ArrowLeft, Phone, Mail, MapPin, User } from 'lucide-react';
-import { formatDetectionReason } from '@/utils/opportunity';
+import { Badge } from '@/components/ui/badge';
+import { getDetectionReasonBadges } from '@/utils/opportunity';
 
 export function CRMOpportunityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -52,6 +53,15 @@ export function CRMOpportunityDetail() {
   }
 
   const contact = opportunity.contact;
+
+  // Debug: verificar datos del responsable
+  console.log('🔍 [CRMOpportunityDetail] Opportunity data:', {
+    id: opportunity.id,
+    status: opportunity.status,
+    assigned_to_id: opportunity.assigned_to_id,
+    assigned_to: opportunity.assigned_to,
+    hasAssignedTo: !!opportunity.assigned_to,
+  });
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -126,9 +136,13 @@ export function CRMOpportunityDetail() {
               <CardTitle>Razón de Detección</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-700">
-                {formatDetectionReason(opportunity.detection_reason)}
-              </p>
+              <div className="flex flex-wrap gap-2">
+                {getDetectionReasonBadges(opportunity.detection_reason).map((badge, index) => (
+                  <Badge key={index} variant="neutral" className="text-sm">
+                    {badge}
+                  </Badge>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -171,7 +185,7 @@ export function CRMOpportunityDetail() {
           </Card>
 
           {/* Responsable asignado */}
-          {opportunity.assigned_to && (
+          {(opportunity.assigned_to || opportunity.assigned_to_id) && (
             <Card>
               <CardHeader>
                 <CardTitle>Responsable</CardTitle>
@@ -185,7 +199,8 @@ export function CRMOpportunityDetail() {
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-blue-600 font-medium mb-1">Asignado a</p>
                       <p className="text-sm text-blue-900 font-semibold truncate">
-                        {opportunity.assigned_to.name || 'Sin asignar'}
+                        {opportunity.assigned_to?.name || 
+                         (opportunity.assigned_to_id ? `Usuario ${opportunity.assigned_to_id.substring(0, 8)}...` : 'Sin asignar')}
                       </p>
                     </div>
                   </div>

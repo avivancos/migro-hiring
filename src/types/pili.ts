@@ -41,6 +41,26 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp?: string;
+  followUpQuestion?: string;
+  isTruncated?: boolean;
+}
+
+// Interfaz para mensajes del hook usePiliChat
+export interface PiliMessage {
+  id: string;
+  content: string;
+  sender: 'user' | 'pili';
+  timestamp: string;
+  isLoading?: boolean;
+  followUpQuestion?: string;
+  isTruncated?: boolean;
+}
+
+// Interfaz para respuesta parseada
+export interface ParsedPiliResponse {
+  content: string;
+  followUpQuestion?: string;
+  isTruncated: boolean;
 }
 
 
