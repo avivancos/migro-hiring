@@ -1,7 +1,7 @@
 // Pili Service - Chat IA
 // Conecta al servicio externo de Pili
 
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { PILI_API_BASE_URL } from '@/config/constants';
 import type {
   PiliChatRequest,

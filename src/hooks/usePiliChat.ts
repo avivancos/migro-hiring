@@ -4,6 +4,20 @@ import { useState, useCallback, useRef } from 'react';
 import { piliService } from '@/services/piliService';
 import type { PiliChatRequest } from '@/types/pili';
 
+// Función helper para obtener/generar un user_id único persistente
+const getUserId = (): string => {
+  const STORAGE_KEY = 'pili_user_id';
+  let userId = localStorage.getItem(STORAGE_KEY);
+  
+  if (!userId) {
+    // Generar un ID único basado en timestamp y random
+    userId = `pili-user-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    localStorage.setItem(STORAGE_KEY, userId);
+  }
+  
+  return userId;
+};
+
 export interface Message {
   id: string;
   content: string;
@@ -17,7 +31,7 @@ interface UsePiliChatReturn {
   conversationId: string | null;
   isLoading: boolean;
   error: string | null;
-  sendMessage: (message: string, context?: Record<string, any>) => Promise<void>;
+  sendMessage: (message: string) => Promise<void>;
   clearChat: () => void;
   retryLastMessage: () => Promise<void>;
 }
@@ -32,7 +46,7 @@ export function usePiliChat(initialConversationId?: string): UsePiliChatReturn {
   const lastMessageRef = useRef<string | null>(null);
 
   const sendMessage = useCallback(
-    async (message: string, context?: Record<string, any>) => {
+    async (message: string) => {
       if (!message.trim()) return;
 
       const userMessage: Message = {
@@ -60,9 +74,9 @@ export function usePiliChat(initialConversationId?: string): UsePiliChatReturn {
 
       try {
         const request: PiliChatRequest = {
-          message,
+          query: message,
+          user_id: getUserId(),
           conversation_id: conversationId || undefined,
-          context,
         };
 
         const response = await piliService.chat(request);
