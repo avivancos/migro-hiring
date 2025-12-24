@@ -7,6 +7,7 @@ import type {
   OpportunityListResponse,
   OpportunityAssignRequest,
   OpportunityUpdateRequest,
+  FirstCallAttemptRequest,
 } from '@/types/opportunity';
 import type { PipelineStageRead, PipelineStageCreate } from '@/types/pipeline';
 import { pipelineApi } from './pipelineApi';
@@ -233,6 +234,20 @@ export const opportunityApi = {
     };
     
     return pipelineApi.createOrUpdateStage(stageData);
+  },
+
+  /**
+   * Registrar/actualizar intento de primera llamada
+   */
+  async createFirstCallAttempt(
+    id: string,
+    request: FirstCallAttemptRequest
+  ): Promise<LeadOpportunity> {
+    const { data } = await api.post<LeadOpportunity>(
+      `${CRM_BASE_PATH}/opportunities/${id}/first-call-attempt`,
+      request
+    );
+    return data;
   },
 };
 

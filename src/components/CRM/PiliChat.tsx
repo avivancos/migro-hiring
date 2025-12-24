@@ -1,6 +1,7 @@
 // PiliChat - Componente para el chat con Pili
 
 import React, { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { usePiliChat } from '@/hooks/usePiliChat';
 import { Send, Loader2, AlertCircle, RefreshCw, Lightbulb, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -101,9 +102,35 @@ export function PiliChat({ initialConversationId, className }: PiliChatProps) {
                 </div>
               ) : (
                 <>
-                  <p className="whitespace-pre-wrap break-words">
-                    {message.content}
-                  </p>
+                  <div className="pili-markdown">
+                    <ReactMarkdown
+                      components={{
+                        // Estilos personalizados para elementos Markdown
+                        h1: ({ children }) => <h1 className="text-lg font-bold mt-4 mb-2 text-gray-900">{children}</h1>,
+                        h2: ({ children }) => <h2 className="text-base font-bold mt-3 mb-2 text-gray-900">{children}</h2>,
+                        h3: ({ children }) => <h3 className="text-sm font-semibold mt-2 mb-1 text-gray-900">{children}</h3>,
+                        p: ({ children }) => <p className="mb-2 leading-relaxed text-gray-800">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1 text-gray-800">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1 text-gray-800">{children}</ol>,
+                        li: ({ children }) => <li className="ml-2">{children}</li>,
+                        strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
+                        em: ({ children }) => <em className="italic">{children}</em>,
+                        code: ({ children }) => (
+                          <code className="bg-gray-100 px-1 py-0.5 rounded text-xs font-mono text-gray-900">{children}</code>
+                        ),
+                        blockquote: ({ children }) => (
+                          <blockquote className="border-l-4 border-gray-300 pl-3 italic my-2 text-gray-700">{children}</blockquote>
+                        ),
+                        a: ({ href, children }) => (
+                          <a href={href} className="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">
+                            {children}
+                          </a>
+                        ),
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  </div>
                   
                   {/* Nota de truncado */}
                   {message.isTruncated && (

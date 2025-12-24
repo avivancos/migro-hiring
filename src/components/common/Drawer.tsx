@@ -70,7 +70,7 @@ export function Drawer({
       {/* Drawer */}
       <div
         className={cn(
-          'fixed top-0 bottom-0 z-50 bg-white shadow-xl',
+          'fixed top-0 bottom-0 z-50 bg-white shadow-xl flex flex-col',
           side === 'left' ? 'left-0' : 'right-0',
           sizeClasses[size],
           'animate-in slide-in-from-left duration-300',
@@ -80,7 +80,7 @@ export function Drawer({
       >
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between p-6 border-b">
+          <div className="flex items-center justify-between p-6 border-b flex-shrink-0">
             <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
             <Button
               variant="ghost"
@@ -94,7 +94,7 @@ export function Drawer({
         )}
         
         {/* Content */}
-        <div className="overflow-y-auto h-full p-6">
+        <div className="overflow-y-auto flex-1 p-6">
           {children}
         </div>
       </div>

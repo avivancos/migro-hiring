@@ -1,19 +1,28 @@
 // CRMOpportunityDetail - Detalle completo de una oportunidad
 
 import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useOpportunityDetail } from '@/hooks/useOpportunityDetail';
 import { OpportunityPriorityBadge } from '@/components/opportunities/OpportunityPriorityBadge';
 import { OpportunityScore } from '@/components/opportunities/OpportunityScore';
+import { FirstCallAttemptsRow } from '@/components/opportunities/FirstCallAttemptsRow';
+import { FirstCallAttemptDetail } from '@/components/opportunities/FirstCallAttemptDetail';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ArrowLeft, Phone, Mail, MapPin, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getDetectionReasonBadges } from '@/utils/opportunity';
+import { opportunityApi } from '@/services/opportunityApi';
+import { useQueryClient } from '@tanstack/react-query';
+import type { FirstCallAttemptRequest } from '@/types/opportunity';
 
 export function CRMOpportunityDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [selectedAttempt, setSelectedAttempt] = useState<number | null>(null);
+  const [isSavingAttempt, setIsSavingAttempt] = useState(false);
 
   const {
     opportunity,
@@ -61,7 +70,40 @@ export function CRMOpportunityDetail() {
     assigned_to_id: opportunity.assigned_to_id,
     assigned_to: opportunity.assigned_to,
     hasAssignedTo: !!opportunity.assigned_to,
+    first_call_attempts: opportunity.first_call_attempts,
+    first_call_completed: opportunity.first_call_completed,
+    first_call_successful_attempt: opportunity.first_call_successful_attempt,
   });
+
+  // Manejar click en badge de intento
+  const handleAttemptClick = (attemptNumber: number) => {
+    setSelectedAttempt(attemptNumber);
+  };
+
+  // Manejar cierre del drawer
+  const handleCloseAttemptDetail = () => {
+    setSelectedAttempt(null);
+  };
+
+  // Manejar guardado de intento
+  const handleSaveAttempt = async (request: FirstCallAttemptRequest) => {
+    if (!id) return;
+    
+    setIsSavingAttempt(true);
+    try {
+      await opportunityApi.createFirstCallAttempt(id, request);
+      // Invalidar queries para refrescar datos
+      queryClient.invalidateQueries({ queryKey: ['opportunity', id] });
+      queryClient.invalidateQueries({ queryKey: ['opportunities'] });
+    } finally {
+      setIsSavingAttempt(false);
+    }
+  };
+
+  // Obtener datos del intento seleccionado
+  const selectedAttemptData = selectedAttempt
+    ? opportunity.first_call_attempts?.[selectedAttempt.toString()] || null
+    : null;
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -145,6 +187,21 @@ export function CRMOpportunityDetail() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Intentos de Primera Llamada */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Seguimiento de Primera Llamada</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FirstCallAttemptsRow
+                attempts={opportunity.first_call_attempts || null}
+                firstCallCompleted={opportunity.first_call_completed || false}
+                successfulAttempt={opportunity.first_call_successful_attempt || null}
+                onAttemptClick={handleAttemptClick}
+              />
+            </CardContent>
+          </Card>
         </div>
 
         {/* Sidebar con acciones */}
@@ -210,6 +267,19 @@ export function CRMOpportunityDetail() {
           )}
         </div>
       </div>
+
+      {/* Drawer de detalle de intento */}
+      {selectedAttempt && (
+        <FirstCallAttemptDetail
+          attemptNumber={selectedAttempt}
+          attemptData={selectedAttemptData}
+          isOpen={!!selectedAttempt}
+          onClose={handleCloseAttemptDetail}
+          onSave={handleSaveAttempt}
+          isLoading={isSavingAttempt}
+          opportunityId={id || ''}
+        />
+      )}
     </div>
   );
 }

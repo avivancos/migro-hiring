@@ -20,3 +20,96 @@
     text-wrap: balance;
   }
 }
+
+/* Animaciones para mensajes de Pili */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-fadeOut {
+  animation: fadeOut 0.5s ease-out forwards;
+}
+
+/* Estilos para Markdown en respuestas de Pili */
+@layer components {
+  .pili-markdown {
+    @apply break-words;
+  }
+  
+  .pili-markdown h1,
+  .pili-markdown h2,
+  .pili-markdown h3 {
+    @apply font-bold mt-4 mb-2;
+  }
+  
+  .pili-markdown h1 {
+    @apply text-lg;
+  }
+  
+  .pili-markdown h2 {
+    @apply text-base;
+  }
+  
+  .pili-markdown h3 {
+    @apply text-sm;
+  }
+  
+  .pili-markdown p {
+    @apply mb-2 leading-relaxed;
+  }
+  
+  .pili-markdown ul,
+  .pili-markdown ol {
+    @apply mb-2 space-y-1;
+  }
+  
+  .pili-markdown ul {
+    @apply list-disc list-inside;
+  }
+  
+  .pili-markdown ol {
+    @apply list-decimal list-inside;
+  }
+  
+  .pili-markdown li {
+    @apply ml-2;
+  }
+  
+  .pili-markdown strong {
+    @apply font-semibold;
+  }
+  
+  .pili-markdown em {
+    @apply italic;
+  }
+  
+  .pili-markdown code {
+    @apply bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-xs font-mono;
+  }
+  
+  .pili-markdown blockquote {
+    @apply border-l-4 border-gray-300 dark:border-gray-600 pl-3 italic my-2;
+  }
+  
+  .pili-markdown a {
+    @apply text-blue-600 hover:text-blue-800 underline;
+  }
+}

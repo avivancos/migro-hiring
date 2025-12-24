@@ -1,5 +1,6 @@
 // Admin Pili - Chat con IA
 import { useState, useRef, useEffect, useMemo } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -89,32 +90,78 @@ export function AdminPili() {
     setIsTyping(true);
 
     try {
-      const response = await piliService.chat({
+      // Usar el endpoint de mensajes múltiples
+      const response = await piliService.chatMessages({
         query: queryText,
         user_id: userId,
         conversation_id: conversationId || undefined,
       });
 
-      // Parsear respuesta para extraer pregunta de seguimiento y estado truncado
-      const parsed = parsePiliResponse(response.response);
+      // Guardar conversation_id si es la primera respuesta
+      if (!conversationId && response.conversation_id) {
+        setConversationId(response.conversation_id);
+      }
 
+      // Si hay mensajes de progreso, mostrarlos uno por uno con animación
+      if (response.messages && response.messages.length > 0) {
+        for (const msg of response.messages) {
+          // Omitir el mensaje 'response' aquí, lo mostraremos al final
+          if (msg.type === 'response') continue;
+
+          // Agregar mensaje de progreso
+          const progressMessage: Message = {
+            role: 'assistant',
+            content: msg.content,
+            timestamp: msg.timestamp,
+            type: msg.type,
+            metadata: msg.metadata,
+          };
+          setMessages((prev) => [...prev, progressMessage]);
+
+          // Pequeño delay para animación (más rápido para mensajes de progreso)
+          await new Promise((resolve) => setTimeout(resolve, 300));
+        }
+
+        // Ocultar mensajes de progreso después de un pequeño delay
+        setTimeout(() => {
+          setMessages((prev) =>
+            prev.filter(
+              (msg) =>
+                msg.type !== 'thinking' &&
+                msg.type !== 'searching' &&
+                msg.type !== 'processing' &&
+                msg.type !== 'complete'
+            )
+          );
+        }, 1000);
+      }
+
+      // Mostrar respuesta final (parseada)
+      const parsed = parsePiliResponse(response.response);
       const assistantMessage: Message = {
         role: 'assistant',
         content: parsed.content,
         timestamp: new Date().toISOString(),
         followUpQuestion: parsed.followUpQuestion,
         isTruncated: parsed.isTruncated,
+        type: 'pili',
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
-      
-      // Guardar conversation_id si es la primera respuesta
-      if (!conversationId && response.conversation_id) {
-        setConversationId(response.conversation_id);
-      }
     } catch (error: any) {
       console.error('Error enviando mensaje:', error);
       
+      // Limpiar mensajes de progreso en caso de error
+      setMessages((prev) =>
+        prev.filter(
+          (msg) =>
+            msg.type !== 'thinking' &&
+            msg.type !== 'searching' &&
+            msg.type !== 'processing' &&
+            msg.type !== 'complete'
+        )
+      );
+
       // Mostrar error de validación o error general
       const errorMessage = error.message || 'Error al procesar tu mensaje. Por favor intenta de nuevo.';
       setError(errorMessage);
@@ -124,6 +171,7 @@ export function AdminPili() {
         role: 'assistant',
         content: `Error: ${errorMessage}`,
         timestamp: new Date().toISOString(),
+        type: 'error',
       };
       setMessages((prev) => [...prev, errorChatMessage]);
     } finally {
@@ -187,26 +235,109 @@ export function AdminPili() {
                 <p className="text-sm mt-2">Pregunta sobre trámites de migración y extranjería</p>
               </div>
             ) : (
-              messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`flex gap-3 ${
-                    message.role === 'user' ? 'justify-end' : 'justify-start'
-                  }`}
-                >
-                  {message.role === 'assistant' && (
-                    <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                      <Bot className="h-4 w-4 text-green-600" />
+              messages.map((message, index) => {
+                // Mensajes de progreso (thinking, searching, processing)
+                if (
+                  message.type &&
+                  ['thinking', 'searching', 'processing'].includes(message.type)
+                ) {
+                  return (
+                    <div
+                      key={index}
+                      className="flex gap-3 justify-start animate-slideIn"
+                    >
+                      <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <div
+                          className={`h-3 w-3 rounded-full animate-spin ${
+                            message.type === 'searching'
+                              ? 'border-2 border-yellow-400 border-t-transparent'
+                              : message.type === 'processing'
+                              ? 'border-2 border-blue-400 border-t-transparent'
+                              : 'border-2 border-gray-400 border-t-transparent'
+                          }`}
+                        />
+                      </div>
+                      <div
+                        className={`max-w-[80%] rounded-lg p-3 border-l-4 flex items-center gap-2 ${
+                          message.type === 'searching'
+                            ? 'bg-amber-50 border-amber-400 text-amber-800'
+                            : message.type === 'processing'
+                            ? 'bg-blue-50 border-blue-400 text-blue-800'
+                            : 'bg-gray-50 border-gray-400 text-gray-800'
+                        }`}
+                      >
+                        <p className="text-sm italic">{message.content}</p>
+                      </div>
                     </div>
-                  )}
+                  );
+                }
+
+                // Mensajes de error
+                if (message.type === 'error') {
+                  return (
+                    <div
+                      key={index}
+                      className="flex gap-3 justify-start animate-slideIn"
+                    >
+                      <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                        <AlertTriangle className="h-4 w-4 text-red-600" />
+                      </div>
+                      <div className="max-w-[80%] rounded-lg p-3 bg-red-50 border-l-4 border-red-400 text-red-800">
+                        <p className="text-sm">{message.content}</p>
+                      </div>
+                    </div>
+                  );
+                }
+
+                // Mensajes normales (user y assistant)
+                return (
                   <div
-                    className={`max-w-[80%] rounded-lg p-3 ${
-                      message.role === 'user'
-                        ? 'bg-green-600 text-white'
-                        : 'bg-gray-100 text-gray-900'
+                    key={index}
+                    className={`flex gap-3 animate-slideIn ${
+                      message.role === 'user' ? 'justify-end' : 'justify-start'
                     }`}
                   >
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    {message.role === 'assistant' && (
+                      <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                        <Bot className="h-4 w-4 text-green-600" />
+                      </div>
+                    )}
+                    <div
+                      className={`max-w-[80%] rounded-lg p-3 ${
+                        message.role === 'user'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-100 text-gray-900'
+                      }`}
+                    >
+                    <div className="pili-markdown text-sm">
+                      <ReactMarkdown
+                        components={{
+                          // Estilos personalizados para elementos Markdown
+                          h1: ({ children }) => <h1 className="text-lg font-bold mt-4 mb-2 text-gray-900">{children}</h1>,
+                          h2: ({ children }) => <h2 className="text-base font-bold mt-3 mb-2 text-gray-900">{children}</h2>,
+                          h3: ({ children }) => <h3 className="text-sm font-semibold mt-2 mb-1 text-gray-900">{children}</h3>,
+                          p: ({ children }) => <p className="mb-2 leading-relaxed text-gray-800">{children}</p>,
+                          ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1 text-gray-800">{children}</ul>,
+                          ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1 text-gray-800">{children}</ol>,
+                          li: ({ children }) => <li className="ml-2">{children}</li>,
+                          strong: ({ children }) => <strong className="font-semibold text-gray-900">{children}</strong>,
+                          em: ({ children }) => <em className="italic">{children}</em>,
+                          code: ({ children }) => (
+                            <code className="bg-gray-200 px-1 py-0.5 rounded text-xs font-mono text-gray-900">{children}</code>
+                          ),
+                          blockquote: ({ children }) => (
+                            <blockquote className="border-l-4 border-gray-400 pl-3 italic my-2 text-gray-700">{children}</blockquote>
+                          ),
+                          a: ({ href, children }) => (
+                            <a href={href} className="text-blue-600 hover:text-blue-800 underline" target="_blank" rel="noopener noreferrer">
+                              {children}
+                            </a>
+                          ),
+                        }}
+                      >
+                        {typeof message.content === 'string' ? message.content : String(message.content || '')}
+                      </ReactMarkdown>
+                    </div>
                     
                     {/* Nota de truncado */}
                     {message.isTruncated && (
@@ -304,7 +435,7 @@ export function AdminPili() {
               maxLength={5000}
             />
             <Button
-              onClick={sendMessage}
+              onClick={() => sendMessage()}
               disabled={isLoading || !input.trim() || !health || health.status !== 'healthy'}
               className="flex items-center gap-2"
             >

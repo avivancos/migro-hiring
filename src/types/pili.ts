@@ -43,6 +43,32 @@ export interface Message {
   timestamp?: string;
   followUpQuestion?: string;
   isTruncated?: boolean;
+  type?: MessageType;
+  metadata?: Record<string, any>;
+}
+
+export type MessageType = 
+  | 'user' 
+  | 'pili' 
+  | 'thinking' 
+  | 'searching' 
+  | 'processing' 
+  | 'response' 
+  | 'complete' 
+  | 'error';
+
+export interface MessageChunk {
+  type: MessageType;
+  content: string;
+  metadata?: Record<string, any>;
+  timestamp: string;
+}
+
+export interface PiliChatMessagesResponse {
+  response: string;
+  conversation_id: string;
+  messages?: MessageChunk[];
+  is_complete?: boolean;
 }
 
 // Interfaz para mensajes del hook usePiliChat

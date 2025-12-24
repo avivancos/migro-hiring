@@ -4,6 +4,23 @@ import type { KommoContact, CRMUser } from './crm';
 import type { PipelineStageRead } from './pipeline';
 
 /**
+ * FirstCallAttempt - Intento de primera llamada
+ */
+export interface FirstCallAttempt {
+  status: 'pending' | 'orange' | 'red' | 'green';
+  call_id?: string;
+  attempted_at: string; // ISO 8601 datetime
+  notes?: string;
+}
+
+/**
+ * FirstCallAttempts - Mapa de intentos (1-5)
+ */
+export type FirstCallAttempts = {
+  [key: string]: FirstCallAttempt; // key: "1" | "2" | "3" | "4" | "5"
+} | null;
+
+/**
  * LeadOpportunity - Oportunidad detectada automáticamente
  */
 export interface LeadOpportunity {
@@ -19,6 +36,9 @@ export interface LeadOpportunity {
   assigned_to?: CRMUser; // Relación expandida
   pipeline_stage_id?: string; // UUID
   pipeline_stage?: PipelineStageRead; // Relación expandida
+  first_call_attempts?: FirstCallAttempts; // Mapa de intentos 1-5
+  first_call_completed?: boolean; // Indica si se completó la primera llamada
+  first_call_successful_attempt?: number | null; // Número del intento exitoso (1-5)
   created_at: string; // ISO 8601
   updated_at: string; // ISO 8601
 }
@@ -62,6 +82,16 @@ export interface OpportunityUpdateRequest {
   status?: LeadOpportunity['status'];
   priority?: LeadOpportunity['priority'];
   assigned_to_id?: string;
+  notes?: string;
+}
+
+/**
+ * FirstCallAttemptRequest - Request para registrar/actualizar intento de primera llamada
+ */
+export interface FirstCallAttemptRequest {
+  attempt_number: number; // 1-5
+  status: 'orange' | 'red' | 'green'; // No incluye 'pending'
+  call_id?: string;
   notes?: string;
 }
 

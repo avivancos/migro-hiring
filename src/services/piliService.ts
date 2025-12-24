@@ -8,6 +8,7 @@ import type {
   PiliChatResponse,
   HealthResponse,
   PiliValidationError,
+  PiliChatMessagesResponse,
 } from '@/types/pili';
 
 // Timeout de 60 segundos para las respuestas de Pili (pueden tardar)
@@ -31,26 +32,37 @@ export const piliService = {
    */
   async chat(request: PiliChatRequest): Promise<PiliChatResponse> {
     try {
+      // Validar que query sea un string
+      if (typeof request.query !== 'string') {
+        throw new Error('El campo "query" debe ser un string.');
+      }
+
       // Validar query antes de enviar
-      if (!request.query || !request.query.trim()) {
+      const queryTrimmed = request.query.trim();
+      if (!queryTrimmed) {
         throw new Error('El campo "query" no puede estar vacío. Debe contener al menos un carácter.');
       }
 
       // Validar user_id antes de enviar
-      if (!request.user_id || !request.user_id.trim()) {
+      if (typeof request.user_id !== 'string') {
+        throw new Error('El campo "user_id" debe ser un string.');
+      }
+
+      const userIdTrimmed = request.user_id.trim();
+      if (!userIdTrimmed) {
         throw new Error('El campo "user_id" no puede estar vacío.');
       }
 
       // Validar longitud de query
-      if (request.query.length > 5000) {
+      if (queryTrimmed.length > 5000) {
         throw new Error('La pregunta es demasiado larga (máximo 5000 caracteres).');
       }
 
       const response = await piliApi.post<PiliChatResponse>(
         '/pili/chat',
         {
-          query: request.query.trim(),
-          user_id: request.user_id.trim(),
+          query: queryTrimmed,
+          user_id: userIdTrimmed,
           conversation_id: request.conversation_id || undefined,
         }
       );
@@ -58,6 +70,83 @@ export const piliService = {
       return response.data;
     } catch (error: unknown) {
       console.error('Error en piliService.chat:', error);
+
+      // Manejar error 422 (Validation Error)
+      if (axios.isAxiosError(error) && error.response?.status === 422) {
+        const validationError = error.response.data as PiliValidationError;
+        const errorMessages = validationError.errors
+          ?.map(err => `${err.field}: ${err.message}`)
+          .join('\n') || validationError.detail;
+        
+        throw new Error(`Error de validación:\n${errorMessages}`);
+      }
+
+      // Manejar otros errores de respuesta
+      if (axios.isAxiosError(error) && error.response) {
+        const errorMessage = error.response.data?.detail || error.response.data?.message;
+        throw new Error(errorMessage || 'Error al enviar mensaje a Pili');
+      }
+
+      // Manejar errores de conexión
+      if (axios.isAxiosError(error) && error.request) {
+        throw new Error('No se pudo conectar con el servicio de Pili. Verifica que el servicio esté disponible.');
+      }
+
+      // Re-lanzar errores de validación del cliente
+      if (error instanceof Error) {
+        throw error;
+      }
+
+      // Error desconocido
+      throw new Error('Error desconocido al consultar a Pili');
+    }
+  },
+
+  /**
+   * Enviar mensaje a Pili y obtener mensajes múltiples (con progreso)
+   * @param request - Request con query, user_id y conversation_id opcional
+   * @returns Response con respuesta final, mensajes de progreso y conversation_id
+   */
+  async chatMessages(request: PiliChatRequest): Promise<PiliChatMessagesResponse> {
+    try {
+      // Validar que query sea un string
+      if (typeof request.query !== 'string') {
+        throw new Error('El campo "query" debe ser un string.');
+      }
+
+      // Validar query antes de enviar
+      const queryTrimmed = request.query.trim();
+      if (!queryTrimmed) {
+        throw new Error('El campo "query" no puede estar vacío. Debe contener al menos un carácter.');
+      }
+
+      // Validar user_id antes de enviar
+      if (typeof request.user_id !== 'string') {
+        throw new Error('El campo "user_id" debe ser un string.');
+      }
+
+      const userIdTrimmed = request.user_id.trim();
+      if (!userIdTrimmed) {
+        throw new Error('El campo "user_id" no puede estar vacío.');
+      }
+
+      // Validar longitud de query
+      if (queryTrimmed.length > 5000) {
+        throw new Error('La pregunta es demasiado larga (máximo 5000 caracteres).');
+      }
+
+      const response = await piliApi.post<PiliChatMessagesResponse>(
+        '/pili/chat/messages',
+        {
+          query: queryTrimmed,
+          user_id: userIdTrimmed,
+          conversation_id: request.conversation_id || undefined,
+        }
+      );
+      
+      return response.data;
+    } catch (error: unknown) {
+      console.error('Error en piliService.chatMessages:', error);
 
       // Manejar error 422 (Validation Error)
       if (axios.isAxiosError(error) && error.response?.status === 422) {
