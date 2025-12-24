@@ -375,14 +375,15 @@ export function AdminPili() {
                         {format(new Date(message.timestamp), 'HH:mm')}
                       </p>
                     )}
-                  </div>
-                  {message.role === 'user' && (
-                    <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                      <User className="h-4 w-4 text-gray-600" />
                     </div>
-                  )}
-                </div>
-              ))
+                    {message.role === 'user' && (
+                      <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                        <User className="h-4 w-4 text-gray-600" />
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             )}
             {isTyping && (
               <div className="flex gap-3 justify-start">
