@@ -330,3 +330,4 @@ El sistema utiliza TanStack Query para gestión de estado del servidor:
 **Última actualización**: 2025-01-28  
 **Versión**: 1.0
 
+
