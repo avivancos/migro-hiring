@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { ContactForm } from '@/components/CRM/ContactForm';
 
 // Mock de crmService usando factory function
@@ -32,43 +31,44 @@ describe('ContactForm - Tests Automatizados', () => {
   });
 
   it('debe renderizar el formulario', async () => {
-    render(<ContactForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+    const { container } = render(<ContactForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
     await waitFor(() => {
       expect(screen.getByLabelText(/nombre/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
-    });
+    }, { container });
   });
 
   it('debe validar que el nombre es requerido', async () => {
-    const user = userEvent.setup();
-    render(<ContactForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+    const { container } = render(<ContactForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /crear contacto/i })).toBeInTheDocument();
-    });
+    }, { container });
 
     const submitButton = screen.getByRole('button', { name: /crear contacto/i });
-    await user.click(submitButton);
+    fireEvent.click(submitButton);
 
     await waitFor(() => {
       expect(mockOnSubmit).not.toHaveBeenCalled();
-    });
+    }, { container });
   });
 
   it('debe enviar el formulario con datos válidos', async () => {
-    const user = userEvent.setup();
-    render(<ContactForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+    const { container } = render(<ContactForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
     await waitFor(() => {
       expect(screen.getByLabelText(/nombre/i)).toBeInTheDocument();
-    });
+    }, { container });
 
-    await user.type(screen.getByLabelText(/nombre/i), 'María');
-    await user.type(screen.getByLabelText(/email/i), 'maria@test.com');
+    const nameInput = screen.getByLabelText(/nombre/i);
+    const emailInput = screen.getByLabelText(/email/i);
+    
+    fireEvent.change(nameInput, { target: { value: 'María' } });
+    fireEvent.change(emailInput, { target: { value: 'maria@test.com' } });
 
     const submitButton = screen.getByRole('button', { name: /crear contacto/i });
-    await user.click(submitButton);
+    fireEvent.click(submitButton);
 
     await waitFor(() => {
       expect(mockOnSubmit).toHaveBeenCalledWith(
@@ -77,6 +77,6 @@ describe('ContactForm - Tests Automatizados', () => {
           email: 'maria@test.com',
         })
       );
-    });
+    }, { container, timeout: 3000 });
   });
 });

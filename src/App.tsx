@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/providers/AuthProvider';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useTokenRefresh } from '@/hooks/useTokenRefresh';
+import { usePageTitle } from '@/hooks/usePageTitle';
 import { Home } from '@/pages/Home';
 import { HiringFlow } from '@/pages/HiringFlow';
 import { Login } from '@/pages/Login';
@@ -17,47 +18,51 @@ import { Colaboradores } from '@/pages/Colaboradores';
 import { Closer } from '@/pages/Closer';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LazyLoadWrapper } from '@/components/common/LazyLoadWrapper';
+import { PerformanceMonitor } from '@/components/common/PerformanceMonitor';
 
-// CRM Pages
-import { CRMDashboardPage } from '@/pages/CRMDashboardPage';
-import { CRMContactList } from '@/pages/CRMContactList';
+// CRM Pages - Lazy load componentes pesados
 import { CRMLayout } from '@/components/CRM/CRMLayout';
-import { CRMContactDetail } from '@/pages/CRMContactDetail';
-import { CRMContactEdit } from '@/pages/CRMContactEdit';
-import { CRMLeadList } from '@/pages/CRMLeadList';
-import { CRMLeadDetail } from '@/pages/CRMLeadDetail';
-import { CRMOpportunities } from '@/pages/CRMOpportunities';
-import { CRMOpportunityDetail } from '@/pages/CRMOpportunityDetail';
-import { CRMTaskCalendar } from '@/pages/CRMTaskCalendar';
-import { CRMSettings } from '@/pages/CRMSettings';
-import { CRMTaskTemplatesSettings } from '@/pages/CRMTaskTemplatesSettings';
-import { CRMCustomFieldsSettings } from '@/pages/CRMCustomFieldsSettings';
-import { CRMActions } from '@/pages/CRMActions';
-// import { CRMExpedientes } from '@/pages/CRMExpedientes'; // No usado
-// Lazy load de componentes pesados
+// Lazy load de componentes pesados para reducir bundle inicial
+const CRMDashboardPage = lazy(() => import('@/pages/CRMDashboardPage').then(m => ({ default: m.CRMDashboardPage })));
+const CRMContactList = lazy(() => import('@/pages/CRMContactList').then(m => ({ default: m.CRMContactList })));
+const CRMContactDetail = lazy(() => import('@/pages/CRMContactDetail').then(m => ({ default: m.CRMContactDetail })));
+const CRMContactEdit = lazy(() => import('@/pages/CRMContactEdit').then(m => ({ default: m.CRMContactEdit })));
+const CRMLeadList = lazy(() => import('@/pages/CRMLeadList').then(m => ({ default: m.CRMLeadList })));
+const CRMLeadDetail = lazy(() => import('@/pages/CRMLeadDetail').then(m => ({ default: m.CRMLeadDetail })));
+const CRMOpportunities = lazy(() => import('@/pages/CRMOpportunities').then(m => ({ default: m.CRMOpportunities })));
+const CRMOpportunityDetail = lazy(() => import('@/pages/CRMOpportunityDetail').then(m => ({ default: m.CRMOpportunityDetail })));
+const CRMTaskCalendar = lazy(() => import('@/pages/CRMTaskCalendar').then(m => ({ default: m.CRMTaskCalendar })));
+const CRMSettings = lazy(() => import('@/pages/CRMSettings').then(m => ({ default: m.CRMSettings })));
+const CRMTaskTemplatesSettings = lazy(() => import('@/pages/CRMTaskTemplatesSettings').then(m => ({ default: m.CRMTaskTemplatesSettings })));
+const CRMCustomFieldsSettings = lazy(() => import('@/pages/CRMCustomFieldsSettings').then(m => ({ default: m.CRMCustomFieldsSettings })));
+const CRMActions = lazy(() => import('@/pages/CRMActions').then(m => ({ default: m.CRMActions })));
 const CRMExpedientesList = lazy(() => import('@/pages/CRMExpedientesList').then(m => ({ default: m.CRMExpedientesList })));
 const CRMExpedienteDetail = lazy(() => import('@/pages/CRMExpedienteDetail').then(m => ({ default: m.CRMExpedienteDetail })));
-import { CRMCallHandler } from '@/pages/CRMCallHandler';
-import { CRMTaskDetail } from '@/pages/CRMTaskDetail';
-import { CRMContracts } from '@/pages/CRMContracts';
+const CRMCallHandler = lazy(() => import('@/pages/CRMCallHandler').then(m => ({ default: m.CRMCallHandler })));
+const CRMTaskDetail = lazy(() => import('@/pages/CRMTaskDetail').then(m => ({ default: m.CRMTaskDetail })));
+const CRMContracts = lazy(() => import('@/pages/CRMContracts').then(m => ({ default: m.CRMContracts })));
 
-// Admin Pages
-import { AdminLayout } from '@/pages/admin/AdminLayout';
-import { AdminDashboard as AdminDashboardPage } from '@/pages/admin/AdminDashboard';
-import { AdminUsers } from '@/pages/admin/AdminUsers';
-import { AdminUserDetail } from '@/pages/admin/AdminUserDetail';
-import { AdminUserCreate } from '@/pages/admin/AdminUserCreate';
-import { AdminAuditLogs } from '@/pages/admin/AdminAuditLogs';
-import { AdminPili } from '@/pages/admin/AdminPili';
-import { AdminConversations } from '@/pages/admin/AdminConversations';
-import { AdminContracts } from '@/pages/admin/AdminContracts';
-import { AdminContractDetail } from '@/pages/admin/AdminContractDetail';
-import { AdminContractCreate } from '@/pages/admin/AdminContractCreate';
-import { AdminCallTypes } from '@/pages/admin/AdminCallTypes';
+// Admin Pages - Lazy load componentes pesados
+const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
+const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const AdminUsers = lazy(() => import('@/pages/admin/AdminUsers').then(m => ({ default: m.AdminUsers })));
+const AdminUserDetail = lazy(() => import('@/pages/admin/AdminUserDetail').then(m => ({ default: m.AdminUserDetail })));
+const AdminUserCreate = lazy(() => import('@/pages/admin/AdminUserCreate').then(m => ({ default: m.AdminUserCreate })));
+const AdminAuditLogs = lazy(() => import('@/pages/admin/AdminAuditLogs').then(m => ({ default: m.AdminAuditLogs })));
+const AdminPili = lazy(() => import('@/pages/admin/AdminPili').then(m => ({ default: m.AdminPili })));
+const AdminConversations = lazy(() => import('@/pages/admin/AdminConversations').then(m => ({ default: m.AdminConversations })));
+const AdminContracts = lazy(() => import('@/pages/admin/AdminContracts').then(m => ({ default: m.AdminContracts })));
+const AdminContractDetail = lazy(() => import('@/pages/admin/AdminContractDetail').then(m => ({ default: m.AdminContractDetail })));
+const AdminContractCreate = lazy(() => import('@/pages/admin/AdminContractCreate').then(m => ({ default: m.AdminContractCreate })));
+const AdminCallTypes = lazy(() => import('@/pages/admin/AdminCallTypes').then(m => ({ default: m.AdminCallTypes })));
+const AdminTracingDashboard = lazy(() => import('@/pages/admin/AdminTracingDashboard').then(m => ({ default: m.AdminTracingDashboard })));
 
 function AppContent() {
   // Activar refresh automático de tokens
   useTokenRefresh();
+  
+  // Actualizar título de página automáticamente según la ruta
+  usePageTitle();
   
   return (
     <Routes>
@@ -94,18 +99,19 @@ function AppContent() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<AdminDashboardPage />} />
-            <Route path="dashboard" element={<AdminDashboardPage />} />
-            <Route path="users" element={<AdminUsers />} />
-            <Route path="users/create" element={<AdminUserCreate />} />
-            <Route path="users/:id" element={<AdminUserDetail />} />
-            <Route path="audit-logs" element={<AdminAuditLogs />} />
-            <Route path="conversations" element={<AdminConversations />} />
-            <Route path="conversations/:id" element={<AdminConversations />} />
-            <Route path="contracts" element={<AdminContracts />} />
-            <Route path="contracts/create" element={<AdminContractCreate />} />
-            <Route path="contracts/:code" element={<AdminContractDetail />} />
-            <Route path="call-types" element={<AdminCallTypes />} />
+            <Route index element={<LazyLoadWrapper fallback="spinner"><AdminDashboardPage /></LazyLoadWrapper>} />
+            <Route path="dashboard" element={<LazyLoadWrapper fallback="spinner"><AdminDashboardPage /></LazyLoadWrapper>} />
+            <Route path="users" element={<LazyLoadWrapper fallback="skeleton" skeletonCount={5}><AdminUsers /></LazyLoadWrapper>} />
+            <Route path="users/create" element={<LazyLoadWrapper fallback="spinner"><AdminUserCreate /></LazyLoadWrapper>} />
+            <Route path="users/:id" element={<LazyLoadWrapper fallback="spinner"><AdminUserDetail /></LazyLoadWrapper>} />
+            <Route path="audit-logs" element={<LazyLoadWrapper fallback="skeleton" skeletonCount={5}><AdminAuditLogs /></LazyLoadWrapper>} />
+            <Route path="conversations" element={<LazyLoadWrapper fallback="skeleton" skeletonCount={5}><AdminConversations /></LazyLoadWrapper>} />
+            <Route path="conversations/:id" element={<LazyLoadWrapper fallback="spinner"><AdminConversations /></LazyLoadWrapper>} />
+            <Route path="contracts" element={<LazyLoadWrapper fallback="skeleton" skeletonCount={5}><AdminContracts /></LazyLoadWrapper>} />
+            <Route path="contracts/create" element={<LazyLoadWrapper fallback="spinner"><AdminContractCreate /></LazyLoadWrapper>} />
+            <Route path="contracts/:code" element={<LazyLoadWrapper fallback="spinner"><AdminContractDetail /></LazyLoadWrapper>} />
+            <Route path="call-types" element={<LazyLoadWrapper fallback="spinner"><AdminCallTypes /></LazyLoadWrapper>} />
+            <Route path="tracing" element={<LazyLoadWrapper fallback="spinner"><AdminTracingDashboard /></LazyLoadWrapper>} />
           </Route>
           
           {/* CRM Routes with Layout */}
@@ -117,33 +123,33 @@ function AppContent() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<CRMDashboardPage />} />
+            <Route index element={<LazyLoadWrapper fallback="spinner"><CRMDashboardPage /></LazyLoadWrapper>} />
             
             {/* CRM Contacts */}
-            <Route path="contacts" element={<CRMContactList />} />
-            <Route path="contacts/new" element={<CRMContactEdit />} />
-            <Route path="contacts/:id/edit" element={<CRMContactEdit />} />
-            <Route path="contacts/:id" element={<CRMContactDetail />} />
+            <Route path="contacts" element={<LazyLoadWrapper fallback="skeleton" skeletonCount={5}><CRMContactList /></LazyLoadWrapper>} />
+            <Route path="contacts/new" element={<LazyLoadWrapper fallback="spinner"><CRMContactEdit /></LazyLoadWrapper>} />
+            <Route path="contacts/:id/edit" element={<LazyLoadWrapper fallback="spinner"><CRMContactEdit /></LazyLoadWrapper>} />
+            <Route path="contacts/:id" element={<LazyLoadWrapper fallback="spinner"><CRMContactDetail /></LazyLoadWrapper>} />
             
             {/* CRM Contracts */}
-            <Route path="contracts" element={<CRMContracts />} />
+            <Route path="contracts" element={<LazyLoadWrapper fallback="spinner"><CRMContracts /></LazyLoadWrapper>} />
             
             {/* CRM Leads */}
-            <Route path="leads" element={<CRMLeadList />} />
-            <Route path="leads/:id" element={<CRMLeadDetail />} />
+            <Route path="leads" element={<LazyLoadWrapper fallback="skeleton" skeletonCount={5}><CRMLeadList /></LazyLoadWrapper>} />
+            <Route path="leads/:id" element={<LazyLoadWrapper fallback="spinner"><CRMLeadDetail /></LazyLoadWrapper>} />
             
             {/* CRM Opportunities */}
-            <Route path="opportunities" element={<CRMOpportunities />} />
-            <Route path="opportunities/:id" element={<CRMOpportunityDetail />} />
+            <Route path="opportunities" element={<LazyLoadWrapper fallback="skeleton" skeletonCount={5}><CRMOpportunities /></LazyLoadWrapper>} />
+            <Route path="opportunities/:id" element={<LazyLoadWrapper fallback="spinner"><CRMOpportunityDetail /></LazyLoadWrapper>} />
             
             {/* CRM Calendar */}
-            <Route path="calendar" element={<CRMTaskCalendar />} />
+            <Route path="calendar" element={<LazyLoadWrapper fallback="spinner"><CRMTaskCalendar /></LazyLoadWrapper>} />
             
             {/* CRM Tasks */}
-            <Route path="tasks/:id" element={<CRMTaskDetail />} />
+            <Route path="tasks/:id" element={<LazyLoadWrapper fallback="spinner"><CRMTaskDetail /></LazyLoadWrapper>} />
             
             {/* CRM Actions & Expedientes */}
-            <Route path="actions" element={<CRMActions />} />
+            <Route path="actions" element={<LazyLoadWrapper fallback="spinner"><CRMActions /></LazyLoadWrapper>} />
             <Route
               path="expedientes"
               element={
@@ -170,12 +176,12 @@ function AppContent() {
             />
             
             {/* CRM Call Handler */}
-            <Route path="call" element={<CRMCallHandler />} />
+            <Route path="call" element={<LazyLoadWrapper fallback="spinner"><CRMCallHandler /></LazyLoadWrapper>} />
             
             {/* CRM Settings */}
-            <Route path="settings" element={<CRMSettings />} />
-            <Route path="settings/task-templates" element={<CRMTaskTemplatesSettings />} />
-            <Route path="settings/custom-fields" element={<CRMCustomFieldsSettings />} />
+            <Route path="settings" element={<LazyLoadWrapper fallback="spinner"><CRMSettings /></LazyLoadWrapper>} />
+            <Route path="settings/task-templates" element={<LazyLoadWrapper fallback="spinner"><CRMTaskTemplatesSettings /></LazyLoadWrapper>} />
+            <Route path="settings/custom-fields" element={<LazyLoadWrapper fallback="spinner"><CRMCustomFieldsSettings /></LazyLoadWrapper>} />
           </Route>
           
           {/* Client login (futuro) */}
@@ -192,6 +198,7 @@ function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
+          <PerformanceMonitor enabled={true} showSlowOnly={true} slowThreshold={1000} />
           <AppContent />
         </AuthProvider>
       </BrowserRouter>

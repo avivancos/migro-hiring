@@ -11,6 +11,7 @@ import { ArrowLeft, Save, Trash2, Shield, UserCheck, UserX, Key, UserCog, Histor
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/common/Modal';
 import type { User, UserRole } from '@/types/user';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 export function AdminUserDetail() {
   const navigate = useNavigate();
@@ -292,6 +293,10 @@ export function AdminUserDetail() {
       loadAuditLogs();
     }
   }, [showAuditLogs, id]);
+
+  // Actualizar título de la página con el nombre del usuario
+  const userName = user?.full_name || user?.email || 'Usuario';
+  usePageTitle(user ? `${userName} - Detalle de Usuario | Migro.es` : undefined);
 
   if (loading) {
     return (

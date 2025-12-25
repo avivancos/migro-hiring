@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { OpportunityList } from '@/components/opportunities/OpportunityList';
 import { crmService } from '@/services/crmService';
 import { useEffect, useState } from 'react';
+import { usePagePerformanceTrace } from '@/hooks/usePerformanceTrace';
 
 export function CRMOpportunities() {
   const navigate = useNavigate();

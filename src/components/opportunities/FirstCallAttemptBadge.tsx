@@ -1,6 +1,5 @@
 // FirstCallAttemptBadge - Badge circular para cada intento de primera llamada
 
-import React from 'react';
 import { cn } from '@/lib/utils';
 import { AlertTriangle, X, Check, Circle } from 'lucide-react';
 

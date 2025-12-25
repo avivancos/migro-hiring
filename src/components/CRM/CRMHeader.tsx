@@ -32,7 +32,7 @@ interface CRMHeaderProps {
   onMenuClick?: () => void;
 }
 
-export function CRMHeader({ onMenuClick: _onMenuClick }: CRMHeaderProps = {}) {
+export function CRMHeader(_props: CRMHeaderProps = {}) {
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

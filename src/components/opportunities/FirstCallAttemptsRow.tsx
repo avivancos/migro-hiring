@@ -1,6 +1,5 @@
 // FirstCallAttemptsRow - Fila horizontal con 5 badges de intentos
 
-import React from 'react';
 import { FirstCallAttemptBadge, type FirstCallAttemptStatus } from './FirstCallAttemptBadge';
 import { Check } from 'lucide-react';
 import type { FirstCallAttempt } from '@/types/opportunity';

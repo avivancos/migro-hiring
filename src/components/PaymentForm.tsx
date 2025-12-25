@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CreditCard, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { hiringService } from '@/services/hiringService';
-import { generateContractPDF } from '@/utils/contractPdfGenerator';
+// Dynamic import para PDF generator (pesado, cargar bajo demanda)
 import type { HiringDetails } from '@/types/hiring';
 
 interface PaymentFormProps {
@@ -253,6 +253,8 @@ export function PaymentForm(props: PaymentFormProps) {
       if (props.hiringDetails) {
         const clientSignature = localStorage.getItem(`client_signature_${props.hiringCode}`);
         
+        // Dynamic import para PDF generator
+        const { generateContractPDF } = await import('@/utils/contractPdfGenerator');
         const contractBlob = generateContractPDF(props.hiringDetails, {
           paymentIntentId: 'pi_test_simulated',
           stripeTransactionId: `test_${Date.now()}`,
@@ -297,6 +299,8 @@ export function PaymentForm(props: PaymentFormProps) {
       // Obtener firma del cliente
       const clientSignature = localStorage.getItem(`client_signature_${props.hiringCode}`);
       
+      // Dynamic import para PDF generator
+      const { generateContractPDF } = await import('@/utils/contractPdfGenerator');
       // Generar PDF definitivo CON firma (isDraft = false)
       const contractBlob = generateContractPDF(props.hiringDetails, {
         paymentIntentId: 'manual_payment',
@@ -454,6 +458,8 @@ export function PaymentForm(props: PaymentFormProps) {
                     if (props.hiringDetails) {
                       const clientSignature = localStorage.getItem(`client_signature_${props.hiringCode}`);
                       
+                      // Dynamic import para PDF generator
+                      const { generateContractPDF } = await import('@/utils/contractPdfGenerator');
                       const contractBlob = generateContractPDF(props.hiringDetails, {
                         paymentIntentId: 'pi_live_simulated',
                         stripeTransactionId: `live_sim_${Date.now()}`,

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { piliService } from '@/services/piliService';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Send, Bot, User, Activity, Lightbulb, AlertTriangle } from 'lucide-react';
-import type { Message, HealthResponse, ParsedPiliResponse } from '@/types/pili';
+import type { Message, HealthResponse } from '@/types/pili';
 import { format } from 'date-fns';
 import { parsePiliResponse } from '@/hooks/usePiliChat';
 

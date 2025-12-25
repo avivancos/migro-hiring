@@ -58,7 +58,6 @@ export function FirstCallAttemptDetail({
   onClose,
   onSave,
   isLoading = false,
-  opportunityId,
 }: FirstCallAttemptDetailProps) {
   const [selectedStatus, setSelectedStatus] = useState<'orange' | 'red' | 'green'>(
     (attemptData?.status === 'green' || attemptData?.status === 'red' || attemptData?.status === 'orange'

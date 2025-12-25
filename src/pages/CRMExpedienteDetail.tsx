@@ -16,6 +16,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { expedienteApi } from '@/services/expedienteApi';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 export function CRMExpedienteDetail() {
   const { id } = useParams<{ id: string }>();
@@ -129,6 +130,12 @@ export function CRMExpedienteDetail() {
   const handleCancel = () => {
     setEditing(false);
   };
+
+  // Actualizar título de la página con el título del expediente
+  const expedienteTitle = expediente?.title 
+    ? `${expediente.title} - Detalle de Expediente | Migro.es`
+    : 'Detalle de Expediente | Migro.es';
+  usePageTitle(expedienteTitle);
 
   if (loading) {
     return (

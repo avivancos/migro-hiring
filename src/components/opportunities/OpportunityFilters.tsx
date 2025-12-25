@@ -30,6 +30,7 @@ export function OpportunityFilters({
   };
 
   const clearFilter = (key: keyof OpportunityFiltersType) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { [key]: _, ...rest } = filters;
     onFiltersChange(rest);
   };

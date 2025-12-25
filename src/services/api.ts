@@ -4,6 +4,7 @@ import axios, { AxiosError } from 'axios';
 import { API_BASE_URL, API_TIMEOUT } from '@/config/constants';
 import { isTokenExpired, isTokenExpiringSoon, getTokenTimeRemaining } from '@/utils/jwt';
 import TokenStorage from '@/utils/tokenStorage';
+import { performanceTracingService } from './performanceTracingService';
 
 // Create axios instance
 export const api = axios.create({
@@ -18,6 +19,20 @@ export const api = axios.create({
 // Request interceptor - Add JWT token and check expiration proactively
 api.interceptors.request.use(
   async (config) => {
+    // Iniciar medición de performance para llamadas API
+    if (config.url) {
+      const markName = performanceTracingService.start(
+        config.url,
+        'api',
+        {
+          method: config.method?.toUpperCase(),
+          url: config.url,
+          endpoint: config.url.replace(API_BASE_URL, ''),
+        }
+      );
+      (config as any).__perfMarkName = markName;
+    }
+
     // No añadir token en endpoints de autenticación pública o health checks
     const publicEndpoints = [
       '/auth/login', 
@@ -193,24 +208,51 @@ const refreshTokenProactively = async (): Promise<string | null> => {
   } catch (refreshError: any) {
     console.error('❌ Error refrescando token:', refreshError);
     
-    // Solo limpiar tokens si:
-    // 1. El refresh token está realmente expirado
-    // 2. El servidor responde con 401/403 (no autorizado)
-    // 3. Es un error 400 que indica token inválido
-    // NO limpiar en errores temporales (red, timeout, 500, etc.)
-    const shouldClearTokens = 
-      TokenStorage.isRefreshTokenExpired() ||
-      (refreshError.response?.status === 401) ||
-      (refreshError.response?.status === 403) ||
+    // CRÍTICO: Solo limpiar tokens si el refresh token está REALMENTE inválido/expirado
+    // NO limpiar en errores temporales (red, timeout, 500, 503, etc.)
+    // NO limpiar en errores 401/403 del servidor si el refresh token todavía es válido
+    // Solo limpiar si:
+    // 1. El refresh token está realmente expirado (verificado localmente)
+    // 2. El servidor responde con 400/401/403 Y el mensaje indica que el refresh token es inválido/expirado
+    // 3. NO hay refresh token disponible
+    
+    const refreshTokenExpired = TokenStorage.isRefreshTokenExpired();
+    const noRefreshToken = !TokenStorage.getRefreshToken();
+    
+    // Verificar si el error del servidor indica que el refresh token es inválido
+    const serverSaysTokenInvalid = 
       (refreshError.response?.status === 400 && 
-       (refreshError.response?.data?.detail?.includes('token') || 
-        refreshError.response?.data?.detail?.includes('invalid')));
+       (refreshError.response?.data?.detail?.toLowerCase().includes('token') || 
+        refreshError.response?.data?.detail?.toLowerCase().includes('invalid') ||
+        refreshError.response?.data?.detail?.toLowerCase().includes('expired'))) ||
+      (refreshError.response?.status === 401 && 
+       (refreshError.response?.data?.detail?.toLowerCase().includes('token') || 
+        refreshError.response?.data?.detail?.toLowerCase().includes('invalid') ||
+        refreshError.response?.data?.detail?.toLowerCase().includes('expired'))) ||
+      (refreshError.response?.status === 403 && 
+       (refreshError.response?.data?.detail?.toLowerCase().includes('token') || 
+        refreshError.response?.data?.detail?.toLowerCase().includes('invalid') ||
+        refreshError.response?.data?.detail?.toLowerCase().includes('expired')));
+    
+    const shouldClearTokens = refreshTokenExpired || noRefreshToken || serverSaysTokenInvalid;
     
     if (shouldClearTokens) {
-      console.warn('⚠️ Limpiando tokens debido a error de refresh:', refreshError.response?.status || 'refresh token expirado');
+      console.warn('⚠️ Limpiando tokens debido a refresh token inválido/expirado:', {
+        refreshTokenExpired,
+        noRefreshToken,
+        serverSaysTokenInvalid,
+        status: refreshError.response?.status,
+        detail: refreshError.response?.data?.detail
+      });
       TokenStorage.clearTokens();
     } else {
-      console.warn('⚠️ Error temporal al refrescar token, manteniendo tokens:', refreshError.message || refreshError.response?.status);
+      // Error temporal (red, timeout, 500, 503, etc.) - MANTENER tokens
+      console.warn('⚠️ Error temporal al refrescar token, MANTENIENDO tokens:', {
+        message: refreshError.message,
+        status: refreshError.response?.status,
+        code: refreshError.code,
+        detail: refreshError.response?.data?.detail
+      });
     }
     
     processQueue(refreshError, null);
@@ -222,6 +264,15 @@ const refreshTokenProactively = async (): Promise<string | null> => {
 
 api.interceptors.response.use(
   (response) => {
+    // Finalizar medición de performance
+    const markName = (response.config as any).__perfMarkName;
+    if (markName) {
+      performanceTracingService.end(markName, 'success', {
+        status: response.status,
+        statusText: response.statusText,
+      });
+    }
+
     // Log successful responses for debugging
     console.log(`✅ ${response.config.method?.toUpperCase()} ${response.config.url} → ${response.status}`);
     
@@ -242,6 +293,16 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
     
+    // Finalizar medición de performance con error
+    const markName = (originalRequest as any)?.__perfMarkName;
+    if (markName) {
+      performanceTracingService.end(markName, 'error', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        error: error.message,
+      });
+    }
+    
     // Detailed error logging
     console.error('❌ API Error Details:');
     console.error('   URL:', error.config?.url);
@@ -253,6 +314,8 @@ api.interceptors.response.use(
       const { status } = error.response;
       
       // Token expired or unauthorized - Intentar refresh token
+      // IMPORTANTE: Solo intentar refresh si es un 401 y tenemos tokens válidos
+      // NO limpiar tokens por errores 401 que no sean de autenticación (ej: permisos)
       if (status === 401 && originalRequest && !originalRequest._retry) {
         // Verificar si es una ruta pública del frontend
         const isPublicFrontendRoute = window.location.pathname === '/' ||
@@ -272,12 +335,25 @@ api.interceptors.response.use(
           return Promise.reject(error);
         }
         
+        // Verificar si tenemos tokens válidos antes de intentar refresh
+        // Si no hay tokens o están expirados, rechazar directamente sin limpiar
+        const hasValidRefreshToken = TokenStorage.hasTokens() && 
+                                     TokenStorage.getRefreshToken() && 
+                                     !TokenStorage.isRefreshTokenExpired();
+        
+        if (!hasValidRefreshToken) {
+          // No hay refresh token válido, rechazar error sin limpiar (ya no hay nada que limpiar)
+          console.warn('⚠️ No hay refresh token válido, rechazando request sin limpiar tokens');
+          return Promise.reject(error);
+        }
+        
         // Marcar que este request ya se está reintentando
         originalRequest._retry = true;
         
         try {
           // Intentar refrescar el token usando la función reutilizable
           // Esta función maneja internamente el flag isRefreshing y la cola
+          // IMPORTANTE: refreshTokenProactively() solo limpia tokens si el refresh token está realmente inválido
           const newToken = await refreshTokenProactively();
           
           if (newToken) {
@@ -288,14 +364,14 @@ api.interceptors.response.use(
             return api(originalRequest);
           } else {
             // Refresh falló - verificar si los tokens todavía existen
-            // Si existen, fue un error temporal y no debemos redirigir
+            // Si existen, fue un error temporal y NO debemos limpiar ni redirigir
             // Si no existen, refreshTokenProactively() ya los limpió (error de autenticación real)
             const stillHasTokens = TokenStorage.hasTokens() && 
                                   TokenStorage.getRefreshToken() && 
                                   !TokenStorage.isRefreshTokenExpired();
             
             if (!stillHasTokens) {
-              // Los tokens fueron limpiados, significa error de autenticación real
+              // Los tokens fueron limpiados por refreshTokenProactively() porque el refresh token está realmente inválido
               // Solo redirigir si estamos en rutas de admin
               if (window.location.pathname.startsWith('/admin') || 
                   window.location.pathname.startsWith('/crm') ||
@@ -303,21 +379,22 @@ api.interceptors.response.use(
                 window.location.href = '/auth/login';
               }
             } else {
-              // Los tokens todavía existen, fue un error temporal
-              // No redirigir, solo rechazar el error para que el componente lo maneje
-              console.warn('⚠️ Error temporal al refrescar token, manteniendo sesión y rechazando request');
+              // Los tokens todavía existen, fue un error temporal (red, timeout, 500, etc.)
+              // NO limpiar tokens, NO redirigir, solo rechazar el error para que el componente lo maneje
+              console.warn('⚠️ Error temporal al refrescar token, MANTENIENDO tokens y sesión. Rechazando request.');
             }
             
             return Promise.reject(new Error('No se pudo refrescar el token'));
           }
         } catch (refreshError) {
           // Error al intentar refrescar - verificar si los tokens todavía existen
+          // IMPORTANTE: NUNCA limpiar tokens aquí, solo verificar si refreshTokenProactively() los limpió
           const stillHasTokens = TokenStorage.hasTokens() && 
                                 TokenStorage.getRefreshToken() && 
                                 !TokenStorage.isRefreshTokenExpired();
           
           if (!stillHasTokens) {
-            // Los tokens fueron limpiados, significa error de autenticación real
+            // Los tokens fueron limpiados por refreshTokenProactively() porque el refresh token está realmente inválido
             // Solo redirigir si estamos en rutas de admin
             if (window.location.pathname.startsWith('/admin') || 
                 window.location.pathname.startsWith('/crm') ||
@@ -325,36 +402,57 @@ api.interceptors.response.use(
               window.location.href = '/auth/login';
             }
           } else {
-            // Los tokens todavía existen, fue un error temporal
-            // No redirigir, solo rechazar el error
-            console.warn('⚠️ Error temporal al refrescar token, manteniendo sesión y rechazando request');
+            // Los tokens todavía existen, fue un error temporal (red, timeout, 500, etc.)
+            // NO limpiar tokens, NO redirigir, solo rechazar el error
+            console.warn('⚠️ Error temporal al refrescar token, MANTENIENDO tokens y sesión. Rechazando request.');
           }
           
           return Promise.reject(refreshError);
         }
       }
       
-      // Forbidden
+      // IMPORTANTE: Para TODOS los demás errores (403, 404, 422, 500, timeout, etc.)
+      // NUNCA limpiar tokens ni redirigir - solo rechazar el error
+      // Los tokens solo se limpian cuando el refresh token está realmente inválido/expirado
+      
+      // IMPORTANTE: Para TODOS los demás errores (403, 404, 422, 500, etc.)
+      // NUNCA limpiar tokens ni redirigir - solo rechazar el error
+      // Los tokens solo se limpian cuando el refresh token está realmente inválido/expirado
+      
+      // Forbidden (403) - Error de permisos, NO de autenticación
+      // NO limpiar tokens, solo rechazar error
       if (status === 403) {
-        console.error('Acceso denegado');
+        console.error('❌ Acceso denegado (403) - MANTENIENDO tokens y sesión');
       }
       
-      // Not found
+      // Not found (404) - Recurso no encontrado
+      // NO limpiar tokens, solo rechazar error
       if (status === 404) {
-        console.error('Recurso no encontrado');
+        console.error('❌ Recurso no encontrado (404) - MANTENIENDO tokens y sesión');
       }
       
-      // Server error
+      // Validation error (422) - Error de validación
+      // NO limpiar tokens, solo rechazar error
+      if (status === 422) {
+        console.error('❌ Error de validación (422) - MANTENIENDO tokens y sesión');
+      }
+      
+      // Server error (500+) - Error del servidor
+      // NO limpiar tokens, solo rechazar error
       if (status >= 500) {
-        console.error('Error del servidor');
+        console.error('❌ Error del servidor (500+) - MANTENIENDO tokens y sesión');
       }
     } else if (error.request) {
-      console.error('❌ No se recibió respuesta del servidor');
+      // Error de red o timeout - NO limpiar tokens
+      console.error('❌ No se recibió respuesta del servidor (timeout/red) - MANTENIENDO tokens y sesión');
       console.error('   Request:', error.request);
     } else {
-      console.error('❌ Error al configurar request:', error.message);
+      // Error al configurar request - NO limpiar tokens
+      console.error('❌ Error al configurar request - MANTENIENDO tokens y sesión:', error.message);
     }
     
+    // IMPORTANTE: Rechazar el error sin limpiar tokens
+    // Los tokens solo se limpian cuando el refresh token está realmente inválido/expirado
     return Promise.reject(error);
   }
 );

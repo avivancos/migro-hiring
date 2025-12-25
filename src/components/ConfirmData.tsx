@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { ContractViewer } from '@/components/ContractViewer';
-import { generateContractPDF } from '@/utils/contractPdfGenerator';
 import { hiringService } from '@/services/hiringService';
+// Dynamic import para PDF generator (pesado, cargar bajo demanda)
 import type { HiringDetails } from '@/types/hiring';
 import { AlertCircle, FileText } from 'lucide-react';
 
@@ -66,15 +66,19 @@ export function ConfirmData({ details, onConfirm, onBack }: ConfirmDataProps) {
     }
   };
 
-  // Generate contract PDF on mount
+  // Generate contract PDF on mount (dynamic import para reducir bundle inicial)
   useEffect(() => {
-    try {
-      const blob = generateContractPDF(details, undefined, true); // isDraft = true (vista previa con marca de agua)
-      setContractBlob(blob);
-    } catch (err) {
-      console.error('Error generating contract PDF:', err);
-      setError('Error al generar el contrato. Por favor, recarga la página.');
-    }
+    const generatePDF = async () => {
+      try {
+        const { generateContractPDF } = await import('@/utils/contractPdfGenerator');
+        const blob = generateContractPDF(details, undefined, true); // isDraft = true (vista previa con marca de agua)
+        setContractBlob(blob);
+      } catch (err) {
+        console.error('Error generating contract PDF:', err);
+        setError('Error al generar el contrato. Por favor, recarga la página.');
+      }
+    };
+    generatePDF();
   }, [details]);
 
   const handleConfirm = async () => {

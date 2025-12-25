@@ -12,6 +12,7 @@ import { LeadForm } from '@/components/CRM/LeadForm';
 import { TaskForm } from '@/components/CRM/TaskForm';
 import { CallForm } from '@/components/CRM/CallForm';
 import { formatLeadStatus, formatCallStatus } from '@/utils/statusTranslations';
+import { usePageTitle } from '@/hooks/usePageTitle';
 export function CRMLeadDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -597,6 +598,10 @@ export function CRMLeadDetail() {
 
   // TypeScript assertion: después de la verificación anterior, lead no puede ser null
   const currentLead: KommoLead = lead!;
+
+  // Actualizar título de la página con el nombre del lead
+  const leadName = currentLead?.name || 'Lead';
+  usePageTitle(`${leadName} - Detalle de Lead | Migro.es`);
 
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 py-6">

@@ -385,7 +385,7 @@ export function TaskForm({
                           selectedContact?.name || 
                           contacts.find(c => c.id === defaultEntityId)?.name || 
                           contacts.find(c => c.id === defaultEntityId)?.email || 
-                          `Contacto ${defaultEntityId?.slice(0, 8) || 'N/A'}`
+                          `Contacto ${typeof defaultEntityId === 'string' ? defaultEntityId.slice(0, 8) : defaultEntityId || 'N/A'}`
                         }
                       </span>
                     )}

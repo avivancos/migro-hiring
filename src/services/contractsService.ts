@@ -191,12 +191,12 @@ export const contractsService = {
         });
         
         return normalizeHiringCode(mergedData);
-      } catch (publicError) {
+      } catch {
         // If public endpoint fails, just use admin data
         console.warn('⚠️ No se pudo obtener datos del endpoint público, usando solo datos del admin');
         return normalizeHiringCode(adminData);
       }
-    } catch (error) {
+    } catch {
       // Fallback to public hiring endpoint
       console.warn('⚠️ Endpoint admin falló, usando endpoint público');
       const data = await hiringService.getDetails(code);

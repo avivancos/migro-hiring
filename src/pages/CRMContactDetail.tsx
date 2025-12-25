@@ -33,6 +33,7 @@ import type { CRMUser } from '@/types/crm';
 import { useAuth } from '@/providers/AuthProvider';
 import { Trash2 } from 'lucide-react';
 import { formatCallStatus } from '@/utils/statusTranslations';
+import { usePageTitle } from '@/hooks/usePageTitle';
 export function CRMContactDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -74,6 +75,12 @@ export function CRMContactDetail() {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [id]);
+
+  // Actualizar título de la página con el nombre del contacto
+  const contactName = contact 
+    ? (contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim() || 'Contacto')
+    : null;
+  usePageTitle(contactName ? `${contactName} - Detalle de Contacto | Migro.es` : undefined);
 
   const loadContactData = async () => {
     if (!id || id === 'new') return; // No cargar si es "new"

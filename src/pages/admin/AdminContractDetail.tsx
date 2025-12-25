@@ -38,6 +38,7 @@ import {
   GRADE_COLORS,
 } from '@/types/contracts';
 import { formatDate, formatCurrency } from '@/utils/formatters';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 export function AdminContractDetail() {
   const navigate = useNavigate();
@@ -302,6 +303,12 @@ export function AdminContractDetail() {
       setUpdating(false);
     }
   };
+
+  // Actualizar título de la página con el código del contrato
+  const contractTitle = contract?.hiring_code 
+    ? `Contrato ${contract.hiring_code} - Detalle de Contrato | Migro.es`
+    : 'Detalle de Contrato | Migro.es';
+  usePageTitle(contract ? contractTitle : undefined);
 
   if (loading) {
     return (

@@ -16,6 +16,7 @@ import { getDetectionReasonBadges } from '@/utils/opportunity';
 import { opportunityApi } from '@/services/opportunityApi';
 import { useQueryClient } from '@tanstack/react-query';
 import type { FirstCallAttemptRequest } from '@/types/opportunity';
+import { usePageTitle } from '@/hooks/usePageTitle';
 
 export function CRMOpportunityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -104,6 +105,12 @@ export function CRMOpportunityDetail() {
   const selectedAttemptData = selectedAttempt
     ? opportunity.first_call_attempts?.[selectedAttempt.toString()] || null
     : null;
+
+  // Actualizar título de la página con el nombre del contacto asociado
+  const opportunityTitle = contact?.name 
+    ? `${contact.name} - Detalle de Oportunidad | Migro.es`
+    : 'Detalle de Oportunidad | Migro.es';
+  usePageTitle(opportunityTitle);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">

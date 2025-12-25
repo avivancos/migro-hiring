@@ -20,6 +20,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { TaskForm } from '@/components/CRM/TaskForm';
+import { usePageTitle } from '@/hooks/usePageTitle';
 export function CRMTaskDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -188,6 +189,12 @@ export function CRMTaskDetail() {
   // La autenticación se maneja con ProtectedRoute en App.tsx
 
   // Si está cargando
+  // Actualizar título de la página con el texto de la tarea
+  const taskTitle = task?.text 
+    ? `${task.text.substring(0, 50)}${task.text.length > 50 ? '...' : ''} - Detalle de Tarea | Migro.es`
+    : 'Detalle de Tarea | Migro.es';
+  usePageTitle(task ? taskTitle : undefined);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">

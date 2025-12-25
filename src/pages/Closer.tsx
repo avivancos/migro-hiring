@@ -3,21 +3,23 @@ import { useState } from 'react';
 // @ts-ignore - Vite raw import
 import closerAnnexMd from '@/legal/closer_annex.md?raw';
 import { Button } from '@/components/ui/button';
-import { generatePdfWithTitle } from '@/utils/collabAgreementPdfFromMd';
+// Dynamic import para PDF generator (pesado, cargar bajo demanda)
 
 export function Closer() {
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const title = 'ANEXO I — ABOGADO COLABORADOR CLOSER DE VENTAS';
 
-  const handlePreviewPdf = () => {
+  const handlePreviewPdf = async () => {
+    const { generatePdfWithTitle } = await import('@/utils/collabAgreementPdfFromMd');
     const blob = generatePdfWithTitle(closerAnnexMd as unknown as string, title, 'contratacion.migro.es/closer');
     const url = URL.createObjectURL(blob);
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     setDownloadingPdf(true);
     try {
+      const { generatePdfWithTitle } = await import('@/utils/collabAgreementPdfFromMd');
       const blob = generatePdfWithTitle(closerAnnexMd as unknown as string, title, 'contratacion.migro.es/closer');
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

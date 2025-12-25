@@ -62,6 +62,7 @@
     "test:coverage": "vitest --coverage",
     "test:run": "vitest run",
     "test:ci": "vitest run --reporter=verbose",
+    "test:tokens": "node scripts/save-test-tokens.js",
     "docker:dev": "docker-compose up dev",
     "docker:prod": "docker-compose --profile production up prod",
     "docker:build": "docker-compose build",

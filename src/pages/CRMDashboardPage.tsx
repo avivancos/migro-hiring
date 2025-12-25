@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { usePagePerformanceTrace } from '@/hooks/usePerformanceTrace';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +33,9 @@ import { useAuth } from '@/providers/AuthProvider';
 import { formatContractStatus, formatCallStatus, formatLeadStatus, formatPriority } from '@/utils/statusTranslations';
 
 export function CRMDashboardPage() {
+  // Medir rendimiento de la página
+  usePagePerformanceTrace({ pageName: 'CRM Dashboard' });
+
   const { isAuthenticated, isLoading, user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');

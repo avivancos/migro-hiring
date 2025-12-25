@@ -405,7 +405,7 @@ export function CRMTaskCalendar() {
                     {/* Mostrar llamadas */}
                     {dayCalls.slice(0, Math.max(0, maxDisplay - dayTasks.length)).map(call => {
                       // Prioridad: contact_name (del endpoint) > entityNames (cargado) > teléfono > fallback
-                      let displayText = call.contact_name || 
+                      const displayText = call.contact_name || 
                         (call.entity_id && entityNames[call.entity_id] ? entityNames[call.entity_id] : null) ||
                         call.phone || 
                         call.phone_number || 
@@ -524,7 +524,7 @@ export function CRMTaskCalendar() {
                 {dayCalls.map(call => {
                   const callDate = new Date(call.created_at || call.started_at);
                   // Prioridad: contact_name (del endpoint) > entityNames (cargado) > teléfono > fallback
-                  let displayTitle = call.contact_name || 
+                  const displayTitle = call.contact_name || 
                     (call.entity_id && entityNames[call.entity_id] ? entityNames[call.entity_id] : null) ||
                     call.phone || 
                     call.phone_number || 
@@ -642,7 +642,7 @@ export function CRMTaskCalendar() {
             {dayCalls.map(call => {
               const callDate = new Date(call.created_at || call.started_at);
               // Prioridad: contact_name (del endpoint) > entityNames (cargado) > teléfono > fallback
-              let displayTitle = call.contact_name || 
+              const displayTitle = call.contact_name || 
                 (call.entity_id && entityNames[call.entity_id] ? entityNames[call.entity_id] : null) ||
                 call.phone || 
                 call.phone_number || 

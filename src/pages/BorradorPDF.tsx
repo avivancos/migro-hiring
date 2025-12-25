@@ -1,6 +1,6 @@
 // Borrador PDF - Página profesional para compartir con clientes
 import { useEffect, useState } from 'react';
-import { generateContractPDF } from '@/utils/contractPdfGenerator';
+// Dynamic import para PDF generator (pesado, cargar bajo demanda)
 import type { HiringDetails } from '@/types/hiring';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
@@ -38,6 +38,8 @@ export function BorradorPDF() {
         setLoading(true);
         setError(null);
 
+        // Dynamic import para PDF generator
+        const { generateContractPDF } = await import('@/utils/contractPdfGenerator');
         // Generar PDF de ejemplo sin marca de agua (para compartir con clientes)
         const blob = generateContractPDF(exampleDetails, {
           paymentIntentId: 'pi_ejemplo_borrador',

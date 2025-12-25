@@ -6,7 +6,8 @@ import {
   FileText, 
   Shield, 
   MessageSquare, 
-  Phone
+  Phone,
+  Activity
 } from 'lucide-react';
 
 const navigation = [
@@ -16,6 +17,7 @@ const navigation = [
   { name: 'Tipos de Llamadas', href: '/admin/call-types', icon: Phone },
   { name: 'Auditoría', href: '/admin/audit-logs', icon: Shield },
   { name: 'Conversaciones', href: '/admin/conversations', icon: MessageSquare },
+  { name: 'Tracing', href: '/admin/tracing', icon: Activity },
 ];
 
 interface SidebarProps {

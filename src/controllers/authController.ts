@@ -3,6 +3,7 @@
 
 import { authService } from '@/services/authService';
 import { api } from '@/services/api';
+import TokenStorage from '@/utils/tokenStorage';
 import type { User, TokenPair } from '@/types/auth';
 
 export interface AuthSession {
@@ -187,23 +188,47 @@ class AuthController {
     } catch (error: any) {
       console.error('Error refrescando token:', error);
       
-      // Solo limpiar sesión si es un error de autenticación real
-      // NO limpiar en errores temporales (red, timeout, 500, etc.)
-      const shouldClearSession = 
-        error.response?.status === 401 ||
-        error.response?.status === 403 ||
+      // CRÍTICO: Solo limpiar sesión si el refresh token está REALMENTE inválido/expirado
+      // NO limpiar en errores temporales (red, timeout, 500, 503, etc.)
+      // Verificar primero si el refresh token está expirado localmente
+      const refreshTokenExpired = TokenStorage.isRefreshTokenExpired();
+      const noRefreshToken = !TokenStorage.getRefreshToken();
+      
+      // Verificar si el error del servidor indica que el refresh token es inválido
+      const serverSaysTokenInvalid = 
         (error.response?.status === 400 && 
-         (error.response?.data?.detail?.includes('token') || 
-          error.response?.data?.detail?.includes('invalid'))) ||
+         (error.response?.data?.detail?.toLowerCase().includes('token') || 
+          error.response?.data?.detail?.toLowerCase().includes('invalid') ||
+          error.response?.data?.detail?.toLowerCase().includes('expired'))) ||
+        (error.response?.status === 401 && 
+         (error.response?.data?.detail?.toLowerCase().includes('token') || 
+          error.response?.data?.detail?.toLowerCase().includes('invalid') ||
+          error.response?.data?.detail?.toLowerCase().includes('expired'))) ||
+        (error.response?.status === 403 && 
+         (error.response?.data?.detail?.toLowerCase().includes('token') || 
+          error.response?.data?.detail?.toLowerCase().includes('invalid') ||
+          error.response?.data?.detail?.toLowerCase().includes('expired'))) ||
         error.message?.includes('Refresh token expired') ||
         error.message?.includes('No refresh token available');
       
+      const shouldClearSession = refreshTokenExpired || noRefreshToken || serverSaysTokenInvalid;
+      
       if (shouldClearSession) {
-        console.warn('⚠️ Error de autenticación al refrescar token, limpiando sesión');
+        console.warn('⚠️ Error de autenticación al refrescar token, limpiando sesión:', {
+          refreshTokenExpired,
+          noRefreshToken,
+          serverSaysTokenInvalid,
+          status: error.response?.status,
+          detail: error.response?.data?.detail
+        });
         this.clearSession();
       } else {
-        // Error temporal, mantener sesión y tokens
-        console.warn('⚠️ Error temporal al refrescar token, manteniendo sesión:', error.message || error.response?.status);
+        // Error temporal (red, timeout, 500, 503, etc.) - MANTENER sesión y tokens
+        console.warn('⚠️ Error temporal al refrescar token, MANTENIENDO sesión y tokens:', {
+          message: error.message,
+          status: error.response?.status,
+          code: error.code
+        });
       }
       
       return null;

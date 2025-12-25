@@ -2,7 +2,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { expedienteApi } from '../expedienteApi';
 import { api } from '../api';
-import { withRetry } from '../apiRetry';
 
 // Mock de api
 vi.mock('../api', () => ({

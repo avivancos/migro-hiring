@@ -11,7 +11,7 @@ import { PaymentForm } from '@/components/PaymentForm';
 import { ContractSuccess } from '@/components/ContractSuccess';
 import { ProgressBar } from '@/components/Layout/ProgressBar';
 import { Loader2 } from 'lucide-react';
-import { generateContractPDF } from '@/utils/contractPdfGenerator';
+// Dynamic import para PDF generator (pesado, cargar bajo demanda)
 
 type Step = 1 | 2 | 3 | 4 | 5;
 
@@ -119,6 +119,8 @@ export function HiringFlow() {
           // Obtener payment_intent del query param o usar sessionId
           const paymentIntentId = paymentIntent || sessionId || 'stripe_checkout';
           
+          // Dynamic import para PDF generator
+          const { generateContractPDF } = await import('@/utils/contractPdfGenerator');
           // Generar PDF definitivo CON firma (isDraft = false)
           const contractBlob = generateContractPDF(details, {
             paymentIntentId,

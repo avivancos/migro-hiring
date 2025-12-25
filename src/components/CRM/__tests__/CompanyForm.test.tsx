@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { CompanyForm } from '@/components/CRM/CompanyForm';
 
 // Mock de crmService usando factory function
@@ -28,42 +27,43 @@ describe('CompanyForm - Tests Automatizados', () => {
   });
 
   it('debe renderizar el formulario', async () => {
-    render(<CompanyForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+    const { container } = render(<CompanyForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
     await waitFor(() => {
       expect(screen.getByLabelText(/nombre.*empresa/i)).toBeInTheDocument();
-    });
+    }, { container });
   });
 
   it('debe validar que el nombre es requerido', async () => {
-    const user = userEvent.setup();
-    render(<CompanyForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+    const { container } = render(<CompanyForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /crear empresa/i })).toBeInTheDocument();
-    });
+    }, { container });
 
     const submitButton = screen.getByRole('button', { name: /crear empresa/i });
-    await user.click(submitButton);
+    fireEvent.click(submitButton);
 
     await waitFor(() => {
       expect(mockOnSubmit).not.toHaveBeenCalled();
-    });
+    }, { container });
   });
 
   it('debe enviar el formulario con datos válidos', async () => {
-    const user = userEvent.setup();
-    render(<CompanyForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
+    const { container } = render(<CompanyForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} />);
 
     await waitFor(() => {
       expect(screen.getByLabelText(/nombre.*empresa/i)).toBeInTheDocument();
-    });
+    }, { container });
 
-    await user.type(screen.getByLabelText(/nombre.*empresa/i), 'Nueva Empresa SL');
-    await user.type(screen.getByLabelText(/email/i), 'contacto@empresa.com');
+    const nameInput = screen.getByLabelText(/nombre.*empresa/i);
+    const emailInput = screen.getByLabelText(/email/i);
+    
+    fireEvent.change(nameInput, { target: { value: 'Nueva Empresa SL' } });
+    fireEvent.change(emailInput, { target: { value: 'contacto@empresa.com' } });
 
     const submitButton = screen.getByRole('button', { name: /crear empresa/i });
-    await user.click(submitButton);
+    fireEvent.click(submitButton);
 
     await waitFor(() => {
       expect(mockOnSubmit).toHaveBeenCalledWith(
@@ -72,6 +72,6 @@ describe('CompanyForm - Tests Automatizados', () => {
           email: 'contacto@empresa.com',
         })
       );
-    });
+    }, { container, timeout: 3000 });
   });
 });

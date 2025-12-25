@@ -218,3 +218,4 @@ opportunities = list(result.unique().scalars().all())
 **Última actualización**: 2025-01-28
 
 
+

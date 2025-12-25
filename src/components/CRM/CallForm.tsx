@@ -297,6 +297,7 @@ export function CallForm({
 
     try {
       // Crear objeto de datos sin durationOption (solo para UI)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { durationOption, ...submitData } = formData;
       submitData.duration = formData.duration ?? 0;
 

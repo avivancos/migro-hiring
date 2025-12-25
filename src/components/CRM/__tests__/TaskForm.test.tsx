@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { TaskForm } from '@/components/CRM/TaskForm';
 
 // Mock de crmService usando factory function
@@ -28,47 +27,46 @@ describe('TaskForm - Tests Automatizados', () => {
   });
 
   it('debe renderizar el formulario', async () => {
-    render(<TaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} defaultEntityType="lead" defaultEntityId={1} />);
+    const { container } = render(<TaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} defaultEntityType="lead" defaultEntityId="1" />);
 
     await waitFor(() => {
       expect(screen.getByLabelText(/descripción/i)).toBeInTheDocument();
-    });
+    }, { container });
   });
 
   it('debe validar campos requeridos', async () => {
-    const user = userEvent.setup();
-    render(<TaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} defaultEntityType="lead" defaultEntityId={1} />);
+    const { container } = render(<TaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} defaultEntityType="lead" defaultEntityId="1" />);
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /crear tarea/i })).toBeInTheDocument();
-    });
+    }, { container });
 
     const submitButton = screen.getByRole('button', { name: /crear tarea/i });
-    await user.click(submitButton);
+    fireEvent.click(submitButton);
 
     await waitFor(() => {
       expect(mockOnSubmit).not.toHaveBeenCalled();
-    });
+    }, { container });
   });
 
   it('debe enviar el formulario con datos válidos', async () => {
-    const user = userEvent.setup();
-    render(<TaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} defaultEntityType="lead" defaultEntityId={1} />);
+    const { container } = render(<TaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} defaultEntityType="lead" defaultEntityId="1" />);
 
     await waitFor(() => {
       expect(screen.getByLabelText(/descripción/i)).toBeInTheDocument();
-    });
+    }, { container });
 
-    await user.type(screen.getByLabelText(/descripción/i), 'Llamar al cliente');
+    const descriptionInput = screen.getByLabelText(/descripción/i);
+    fireEvent.change(descriptionInput, { target: { value: 'Llamar al cliente' } });
 
     const responsibleSelect = screen.getByLabelText(/responsable/i);
     await waitFor(() => {
       expect(responsibleSelect).toBeInTheDocument();
-    });
-    await user.selectOptions(responsibleSelect, '1');
+    }, { container });
+    fireEvent.change(responsibleSelect, { target: { value: '1' } });
 
     const submitButton = screen.getByRole('button', { name: /crear tarea/i });
-    await user.click(submitButton);
+    fireEvent.click(submitButton);
 
     await waitFor(() => {
       expect(mockOnSubmit).toHaveBeenCalledWith(
@@ -78,6 +76,6 @@ describe('TaskForm - Tests Automatizados', () => {
           entity_id: 1,
         })
       );
-    });
+    }, { container, timeout: 3000 });
   });
 });
