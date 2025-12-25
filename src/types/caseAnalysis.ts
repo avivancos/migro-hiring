@@ -120,11 +120,13 @@ export interface CaseAnalysisResponse {
 /**
  * AnalysisState - Estados del análisis
  */
-export enum AnalysisState {
-  IDLE = 'idle',
-  LOADING = 'loading',
-  SUCCESS = 'success',
-  ERROR = 'error',
-  PARTIAL = 'partial', // Pili no disponible pero análisis básico sí
-}
+export const AnalysisState = {
+  IDLE: 'idle',
+  LOADING: 'loading',
+  SUCCESS: 'success',
+  ERROR: 'error',
+  PARTIAL: 'partial', // Pili no disponible pero análisis básico sí
+} as const;
+
+export type AnalysisState = typeof AnalysisState[keyof typeof AnalysisState];
 

@@ -655,8 +655,8 @@ export function CRMContactList() {
     );
   };
 
-  // Helper para renderizar celda de columna (no usado actualmente)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // Helper para renderizar celda de columna (no usado actualmente - reservado para uso futuro)
+  // @ts-expect-error - Función reservada para uso futuro
   const renderColumnCell = (contact: KommoContact, columnKey: ColumnKey) => {
     const classNameMap: Record<ColumnKey, string> = {
       name: 'px-3 sm:px-6 py-4 overflow-hidden',

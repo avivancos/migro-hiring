@@ -3,8 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { performanceTracingService } from '@/services/performanceTracingService';
-import type { PerformanceReport } from '@/services/performanceTracingService';
+import { performanceTracingService, type PerformanceReport, type PerformanceMetric } from '@/services/performanceTracingService';
 
 interface PerformanceMonitorProps {
   enabled?: boolean;
@@ -43,16 +42,16 @@ export function PerformanceMonitor({
       performanceTracingService.end(pageMarkName, 'success', { route: location.pathname });
 
       // Generar reporte actualizado (para uso futuro si es necesario)
-      performanceTracingService.getReport();
+      const currentReport = performanceTracingService.getReport();
 
       // Log si hay métricas lentas
       if (showSlowOnly) {
         const slowMetrics = currentReport.metrics.filter(
-          (m) => m.duration && m.duration > slowThreshold
+          (m: PerformanceMetric) => m.duration && m.duration > slowThreshold
         );
         if (slowMetrics.length > 0) {
           console.group('🐌 Métricas Lentas Detectadas');
-          slowMetrics.forEach((metric) => {
+          slowMetrics.forEach((metric: PerformanceMetric) => {
             console.warn(
               `${metric.type.toUpperCase()}: ${metric.name} - ${metric.duration?.toFixed(2)}ms`
             );

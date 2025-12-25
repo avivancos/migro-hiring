@@ -268,7 +268,7 @@ export function CRMCallHandler() {
     
     // Cargar contactos
     contactIds.forEach(entityId => {
-      const cacheKey = apiCache.generateKey(`${CRM_BASE_PATH}/contacts/${entityId}`);
+      const cacheKey = APICache.generateKey(`${CRM_BASE_PATH}/contacts/${entityId}`);
       const promise = crmService.getContact(entityId)
         .then((entity: KommoContact) => {
           // Guardar en caché
@@ -295,7 +295,7 @@ export function CRMCallHandler() {
 
     // Cargar leads
     leadIds.forEach(entityId => {
-      const cacheKey = apiCache.generateKey(`${CRM_BASE_PATH}/leads/${entityId}`);
+      const cacheKey = APICache.generateKey(`${CRM_BASE_PATH}/leads/${entityId}`);
       const promise = crmService.getLead(entityId)
         .then((entity: KommoLead) => {
           // Guardar en caché

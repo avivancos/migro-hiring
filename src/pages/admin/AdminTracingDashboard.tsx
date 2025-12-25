@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { performanceTracingService } from '@/services/performanceTracingService';
-import type { PerformanceReport, PerformanceMetric } from '@/services/performanceTracingService';
+import type { PerformanceMetric } from '@/services/performanceTracingService';
 import { usePerformanceReport } from '@/components/common/PerformanceMonitor';
 import { 
   Activity, 
@@ -23,8 +23,7 @@ import {
 export function AdminTracingDashboard() {
   const report = usePerformanceReport();
   const [autoRefresh, setAutoRefresh] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [slowThreshold, setSlowThreshold] = useState(1000); // 1 segundo
+  const [slowThreshold] = useState(1000); // 1 segundo
 
   useEffect(() => {
     if (autoRefresh) {
