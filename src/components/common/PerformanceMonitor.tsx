@@ -22,7 +22,6 @@ export function PerformanceMonitor({
   slowThreshold = 1000,
 }: PerformanceMonitorProps) {
   const location = useLocation();
-  const [report, setReport] = useState<PerformanceReport | null>(null);
 
   useEffect(() => {
     if (!enabled) return;
@@ -43,9 +42,8 @@ export function PerformanceMonitor({
     return () => {
       performanceTracingService.end(pageMarkName, 'success', { route: location.pathname });
 
-      // Generar reporte actualizado
-      const currentReport = performanceTracingService.getReport();
-      setReport(currentReport);
+      // Generar reporte actualizado (para uso futuro si es necesario)
+      performanceTracingService.getReport();
 
       // Log si hay métricas lentas
       if (showSlowOnly) {

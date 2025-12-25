@@ -1,6 +1,6 @@
 // CRM Contact Detail - Vista detallada de contacto con pestañas
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -52,37 +52,14 @@ export function CRMContactDetail() {
   const [showNoteForm, setShowNoteForm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const { isAdmin } = useAuth();
+  
+  // Ref para evitar recargas innecesarias
+  const lastLoadTime = useRef<number>(0);
+  const lastLoadId = useRef<string | undefined>(undefined);
+  const MIN_RELOAD_INTERVAL = 30000; // 30 segundos mínimo entre recargas
 
-  useEffect(() => {
-    // Solo cargar si el ID existe y no es "new" (que debe manejarse por la ruta específica)
-    if (id && id !== 'new') {
-      loadContactData();
-    } else if (!id) {
-      // Si no hay ID, no hacer nada (puede ser un estado transitorio)
-      setLoading(false);
-    }
-  }, [id, searchParams.toString()]); // Recargar cuando cambia la query string (útil después de editar)
-
-  // Recargar datos cuando se navega a esta página (útil después de editar)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible' && id) {
-        // Recargar datos cuando la pestaña se vuelve visible
-        loadContactData();
-      }
-    };
-    
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [id]);
-
-  // Actualizar título de la página con el nombre del contacto
-  const contactName = contact 
-    ? (contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim() || 'Contacto')
-    : null;
-  usePageTitle(contactName ? `${contactName} - Detalle de Contacto | Migro.es` : undefined);
-
-  const loadContactData = async () => {
+  // Definir loadContactData primero para que pueda ser usada en el callback
+  const loadContactData = useCallback(async () => {
     if (!id || id === 'new') return; // No cargar si es "new"
     setLoading(true);
     try {
@@ -104,8 +81,8 @@ export function CRMContactDetail() {
         setError('Contacto no encontrado');
         setContact(null);
       } else {
-      setContact(contactData);
-      setError(null);
+        setContact(contactData);
+        setError(null);
       }
       
       setLeads([]); // Los leads están unificados con contactos, no hay leads separados
@@ -127,7 +104,63 @@ export function CRMContactDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  // Memoizar loadContactData para evitar recrearla
+  const loadContactDataMemo = useCallback(async () => {
+    if (!id || id === 'new') return; // No cargar si es "new"
+    
+    // Evitar recargas muy frecuentes
+    const now = Date.now();
+    if (
+      lastLoadId.current === id &&
+      now - lastLoadTime.current < MIN_RELOAD_INTERVAL
+    ) {
+      console.log('⏭️ [CRMContactDetail] Saltando recarga (muy reciente)');
+      return;
+    }
+    
+    lastLoadTime.current = now;
+    lastLoadId.current = id;
+    
+    await loadContactData();
+  }, [id, loadContactData]);
+
+  useEffect(() => {
+    // Solo cargar si el ID existe y no es "new" (que debe manejarse por la ruta específica)
+    if (id && id !== 'new') {
+      loadContactDataMemo();
+    } else if (!id) {
+      // Si no hay ID, no hacer nada (puede ser un estado transitorio)
+      setLoading(false);
+    }
+  }, [id, searchParams.toString(), loadContactDataMemo]); // Recargar cuando cambia la query string (útil después de editar)
+
+  // Recargar datos cuando se navega a esta página (útil después de editar)
+  // OPTIMIZADO: Solo recargar si han pasado más de 30 segundos desde la última carga
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && id) {
+        const now = Date.now();
+        // Solo recargar si han pasado más de 30 segundos desde la última carga
+        if (now - lastLoadTime.current > MIN_RELOAD_INTERVAL) {
+          console.log('🔄 [CRMContactDetail] Recargando datos (pestaña visible después de 30s)');
+          loadContactDataMemo();
+        } else {
+          console.log('⏭️ [CRMContactDetail] Saltando recarga (datos recientes)');
+        }
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [id, loadContactDataMemo]);
+
+  // Actualizar título de la página con el nombre del contacto
+  const contactName = contact 
+    ? (contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim() || 'Contacto')
+    : null;
+  usePageTitle(contactName ? `${contactName} - Detalle de Contacto | Migro.es` : undefined);
 
   // Obtener nombre del usuario por ID
   const getUserName = (userId?: string): string => {
@@ -145,7 +178,8 @@ export function CRMContactDetail() {
     data: Call | Task | Note;
   }
 
-  const getTimelineItems = (): TimelineItem[] => {
+  // Memoizar timeline items para evitar recalcular en cada render
+  const timelineItems = useMemo((): TimelineItem[] => {
     const items: TimelineItem[] = [];
 
     // Agregar llamadas
@@ -180,7 +214,7 @@ export function CRMContactDetail() {
 
     // Ordenar por fecha (más recientes primero)
     return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  };
+  }, [calls, tasks, notes]);
 
   const getGradingColor = (grading?: 'A' | 'B+' | 'B-' | 'C'): string => {
     switch (grading) {
@@ -973,12 +1007,12 @@ export function CRMContactDetail() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {getTimelineItems().length > 0 ? (
+                  {timelineItems.length > 0 ? (
                     <div className="relative">
                       {/* Línea vertical del timeline */}
                       <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200"></div>
                       
-                      {getTimelineItems().map((item) => {
+                      {timelineItems.map((item) => {
                         const isCall = item.type === 'call';
                         const isTask = item.type === 'task';
                         const isNote = item.type === 'note';

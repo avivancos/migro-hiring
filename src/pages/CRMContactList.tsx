@@ -34,6 +34,8 @@ import {
 import { useAuth } from '@/providers/AuthProvider';
 import { Modal } from '@/components/common/Modal';
 import { Switch } from '@/components/ui/switch';
+import { ContactCard } from '@/components/CRM/ContactCard';
+import { ContactTableRow } from '@/components/CRM/ContactTableRow';
 
 type SortField = 'name' | 'email' | 'phone' | 'created_at' | 'updated_at' | 'grading_llamada' | 'grading_situacion' | 'nacionalidad' | 'ultima_llamada' | 'proxima_llamada';
 type SortOrder = 'asc' | 'desc';
@@ -280,20 +282,32 @@ export function CRMContactList() {
         setTotalContacts(response.total ?? response.items?.length ?? 0);
       }
       
-      // Enriquecer contactos con información de llamadas para mostrar las columnas
-      // Solo enriquecer los contactos de la página actual
-      const batchSize = 10;
-      const enrichedContacts: KommoContact[] = [];
+      // OPTIMIZACIÓN: Solo enriquecer contactos si realmente se necesitan las columnas de llamadas
+      // Verificar si se están usando filtros o columnas que requieren información de llamadas
+      const needsCallInfo = ultimaLlamadaDesde || ultimaLlamadaHasta || 
+                           proximaLlamadaDesde || proximaLlamadaHasta ||
+                           sortField === 'ultima_llamada' || sortField === 'proxima_llamada';
       
-      for (let i = 0; i < response.items.length; i += batchSize) {
-        const batch = response.items.slice(i, i + batchSize);
-        const enrichedBatch = await Promise.all(
-          batch.map(contact => enrichContactWithCallInfo(contact))
-        );
-        enrichedContacts.push(...enrichedBatch);
+      if (needsCallInfo && response.items.length > 0) {
+        // Solo enriquecer si es necesario y hay contactos
+        // Usar batches más pequeños para evitar sobrecarga
+        const batchSize = 5; // Reducido de 10 a 5 para mejor rendimiento
+        const enrichedContacts: KommoContact[] = [];
+        
+        for (let i = 0; i < response.items.length; i += batchSize) {
+          const batch = response.items.slice(i, i + batchSize);
+          const enrichedBatch = await Promise.all(
+            batch.map(contact => enrichContactWithCallInfo(contact))
+          );
+          enrichedContacts.push(...enrichedBatch);
+        }
+        
+        setContacts(enrichedContacts);
+      } else {
+        // Si no se necesita información de llamadas, usar contactos directamente
+        // Esto evita 200+ llamadas API innecesarias
+        setContacts(response.items || []);
       }
-      
-      setContacts(enrichedContacts);
     } catch (err) {
       console.error('❌ [CRMContactList] Error loading contacts:', err);
       setContacts([]);
@@ -641,7 +655,8 @@ export function CRMContactList() {
     );
   };
 
-  // Helper para renderizar celda de columna
+  // Helper para renderizar celda de columna (no usado actualmente)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const renderColumnCell = (contact: KommoContact, columnKey: ColumnKey) => {
     const classNameMap: Record<ColumnKey, string> = {
       name: 'px-3 sm:px-6 py-4 overflow-hidden',
@@ -1147,84 +1162,10 @@ export function CRMContactList() {
           <>
             <div className="block md:hidden space-y-4">
               {filteredAndSortedContacts.map((contact) => (
-                <Card
+                <ContactCard
                   key={contact.id}
-                  className="hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => navigate(`/crm/contacts/${contact.id}`)}
-                >
-                  <CardContent className="pt-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-base font-semibold text-gray-900 mb-1 font-display">
-                          {contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim() || 'Sin nombre'}
-                        </h3>
-                        {contact.email && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                            <Mail className="w-4 h-4 flex-shrink-0" />
-                            <span className="truncate">{contact.email}</span>
-                          </div>
-                        )}
-                        {contact.phone && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                            <Phone className="w-4 h-4 flex-shrink-0" />
-                            <span>{contact.phone}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {contact.nacionalidad && (
-                        <div className="flex items-center gap-1 text-xs text-gray-600">
-                          <Flag className="w-3 h-3" />
-                          <span>{contact.nacionalidad}</span>
-                        </div>
-                      )}
-                      {contact.grading_llamada && (
-                        <Badge variant={getGradingVariant(contact.grading_llamada)} className="text-xs">
-                          Llamada: {contact.grading_llamada}
-                        </Badge>
-                      )}
-                      {contact.grading_situacion && (
-                        <Badge variant={getGradingVariant(contact.grading_situacion)} className="text-xs">
-                          Situación: {contact.grading_situacion}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="space-y-2 pt-3 border-t">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1 text-xs text-gray-500">
-                          <Calendar className="w-3 h-3" />
-                          <span>Creación: {formatDate(contact.created_at)}</span>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/crm/contacts/${contact.id}`);
-                          }}
-                        >
-                          Ver
-                          <ChevronRight className="w-4 h-4 ml-1" />
-                        </Button>
-                      </div>
-                      {contact.ultima_llamada_fecha && (
-                        <div className="flex items-center gap-1 text-xs text-gray-600">
-                          <Phone className="w-3 h-3" />
-                          <span>Última llamada: {formatDate(contact.ultima_llamada_fecha)}</span>
-                        </div>
-                      )}
-                      {contact.proxima_llamada_fecha && (
-                        <div className="flex items-center gap-1 text-xs text-gray-600">
-                          <Calendar className={`w-3 h-3 ${new Date(contact.proxima_llamada_fecha).getTime() < new Date().getTime() ? 'text-red-600' : 'text-blue-600'}`} />
-                          <span className={new Date(contact.proxima_llamada_fecha).getTime() < new Date().getTime() ? 'text-red-600 font-semibold' : ''}>
-                            Próxima llamada: {formatDate(contact.proxima_llamada_fecha)}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                  contact={contact}
+                />
               ))}
             </div>
             
@@ -1241,13 +1182,11 @@ export function CRMContactList() {
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                           {filteredAndSortedContacts.map((contact) => (
-                            <tr
+                            <ContactTableRow
                               key={contact.id}
-                              className="hover:bg-gray-50 cursor-pointer"
-                              onClick={() => navigate(`/crm/contacts/${contact.id}`)}
-                            >
-                              {visibleColumns.map(columnKey => renderColumnCell(contact, columnKey))}
-                            </tr>
+                              contact={contact}
+                              visibleColumns={visibleColumns}
+                            />
                           ))}
                         </tbody>
                       </table>

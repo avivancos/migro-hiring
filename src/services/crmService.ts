@@ -1,6 +1,7 @@
 // CRM Service - API calls for CRM functionality
 
 import { api } from './api';
+import { apiCache, APICache } from './apiCache';
 import type {
   KommoLead,
   KommoContact,
@@ -116,9 +117,27 @@ export const crmService = {
 
   /**
    * Obtener un lead por ID
+   * Con caché para evitar llamadas duplicadas
    */
-  async getLead(id: string): Promise<KommoLead> {
+  async getLead(id: string, useCache: boolean = true): Promise<KommoLead> {
+    const cacheKey = APICache.generateKey(`${CRM_BASE_PATH}/leads/${id}`);
+    
+    // Intentar obtener del caché primero
+    if (useCache) {
+      const cached = apiCache.get<KommoLead>(cacheKey);
+      if (cached) {
+        console.log(`💾 [crmService] Lead ${id} obtenido del caché`);
+        return cached;
+      }
+    }
+    
     const { data } = await api.get<KommoLead>(`${CRM_BASE_PATH}/leads/${id}`);
+    
+    // Guardar en caché (5 minutos TTL)
+    if (useCache) {
+      apiCache.set(cacheKey, data, 5 * 60 * 1000);
+    }
+    
     return data;
   },
 
@@ -281,9 +300,27 @@ export const crmService = {
 
   /**
    * Obtener un contacto por ID
+   * Con caché para evitar llamadas duplicadas
    */
-  async getContact(id: string): Promise<KommoContact> {
+  async getContact(id: string, useCache: boolean = true): Promise<KommoContact> {
+    const cacheKey = APICache.generateKey(`${CRM_BASE_PATH}/contacts/${id}`);
+    
+    // Intentar obtener del caché primero
+    if (useCache) {
+      const cached = apiCache.get<KommoContact>(cacheKey);
+      if (cached) {
+        console.log(`💾 [crmService] Contacto ${id} obtenido del caché`);
+        return cached;
+      }
+    }
+    
     const { data } = await api.get<KommoContact>(`${CRM_BASE_PATH}/contacts/${id}`);
+    
+    // Guardar en caché (5 minutos TTL)
+    if (useCache) {
+      apiCache.set(cacheKey, data, 5 * 60 * 1000);
+    }
+    
     return data;
   },
 
@@ -702,11 +739,29 @@ export const crmService = {
 
   /**
    * Obtener lista de usuarios CRM
+   * Con caché para evitar llamadas duplicadas (usuarios cambian poco)
    */
-  async getUsers(isActive?: boolean): Promise<CRMUser[]> {
+  async getUsers(isActive?: boolean, useCache: boolean = true): Promise<CRMUser[]> {
+    const cacheKey = APICache.generateKey(`${CRM_BASE_PATH}/users`, { is_active: isActive });
+    
+    // Intentar obtener del caché primero
+    if (useCache) {
+      const cached = apiCache.get<CRMUser[]>(cacheKey);
+      if (cached) {
+        console.log(`💾 [crmService] Usuarios obtenidos del caché`);
+        return cached;
+      }
+    }
+    
     const { data } = await api.get<CRMUser[]>(`${CRM_BASE_PATH}/users`, {
       params: { is_active: isActive },
     });
+    
+    // Guardar en caché (10 minutos TTL - usuarios cambian poco)
+    if (useCache) {
+      apiCache.set(cacheKey, data, 10 * 60 * 1000);
+    }
+    
     return data;
   },
 

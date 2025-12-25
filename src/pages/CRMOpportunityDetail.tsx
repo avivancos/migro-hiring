@@ -226,6 +226,13 @@ export function CRMOpportunityDetail() {
                 Crear Pipeline
               </Button>
               <Button
+                variant="default"
+                className="w-full bg-purple-600 hover:bg-purple-700"
+                onClick={() => navigate(`/crm/opportunities/${opportunity.id}/analyze`)}
+              >
+                Analizar Caso
+              </Button>
+              <Button
                 variant="outline"
                 className="w-full"
                 onClick={() => navigate(`/crm/contacts/${opportunity.contact_id}`)}

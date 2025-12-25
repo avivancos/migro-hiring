@@ -32,6 +32,10 @@ import { ContactForm } from '@/components/CRM/ContactForm';
 import { useNavigate } from 'react-router-dom';
 import { Clock, ExternalLink } from 'lucide-react';
 import { formatCallStatus, formatLeadStatus } from '@/utils/statusTranslations';
+import { apiCache, APICache } from '@/services/apiCache';
+import { useCallback } from 'react';
+
+const CRM_BASE_PATH = '/crm';
 
 export function CRMCallHandler() {
   const navigate = useNavigate();
@@ -79,6 +83,11 @@ export function CRMCallHandler() {
   
   // Tipos de llamadas
   const [callTypes, setCallTypes] = useState<Array<{ id: string; name: string; code: string; description?: string }>>([]);
+
+  // Memoizar funciones para evitar recrearlas en cada render
+  const loadRecentCallsMemo = useCallback(() => {
+    loadRecentCalls();
+  }, []);
 
   useEffect(() => {
     loadInitialData();
@@ -200,43 +209,78 @@ export function CRMCallHandler() {
 
     // Obtener IDs únicos de entidades que NO tienen contact_name
     const entityIdsToLoad = new Set<string>();
+    const entityTypeMap = new Map<string, 'contact' | 'lead'>(); // Mapear ID -> tipo
+    
     calls.forEach(call => {
       // Intentar usar contact_id primero, sino entity_id
       const idToLoad = call.contact_id || call.entity_id;
       if (idToLoad && !call.contact_name) {
+        // Verificar caché primero
+        const cacheKey = APICache.generateKey(`${CRM_BASE_PATH}/contacts/${idToLoad}`);
+        const cachedContact = apiCache.get<KommoContact>(cacheKey);
+        if (cachedContact) {
+          const name = cachedContact.name || 
+            `${cachedContact.first_name || ''} ${cachedContact.last_name || ''}`.trim() ||
+            'Sin nombre';
+          names[idToLoad] = name;
+          return; // Ya tenemos el nombre del caché
+        }
+
+        const cacheKeyLead = APICache.generateKey(`${CRM_BASE_PATH}/leads/${idToLoad}`);
+        const cachedLead = apiCache.get<KommoLead>(cacheKeyLead);
+        if (cachedLead) {
+          names[idToLoad] = cachedLead.name || 'Sin nombre';
+          return; // Ya tenemos el nombre del caché
+        }
+
+        // Si no está en caché, agregar a la lista de carga
         entityIdsToLoad.add(idToLoad);
+        
+        // Determinar tipo y guardar en mapa
+        const isContact = call.entity_type === 'contacts' || call.entity_type === 'contact' || !!call.contact_id;
+        entityTypeMap.set(idToLoad, isContact ? 'contact' : 'lead');
       }
     });
 
     if (entityIdsToLoad.size === 0) {
-      console.log('📞 [CRMCallHandler] Todos los nombres ya están disponibles (contact_name)');
+      console.log('📞 [CRMCallHandler] Todos los nombres ya están disponibles (contact_name o caché)');
       setCallEntityNames(names);
       return;
     }
 
-    console.log(`📞 [CRMCallHandler] Cargando nombres para ${entityIdsToLoad.size} entidades que no tienen contact_name`);
+    console.log(`📞 [CRMCallHandler] Cargando nombres para ${entityIdsToLoad.size} entidades que no tienen contact_name ni caché`);
 
-    // Cargar nombres de contactos/leads
-    const loadPromises: Promise<void>[] = [];
+    // Agrupar por tipo para optimizar
+    const contactIds: string[] = [];
+    const leadIds: string[] = [];
+    
     entityIdsToLoad.forEach(entityId => {
-      const call = calls.find(c => (c.contact_id || c.entity_id) === entityId);
-      if (!call) return;
+      const type = entityTypeMap.get(entityId);
+      if (type === 'contact') {
+        contactIds.push(entityId);
+      } else {
+        leadIds.push(entityId);
+      }
+    });
 
-      // Determinar si es contacto o lead
-      const isContact = call.entity_type === 'contacts' || call.entity_type === 'contact' || !!call.contact_id;
-      const promise = (isContact
-        ? crmService.getContact(entityId)
-        : crmService.getLead(entityId)
-      )
-        .then((entity: KommoContact | KommoLead) => {
+    // Cargar nombres de contactos/leads en paralelo, pero agrupados
+    const loadPromises: Promise<void>[] = [];
+    
+    // Cargar contactos
+    contactIds.forEach(entityId => {
+      const cacheKey = apiCache.generateKey(`${CRM_BASE_PATH}/contacts/${entityId}`);
+      const promise = crmService.getContact(entityId)
+        .then((entity: KommoContact) => {
+          // Guardar en caché
+          apiCache.set(cacheKey, entity, 5 * 60 * 1000); // 5 minutos TTL
+          
           const name = entity.name || 
-            (('first_name' in entity) ? `${entity.first_name || ''} ${entity.last_name || ''}`.trim() : '') ||
+            `${entity.first_name || ''} ${entity.last_name || ''}`.trim() ||
             'Sin nombre';
           names[entityId] = name;
-          console.log(`✅ [CRMCallHandler] Nombre cargado para ${isContact ? 'contact' : 'lead'} ${entityId}:`, name);
         })
         .catch((err) => {
-          console.warn(`⚠️ [CRMCallHandler] Error cargando ${isContact ? 'contact' : 'lead'} ${entityId}:`, err);
+          console.warn(`⚠️ [CRMCallHandler] Error cargando contact ${entityId}:`, err);
           // Usar teléfono como fallback
           const call = calls.find(c => (c.contact_id || c.entity_id) === entityId);
           if (call?.phone || call?.phone_number) {
@@ -249,7 +293,39 @@ export function CRMCallHandler() {
       loadPromises.push(promise);
     });
 
-    await Promise.all(loadPromises);
+    // Cargar leads
+    leadIds.forEach(entityId => {
+      const cacheKey = apiCache.generateKey(`${CRM_BASE_PATH}/leads/${entityId}`);
+      const promise = crmService.getLead(entityId)
+        .then((entity: KommoLead) => {
+          // Guardar en caché
+          apiCache.set(cacheKey, entity, 5 * 60 * 1000); // 5 minutos TTL
+          
+          const name = entity.name || 'Sin nombre';
+          names[entityId] = name;
+        })
+        .catch((err) => {
+          console.warn(`⚠️ [CRMCallHandler] Error cargando lead ${entityId}:`, err);
+          // Usar teléfono como fallback
+          const call = calls.find(c => (c.contact_id || c.entity_id) === entityId);
+          if (call?.phone || call?.phone_number) {
+            names[entityId] = call.phone || call.phone_number || 'Contacto';
+          } else {
+            names[entityId] = 'Contacto';
+          }
+        });
+      
+      loadPromises.push(promise);
+    });
+
+    // Limitar concurrencia para no sobrecargar el servidor
+    // Procesar en lotes de 10
+    const batchSize = 10;
+    for (let i = 0; i < loadPromises.length; i += batchSize) {
+      const batch = loadPromises.slice(i, i + batchSize);
+      await Promise.all(batch);
+    }
+
     console.log(`📞 [CRMCallHandler] Nombres cargados (${Object.keys(names).length} entidades):`, names);
     setCallEntityNames(names);
   };
@@ -706,7 +782,7 @@ export function CRMCallHandler() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={loadRecentCalls}
+                  onClick={loadRecentCallsMemo}
                   disabled={loadingCalls}
                 >
                   <RefreshCw size={16} className={`mr-2 ${loadingCalls ? 'animate-spin' : ''}`} />

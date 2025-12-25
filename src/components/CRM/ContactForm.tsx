@@ -1,6 +1,7 @@
 // ContactForm - Formulario para crear/editar contactos
+// Optimizado con React.memo para evitar re-renders innecesarios
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import type { FormEvent } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ interface ContactFormProps {
   onCancel: () => void;
 }
 
-export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
+export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
   const [loading, setLoading] = useState(false);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [formData, setFormData] = useState({
@@ -440,5 +441,13 @@ export function ContactForm({ contact, onSubmit, onCancel }: ContactFormProps) {
       </CardContent>
     </Card>
   );
-}
+}, (prevProps, nextProps) => {
+  // Comparación personalizada: solo re-renderizar si cambian props relevantes
+  return (
+    prevProps.contact?.id === nextProps.contact?.id &&
+    prevProps.contact?.name === nextProps.contact?.name &&
+    prevProps.contact?.email === nextProps.contact?.email &&
+    prevProps.contact?.phone === nextProps.contact?.phone
+  );
+});
 

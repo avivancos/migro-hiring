@@ -31,6 +31,7 @@ const CRMLeadList = lazy(() => import('@/pages/CRMLeadList').then(m => ({ defaul
 const CRMLeadDetail = lazy(() => import('@/pages/CRMLeadDetail').then(m => ({ default: m.CRMLeadDetail })));
 const CRMOpportunities = lazy(() => import('@/pages/CRMOpportunities').then(m => ({ default: m.CRMOpportunities })));
 const CRMOpportunityDetail = lazy(() => import('@/pages/CRMOpportunityDetail').then(m => ({ default: m.CRMOpportunityDetail })));
+const CRMCaseAnalysis = lazy(() => import('@/pages/CRMCaseAnalysis').then(m => ({ default: m.CRMCaseAnalysis })));
 const CRMTaskCalendar = lazy(() => import('@/pages/CRMTaskCalendar').then(m => ({ default: m.CRMTaskCalendar })));
 const CRMSettings = lazy(() => import('@/pages/CRMSettings').then(m => ({ default: m.CRMSettings })));
 const CRMTaskTemplatesSettings = lazy(() => import('@/pages/CRMTaskTemplatesSettings').then(m => ({ default: m.CRMTaskTemplatesSettings })));
@@ -141,6 +142,7 @@ function AppContent() {
             {/* CRM Opportunities */}
             <Route path="opportunities" element={<LazyLoadWrapper fallback="skeleton" skeletonCount={5}><CRMOpportunities /></LazyLoadWrapper>} />
             <Route path="opportunities/:id" element={<LazyLoadWrapper fallback="spinner"><CRMOpportunityDetail /></LazyLoadWrapper>} />
+            <Route path="opportunities/:opportunityId/analyze" element={<LazyLoadWrapper fallback="spinner"><CRMCaseAnalysis /></LazyLoadWrapper>} />
             
             {/* CRM Calendar */}
             <Route path="calendar" element={<LazyLoadWrapper fallback="spinner"><CRMTaskCalendar /></LazyLoadWrapper>} />

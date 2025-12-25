@@ -1,6 +1,7 @@
 // NoteForm - Formulario para crear/editar notas
+// Optimizado con React.memo para evitar re-renders innecesarios
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import type { FormEvent } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,7 @@ interface NoteFormProps {
   onCancel: () => void;
 }
 
-export function NoteForm({
+export const NoteForm = memo(function NoteForm({
   note,
   defaultEntityType,
   defaultEntityId,
@@ -158,6 +159,13 @@ export function NoteForm({
       </CardContent>
     </Card>
   );
-}
+}, (prevProps, nextProps) => {
+  // Comparación personalizada: solo re-renderizar si cambian props relevantes
+  return (
+    prevProps.note?.id === nextProps.note?.id &&
+    prevProps.defaultEntityType === nextProps.defaultEntityType &&
+    prevProps.defaultEntityId === nextProps.defaultEntityId
+  );
+});
 
 

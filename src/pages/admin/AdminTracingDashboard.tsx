@@ -10,10 +10,6 @@ import type { PerformanceReport, PerformanceMetric } from '@/services/performanc
 import { usePerformanceReport } from '@/components/common/PerformanceMonitor';
 import { 
   Activity, 
-  TrendingUp, 
-  TrendingDown, 
-  Clock, 
-  Zap, 
   AlertTriangle,
   RefreshCw,
   Download,
@@ -27,6 +23,7 @@ import {
 export function AdminTracingDashboard() {
   const report = usePerformanceReport();
   const [autoRefresh, setAutoRefresh] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [slowThreshold, setSlowThreshold] = useState(1000); // 1 segundo
 
   useEffect(() => {
@@ -50,12 +47,27 @@ export function AdminTracingDashboard() {
   }
 
   // Análisis por módulos
-  const moduleAnalysis = (performanceTracingService as any).getModuleAnalysis 
-    ? (performanceTracingService as any).getModuleAnalysis() 
+  interface ModuleStats {
+    totalCount: number;
+    averageDuration: number;
+    pages: PerformanceMetric[];
+    components: PerformanceMetric[];
+    apiCalls: PerformanceMetric[];
+    slowestItems: PerformanceMetric[];
+  }
+  
+  interface RouteStats {
+    count: number;
+    averageDuration: number;
+    types: Record<string, number>;
+  }
+  
+  const moduleAnalysis: Record<string, ModuleStats> = (performanceTracingService as any).getModuleAnalysis 
+    ? (performanceTracingService as any).getModuleAnalysis()
     : {};
   
   // Análisis por rutas
-  const routeAnalysis = (performanceTracingService as any).getRouteAnalysis
+  const routeAnalysis: Record<string, RouteStats> = (performanceTracingService as any).getRouteAnalysis
     ? (performanceTracingService as any).getRouteAnalysis()
     : {};
 
@@ -209,39 +221,41 @@ export function AdminTracingDashboard() {
         <CardContent>
           <div className="space-y-4">
             {Object.entries(moduleAnalysis)
-              .sort(([, a], [, b]) => b.averageDuration - a.averageDuration)
-              .map(([module, stats]) => (
+              .sort(([, a], [, b]) => (b as ModuleStats).averageDuration - (a as ModuleStats).averageDuration)
+              .map(([module, stats]) => {
+                const moduleStats = stats as ModuleStats;
+                return (
                 <div key={module} className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <h3 className="font-semibold text-lg">{module}</h3>
-                      <Badge variant="secondary">{stats.totalCount} métricas</Badge>
+                      <Badge variant="secondary">{moduleStats.totalCount} métricas</Badge>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <p className="text-xs text-gray-500">Promedio</p>
-                        <p className={`font-bold ${getSeverityColor(stats.averageDuration)} px-2 py-1 rounded`}>
-                          {formatDuration(stats.averageDuration)}
+                        <p className={`font-bold ${getSeverityColor(moduleStats.averageDuration)} px-2 py-1 rounded`}>
+                          {formatDuration(moduleStats.averageDuration)}
                         </p>
                       </div>
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
-                      <p className="text-gray-600">Páginas: {stats.pages.length}</p>
+                      <p className="text-gray-600">Páginas: {moduleStats.pages.length}</p>
                     </div>
                     <div>
-                      <p className="text-gray-600">Componentes: {stats.components.length}</p>
+                      <p className="text-gray-600">Componentes: {moduleStats.components.length}</p>
                     </div>
                     <div>
-                      <p className="text-gray-600">APIs: {stats.apiCalls.length}</p>
+                      <p className="text-gray-600">APIs: {moduleStats.apiCalls.length}</p>
                     </div>
                   </div>
-                  {stats.slowestItems.length > 0 && (
+                  {moduleStats.slowestItems.length > 0 && (
                     <div className="mt-3 pt-3 border-t">
                       <p className="text-xs font-semibold text-gray-500 mb-2">Más lentos:</p>
                       <div className="space-y-1">
-                        {stats.slowestItems.slice(0, 3).map((item, idx) => (
+                        {moduleStats.slowestItems.slice(0, 3).map((item, idx) => (
                           <div key={idx} className="flex items-center justify-between text-xs">
                             <span className="text-gray-700">
                               {item.name || item.componentName || item.apiEndpoint || 'N/A'}
@@ -255,7 +269,8 @@ export function AdminTracingDashboard() {
                     </div>
                   )}
                 </div>
-              ))}
+              );
+              })}
           </div>
         </CardContent>
       </Card>
@@ -389,7 +404,9 @@ export function AdminTracingDashboard() {
           <div className="space-y-3">
             {Object.entries(routeAnalysis)
               .slice(0, 10) // Mostrar solo las 10 más lentas
-              .map(([route, stats]) => (
+              .map(([route, stats]) => {
+                const routeStats = stats as RouteStats;
+                return (
                 <div key={route} className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -397,21 +414,22 @@ export function AdminTracingDashboard() {
                       <p className="font-medium">{route}</p>
                     </div>
                     <Badge
-                      variant={stats.averageDuration > 5000 ? 'destructive' : 'secondary'}
+                      variant={routeStats.averageDuration > 5000 ? 'destructive' : 'secondary'}
                     >
-                      {formatDuration(stats.averageDuration)}
+                      {formatDuration(routeStats.averageDuration)}
                     </Badge>
                   </div>
                   <div className="flex items-center gap-4 text-xs text-gray-600">
-                    <span>{stats.count} métricas</span>
-                    {Object.entries(stats.types).map(([type, count]) => (
+                    <span>{routeStats.count} métricas</span>
+                    {Object.entries(routeStats.types).map(([type, count]) => (
                       <span key={type}>
-                        {type}: {count}
+                        {type}: {count as number}
                       </span>
                     ))}
                   </div>
                 </div>
-              ))}
+              );
+              })}
           </div>
         </CardContent>
       </Card>

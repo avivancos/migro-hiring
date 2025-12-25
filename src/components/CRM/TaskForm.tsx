@@ -1,6 +1,6 @@
 // TaskForm - Formulario para crear/editar tareas
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import type { FormEvent } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ interface TaskFormProps {
   onCancel: () => void;
 }
 
-export function TaskForm({ 
+export const TaskForm = memo(function TaskForm({ 
   task, 
   defaultEntityType, 
   defaultEntityId,
@@ -431,5 +431,13 @@ export function TaskForm({
       </CardContent>
     </Card>
   );
-}
+}, (prevProps, nextProps) => {
+  // Comparación personalizada: solo re-renderizar si cambian props relevantes
+  return (
+    prevProps.task?.id === nextProps.task?.id &&
+    prevProps.defaultEntityType === nextProps.defaultEntityType &&
+    prevProps.defaultEntityId === nextProps.defaultEntityId &&
+    prevProps.defaultText === nextProps.defaultText
+  );
+});
 

@@ -1,6 +1,7 @@
 // CallForm - Formulario para registrar llamadas con seguimiento
+// Optimizado con React.memo para evitar re-renders innecesarios
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import type { FormEvent } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,7 +22,7 @@ interface CallFormProps {
   onCancel: () => void;
 }
 
-export function CallForm({
+export const CallForm = memo(function CallForm({
   call,
   defaultEntityType,
   defaultEntityId,
@@ -1223,6 +1224,14 @@ export function CallForm({
       </CardContent>
     </Card>
   );
-}
+}, (prevProps, nextProps) => {
+  // Comparación personalizada: solo re-renderizar si cambian props relevantes
+  return (
+    prevProps.call?.id === nextProps.call?.id &&
+    prevProps.defaultEntityType === nextProps.defaultEntityType &&
+    prevProps.defaultEntityId === nextProps.defaultEntityId &&
+    prevProps.defaultPhone === nextProps.defaultPhone
+  );
+});
 
 
