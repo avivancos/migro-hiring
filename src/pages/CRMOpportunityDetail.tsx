@@ -10,13 +10,15 @@ import { OpportunityScore } from '@/components/opportunities/OpportunityScore';
 import { FirstCallAttemptsRow } from '@/components/opportunities/FirstCallAttemptsRow';
 import { FirstCallAttemptDetail } from '@/components/opportunities/FirstCallAttemptDetail';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { ArrowLeft, Phone, Mail, MapPin, User } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, User, Activity } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getDetectionReasonBadges } from '@/utils/opportunity';
 import { opportunityApi } from '@/services/opportunityApi';
 import { useQueryClient } from '@tanstack/react-query';
 import type { FirstCallAttemptRequest } from '@/types/opportunity';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { PipelineWizardModal } from '@/components/pipelines/Wizards/PipelineWizardModal';
+import { PipelineActionsList } from '@/components/pipelines/PipelineActionsList';
 
 export function CRMOpportunityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +26,7 @@ export function CRMOpportunityDetail() {
   const queryClient = useQueryClient();
   const [selectedAttempt, setSelectedAttempt] = useState<number | null>(null);
   const [isSavingAttempt, setIsSavingAttempt] = useState(false);
+  const [showPipelineWizard, setShowPipelineWizard] = useState(false);
 
   const {
     opportunity,
@@ -31,7 +34,15 @@ export function CRMOpportunityDetail() {
     error,
     createPipeline,
     isUpdating,
+    isCreatingPipeline,
   } = useOpportunityDetail(id);
+
+  // IMPORTANTE: usePageTitle debe llamarse ANTES de los early returns
+  // para cumplir con las reglas de los hooks de React
+  const opportunityTitle = opportunity?.contact?.name 
+    ? `${opportunity.contact.name} - Detalle de Oportunidad | Migro.es`
+    : 'Detalle de Oportunidad | Migro.es';
+  usePageTitle(opportunityTitle);
 
   if (isLoading) {
     return (
@@ -105,12 +116,6 @@ export function CRMOpportunityDetail() {
   const selectedAttemptData = selectedAttempt
     ? opportunity.first_call_attempts?.[selectedAttempt.toString()] || null
     : null;
-
-  // Actualizar título de la página con el nombre del contacto asociado
-  const opportunityTitle = contact?.name 
-    ? `${contact.name} - Detalle de Oportunidad | Migro.es`
-    : 'Detalle de Oportunidad | Migro.es';
-  usePageTitle(opportunityTitle);
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -213,34 +218,81 @@ export function CRMOpportunityDetail() {
 
         {/* Sidebar con acciones */}
         <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Acciones</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button
-                className="w-full"
-                onClick={() => createPipeline()}
-                disabled={isUpdating}
-              >
-                Crear Pipeline
-              </Button>
-              <Button
-                variant="default"
-                className="w-full bg-purple-600 hover:bg-purple-700"
-                onClick={() => navigate(`/crm/opportunities/${opportunity.id}/analyze`)}
-              >
-                Analizar Caso
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => navigate(`/crm/contacts/${opportunity.contact_id}`)}
-              >
-                Ver Contacto
-              </Button>
-            </CardContent>
-          </Card>
+          {/* Si existe pipeline, mostrar acciones del pipeline */}
+          {opportunity.pipeline_stage_id || opportunity.pipeline_stage ? (
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Acciones del Pipeline</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PipelineActionsList
+                    entityType="leads"
+                    entityId={opportunity.id}
+                    showCreateButton={true}
+                  />
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Otras Acciones</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Button
+                    variant="default"
+                    className="w-full bg-purple-600 hover:bg-purple-700"
+                    onClick={() => navigate(`/crm/opportunities/${opportunity.id}/analyze`)}
+                  >
+                    Pedir a Pili que analice el caso
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setShowPipelineWizard(true)}
+                  >
+                    <Activity className="h-4 w-4 mr-2" />
+                    Modificar Pipeline
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => navigate(`/crm/contacts/${opportunity.contact_id}`)}
+                  >
+                    Ver Contacto
+                  </Button>
+                </CardContent>
+              </Card>
+            </>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Acciones</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button
+                  className="w-full"
+                  onClick={() => createPipeline()}
+                  disabled={isUpdating || isCreatingPipeline}
+                >
+                  Crear Pipeline
+                </Button>
+                <Button
+                  variant="default"
+                  className="w-full bg-purple-600 hover:bg-purple-700"
+                  onClick={() => navigate(`/crm/opportunities/${opportunity.id}/analyze`)}
+                >
+                  Pedir a Pili que analice el caso
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate(`/crm/contacts/${opportunity.contact_id}`)}
+                >
+                  Ver Contacto
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Estado */}
           <Card>
@@ -292,6 +344,21 @@ export function CRMOpportunityDetail() {
           onSave={handleSaveAttempt}
           isLoading={isSavingAttempt}
           opportunityId={id || ''}
+        />
+      )}
+      
+      {/* Modal del Wizard de Pipeline */}
+      {id && opportunity && (
+        <PipelineWizardModal
+          isOpen={showPipelineWizard}
+          onClose={() => setShowPipelineWizard(false)}
+          entityType="leads"
+          entityId={id}
+          onComplete={(changes) => {
+            console.log('Pipeline modificado:', changes);
+            // Recargar datos de la oportunidad
+            queryClient.invalidateQueries({ queryKey: ['opportunity', id] });
+          }}
         />
       )}
     </div>

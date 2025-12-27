@@ -170,6 +170,12 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - Frontend: Modificado para usar `pipelineApi.createOrUpdateStage()` con `entity_type: 'leads'` ✅
   - Estado: Funcional - El botón "Crear Pipeline" ahora funciona correctamente ✅
   - Documentación: `docs/BACKEND_OPPORTUNITIES_PIPELINE_ENDPOINT_404.md` ✅
+- [ ] **🔴 Creación Automática de Pipeline para Oportunidades**: Pendiente implementación en backend 🚨
+  - Requerimiento: Cada oportunidad debe tener un pipeline asociado automáticamente al crearse (relación 1:1:1)
+  - Frontend: Ya actualizado para asumir que siempre existe pipeline (botón "Crear Pipeline" oculto cuando existe) ✅
+  - Backend: Pendiente modificar endpoint de creación para crear pipeline automático ⏳
+  - Migración: Pendiente script para crear pipelines a oportunidades existentes sin pipeline ⏳
+  - Documentación: `docs/BACKEND_OPPORTUNITIES_PIPELINE_AUTO_CREATE.md` ✅
 - [ ] **Error 405 en endpoint `/expedientes/`**: El backend no acepta solicitudes GET ⏳
   - Frontend: Manejo de errores mejorado ✅
   - Backend: Pendiente implementar endpoint `GET /api/expedientes/` ⏳

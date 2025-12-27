@@ -57,6 +57,8 @@ const AdminContractDetail = lazy(() => import('@/pages/admin/AdminContractDetail
 const AdminContractCreate = lazy(() => import('@/pages/admin/AdminContractCreate').then(m => ({ default: m.AdminContractCreate })));
 const AdminCallTypes = lazy(() => import('@/pages/admin/AdminCallTypes').then(m => ({ default: m.AdminCallTypes })));
 const AdminTracingDashboard = lazy(() => import('@/pages/admin/AdminTracingDashboard').then(m => ({ default: m.AdminTracingDashboard })));
+const AdminRoutePermissions = lazy(() => import('@/pages/admin/AdminRoutePermissions').then(m => ({ default: m.AdminRoutePermissions })));
+const AdminOpportunities = lazy(() => import('@/pages/admin/AdminOpportunities').then(m => ({ default: m.AdminOpportunities })));
 
 function AppContent() {
   // Activar refresh automático de tokens
@@ -112,7 +114,9 @@ function AppContent() {
             <Route path="contracts/create" element={<LazyLoadWrapper fallback="spinner"><AdminContractCreate /></LazyLoadWrapper>} />
             <Route path="contracts/:code" element={<LazyLoadWrapper fallback="spinner"><AdminContractDetail /></LazyLoadWrapper>} />
             <Route path="call-types" element={<LazyLoadWrapper fallback="spinner"><AdminCallTypes /></LazyLoadWrapper>} />
+            <Route path="route-permissions" element={<LazyLoadWrapper fallback="spinner"><AdminRoutePermissions /></LazyLoadWrapper>} />
             <Route path="tracing" element={<LazyLoadWrapper fallback="spinner"><AdminTracingDashboard /></LazyLoadWrapper>} />
+            <Route path="opportunities" element={<LazyLoadWrapper fallback="skeleton" skeletonCount={5}><AdminOpportunities /></LazyLoadWrapper>} />
           </Route>
           
           {/* CRM Routes with Layout */}

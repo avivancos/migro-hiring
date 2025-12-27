@@ -247,3 +247,7 @@ const shouldVirtualize = useVirtualization(contacts.length, 50);
 - React.memo: https://react.dev/reference/react/memo
 - Virtualización: https://web.dev/virtualize-long-lists-react-window/
 
+
+
+
+

@@ -63,14 +63,14 @@ export function Drawer({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
       
       {/* Drawer */}
       <div
         className={cn(
-          'fixed top-0 bottom-0 z-50 bg-white shadow-xl flex flex-col',
+          'fixed top-0 bottom-0 z-[110] bg-white shadow-xl flex flex-col',
           side === 'left' ? 'left-0' : 'right-0',
           sizeClasses[size],
           'animate-in slide-in-from-left duration-300',

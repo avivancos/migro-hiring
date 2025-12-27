@@ -162,3 +162,7 @@ export const ContactCard = memo<ContactCardProps>(({ contact, onNavigate }) => {
 
 ContactCard.displayName = 'ContactCard';
 
+
+
+
+

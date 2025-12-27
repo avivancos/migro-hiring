@@ -7,14 +7,18 @@ import {
   Shield, 
   MessageSquare, 
   Phone,
-  Activity
+  Activity,
+  Lock,
+  Briefcase
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Usuarios', href: '/admin/users', icon: Users },
+  { name: 'Oportunidades', href: '/admin/opportunities', icon: Briefcase },
   { name: 'Contratos', href: '/admin/contracts', icon: FileText },
   { name: 'Tipos de Llamadas', href: '/admin/call-types', icon: Phone },
+  { name: 'Permisos de Rutas', href: '/admin/route-permissions', icon: Lock },
   { name: 'Auditoría', href: '/admin/audit-logs', icon: Shield },
   { name: 'Conversaciones', href: '/admin/conversations', icon: MessageSquare },
   { name: 'Tracing', href: '/admin/tracing', icon: Activity },

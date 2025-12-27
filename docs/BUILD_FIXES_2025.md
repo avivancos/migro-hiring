@@ -237,3 +237,7 @@ Chunks generados:
 - **Build exitoso**: `npm run build` completado sin errores
 - **Tiempo de build**: 22.69 segundos
 
+
+
+
+

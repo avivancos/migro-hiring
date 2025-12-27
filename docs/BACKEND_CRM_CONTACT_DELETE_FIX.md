@@ -222,3 +222,7 @@ Todos estos endpoints ahora deberían funcionar correctamente sin errores 500 re
 
 
 
+
+
+
+

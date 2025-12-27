@@ -4,6 +4,8 @@ import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { crmService } from '@/services/crmService';
 import type { KommoContact, KommoLead, Task, Call, Note, CallCreateRequest, TaskCreateRequest, NoteCreateRequest } from '@/types/crm';
@@ -34,7 +36,8 @@ import { useAuth } from '@/providers/AuthProvider';
 import { Trash2 } from 'lucide-react';
 import { formatCallStatus } from '@/utils/statusTranslations';
 import { usePageTitle } from '@/hooks/usePageTitle';
-export function CRMContactDetail() {
+import { PipelineWizardModal } from '@/components/pipelines/Wizards/PipelineWizardModal';
+import { opportunityApi } from '@/services/opportunityApi';
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -50,7 +53,16 @@ export function CRMContactDetail() {
   const [showCallForm, setShowCallForm] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [showNoteForm, setShowNoteForm] = useState(false);
+  const [showEditProximaAccion, setShowEditProximaAccion] = useState(false);
+  const [editingProximaAccionFecha, setEditingProximaAccionFecha] = useState('');
+  const [editingProximaAccionType, setEditingProximaAccionType] = useState<'call' | 'task' | null>(null);
+  const [editingProximaAccionId, setEditingProximaAccionId] = useState<string | null>(null);
+  const [editingProximaAccionField, setEditingProximaAccionField] = useState<'proxima_accion_fecha' | 'proxima_llamada_fecha' | 'complete_till' | null>(null);
+  const [updatingProximaAccion, setUpdatingProximaAccion] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showPipelineWizard, setShowPipelineWizard] = useState(false);
+  const [relatedOpportunities, setRelatedOpportunities] = useState<any[]>([]);
+  const [loadingOpportunities, setLoadingOpportunities] = useState(false);
   const { isAdmin } = useAuth();
   
   // Ref para evitar recargas innecesarias
@@ -98,6 +110,22 @@ export function CRMContactDetail() {
       
       setNotes(notesData.items || []);
       setUsers(usersData);
+      
+      // Cargar oportunidades relacionadas
+      if (contactData?.id) {
+        setLoadingOpportunities(true);
+        try {
+          const oppsResponse = await opportunityApi.list({ limit: 10 });
+          const related = (oppsResponse.opportunities || []).filter(
+            (opp: any) => opp.contact_id === contactData.id
+          );
+          setRelatedOpportunities(related);
+        } catch (err) {
+          console.error('Error cargando oportunidades:', err);
+        } finally {
+          setLoadingOpportunities(false);
+        }
+      }
     } catch (error) {
       console.error('Error loading contact data:', error);
       setError('Error al cargar los datos del contacto');
@@ -246,6 +274,155 @@ export function CRMContactDetail() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Helper para obtener el trámite sugerido
+  const getTramiteSugerido = (): string | null => {
+    const servicioPropuesto = contact?.custom_fields?.servicio_propuesto;
+    if (!servicioPropuesto) return null;
+    
+    const tramiteMap: Record<string, string> = {
+      'asilo_proteccion_internacional': 'Asilo/Protección Internacional',
+      'arraigo': 'Arraigo',
+      'reagrupacion_familiar': 'Reagrupación Familiar',
+      'nacionalidad': 'Nacionalidad',
+    };
+    
+    return tramiteMap[servicioPropuesto] || servicioPropuesto;
+  };
+
+  // Helper para obtener la fecha de próxima llamada/acción y su origen
+  const getProximaAccionInfo = (): { fecha: string | null; type: 'call' | 'task' | null; id: string | null; field: 'proxima_accion_fecha' | 'proxima_llamada_fecha' | 'complete_till' | null } => {
+    if (!calls || calls.length === 0) {
+      // Solo buscar en tareas si no hay llamadas
+      if (tasks && tasks.length > 0) {
+        const now = new Date().getTime();
+        const tareasPendientes = tasks.filter(t => !t.is_completed && t.complete_till);
+        let proximaFecha: string | null = null;
+        let taskId: string | null = null;
+        
+        for (const task of tareasPendientes) {
+          if (task.complete_till) {
+            const fecha = new Date(task.complete_till).getTime();
+            if (fecha > now) {
+              if (!proximaFecha || fecha < new Date(proximaFecha).getTime()) {
+                proximaFecha = task.complete_till;
+                taskId = task.id;
+              }
+            }
+          }
+        }
+        
+        return { fecha: proximaFecha, type: taskId ? 'task' : null, id: taskId, field: 'complete_till' };
+      }
+      return { fecha: null, type: null, id: null, field: null };
+    }
+    
+    // Buscar en las llamadas más recientes
+    const now = new Date().getTime();
+    let proximaFecha: string | null = null;
+    let callId: string | null = null;
+    let field: 'proxima_accion_fecha' | 'proxima_llamada_fecha' | null = null;
+    
+    // Buscar proxima_accion_fecha primero (más específico)
+    for (const call of calls) {
+      if (call.proxima_accion_fecha) {
+        const fecha = new Date(call.proxima_accion_fecha).getTime();
+        if (fecha > now) {
+          if (!proximaFecha || fecha < new Date(proximaFecha).getTime()) {
+            proximaFecha = call.proxima_accion_fecha;
+            callId = call.id;
+            field = 'proxima_accion_fecha';
+          }
+        }
+      }
+    }
+    
+    // Si no hay proxima_accion_fecha, buscar proxima_llamada_fecha
+    if (!proximaFecha) {
+      for (const call of calls) {
+        if (call.proxima_llamada_fecha) {
+          const fecha = new Date(call.proxima_llamada_fecha).getTime();
+          if (fecha > now) {
+            if (!proximaFecha || fecha < new Date(proximaFecha).getTime()) {
+              proximaFecha = call.proxima_llamada_fecha;
+              callId = call.id;
+              field = 'proxima_llamada_fecha';
+            }
+          }
+        }
+      }
+    }
+    
+    // También buscar en tareas pendientes si no hay fecha en llamadas
+    if (!proximaFecha && tasks && tasks.length > 0) {
+      const tareasPendientes = tasks.filter(t => !t.is_completed && t.complete_till);
+      for (const task of tareasPendientes) {
+        if (task.complete_till) {
+          const fecha = new Date(task.complete_till).getTime();
+          if (fecha > now) {
+            if (!proximaFecha || fecha < new Date(proximaFecha).getTime()) {
+              proximaFecha = task.complete_till;
+              callId = null;
+              return { fecha: proximaFecha, type: 'task', id: task.id, field: 'complete_till' };
+            }
+          }
+        }
+      }
+    }
+    
+    return { fecha: proximaFecha, type: callId ? 'call' : null, id: callId, field };
+  };
+
+  // Helper para obtener solo la fecha (compatibilidad)
+  const getProximaAccionFecha = (): string | null => {
+    return getProximaAccionInfo().fecha;
+  };
+
+  // Función para abrir el modal de edición de próxima acción
+  const handleEditProximaAccion = () => {
+    const info = getProximaAccionInfo();
+    if (info.fecha && info.id && info.type && info.field) {
+      setEditingProximaAccionFecha(new Date(info.fecha).toISOString().slice(0, 16));
+      setEditingProximaAccionType(info.type);
+      setEditingProximaAccionId(info.id);
+      setEditingProximaAccionField(info.field);
+      setShowEditProximaAccion(true);
+    }
+  };
+
+  // Función para guardar la fecha de próxima acción
+  const handleSaveProximaAccion = async () => {
+    if (!editingProximaAccionId || !editingProximaAccionType || !editingProximaAccionFecha || !editingProximaAccionField) return;
+    
+    setUpdatingProximaAccion(true);
+    try {
+      if (editingProximaAccionType === 'call') {
+        const updates: any = {};
+        if (editingProximaAccionField === 'proxima_accion_fecha') {
+          updates.proxima_accion_fecha = new Date(editingProximaAccionFecha).toISOString();
+        } else if (editingProximaAccionField === 'proxima_llamada_fecha') {
+          updates.proxima_llamada_fecha = new Date(editingProximaAccionFecha).toISOString();
+        }
+        await crmService.updateCall(editingProximaAccionId, updates);
+      } else if (editingProximaAccionType === 'task') {
+        await crmService.updateTask(editingProximaAccionId, {
+          complete_till: new Date(editingProximaAccionFecha).toISOString(),
+        });
+      }
+      
+      await loadContactData();
+      setShowEditProximaAccion(false);
+      setEditingProximaAccionFecha('');
+      setEditingProximaAccionType(null);
+      setEditingProximaAccionId(null);
+      setEditingProximaAccionField(null);
+    } catch (err: any) {
+      console.error('Error updating próxima acción:', err);
+      alert('Error al actualizar la fecha de próxima acción');
+    } finally {
+      setUpdatingProximaAccion(false);
+    }
   };
 
   const handleCallSubmit = async (callData: CallCreateRequest) => {
@@ -544,6 +721,12 @@ export function CRMContactDetail() {
                       <span className="text-sm">{contact.city}{contact.state ? `, ${contact.state}` : ''}</span>
                     </div>
                   )}
+                  {contact.state && !contact.city && (
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <MapPin className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm">Provincia: {contact.state}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -555,6 +738,16 @@ export function CRMContactDetail() {
                     <div className="text-sm text-gray-700">
                       <span className="font-medium">Tiempo en España: </span>
                       <span>{contact.tiempo_espana}</span>
+                    </div>
+                  )}
+                  {contact.custom_fields?.fecha_llegada_espana && (
+                    <div className="text-sm text-gray-700">
+                      <span className="font-medium">Fecha de Llegada: </span>
+                      <span>{new Date(contact.custom_fields.fecha_llegada_espana).toLocaleDateString('es-ES', {
+                        day: '2-digit',
+                        month: 'long',
+                        year: 'numeric'
+                      })}</span>
                     </div>
                   )}
                   <div className="text-sm text-gray-700">
@@ -578,40 +771,91 @@ export function CRMContactDetail() {
                 </div>
               </div>
 
-              {/* Columna 3: Gradings (solo si hay llamadas previas) */}
-              {calls.length > 0 && (contact.grading_llamada || contact.grading_situacion) && (
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">Evaluación</h3>
-                  <div className="flex flex-col gap-2">
-                    {contact.grading_llamada && (
-                      <div>
-                        <span className="text-xs text-gray-600 mb-1 block">Interés (Llamada)</span>
-                        <span
-                          className={`inline-block text-sm px-3 py-2 rounded-full border ${getGradingColor(
-                            contact.grading_llamada
-                          )}`}
-                        >
-                          <Star className="w-3 h-3 inline mr-1" />
-                          {contact.grading_llamada}
-                        </span>
+              {/* Columna 3: Evaluación */}
+              <div>
+                <h3 className="font-semibold text-gray-900 mb-3">Evaluación</h3>
+                <div className="flex flex-col gap-3">
+                  {/* Gradings */}
+                  {(contact.grading_llamada || contact.grading_situacion) && (
+                    <div className="flex flex-col gap-2">
+                      {contact.grading_llamada && (
+                        <div>
+                          <span className="text-xs text-gray-600 mb-1 block">Interés (Llamada)</span>
+                          <span
+                            className={`inline-block text-sm px-3 py-2 rounded-full border ${getGradingColor(
+                              contact.grading_llamada
+                            )}`}
+                          >
+                            <Star className="w-3 h-3 inline mr-1" />
+                            {contact.grading_llamada}
+                          </span>
+                        </div>
+                      )}
+                      {contact.grading_situacion && (
+                        <div>
+                          <span className="text-xs text-gray-600 mb-1 block">Situación Administrativa</span>
+                          <span
+                            className={`inline-block text-sm px-3 py-2 rounded-full border ${getGradingColor(
+                              contact.grading_situacion
+                            )}`}
+                          >
+                            <Star className="w-3 h-3 inline mr-1" />
+                            {contact.grading_situacion}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Trámite Sugerido */}
+                  {getTramiteSugerido() && (
+                    <div>
+                      <span className="text-xs text-gray-600 mb-1 block">Trámite Sugerido</span>
+                      <div className="flex items-center gap-2 text-sm text-gray-900 bg-blue-50 border border-blue-200 rounded-md px-3 py-2">
+                        <FileText className="w-4 h-4 text-blue-600" />
+                        <span>{getTramiteSugerido()}</span>
                       </div>
-                    )}
-                    {contact.grading_situacion && (
-                      <div>
-                        <span className="text-xs text-gray-600 mb-1 block">Situación Administrativa</span>
-                        <span
-                          className={`inline-block text-sm px-3 py-2 rounded-full border ${getGradingColor(
-                            contact.grading_situacion
-                          )}`}
+                    </div>
+                  )}
+                  
+                  {/* Fecha de Nueva Llamada / Acción */}
+                  {getProximaAccionFecha() && (
+                    <div>
+                      <span className="text-xs text-gray-600 mb-1 block">Fecha de Nueva Llamada / Acción</span>
+                      <div className={`flex items-center justify-between gap-2 text-sm rounded-md px-3 py-2 ${
+                        new Date(getProximaAccionFecha()!).getTime() < new Date().getTime()
+                          ? 'bg-red-50 border border-red-200 text-red-700 font-semibold'
+                          : 'bg-green-50 border border-green-200 text-green-700'
+                      }`}>
+                        <div className="flex items-center gap-2 flex-1">
+                          <Calendar className={`w-4 h-4 ${
+                            new Date(getProximaAccionFecha()!).getTime() < new Date().getTime()
+                              ? 'text-red-600'
+                              : 'text-green-600'
+                          }`} />
+                          <span>{formatDate(getProximaAccionFecha()!)}</span>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleEditProximaAccion}
+                          className="h-7 px-2 text-xs hover:bg-white/50"
                         >
-                          <Star className="w-3 h-3 inline mr-1" />
-                          {contact.grading_situacion}
-                        </span>
+                          <Edit className="w-3 h-3" />
+                        </Button>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
+                  
+                  {/* Mensaje si no hay información de evaluación */}
+                  {!contact.grading_llamada && !contact.grading_situacion && !getTramiteSugerido() && !getProximaAccionFecha() && (
+                    <div className="text-xs text-gray-500 italic">
+                      No hay información de evaluación disponible
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Botones de Acción */}
@@ -638,6 +882,14 @@ export function CRMContactDetail() {
               >
                 <FileText className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="sm:inline">Nueva Nota</span>
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowPipelineWizard(true)}
+                className="bg-white hover:bg-blue-50 border-blue-300 text-blue-700 flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
+              >
+                <Activity className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="sm:inline">Pipeline</span>
               </Button>
             </div>
           </CardContent>
@@ -694,6 +946,33 @@ export function CRMContactDetail() {
                           <Calendar className="w-4 h-4 text-gray-400" />
                           <span className="text-sm text-gray-600">Tiempo en España:</span>
                           <span className="text-sm font-medium">{contact.tiempo_espana}</span>
+                        </div>
+                      )}
+                      {contact.custom_fields?.fecha_llegada_espana && (
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm text-gray-600">Fecha de Llegada:</span>
+                          <span className="text-sm font-medium">
+                            {new Date(contact.custom_fields.fecha_llegada_espana).toLocaleDateString('es-ES', {
+                              day: '2-digit',
+                              month: 'long',
+                              year: 'numeric'
+                            })}
+                          </span>
+                        </div>
+                      )}
+                      {contact.city && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm text-gray-600">Ciudad:</span>
+                          <span className="text-sm font-medium">{contact.city}</span>
+                        </div>
+                      )}
+                      {contact.state && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm text-gray-600">Provincia:</span>
+                          <span className="text-sm font-medium">{contact.state}</span>
                         </div>
                       )}
                     </div>
@@ -1292,6 +1571,84 @@ export function CRMContactDetail() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal de Edición de Próxima Acción */}
+      {showEditProximaAccion && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-4 sm:p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg sm:text-xl font-bold text-gray-900">Editar Fecha de Próxima Acción</h2>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowEditProximaAccion(false);
+                    setEditingProximaAccionFecha('');
+                    setEditingProximaAccionType(null);
+                    setEditingProximaAccionId(null);
+                    setEditingProximaAccionField(null);
+                  }}
+                  size="sm"
+                  className="h-8 w-8 sm:h-9 sm:w-9 p-0"
+                >
+                  ✕
+                </Button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="proxima_accion_fecha_edit">Fecha y Hora</Label>
+                  <Input
+                    id="proxima_accion_fecha_edit"
+                    type="datetime-local"
+                    value={editingProximaAccionFecha}
+                    onChange={(e) => setEditingProximaAccionFecha(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 pt-4 border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowEditProximaAccion(false);
+                      setEditingProximaAccionFecha('');
+                      setEditingProximaAccionType(null);
+                      setEditingProximaAccionId(null);
+                      setEditingProximaAccionField(null);
+                    }}
+                    disabled={updatingProximaAccion}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleSaveProximaAccion}
+                    disabled={updatingProximaAccion || !editingProximaAccionFecha}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    {updatingProximaAccion ? 'Guardando...' : 'Guardar'}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Modal del Wizard de Pipeline */}
+      {id && (
+        <PipelineWizardModal
+          isOpen={showPipelineWizard}
+          onClose={() => setShowPipelineWizard(false)}
+          entityType="contacts"
+          entityId={id}
+          onComplete={(changes) => {
+            console.log('Pipeline modificado:', changes);
+            // Recargar datos del contacto
+            loadContactDataMemo();
+          }}
+        />
       )}
     </div>
     </>

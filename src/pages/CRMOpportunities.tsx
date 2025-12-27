@@ -4,9 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { OpportunityList } from '@/components/opportunities/OpportunityList';
 import { crmService } from '@/services/crmService';
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/providers/AuthProvider';
+import { isAgent } from '@/utils/searchValidation';
 
 export function CRMOpportunities() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const userIsAgent = user ? isAgent(user.role) : false;
   const [availableAgents, setAvailableAgents] = useState<
     Array<{ id: string; name: string }>
   >([]);
@@ -43,6 +47,7 @@ export function CRMOpportunities() {
       <OpportunityList
         onOpportunitySelect={handleOpportunitySelect}
         availableAgents={availableAgents}
+        filters={userIsAgent && user?.id ? { assigned_to: user.id } : undefined}
       />
     </div>
   );

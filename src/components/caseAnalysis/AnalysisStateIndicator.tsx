@@ -2,7 +2,7 @@
 
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, AlertTriangle } from 'lucide-react';
+import { AlertCircle, AlertTriangle, User } from 'lucide-react';
 import { AnalysisState } from '@/types/caseAnalysis';
 
 interface AnalysisStateIndicatorProps {
@@ -20,8 +20,13 @@ export function AnalysisStateIndicator({
     case AnalysisState.LOADING:
       return (
         <div className={`flex flex-col items-center justify-center py-12 ${className || ''}`}>
-          <LoadingSpinner size="lg" />
-          <p className="mt-4 text-gray-600 text-center">Analizando caso...</p>
+          <div className="relative mb-4">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <LoadingSpinner size="lg" />
+            </div>
+            <User className="h-16 w-16 text-purple-600 relative z-10" strokeWidth={1.5} />
+          </div>
+          <p className="mt-4 text-gray-600 text-center font-medium">Pili está analizando el caso</p>
         </div>
       );
 

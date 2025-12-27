@@ -31,6 +31,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
 import { formatContractStatus, formatCallStatus, formatLeadStatus, formatPriority } from '@/utils/statusTranslations';
+import { opportunityApi } from '@/services/opportunityApi';
+import { isAgent, isAdminOrSuperuser } from '@/utils/searchValidation';
 
 export function CRMDashboardPage() {
   // Medir rendimiento de la página
@@ -50,6 +52,12 @@ export function CRMDashboardPage() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [weekCalls, setWeekCalls] = useState<Record<string, Call[]>>({});
   const [weekTasks, setWeekTasks] = useState<Record<string, Task[]>>({});
+  const [myOpportunitiesCount, setMyOpportunitiesCount] = useState<number>(0);
+  const [recentOpportunities, setRecentOpportunities] = useState<any[]>([]);
+  
+  // Determinar si el usuario es agente
+  const userIsAgent = user ? isAgent(user.role) : false;
+  const userIsAdmin = user ? isAdminOrSuperuser(user.role, user.is_superuser) : false;
 
   // Solo cargar datos si está autenticado
   useEffect(() => {
@@ -73,11 +81,9 @@ export function CRMDashboardPage() {
       endOfWeek.setHours(23, 59, 59, 999);
 
       // Cargar datos en paralelo desde el backend
-      // Usar contactos directamente ya que los leads están unificados con contactos
-      const [allContacts, pipelinesData, totalCount, contractsResponse, weekCallsData, weekTasksData] = await Promise.all([
-        crmService.getAllContacts().catch(() => []), // Cargar todos los contactos (los leads ahora son contactos)
+      // Para agentes, cargar solo sus oportunidades asignadas
+      const loadPromises: Promise<any>[] = [
         crmService.getPipelines().catch(() => []), // Si pipelines no está implementado, usar array vacío
-        crmService.getContactsCount().catch(() => 0), // Obtener el conteo real del backend
         contractsService.getContracts({ limit: 10, skip: 0 }).catch(() => ({ items: [], total: 0 })), // Obtener últimos contratos
         crmService.getCalendarCalls({
           start_date: startOfWeek.toISOString(),
@@ -87,12 +93,53 @@ export function CRMDashboardPage() {
           start_date: startOfWeek.toISOString(),
           end_date: endOfWeek.toISOString(),
         }).catch(() => []), // Obtener tareas de la semana actual
-      ]);
+      ];
+      
+      // Solo cargar contactos y contar si no es agente
+      if (!userIsAgent) {
+        loadPromises.push(
+          crmService.getAllContacts().catch(() => []), // Cargar todos los contactos
+          crmService.getContactsCount().catch(() => 0) // Obtener el conteo real del backend
+        );
+      } else {
+        // Para agentes, no cargar contactos ni contar
+        loadPromises.push(Promise.resolve([]), Promise.resolve(0));
+      }
+      
+      // Cargar oportunidades: todas para admins, solo asignadas para agentes
+      if (userIsAgent && user?.id) {
+        loadPromises.push(
+          opportunityApi.list({ assigned_to: user.id, limit: 1000 }).catch(() => ({ opportunities: [], total: 0 }))
+        );
+      } else {
+        // Para admins, cargar oportunidades recientes (últimas 10)
+        loadPromises.push(
+          opportunityApi.list({ limit: 10, page: 1 }).catch(() => ({ opportunities: [], total: 0 }))
+        );
+      }
+      
+      const [pipelinesData, contractsResponse, weekCallsData, weekTasksData, allContacts, totalCount, opportunitiesResponse] = await Promise.all(loadPromises);
 
       // Los contactos ahora incluyen todos los campos de leads (service_type, status, etc.)
       // Usar contactos directamente como "leads" (son lo mismo ahora)
-      setLeads(allContacts as any);
-      setTotalContactsCount(totalCount);
+      // Para agentes, no establecer contactos ni total
+      if (!userIsAgent) {
+        setLeads(allContacts as any);
+        setTotalContactsCount(totalCount);
+      } else {
+        setLeads([]);
+        setTotalContactsCount(0);
+        // Establecer conteo de oportunidades asignadas
+        setMyOpportunitiesCount(opportunitiesResponse?.total || 0);
+      }
+      
+      // Guardar oportunidades recientes para mostrar en dashboard (para todos)
+      if (opportunitiesResponse?.opportunities) {
+        const sorted = opportunitiesResponse.opportunities
+          .sort((a: any, b: any) => new Date(b.detected_at || b.created_at).getTime() - new Date(a.detected_at || a.created_at).getTime())
+          .slice(0, 5);
+        setRecentOpportunities(sorted);
+      }
       setTotalContractsCount(contractsResponse.total || 0);
       
       // Ordenar contratos por fecha (más recientes primero)
@@ -372,20 +419,40 @@ export function CRMDashboardPage() {
   return (
     <div className="w-full space-y-4 sm:space-y-6">
         {/* Cards de Estadísticas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <Card className="border-l-4 border-l-blue-500">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Contactos Totales</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">{totalContactsCount}</p>
+        <div className={`grid grid-cols-1 sm:grid-cols-2 ${userIsAgent ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-3 sm:gap-4`}>
+          {/* Ocultar "Contactos Totales" para agentes */}
+          {!userIsAgent && (
+            <Card className="border-l-4 border-l-blue-500">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Contactos Totales</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{totalContactsCount}</p>
+                  </div>
+                  <div className="p-3 bg-blue-100 rounded-full">
+                    <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                  </div>
                 </div>
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+              </CardContent>
+            </Card>
+          )}
+          
+          {/* Para agentes, mostrar solo sus oportunidades asignadas */}
+          {userIsAgent && (
+            <Card className="border-l-4 border-l-purple-500">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Mis Oportunidades</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{myOpportunitiesCount}</p>
+                  </div>
+                  <div className="p-3 bg-purple-100 rounded-full">
+                    <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
 
           <Card className="border-l-4 border-l-green-500">
             <CardContent className="p-4 sm:p-6">
@@ -684,6 +751,87 @@ export function CRMDashboardPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Oportunidades Recientes */}
+          {recentOpportunities.length > 0 && (
+            <Card>
+              <CardHeader className="p-3 sm:p-4 md:p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-blue-600" />
+                    <CardTitle className="text-base sm:text-lg md:text-xl font-bold">Oportunidades Recientes</CardTitle>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate('/crm/opportunities')}
+                    className="text-xs sm:text-sm"
+                  >
+                    Ver todas
+                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-3 sm:p-4 md:p-6">
+                <div className="space-y-3">
+                  {recentOpportunities.map((opp: any) => {
+                    const contactName = opp.contact?.name || 
+                      (opp.contact?.first_name && opp.contact?.last_name 
+                        ? `${opp.contact.first_name} ${opp.contact.last_name}` 
+                        : 'Sin nombre');
+                    return (
+                      <div
+                        key={opp.id}
+                        className="flex items-start gap-3 sm:gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                        onClick={() => navigate(`/crm/opportunities/${opp.id}`)}
+                      >
+                        <div className="p-2 rounded-full bg-white text-blue-600 flex-shrink-0">
+                          <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <p className="font-semibold text-sm sm:text-base text-gray-900">
+                              {contactName}
+                            </p>
+                            {opp.priority && (
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                opp.priority === 'high' ? 'bg-red-100 text-red-700' :
+                                opp.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-green-100 text-green-700'
+                              }`}>
+                                {opp.priority === 'high' ? 'Alta' : opp.priority === 'medium' ? 'Media' : 'Baja'}
+                              </span>
+                            )}
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+                              Score: {opp.opportunity_score}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-1">
+                            {opp.contact?.email && (
+                              <>
+                                <Mail className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <span className="truncate">{opp.contact.email}</span>
+                              </>
+                            )}
+                            {opp.contact?.mobile && (
+                              <>
+                                <Phone className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                                <span>{opp.contact.mobile}</span>
+                              </>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                            <span>Detectada: {formatDate(opp.detected_at || opp.created_at)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Mis Contactos para Llamadas */}

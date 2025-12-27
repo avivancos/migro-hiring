@@ -223,3 +223,7 @@ function ContactDetailPage({ contact }: { contact: Contact }) {
 **Última Actualización**: 2024
 
 
+
+
+
+

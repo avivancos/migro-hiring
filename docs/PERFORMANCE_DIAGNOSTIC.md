@@ -227,3 +227,7 @@ No se están usando `React.memo`, `useMemo`, o `useCallback` en componentes crí
   - 93 alertas de métricas lentas
   - Promedio: 5.15s
 
+
+
+
+

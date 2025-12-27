@@ -32,6 +32,7 @@ import {
   GripVertical,
 } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
+import { isAgent, isExactSearch } from '@/utils/searchValidation';
 import { Modal } from '@/components/common/Modal';
 import { Switch } from '@/components/ui/switch';
 import { ContactCard } from '@/components/CRM/ContactCard';
@@ -67,6 +68,7 @@ export function CRMContactList() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { isAuthenticated, user } = useAuth();
+  const userIsAgent = user ? isAgent(user.role) : false;
   const [loading, setLoading] = useState(true);
   const [contacts, setContacts] = useState<KommoContact[]>([]);
   const [users, setUsers] = useState<CRMUser[]>([]);
@@ -240,11 +242,40 @@ export function CRMContactList() {
         limit: pagination.limit,
       };
       
-      if (searchTerm) filters.search = searchTerm;
+      // Para agentes: filtrar por responsable automáticamente
+      if (userIsAgent && user?.id) {
+        filters.responsible_user_id = user.id;
+      } else if (responsibleUserId) {
+        // Para admins/abogados, permitir filtrar por responsable manualmente
+        filters.responsible_user_id = responsibleUserId;
+      }
+      
+      // Validar búsqueda: para agentes, solo permitir búsqueda exacta por teléfono/email
+      if (searchTerm) {
+        if (userIsAgent) {
+          const searchValidation = isExactSearch(searchTerm);
+          if (searchValidation.isExact) {
+            // Permitir búsqueda exacta por teléfono o email
+            if (searchValidation.type === 'email') {
+              filters.email = searchTerm.trim();
+            } else if (searchValidation.type === 'phone') {
+              filters.phone = searchTerm.trim();
+            }
+            // No usar filters.search para agentes, solo email o phone exacto
+          } else {
+            // Si no es búsqueda exacta, no permitir búsqueda para agentes
+            console.warn('⚠️ [CRMContactList] Agente intentó búsqueda no exacta, ignorando...');
+            // No establecer filters.search para agentes
+          }
+        } else {
+          // Para admins/abogados, búsqueda normal
+          filters.search = searchTerm;
+        }
+      }
+      
       if (gradingLlamada) filters.grading_llamada = gradingLlamada as 'A' | 'B+' | 'B-' | 'C';
       if (gradingSituacion) filters.grading_situacion = gradingSituacion as 'A' | 'B+' | 'B-' | 'C';
       if (nacionalidad) filters.nacionalidad = nacionalidad;
-      if (responsibleUserId) filters.responsible_user_id = responsibleUserId;
       if (empadronado) filters.empadronado = empadronado === 'true';
       if (tieneIngresos) filters.tiene_ingresos = tieneIngresos === 'true';
       if (ultimaLlamadaDesde) filters.ultima_llamada_desde = ultimaLlamadaDesde;

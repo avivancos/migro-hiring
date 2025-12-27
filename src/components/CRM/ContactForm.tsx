@@ -47,6 +47,11 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
     trabaja_b: contact?.trabaja_b ?? undefined,
     edad: contact?.edad ?? null,
     tiene_familiares_espana: contact?.tiene_familiares_espana ?? undefined,
+    // Trámite sugerido (en custom_fields)
+    servicio_propuesto: contact?.custom_fields?.servicio_propuesto || '',
+    servicio_detalle: contact?.custom_fields?.servicio_detalle || '',
+    // Fecha de llegada a España (en custom_fields)
+    fecha_llegada_espana: contact?.custom_fields?.fecha_llegada_espana || '',
   });
 
   useEffect(() => {
@@ -113,6 +118,36 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
       if (formData.trabaja_b !== undefined) cleanedData.trabaja_b = formData.trabaja_b;
       if (formData.tiene_familiares_espana !== undefined) cleanedData.tiene_familiares_espana = formData.tiene_familiares_espana;
       if (formData.edad !== null && formData.edad !== undefined) cleanedData.edad = formData.edad;
+      
+      // Campos de trámite sugerido y fecha de llegada (en custom_fields)
+      // Siempre enviar custom_fields si hay valores o si el contacto ya tiene custom_fields
+      if (formData.servicio_propuesto?.trim() || formData.servicio_detalle?.trim() || formData.fecha_llegada_espana?.trim() || contact?.custom_fields) {
+        cleanedData.custom_fields = contact?.custom_fields ? { ...contact.custom_fields } : {};
+        
+        // Actualizar o eliminar servicio_propuesto
+        if (formData.servicio_propuesto?.trim()) {
+          cleanedData.custom_fields.servicio_propuesto = formData.servicio_propuesto.trim();
+        } else if (contact?.custom_fields?.servicio_propuesto) {
+          // Si el campo estaba lleno y ahora está vacío, eliminarlo
+          delete cleanedData.custom_fields.servicio_propuesto;
+        }
+        
+        // Actualizar o eliminar servicio_detalle
+        if (formData.servicio_detalle?.trim()) {
+          cleanedData.custom_fields.servicio_detalle = formData.servicio_detalle.trim();
+        } else if (contact?.custom_fields?.servicio_detalle) {
+          // Si el campo estaba lleno y ahora está vacío, eliminarlo
+          delete cleanedData.custom_fields.servicio_detalle;
+        }
+        
+        // Actualizar o eliminar fecha_llegada_espana
+        if (formData.fecha_llegada_espana?.trim()) {
+          cleanedData.custom_fields.fecha_llegada_espana = formData.fecha_llegada_espana.trim();
+        } else if (contact?.custom_fields?.fecha_llegada_espana) {
+          // Si el campo estaba lleno y ahora está vacío, eliminarlo
+          delete cleanedData.custom_fields.fecha_llegada_espana;
+        }
+      }
       
       console.log('🟢 [ContactForm] Datos limpiados antes de enviar:', cleanedData);
       await onSubmit(cleanedData);
@@ -347,6 +382,33 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
                   onChange={(e) => handleChange('tiempo_espana', e.target.value)}
                   placeholder="2 años"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Se calcula automáticamente desde la fecha de llegada
+                </p>
+              </div>
+
+              {/* Fecha de Llegada a España */}
+              <div>
+                <Label htmlFor="fecha_llegada_espana">Fecha de Llegada a España</Label>
+                <Input
+                  id="fecha_llegada_espana"
+                  type="date"
+                  value={formData.fecha_llegada_espana}
+                  onChange={(e) => {
+                    handleChange('fecha_llegada_espana', e.target.value);
+                    // Calcular tiempo_espana automáticamente si hay fecha
+                    if (e.target.value) {
+                      const fecha = new Date(e.target.value);
+                      const hoy = new Date();
+                      const años = hoy.getFullYear() - fecha.getFullYear();
+                      const meses = hoy.getMonth() - fecha.getMonth();
+                      const tiempoTotal = años > 0 
+                        ? `${años} ${años === 1 ? 'año' : 'años'}` 
+                        : `${Math.abs(meses)} ${Math.abs(meses) === 1 ? 'mes' : 'meses'}`;
+                      handleChange('tiempo_espana', tiempoTotal);
+                    }
+                  }}
+                />
               </div>
 
               {/* Edad */}
@@ -414,6 +476,36 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
                   />
                   <span>Tiene Familiares en España</span>
                 </label>
+              </div>
+
+              {/* Trámite Sugerido */}
+              <div className="sm:col-span-2">
+                <Label htmlFor="servicio_propuesto">Trámite Sugerido</Label>
+                <select
+                  id="servicio_propuesto"
+                  value={formData.servicio_propuesto}
+                  onChange={(e) => handleChange('servicio_propuesto', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Seleccionar trámite...</option>
+                  <option value="asilo_proteccion_internacional">Asilo/Protección Internacional</option>
+                  <option value="arraigo">Arraigo</option>
+                  <option value="reagrupacion_familiar">Reagrupación Familiar</option>
+                  <option value="nacionalidad">Nacionalidad</option>
+                </select>
+              </div>
+
+              {/* Detalle del Trámite */}
+              <div className="sm:col-span-2">
+                <Label htmlFor="servicio_detalle">Detalle del Trámite</Label>
+                <Textarea
+                  id="servicio_detalle"
+                  value={formData.servicio_detalle}
+                  onChange={(e) => handleChange('servicio_detalle', e.target.value)}
+                  placeholder="Explicar mejor el trámite sugerido, detalles específicos, requisitos, etc."
+                  rows={3}
+                  className="text-sm sm:text-base"
+                />
               </div>
             </div>
           </div>

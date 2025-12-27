@@ -396,3 +396,7 @@ La exportación a JSON se realiza en el cliente, sin necesidad de llamadas adici
 **Versión**: 1.0.0  
 **Estado**: ✅ LISTO PARA USO
 
+
+
+
+

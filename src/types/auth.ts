@@ -78,7 +78,7 @@ export interface User {
   updated_at: string;
 }
 
-export type UserRole = 'admin' | 'lawyer' | 'agent' | 'user';
+export type UserRole = 'admin' | 'lawyer' | 'agent' | 'user' | 'superuser';
 
 export interface UserWithTokenResponse {
   user: User;
@@ -88,6 +88,7 @@ export interface UserWithTokenResponse {
 export interface MessageResponse {
   message: string;
 }
+
 
 
 

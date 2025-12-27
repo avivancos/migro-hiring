@@ -1,6 +1,6 @@
 // User types
 
-export type UserRole = 'admin' | 'lawyer' | 'agent' | 'user';
+export type UserRole = 'admin' | 'lawyer' | 'agent' | 'user' | 'superuser';
 
 export interface User {
   id: string; // UUID

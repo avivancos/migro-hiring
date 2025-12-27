@@ -206,6 +206,62 @@ export const opportunityApi = {
   },
 
   /**
+   * Asignar múltiples oportunidades a un usuario (batch)
+   * NOTA: Este endpoint debe implementarse en el backend.
+   * Ver docs/BACKEND_OPPORTUNITIES_BULK_ASSIGN_ENDPOINT.md
+   * 
+   * Por ahora, el frontend usa múltiples llamadas individuales a assign()
+   */
+  async bulkAssign(request: {
+    opportunity_ids: string[];
+    assigned_to_id: string;
+  }): Promise<{
+    success: boolean;
+    assigned_count: number;
+    failed_count: number;
+    opportunities: LeadOpportunity[];
+    errors: Array<{ opportunity_id: string; error: string }>;
+  }> {
+    // TODO: Implementar cuando el backend esté listo
+    // const { data } = await api.post(
+    //   `${CRM_BASE_PATH}/opportunities/bulk-assign`,
+    //   request
+    // );
+    // return data;
+    
+    // Por ahora, usar asignaciones individuales en paralelo
+    const promises = request.opportunity_ids.map(id =>
+      this.assign(id, request.assigned_to_id).catch(error => ({
+        error: error.message,
+        opportunity_id: id,
+      }))
+    );
+    
+    const results = await Promise.all(promises);
+    const successes: LeadOpportunity[] = [];
+    const errors: Array<{ opportunity_id: string; error: string }> = [];
+    
+    results.forEach((result, index) => {
+      if ('error' in result) {
+        errors.push({
+          opportunity_id: request.opportunity_ids[index],
+          error: result.error,
+        });
+      } else {
+        successes.push(result as LeadOpportunity);
+      }
+    });
+    
+    return {
+      success: errors.length === 0,
+      assigned_count: successes.length,
+      failed_count: errors.length,
+      opportunities: successes,
+      errors,
+    };
+  },
+
+  /**
    * Actualizar oportunidad
    */
   async update(id: string, updates: OpportunityUpdateRequest): Promise<LeadOpportunity> {

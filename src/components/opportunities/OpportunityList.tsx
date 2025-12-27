@@ -22,7 +22,15 @@ export function OpportunityList({
   onOpportunitySelect,
   availableAgents = [],
 }: OpportunityListProps) {
+  // Usar initialFilters como base, pero permitir que se actualicen
   const [filters, setFilters] = React.useState<OpportunityFiltersType>(initialFilters);
+  
+  // Actualizar filtros cuando cambien los initialFilters (para agentes)
+  React.useEffect(() => {
+    if (initialFilters && Object.keys(initialFilters).length > 0) {
+      setFilters(prev => ({ ...prev, ...initialFilters }));
+    }
+  }, [initialFilters]);
   const {
     opportunities,
     total,

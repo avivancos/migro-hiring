@@ -227,3 +227,7 @@ async getContact(id: string, useCache: boolean = true): Promise<KommoContact> {
 - Diagnóstico completo: `docs/PERFORMANCE_DIAGNOSTIC.md`
 - Plan de optimización: Ver diagnóstico
 
+
+
+
+

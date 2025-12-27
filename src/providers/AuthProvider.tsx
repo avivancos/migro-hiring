@@ -74,6 +74,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await api.get('/users/me');
       const userData = response.data;
       
+      // DEBUG: Log datos del usuario recibidos del backend
+      console.log('🔍 [AuthProvider] Datos del usuario desde /users/me:', {
+        email: userData.email,
+        role: userData.role,
+        is_superuser: userData.is_superuser,
+        is_active: userData.is_active,
+        full_userData: userData,
+      });
+      
       // Mapear a tipo User
       const mappedUser: User = {
         id: userData.id,
@@ -87,7 +96,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         bio: userData.bio,
         is_active: userData.is_active,
         is_verified: userData.is_verified,
-        is_superuser: userData.is_superuser || userData.role === 'admin',
+        is_superuser: userData.is_superuser || userData.role === 'admin' || userData.role === 'superuser',
         role: userData.role,
         fcm_registered: userData.fcm_registered || false,
         last_login: userData.last_login,
@@ -96,14 +105,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
         updated_at: userData.updated_at,
       };
       
+      // DEBUG: Log usuario mapeado
+      console.log('🔍 [AuthProvider] Usuario mapeado:', {
+        email: mappedUser.email,
+        role: mappedUser.role,
+        is_superuser: mappedUser.is_superuser,
+        is_active: mappedUser.is_active,
+      });
+      
       setUser(mappedUser);
+      
+      // Calcular is_admin para localStorage
+      const is_admin = mappedUser.is_superuser || mappedUser.role === 'admin' || mappedUser.role === 'superuser';
+      
+      // DEBUG: Log cálculo de is_admin
+      console.log('🔍 [AuthProvider] Cálculo de is_admin:', {
+        is_superuser: mappedUser.is_superuser,
+        role: mappedUser.role,
+        role_is_admin: mappedUser.role === 'admin',
+        role_is_superuser: mappedUser.role === 'superuser',
+        is_admin_calculated: is_admin,
+      });
       
       // Guardar también en formato admin_user para compatibilidad
       localStorage.setItem('admin_user', JSON.stringify({
         id: mappedUser.id,
         email: mappedUser.email,
         name: mappedUser.full_name || mappedUser.email,
-        is_admin: mappedUser.is_superuser || mappedUser.role === 'admin',
+        is_admin: is_admin,
         is_superuser: mappedUser.is_superuser,
         role: mappedUser.role,
       }));
@@ -121,18 +150,63 @@ export function AuthProvider({ children }: AuthProviderProps) {
           clearAuth();
         } else {
           // Hay refresh token disponible, dejar que el interceptor lo maneje
-          // No limpiar la sesión todavía
+          // No limpiar la sesión todavía - mantener el estado actual
           console.log('⚠️ Error 401/403 pero hay refresh token disponible, esperando refresh automático');
+          // NO limpiar user aquí - mantener el estado anterior si existe
+          // El interceptor de axios intentará refrescar el token automáticamente
+        }
+      } else {
+        // Para otros errores (500, 404, timeout, etc.), mantener la sesión
+        // Los tokens NO se descartan en errores temporales
+        // Si hay tokens válidos, mantener el estado anterior del usuario si existe
+        const existingUser = localStorage.getItem('admin_user');
+        if (existingUser && TokenStorage.hasTokens()) {
+          try {
+            const parsedUser = JSON.parse(existingUser);
+            // Restaurar usuario desde localStorage si hay tokens válidos
+            // Esto evita que se pierda la sesión por errores temporales
+            setUser({
+              id: parsedUser.id,
+              email: parsedUser.email,
+              full_name: parsedUser.name || parsedUser.email,
+              first_name: parsedUser.name?.split(' ')[0] || '',
+              last_name: parsedUser.name?.split(' ').slice(1).join(' ') || '',
+              phone_number: '',
+              avatar_url: '',
+              photo_avatar_url: '',
+              bio: '',
+              is_active: true,
+              is_verified: true,
+              is_superuser: parsedUser.is_superuser || false,
+              role: parsedUser.role || 'user',
+              fcm_registered: false,
+              last_login: null,
+              email_verified_at: null,
+              created_at: '',
+              updated_at: '',
+            });
+            console.log('✅ Restaurado usuario desde localStorage después de error temporal');
+          } catch (e) {
+            console.error('Error restaurando usuario desde localStorage:', e);
+          }
         }
       }
-      // Para otros errores (500, 404, timeout, etc.), mantener la sesión
-      // Los tokens NO se descartan en errores temporales
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // Verificar autenticación al montar y cuando cambia la ruta (con debounce)
+  // Inicializar base de datos local al montar
+  useEffect(() => {
+    // Inicializar base de datos SQLite en segundo plano
+    import('@/services/localDatabase').then(({ localDatabase }) => {
+      localDatabase.initialize().catch((error) => {
+        console.error('Error inicializando base de datos local:', error);
+      });
+    });
+  }, []);
+
+  // Verificar autenticación al montar
   useEffect(() => {
     // No verificar autenticación en rutas públicas
     if (isPublicRoute(location.pathname)) {
@@ -148,13 +222,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
       return;
     }
     
-    // Solo verificar si no hay usuario cargado todavía
+    // Verificar autenticación solo una vez al montar
     // El interceptor de axios ya maneja el refresh de tokens proactivamente
-    // No verificar en cada cambio de ruta si ya tenemos usuario
-    if (!user) {
-      checkAuth();
+    console.log('🔍 [AuthProvider] Verificando autenticación al montar...');
+    checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Solo ejecutar al montar - verificar una sola vez
+  
+  // Verificar autenticación cuando cambia la ruta si no hay usuario cargado
+  useEffect(() => {
+    // Si no hay usuario pero hay tokens y no está cargando, intentar cargar el usuario
+    if (!user && !isLoading) {
+      const token = TokenStorage.getAccessToken();
+      if (token && !isPublicRoute(location.pathname)) {
+        console.log('🔍 [AuthProvider] Usuario no cargado, verificando autenticación en cambio de ruta...');
+        checkAuth();
+      }
     }
-  }, [location.pathname, isPublicRoute, checkAuth, user]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   const clearAuth = () => {
     TokenStorage.clearTokens();
@@ -182,7 +268,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         bio: userData.bio,
         is_active: userData.is_active,
         is_verified: userData.is_verified,
-        is_superuser: userData.is_superuser || userData.role === 'admin',
+        is_superuser: userData.is_superuser || userData.role === 'admin' || userData.role === 'superuser',
         role: userData.role,
         fcm_registered: userData.fcm_registered || false,
         last_login: userData.last_login,
@@ -199,7 +285,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         id: mappedUser.id,
         email: mappedUser.email,
         name: mappedUser.full_name || mappedUser.email,
-        is_admin: mappedUser.is_superuser || mappedUser.role === 'admin',
+        is_admin: mappedUser.is_superuser || mappedUser.role === 'admin' || mappedUser.role === 'superuser',
         is_superuser: mappedUser.is_superuser,
         role: mappedUser.role,
       }));
@@ -224,8 +310,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await checkAuth();
   };
 
-  const isAdmin = user ? (user.is_superuser || user.role === 'admin') : false;
-  const isAuthenticated = !!user && user.is_active;
+  const isAdmin = user ? (user.is_superuser || user.role === 'admin' || user.role === 'superuser') : false;
+  
+  // DEBUG: Log cálculo de isAdmin
+  if (user) {
+    console.log('🔍 [AuthProvider] Cálculo de isAdmin:', {
+      email: user.email,
+      role: user.role,
+      is_superuser: user.is_superuser,
+      role_is_admin: user.role === 'admin',
+      role_is_superuser: user.role === 'superuser',
+      isAdmin_calculated: isAdmin,
+    });
+  } else {
+    console.log('🔍 [AuthProvider] Usuario es null, isAdmin será false');
+  }
+  
+  // Si hay tokens válidos, considerar autenticado incluso si el usuario no está cargado todavía
+  // Esto evita redirecciones prematuras al login durante la verificación inicial
+  const hasValidTokens = TokenStorage.hasTokens() && 
+                        TokenStorage.getAccessToken() && 
+                        !TokenStorage.isRefreshTokenExpired();
+  
+  // DEBUG: Log estado de autenticación
+  console.log('🔍 [AuthProvider] Estado de autenticación:', {
+    hasUser: !!user,
+    userIsActive: user?.is_active,
+    hasValidTokens,
+    isLoading,
+    isAuthenticated_before: (!!user && user.is_active) || (hasValidTokens && !isLoading),
+  });
+  
+  // Cambiar lógica: solo considerar autenticado si hay usuario cargado Y está activo
+  // O si hay tokens válidos pero aún está cargando (para evitar redirección prematura)
+  const isAuthenticated = (!!user && user.is_active) || (hasValidTokens && isLoading);
 
   return (
     <AuthContext.Provider

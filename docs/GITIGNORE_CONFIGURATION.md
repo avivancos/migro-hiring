@@ -162,3 +162,7 @@ Si en el futuro necesitas agregar nuevos patrones al `.gitignore`:
 - [GitHub Gitignore Templates](https://github.com/github/gitignore)
 - Configuración específica del proyecto en `.gitignore`
 
+
+
+
+

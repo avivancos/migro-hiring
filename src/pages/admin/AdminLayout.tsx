@@ -45,6 +45,17 @@ export function AdminLayout() {
   }
 
   if (!isAuthenticated || !isAdmin) {
+    // DEBUG: Log información de acceso denegado en AdminLayout
+    console.error('🚫 [AdminLayout] Acceso denegado - Detalles:', {
+      isAuthenticated,
+      isAdmin,
+      user: user ? {
+        email: user.email,
+        role: user.role,
+        is_superuser: user.is_superuser,
+      } : null,
+      isLoading,
+    });
     return null; // ProtectedRoute manejará la redirección
   }
 
