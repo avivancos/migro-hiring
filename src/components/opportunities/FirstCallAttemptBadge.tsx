@@ -23,22 +23,22 @@ const statusConfig = {
     iconComponent: null,
   },
   orange: {
-    bg: 'bg-orange-200',
-    border: 'border-orange-400',
+    bg: 'bg-[#FED7AA]', // Naranja claro específico según documentación
+    border: 'border-[#FB923C]', // Naranja medio específico
     text: 'text-orange-700',
     icon: '⚠️',
     iconComponent: AlertTriangle,
   },
   red: {
-    bg: 'bg-red-200',
-    border: 'border-red-400',
+    bg: 'bg-[#FECACA]', // Rojo claro específico según documentación
+    border: 'border-[#F87171]', // Rojo medio específico
     text: 'text-red-700',
     icon: '❌',
     iconComponent: X,
   },
   green: {
-    bg: 'bg-green-200',
-    border: 'border-green-500',
+    bg: 'bg-[#BBF7D0]', // Verde claro específico según documentación
+    border: 'border-[#4ADE80]', // Verde medio específico
     text: 'text-green-700',
     icon: '✅',
     iconComponent: Check,
@@ -97,8 +97,15 @@ export function FirstCallAttemptBadge({
         aria-label={`Intento ${attemptNumber}: ${status}`}
         aria-pressed={status !== 'pending' ? 'true' : 'false'}
       >
-        {/* Número del intento */}
-        <span className="font-bold">{attemptNumber}</span>
+        {/* Número del intento - con tachado si ya fue realizado */}
+        <span 
+          className={cn(
+            'font-bold relative',
+            status !== 'pending' && 'line-through decoration-2 decoration-current/60'
+          )}
+        >
+          {attemptNumber}
+        </span>
 
         {/* Icono pequeño en la esquina inferior derecha */}
         {IconComponent && status !== 'pending' && (

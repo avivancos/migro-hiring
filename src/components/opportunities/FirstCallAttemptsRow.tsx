@@ -24,13 +24,24 @@ export function FirstCallAttemptsRow({
     return (attempt?.status as FirstCallAttemptStatus) || 'pending';
   };
 
+  // Calcular intentos realizados y disponibles
+  const attemptsCompleted = attempts ? Object.keys(attempts).length : 0;
+  const attemptsAvailable = 5 - attemptsCompleted;
+
   return (
     <div className={className}>
       {/* Header con título y badge de completado */}
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <h3 className="text-base font-semibold text-gray-900">
-          Intentos de Primera Llamada
-        </h3>
+        <div className="flex items-center gap-3">
+          <h3 className="text-base font-semibold text-gray-900">
+            Intentos de Primera Llamada
+          </h3>
+          {!firstCallCompleted && attemptsAvailable > 0 && (
+            <span className="inline-flex items-center text-xs font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-md border border-gray-200">
+              {attemptsAvailable} intento{attemptsAvailable !== 1 ? 's' : ''} disponible{attemptsAvailable !== 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
         {firstCallCompleted && successfulAttempt && (
           <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700 bg-green-50 px-2.5 py-1 rounded-md border border-green-200">
             <Check className="h-4 w-4" />
