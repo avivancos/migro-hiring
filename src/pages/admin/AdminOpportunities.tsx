@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { opportunityApi } from '@/services/opportunityApi';
-import { crmService } from '@/services/crmService';
+import { adminService } from '@/services/adminService';
 import {
   Briefcase,
   Search,
@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { LeadOpportunity, OpportunityFilters } from '@/types/opportunity';
-import type { CRMUser } from '@/types/crm';
+import type { User } from '@/types/user';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 type SortField = 'detected_at' | 'opportunity_score' | 'status' | 'assigned_to_id' | 'contact_name';
@@ -30,7 +30,7 @@ export function AdminOpportunities() {
   
   const [loading, setLoading] = useState(true);
   const [opportunities, setOpportunities] = useState<LeadOpportunity[]>([]);
-  const [agents, setAgents] = useState<CRMUser[]>([]);
+  const [agents, setAgents] = useState<User[]>([]);
   const [total, setTotal] = useState(0);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkAgentId, setBulkAgentId] = useState<string>('');
@@ -58,18 +58,43 @@ export function AdminOpportunities() {
   
   const [showFilters, setShowFilters] = useState(false);
   
-  // Cargar agentes
+  // Cargar agentes del sistema (no usuarios CRM)
   useEffect(() => {
     const loadAgents = async () => {
       try {
-        const users = await crmService.getUsers(true);
-        // Filtrar solo agentes y abogados (quienes pueden ser asignados)
-        const agentsFiltered = users.filter(u => 
-          u.role_name === 'agent' || u.role_name === 'lawyer' || u.role_name === 'admin'
+        const response = await adminService.getAllUsers({ 
+          is_active: true,
+          limit: 1000 // Obtener todos los usuarios activos
+        });
+        
+        // Filtrar solo agentes y abogados que pueden ser asignados a oportunidades
+        const agentsFiltered = response.items.filter((u: User) => 
+          u.role === 'agent' || u.role === 'lawyer' || u.role === 'admin'
         );
+        
+        console.log('👥 [AdminOpportunities] Usuarios del sistema cargados:', {
+          total: response.items.length,
+          filtrados: agentsFiltered.length,
+          usuarios: agentsFiltered
+        });
+        
         setAgents(agentsFiltered);
-      } catch (error) {
-        console.error('Error cargando agentes:', error);
+        
+        if (agentsFiltered.length === 0) {
+          console.warn('⚠️ [AdminOpportunities] No se encontraron agentes/abogados activos en el sistema');
+        }
+      } catch (error: any) {
+        console.error('❌ [AdminOpportunities] Error cargando agentes del sistema:', error);
+        
+        // Si el error es 500 relacionado con validación de phone_number, mostrar mensaje útil
+        if (error?.response?.status === 500 && 
+            error?.response?.data?.detail?.includes('phone_number')) {
+          console.error('⚠️ [AdminOpportunities] Error del backend: Hay usuarios con phone_number vacío. ' +
+            'El backend necesita permitir valores null/vacíos para phone_number. ' +
+            'Ver docs/BACKEND_USERS_PHONE_NUMBER_VALIDATION_ERROR.md');
+        }
+        
+        setAgents([]); // Asegurar que agents esté vacío en caso de error
       }
     };
     loadAgents();
@@ -365,7 +390,7 @@ export function AdminOpportunities() {
                   <option value="">Seleccionar agente...</option>
                   {agents.map(agent => (
                     <option key={agent.id} value={agent.id}>
-                      {agent.name || agent.email} ({agent.role_name || 'usuario'})
+                      {agent.full_name || agent.email} ({agent.role || 'usuario'})
                     </option>
                   ))}
                 </select>
