@@ -84,7 +84,8 @@ export function CRMDashboardPage() {
       // Para agentes, cargar solo sus oportunidades asignadas
       const loadPromises: Promise<any>[] = [
         crmService.getPipelines().catch(() => []), // Si pipelines no está implementado, usar array vacío
-        contractsService.getContracts({ limit: 10, skip: 0 }).catch(() => ({ items: [], total: 0 })), // Obtener últimos contratos
+        // No cargar contratos para agentes
+        userIsAgent ? Promise.resolve({ items: [], total: 0 }) : contractsService.getContracts({ limit: 10, skip: 0 }).catch(() => ({ items: [], total: 0 })), // Obtener últimos contratos
         crmService.getCalendarCalls({
           start_date: startOfWeek.toISOString(),
           end_date: endOfWeek.toISOString(),
@@ -454,33 +455,38 @@ export function CRMDashboardPage() {
             </Card>
           )}
 
-          <Card className="border-l-4 border-l-green-500">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Contratos Totales</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">{totalContractsCount}</p>
-                </div>
-                <div className="p-3 bg-green-100 rounded-full">
-                  <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Ocultar tarjetas de contratos para agentes */}
+          {!userIsAgent && (
+            <>
+              <Card className="border-l-4 border-l-green-500">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Contratos Totales</p>
+                      <p className="text-2xl sm:text-3xl font-bold text-gray-900">{totalContractsCount}</p>
+                    </div>
+                    <div className="p-3 bg-green-100 rounded-full">
+                      <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-          <Card className="border-l-4 border-l-purple-500">
-            <CardContent className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Últimos Contratos</p>
-                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">{lastContracts.length}</p>
-                </div>
-                <div className="p-3 bg-purple-100 rounded-full">
-                  <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              <Card className="border-l-4 border-l-purple-500">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Últimos Contratos</p>
+                      <p className="text-2xl sm:text-3xl font-bold text-gray-900">{lastContracts.length}</p>
+                    </div>
+                    <div className="p-3 bg-purple-100 rounded-full">
+                      <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          )}
 
           <Card className="border-l-4 border-l-orange-500">
             <CardContent className="p-4 sm:p-6">
@@ -500,9 +506,9 @@ export function CRMDashboardPage() {
         </div>
 
         {/* Grid Principal: Mini Calendario y Últimos Contratos */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${userIsAgent ? '' : 'lg:grid-cols-3'}`}>
           {/* Mini Calendario Semanal */}
-          <Card className="lg:col-span-2">
+          <Card className={userIsAgent ? '' : 'lg:col-span-2'}>
             <CardHeader className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base sm:text-lg font-bold">Semana Actual</CardTitle>
@@ -679,78 +685,80 @@ export function CRMDashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Últimos Contratos */}
-          <Card>
-            <CardHeader className="p-3 sm:p-4 md:p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-purple-600" />
-                  <CardTitle className="text-base sm:text-lg md:text-xl font-bold">Últimos Contratos</CardTitle>
+          {/* Últimos Contratos - Oculto para agentes */}
+          {!userIsAgent && (
+            <Card>
+              <CardHeader className="p-3 sm:p-4 md:p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-purple-600" />
+                    <CardTitle className="text-base sm:text-lg md:text-xl font-bold">Últimos Contratos</CardTitle>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate('/crm/contracts')}
+                    className="text-xs sm:text-sm"
+                  >
+                    Ver todos
+                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                  </Button>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => navigate('/crm/contracts')}
-                  className="text-xs sm:text-sm"
-                >
-                  Ver todos
-                  <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-4 md:p-6">
-              {lastContracts.length > 0 ? (
-                <div className="space-y-3">
-                  {lastContracts.map((contract) => {
-                    const statusColors: Record<string, string> = {
-                      pending: 'bg-yellow-100 text-yellow-700',
-                      paid: 'bg-green-100 text-green-700',
-                      completed: 'bg-blue-100 text-blue-700',
-                      expired: 'bg-red-100 text-red-700',
-                      cancelled: 'bg-gray-100 text-gray-700',
-                    };
-                    return (
-                      <div
-                        key={contract.id}
-                        className="flex items-start gap-3 sm:gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
-                        onClick={() => navigate(`/admin/contracts/${contract.hiring_code}`)}
-                      >
-                        <div className="p-2 rounded-full bg-white text-purple-600 flex-shrink-0">
-                          <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+              </CardHeader>
+              <CardContent className="p-3 sm:p-4 md:p-6">
+                {lastContracts.length > 0 ? (
+                  <div className="space-y-3">
+                    {lastContracts.map((contract) => {
+                      const statusColors: Record<string, string> = {
+                        pending: 'bg-yellow-100 text-yellow-700',
+                        paid: 'bg-green-100 text-green-700',
+                        completed: 'bg-blue-100 text-blue-700',
+                        expired: 'bg-red-100 text-red-700',
+                        cancelled: 'bg-gray-100 text-gray-700',
+                      };
+                      return (
+                        <div
+                          key={contract.id}
+                          className="flex items-start gap-3 sm:gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                          onClick={() => navigate(`/admin/contracts/${contract.hiring_code}`)}
+                        >
+                          <div className="p-2 rounded-full bg-white text-purple-600 flex-shrink-0">
+                            <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <p className="font-semibold text-sm sm:text-base text-gray-900">
+                                Contrato {contract.hiring_code} - {contract.client_name}
+                              </p>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[contract.status] || 'bg-gray-100 text-gray-700'}`}>
+                                {formatContractStatus(contract.status)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-1">
+                              <span className="text-gray-500">{contract.service_name}</span>
+                              <span>•</span>
+                              <span className="font-semibold text-green-600">
+                                {formatCurrency(contract.amount, contract.currency)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                              <span>Creado: {formatDate(contract.created_at)}</span>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1 flex-wrap">
-                            <p className="font-semibold text-sm sm:text-base text-gray-900">
-                              Contrato {contract.hiring_code} - {contract.client_name}
-                            </p>
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${statusColors[contract.status] || 'bg-gray-100 text-gray-700'}`}>
-                              {formatContractStatus(contract.status)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-1">
-                            <span className="text-gray-500">{contract.service_name}</span>
-                            <span>•</span>
-                            <span className="font-semibold text-green-600">
-                              {formatCurrency(contract.amount, contract.currency)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                            <span>Creado: {formatDate(contract.created_at)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="py-8 text-center text-gray-500">
-                  <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p className="text-sm">No hay contratos recientes</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="py-8 text-center text-gray-500">
+                    <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p className="text-sm">No hay contratos recientes</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Oportunidades Recientes */}
           {recentOpportunities.length > 0 && (

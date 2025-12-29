@@ -31,9 +31,11 @@ import {
 } from '@/types/contracts';
 import { formatDate, formatCurrency } from '@/utils/formatters';
 import { formatContractStatus, formatKYCStatus } from '@/utils/statusTranslations';
+import { useAuth } from '@/providers/AuthProvider';
 
 export function CRMContracts() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [total, setTotal] = useState(0);
@@ -153,7 +155,11 @@ export function CRMContracts() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Total</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.total}</p>
+                {user?.role === 'agent' ? (
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">---</p>
+                ) : (
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.total}</p>
+                )}
               </div>
               <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
             </div>
@@ -355,7 +361,11 @@ export function CRMContracts() {
               <CardContent className="p-4">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                   <p className="text-sm text-gray-600">
-                    Mostrando {currentSkip + 1} - {Math.min(currentSkip + currentLimit, total)} de {total} contratos
+                    {user?.role === 'agent' ? (
+                      <>Mostrando {currentSkip + 1} - {Math.min(currentSkip + currentLimit, contracts.length)} de {contracts.length} contratos</>
+                    ) : (
+                      <>Mostrando {currentSkip + 1} - {Math.min(currentSkip + currentLimit, total)} de {total} contratos</>
+                    )}
                   </p>
                   <div className="flex items-center gap-2">
                     <Button

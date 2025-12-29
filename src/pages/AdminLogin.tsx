@@ -122,7 +122,7 @@ export function AdminLogin() {
                   setEmail(e.target.value);
                   setError(null);
                 }}
-                placeholder="agusvc@gmail.com"
+                placeholder="juan@migro.es"
                 className="mt-1"
                 autoFocus
               />
