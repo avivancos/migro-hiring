@@ -172,6 +172,18 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - Documentación: `docs/BACKEND_OPPORTUNITY_ANALYZE_NO_CALLS_VALIDATION.md` ✅
 
 ### ⚠️ Problemas Pendientes del Backend (Enero 2025)
+- [ ] **🔴 Filtrado de Contactos por Usuario Actual**: Pendiente implementación en backend 🚨
+  - Requerimiento: El endpoint `/api/crm/contacts` debe mostrar solo contactos con oportunidades asignadas al usuario actual
+  - Relación: Contacto-Oportunidad es 1:1, cada contacto tiene exactamente una oportunidad
+  - Implementación: JOIN entre `crm_contacts` y `lead_opportunities` filtrando por `assigned_to_id = current_user.id`
+  - Documentación: `docs/BACKEND_CONTACTS_FILTER_BY_USER_OPPORTUNITIES.md` ✅
+  - Estado: Documentación lista, pendiente implementación en backend ⏳
+- [ ] **🔴 Filtrado de Llamadas del Calendario por Usuario Actual (Agente)**: Pendiente implementación en backend 🚨
+  - Requerimiento: El endpoint `/api/crm/calls/calendar` debe filtrar llamadas para que agentes solo vean sus propias llamadas
+  - Implementación: Filtrar por `responsible_user_id = current_user.id` cuando el rol es `agent`
+  - Comportamiento: Agentes ven solo sus llamadas, admins/lawyers ven todas las llamadas
+  - Documentación: `docs/BACKEND_CALENDAR_CALLS_FILTER_BY_USER.md` ✅
+  - Estado: Documentación lista, pendiente implementación en backend ⏳
 - [x] **🚨 CRÍTICO: Error 500 en `/crm/opportunities` - SELECT DISTINCT con JSON**: Corregido ✅
   - Error: `could not identify an equality operator for type json`
   - Causa: PostgreSQL no puede usar DISTINCT con columnas JSON

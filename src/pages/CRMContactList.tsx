@@ -242,7 +242,51 @@ export function CRMContactList() {
         limit: pagination.limit,
       };
       
-      // Para agentes: filtrar por responsable automáticamente
+      // NUEVO: Para todos los usuarios (no solo agentes), filtrar contactos por oportunidades asignadas
+      // Solo mostrar contactos que tienen oportunidades asignadas al usuario actual
+      let contactIdsFromOpportunities: string[] = [];
+      
+      if (user?.id) {
+        try {
+          // Obtener todas las oportunidades asignadas al usuario actual
+          const opportunitiesResponse = await opportunityApi.list({
+            assigned_to: user.id,
+            limit: 1000, // Obtener todas las oportunidades asignadas
+            page: 1,
+          });
+          
+          // Extraer los contact_id únicos de las oportunidades asignadas
+          contactIdsFromOpportunities = Array.from(
+            new Set(
+              opportunitiesResponse.opportunities
+                .map(opp => opp.contact_id)
+                .filter((id): id is string => !!id) // Filtrar valores nulos/undefined
+            )
+          );
+          
+          console.log('📋 [CRMContactList] Contactos con oportunidades asignadas al usuario:', {
+            userId: user.id,
+            userEmail: user.email,
+            totalOpportunities: opportunitiesResponse.total,
+            uniqueContactIds: contactIdsFromOpportunities.length,
+          });
+        } catch (oppError) {
+          console.error('❌ [CRMContactList] Error cargando oportunidades asignadas:', oppError);
+          // Si falla, continuar sin filtrar por oportunidades (mostrar todos)
+        }
+      }
+      
+      // Si hay contactos con oportunidades asignadas, filtrar por esos IDs
+      // Si no hay contactos con oportunidades, no mostrar ningún contacto
+      if (contactIdsFromOpportunities.length === 0 && user?.id) {
+        // El usuario no tiene oportunidades asignadas, mostrar lista vacía
+        setContacts([]);
+        setTotalContacts(0);
+        setLoading(false);
+        return;
+      }
+      
+      // Para agentes: también filtrar por responsable automáticamente (comportamiento existente)
       // Necesitamos encontrar el usuario CRM correspondiente al usuario del sistema
       if (userIsAgent && user?.email) {
         // Buscar el usuario CRM que coincida con el email del usuario del sistema
@@ -257,8 +301,6 @@ export function CRMContactList() {
           });
         } else {
           console.warn('⚠️ [CRMContactList] No se encontró usuario CRM para el agente:', user.email);
-          // Si no se encuentra el usuario CRM, no aplicar filtro (pero esto es un problema)
-          // En este caso, no debería cargar contactos, pero lo dejamos así para no romper la UI
         }
       } else if (responsibleUserId) {
         // Para admins/abogados, permitir filtrar por responsable manualmente
@@ -304,6 +346,27 @@ export function CRMContactList() {
 
       const response = await crmService.getContacts(filters);
       
+      // Filtrar contactos por aquellos que tienen oportunidades asignadas al usuario actual
+      let filteredContacts = response.items || [];
+      
+      if (contactIdsFromOpportunities.length > 0) {
+        // Filtrar solo los contactos que están en la lista de contact_id de oportunidades asignadas
+        filteredContacts = filteredContacts.filter(contact => 
+          contactIdsFromOpportunities.includes(contact.id)
+        );
+        
+        console.log('🔍 [CRMContactList] Contactos filtrados por oportunidades asignadas:', {
+          totalCargados: response.items?.length || 0,
+          totalFiltrados: filteredContacts.length,
+          contactIdsFromOpps: contactIdsFromOpportunities.length,
+        });
+        
+        // Aplicar paginación local después de filtrar por oportunidades
+        const startIndex = pagination.skip;
+        const endIndex = startIndex + pagination.limit;
+        filteredContacts = filteredContacts.slice(startIndex, endIndex);
+      }
+      
       // Obtener el total real de contactos usando el endpoint de count (sin paginación)
       // Esto asegura que el total sea correcto independientemente de los filtros
       try {
@@ -320,12 +383,26 @@ export function CRMContactList() {
           proxima_llamada_desde: filters.proxima_llamada_desde,
           proxima_llamada_hasta: filters.proxima_llamada_hasta,
         });
-        console.log('📊 [CRMContactList] Total count from API:', totalCount);
-        setTotalContacts(totalCount);
+        
+        // Si filtramos por oportunidades, el total real es el número de contactos filtrados
+        const realTotal = contactIdsFromOpportunities.length > 0 
+          ? filteredContacts.length 
+          : totalCount;
+        
+        console.log('📊 [CRMContactList] Total count:', {
+          fromAPI: totalCount,
+          filteredByOpportunities: filteredContacts.length,
+          realTotal: realTotal,
+        });
+        
+        setTotalContacts(realTotal);
       } catch (countError) {
         console.warn('⚠️ [CRMContactList] Error getting total count, using response total:', countError);
-        // Fallback al total de la respuesta si el endpoint de count falla
-        setTotalContacts(response.total ?? response.items?.length ?? 0);
+        // Si filtramos por oportunidades, usar el número total de contact_ids únicos
+        const fallbackTotal = contactIdsFromOpportunities.length > 0 
+          ? contactIdsFromOpportunities.length 
+          : (response.total ?? response.items?.length ?? 0);
+        setTotalContacts(fallbackTotal);
       }
       
       // OPTIMIZACIÓN: Solo enriquecer contactos si realmente se necesitan las columnas de llamadas
@@ -334,14 +411,14 @@ export function CRMContactList() {
                            proximaLlamadaDesde || proximaLlamadaHasta ||
                            sortField === 'ultima_llamada' || sortField === 'proxima_llamada';
       
-      if (needsCallInfo && response.items.length > 0) {
-        // Solo enriquecer si es necesario y hay contactos
+      if (needsCallInfo && filteredContacts.length > 0) {
+        // Solo enriquecer si es necesario y hay contactos filtrados
         // Usar batches más pequeños para evitar sobrecarga
         const batchSize = 5; // Reducido de 10 a 5 para mejor rendimiento
         const enrichedContacts: KommoContact[] = [];
         
-        for (let i = 0; i < response.items.length; i += batchSize) {
-          const batch = response.items.slice(i, i + batchSize);
+        for (let i = 0; i < filteredContacts.length; i += batchSize) {
+          const batch = filteredContacts.slice(i, i + batchSize);
           const enrichedBatch = await Promise.all(
             batch.map(contact => enrichContactWithCallInfo(contact))
           );
@@ -350,9 +427,9 @@ export function CRMContactList() {
         
         setContacts(enrichedContacts);
       } else {
-        // Si no se necesita información de llamadas, usar contactos directamente
+        // Si no se necesita información de llamadas, usar contactos filtrados directamente
         // Esto evita 200+ llamadas API innecesarias
-        setContacts(response.items || []);
+        setContacts(filteredContacts);
       }
     } catch (err) {
       console.error('❌ [CRMContactList] Error loading contacts:', err);
