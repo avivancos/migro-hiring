@@ -171,19 +171,50 @@ export function AdminOpportunities() {
       // Para el filtro "unassigned" o "assigned", aumentar significativamente el límite
       // porque el filtro se aplica localmente después de recibir los datos
       // Si solo pedimos 20, solo podremos filtrar de esas 20
-      if (filterAssigned !== 'all' && !filterAssignedToAgent) {
-        if (filterAssigned === 'unassigned' || filterAssigned === 'assigned') {
-          // Aumentar límite para obtener más oportunidades y poder filtrar correctamente
-          // Esto asegura que podamos mostrar suficientes oportunidades después del filtrado local
-          filters.limit = 1000; // Solicitar muchos datos para poder filtrar localmente
-          filters.page = 1; // Siempre empezar desde la página 1 cuando filtramos localmente
-        }
+      // También aumentar el límite cuando hay búsqueda activa para obtener más resultados del backend
+      const needsLargeLimit = (filterAssigned !== 'all' && !filterAssignedToAgent && 
+                                (filterAssigned === 'unassigned' || filterAssigned === 'assigned')) ||
+                               (searchQuery.trim().length > 0);
+      
+      if (needsLargeLimit) {
+        // Aumentar límite para obtener más oportunidades y poder filtrar correctamente
+        // Esto asegura que podamos mostrar suficientes oportunidades después del filtrado local
+        filters.limit = 1000; // Solicitar muchos datos para poder filtrar localmente
+        filters.page = 1; // Siempre empezar desde la página 1 cuando filtramos localmente
       }
       
       const response = await opportunityApi.list(filters);
       
       // Aplicar filtros localmente
       let filteredOpportunities = response.opportunities;
+      
+      // Si hay búsqueda activa, aplicar filtro local también (como respaldo si el backend no filtra)
+      // Esto busca en nombre, email, ciudad del contacto
+      if (searchQuery.trim().length > 0) {
+        const searchLower = searchQuery.trim().toLowerCase();
+        filteredOpportunities = filteredOpportunities.filter(opp => {
+          const contact = opp.contact;
+          if (!contact) return false;
+          
+          // Buscar en nombre completo
+          const fullName = (contact.name || `${contact.first_name || ''} ${contact.last_name || ''}`.trim()).toLowerCase();
+          if (fullName.includes(searchLower)) return true;
+          
+          // Buscar en nombre
+          if (contact.first_name?.toLowerCase().includes(searchLower)) return true;
+          
+          // Buscar en apellido
+          if (contact.last_name?.toLowerCase().includes(searchLower)) return true;
+          
+          // Buscar en email
+          if (contact.email?.toLowerCase().includes(searchLower)) return true;
+          
+          // Buscar en ciudad
+          if (contact.city?.toLowerCase().includes(searchLower)) return true;
+          
+          return false;
+        });
+      }
       
       // Inicializar realTotal con el total del backend por defecto
       let realTotal = response.total;
@@ -251,14 +282,19 @@ export function AdminOpportunities() {
       });
       
       // Calcular el total real después de aplicar TODOS los filtros locales
-      if (filterAssigned !== 'all' && !filterAssignedToAgent) {
-        // Para filtros locales (unassigned/assigned), el total real es el número de resultados filtrados
+      // Cuando usamos límite aumentado (búsqueda o filtros locales), necesitamos recalcular el total
+      const needsLocalPagination = (filterAssigned !== 'all' && !filterAssignedToAgent && 
+                                     (filterAssigned === 'unassigned' || filterAssigned === 'assigned')) ||
+                                    (searchQuery.trim().length > 0);
+      
+      if (needsLocalPagination) {
+        // Para filtros locales o búsqueda, el total real es el número de resultados filtrados
         // después de aplicar todos los filtros
         realTotal = filteredOpportunities.length;
       }
       
       // Aplicar paginación local después de filtrar (si usamos límite aumentado)
-      if (filterAssigned !== 'all' && !filterAssignedToAgent) {
+      if (needsLocalPagination) {
         const startIndex = (pagination.page - 1) * pagination.limit;
         const endIndex = startIndex + pagination.limit;
         filteredOpportunities = filteredOpportunities.slice(startIndex, endIndex);

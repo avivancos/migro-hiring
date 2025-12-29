@@ -33,9 +33,9 @@ export function FirstCallAttemptsRow({
       {/* Header con título y badge de completado */}
       <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
         <div className="flex items-center gap-3">
-          <h3 className="text-base font-semibold text-gray-900">
-            Intentos de Primera Llamada
-          </h3>
+        <h3 className="text-base font-semibold text-gray-900">
+          Intentos de Primera Llamada
+        </h3>
           {!firstCallCompleted && attemptsAvailable > 0 && (
             <span className="inline-flex items-center text-xs font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded-md border border-gray-200">
               {attemptsAvailable} intento{attemptsAvailable !== 1 ? 's' : ''} disponible{attemptsAvailable !== 1 ? 's' : ''}

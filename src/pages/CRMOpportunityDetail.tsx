@@ -1,7 +1,7 @@
 // CRMOpportunityDetail - Detalle completo de una oportunidad
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useOpportunityDetail } from '@/hooks/useOpportunityDetail';
@@ -10,7 +10,7 @@ import { OpportunityScore } from '@/components/opportunities/OpportunityScore';
 import { FirstCallAttemptsRow } from '@/components/opportunities/FirstCallAttemptsRow';
 import { FirstCallAttemptDetail } from '@/components/opportunities/FirstCallAttemptDetail';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { ArrowLeft, Phone, Mail, MapPin, User, Activity } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, User, Activity, Edit } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getDetectionReasonBadges } from '@/utils/opportunity';
 import { opportunityApi } from '@/services/opportunityApi';
@@ -21,14 +21,24 @@ import { PipelineWizardModal } from '@/components/pipelines/Wizards/PipelineWiza
 import { PipelineActionsList } from '@/components/pipelines/PipelineActionsList';
 import { SuggestedNextAction } from '@/components/opportunities/SuggestedNextAction';
 import { usePipelineActions } from '@/hooks/usePipelineActions';
+import { useAuth } from '@/providers/AuthProvider';
+import { Modal } from '@/components/common/Modal';
+import { Label } from '@/components/ui/label';
+import { crmService } from '@/services/crmService';
+import type { CRMUser } from '@/types/crm';
 
 export function CRMOpportunityDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { isAdmin } = useAuth();
   const [selectedAttempt, setSelectedAttempt] = useState<number | null>(null);
   const [isSavingAttempt, setIsSavingAttempt] = useState(false);
   const [showPipelineWizard, setShowPipelineWizard] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [availableUsers, setAvailableUsers] = useState<CRMUser[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
 
   const {
     opportunity,
@@ -37,6 +47,9 @@ export function CRMOpportunityDetail() {
     createPipeline,
     isUpdating,
     isCreatingPipeline,
+    assign,
+    update,
+    isAssigning,
   } = useOpportunityDetail(id);
 
   // IMPORTANTE: usePageTitle debe llamarse ANTES de los early returns
@@ -113,6 +126,72 @@ export function CRMOpportunityDetail() {
   const selectedAttemptData = selectedAttempt
     ? opportunity.first_call_attempts?.[selectedAttempt.toString()] || null
     : null;
+
+  // Cargar usuarios cuando se abre el modal
+  useEffect(() => {
+    if (showAssignModal) {
+      loadUsers();
+    }
+  }, [showAssignModal]);
+
+  const loadUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const allUsers = await crmService.getUsers(true);
+      // Filtrar para incluir solo lawyers y agentes
+      const usersData = allUsers.filter(u => u.role_name === 'lawyer' || u.role_name === 'agent');
+      setAvailableUsers(usersData);
+      
+      // Preseleccionar el agente actual si existe
+      if (opportunity?.assigned_to_id) {
+        setSelectedUserId(opportunity.assigned_to_id);
+      } else if (usersData.length > 0) {
+        setSelectedUserId('');
+      }
+    } catch (err) {
+      console.error('Error loading users:', err);
+      setAvailableUsers([]);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const handleOpenAssignModal = () => {
+    setShowAssignModal(true);
+    // Preseleccionar el agente actual
+    if (opportunity?.assigned_to_id) {
+      setSelectedUserId(opportunity.assigned_to_id);
+    } else {
+      setSelectedUserId('');
+    }
+  };
+
+  const handleCloseAssignModal = () => {
+    setShowAssignModal(false);
+    setSelectedUserId('');
+  };
+
+  const handleAssignAgent = async () => {
+    if (!id) {
+      return;
+    }
+
+    try {
+      // Si se selecciona "Sin asignar" (vacío), usar update para desasignar
+      if (!selectedUserId) {
+        update({ assigned_to_id: undefined });
+      } else {
+        // Si se selecciona un agente, usar assign
+        assign(selectedUserId);
+      }
+      setShowAssignModal(false);
+      setSelectedUserId('');
+      // El hook ya invalida las queries automáticamente
+    } catch (error) {
+      console.error('Error asignando agente:', error);
+      alert('Error al asignar agente. Por favor intenta de nuevo.');
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
@@ -338,12 +417,25 @@ export function CRMOpportunityDetail() {
           </Card>
 
           {/* Responsable asignado */}
-          {(opportunity.assigned_to || opportunity.assigned_to_id) && (
-            <Card>
-              <CardHeader>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
                 <CardTitle>Responsable</CardTitle>
-              </CardHeader>
-              <CardContent>
+                {isAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleOpenAssignModal}
+                    className="h-8 px-2"
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    Editar
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {(opportunity.assigned_to || opportunity.assigned_to_id) ? (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100">
@@ -358,9 +450,30 @@ export function CRMOpportunityDetail() {
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              ) : (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100">
+                      <User className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-gray-500 font-medium mb-1">Sin asignar</p>
+                      {isAdmin && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleOpenAssignModal}
+                          className="mt-2"
+                        >
+                          Asignar Agente
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -391,6 +504,69 @@ export function CRMOpportunityDetail() {
           }}
         />
       )}
+
+      {/* Modal para asignar/editar agente */}
+      <Modal
+        open={showAssignModal}
+        onClose={handleCloseAssignModal}
+        title="Asignar Agente"
+        size="md"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              onClick={handleCloseAssignModal}
+              disabled={isAssigning}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleAssignAgent}
+              disabled={isAssigning || loadingUsers || isUpdating}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {(isAssigning || isUpdating) ? 'Guardando...' : 'Guardar'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="agent-select" className="text-sm font-medium text-gray-700 mb-2 block">
+              Seleccionar Agente
+            </Label>
+            {loadingUsers ? (
+              <div className="flex items-center justify-center py-8">
+                <LoadingSpinner size="sm" />
+              </div>
+            ) : (
+              <select
+                id="agent-select"
+                value={selectedUserId}
+                onChange={(e) => setSelectedUserId(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
+                disabled={isAssigning}
+              >
+                <option value="">Sin asignar</option>
+                {availableUsers.map(user => {
+                  const displayName = user.name?.trim() || user.email || `Usuario ${user.id?.slice(0, 8) || 'N/A'}`;
+                  const roleLabel = user.role_name === 'lawyer' ? 'Abogado' : 
+                                   user.role_name === 'agent' ? 'Agente' : 
+                                   user.role_name || 'Usuario';
+                  return (
+                    <option key={user.id} value={user.id}>
+                      {displayName} ({roleLabel})
+                    </option>
+                  );
+                })}
+              </select>
+            )}
+            <p className="text-xs text-gray-500 mt-2">
+              Solo abogados y agentes pueden ser responsables
+            </p>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
