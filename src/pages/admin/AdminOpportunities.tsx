@@ -21,6 +21,7 @@ import { Badge } from '@/components/ui/badge';
 import type { LeadOpportunity, OpportunityFilters } from '@/types/opportunity';
 import type { User } from '@/types/user';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { AssignRandomOpportunities } from '@/components/admin/AssignRandomOpportunities';
 
 type SortField = 'detected_at' | 'opportunity_score' | 'status' | 'assigned_to_id' | 'contact_name';
 type SortOrder = 'asc' | 'desc';
@@ -39,7 +40,7 @@ export function AdminOpportunities() {
   // Búsqueda y filtros
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [filterAssigned, setFilterAssigned] = useState<string>('all');
+  const [filterAssigned, setFilterAssigned] = useState<string>('unassigned'); // Por defecto mostrar solo no asignadas
   
   // Filtros rápidos
   const [filterSinSituacion, setFilterSinSituacion] = useState(false);
@@ -412,6 +413,14 @@ export function AdminOpportunities() {
         </div>
       </div>
       
+      {/* Asignación Rápida de 50 Oportunidades Aleatorias */}
+      <AssignRandomOpportunities
+        agents={agents}
+        onAssignComplete={() => {
+          loadOpportunities();
+        }}
+      />
+
       {/* Asignación Bulk */}
       {selectedIds.size > 0 && (
         <Card className="bg-blue-50 border-blue-200">
@@ -430,7 +439,7 @@ export function AdminOpportunities() {
                   <option value="">Seleccionar agente...</option>
                   {agents.map(agent => (
                     <option key={agent.id} value={agent.id}>
-                      {agent.full_name || agent.email} ({agent.role || 'usuario'})
+                      {agent.full_name ? `${agent.full_name} (${agent.email})` : agent.email}
                     </option>
                   ))}
                 </select>
@@ -516,6 +525,25 @@ export function AdminOpportunities() {
               </div>
             </div>
             
+            {/* Filtro de Asignación - Visible siempre */}
+            <div className="pt-4 border-t">
+              <Label className="text-sm font-medium text-gray-700 mb-2 block">Ver Oportunidades</Label>
+              <div className="flex gap-2">
+                <select
+                  value={filterAssigned}
+                  onChange={(e) => {
+                    setFilterAssigned(e.target.value);
+                    setPagination({ ...pagination, page: 1 });
+                  }}
+                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                >
+                  <option value="unassigned">Solo No Asignadas</option>
+                  <option value="assigned">Solo Asignadas</option>
+                  <option value="all">Todas</option>
+                </select>
+              </div>
+            </div>
+
             {/* Filtros Rápidos - Tags */}
             <div className="pt-4 border-t">
               <Label className="text-sm font-medium text-gray-700 mb-3 block">Filtros Rápidos</Label>
@@ -751,12 +779,14 @@ export function AdminOpportunities() {
                           </td>
                           <td className="py-3 px-4">
                             {opportunity.assigned_to ? (
-                              <div className="flex items-center gap-1 text-sm">
-                                <UserCheck size={14} className="text-green-600" />
-                                <span className="text-gray-900">{opportunity.assigned_to.name || opportunity.assigned_to.email}</span>
-                              </div>
+                              <Badge className="bg-green-100 text-green-700 border-green-300 flex items-center gap-1.5 w-fit">
+                                <UserCheck size={12} />
+                                <span>{opportunity.assigned_to.name || opportunity.assigned_to.email}</span>
+                              </Badge>
                             ) : (
-                              <span className="text-sm text-gray-400">Sin asignar</span>
+                              <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-300">
+                                Sin asignar
+                              </Badge>
                             )}
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-500">
@@ -814,14 +844,19 @@ export function AdminOpportunities() {
                           </div>
                           
                           <div className="text-sm">
-                            <p className="text-gray-600">
+                            <div className="text-gray-600">
                               <strong>Asignado a:</strong>{' '}
                               {opportunity.assigned_to ? (
-                                <span className="text-gray-900">{opportunity.assigned_to.name || opportunity.assigned_to.email}</span>
+                                <Badge className="bg-green-100 text-green-700 border-green-300 inline-flex items-center gap-1.5 ml-1">
+                                  <UserCheck size={12} />
+                                  <span>{opportunity.assigned_to.name || opportunity.assigned_to.email}</span>
+                                </Badge>
                               ) : (
-                                <span className="text-gray-400">Sin asignar</span>
+                                <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-300 ml-1">
+                                  Sin asignar
+                                </Badge>
                               )}
-                            </p>
+                            </div>
                             <p className="text-gray-500 mt-1">
                               Detectada: {new Date(opportunity.detected_at).toLocaleDateString('es-ES')}
                             </p>

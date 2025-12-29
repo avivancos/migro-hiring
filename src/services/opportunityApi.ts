@@ -149,6 +149,35 @@ export const opportunityApi = {
   },
 
   /**
+   * Asignar N oportunidades aleatorias no asignadas a un usuario
+   * Endpoint: POST /api/crm/opportunities/assign-random
+   * Ver docs/BACKEND_RANDOM_OPPORTUNITIES_ASSIGN_ENDPOINT.md
+   */
+  async assignRandom(request: {
+    assigned_to_id: string;
+    count?: number;
+  }): Promise<{
+    success: boolean;
+    assigned_count: number;
+    available_count: number;
+    requested_count: number;
+    opportunity_ids: string[];
+    assigned_to_id: string;
+    assigned_to_name: string;
+    assigned_at: string;
+    warning?: string;
+  }> {
+    const { data } = await api.post(
+      `${CRM_BASE_PATH}/opportunities/assign-random`,
+      {
+        assigned_to_id: request.assigned_to_id,
+        count: request.count || 50,
+      }
+    );
+    return data;
+  },
+
+  /**
    * Asignar múltiples oportunidades a un usuario (batch)
    * NOTA: Este endpoint debe implementarse en el backend.
    * Ver docs/BACKEND_OPPORTUNITIES_BULK_ASSIGN_ENDPOINT.md
@@ -173,21 +202,39 @@ export const opportunityApi = {
     // return data;
     
     // Por ahora, usar asignaciones individuales en paralelo
-    const promises = request.opportunity_ids.map(id =>
-      this.assign(id, request.assigned_to_id).catch(error => ({
-        error: error.message,
-        opportunity_id: id,
-      }))
-    );
+    // Limitar el número de peticiones simultáneas para evitar sobrecarga
+    const BATCH_SIZE = 10; // Procesar en lotes de 10
+    const allResults: Array<LeadOpportunity | { error: string; opportunity_id: string }> = [];
     
-    const results = await Promise.all(promises);
+    for (let i = 0; i < request.opportunity_ids.length; i += BATCH_SIZE) {
+      const batch = request.opportunity_ids.slice(i, i + BATCH_SIZE);
+      const batchPromises = batch.map(id =>
+        this.assign(id, request.assigned_to_id).catch(error => {
+          const errorMessage = error?.response?.data?.detail || error?.message || 'Error desconocido';
+          console.error(`❌ [opportunityApi.bulkAssign] Error asignando oportunidad ${id}:`, errorMessage);
+          return {
+            error: errorMessage,
+            opportunity_id: id,
+          };
+        })
+      );
+      
+      const batchResults = await Promise.all(batchPromises);
+      allResults.push(...batchResults);
+      
+      // Pequeña pausa entre lotes para no sobrecargar el servidor
+      if (i + BATCH_SIZE < request.opportunity_ids.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+    
     const successes: LeadOpportunity[] = [];
     const errors: Array<{ opportunity_id: string; error: string }> = [];
     
-    results.forEach((result, index) => {
+    allResults.forEach((result) => {
       if ('error' in result) {
         errors.push({
-          opportunity_id: request.opportunity_ids[index],
+          opportunity_id: result.opportunity_id,
           error: result.error,
         });
       } else {

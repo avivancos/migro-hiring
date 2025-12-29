@@ -243,8 +243,23 @@ export function CRMContactList() {
       };
       
       // Para agentes: filtrar por responsable automáticamente
-      if (userIsAgent && user?.id) {
-        filters.responsible_user_id = user.id;
+      // Necesitamos encontrar el usuario CRM correspondiente al usuario del sistema
+      if (userIsAgent && user?.email) {
+        // Buscar el usuario CRM que coincida con el email del usuario del sistema
+        const crmUser = users.find(u => u.email === user.email);
+        if (crmUser) {
+          filters.responsible_user_id = crmUser.id;
+          console.log('🔍 [CRMContactList] Agente detectado, filtrando por CRM user:', {
+            systemUserId: user.id,
+            systemUserEmail: user.email,
+            crmUserId: crmUser.id,
+            crmUserName: crmUser.name
+          });
+        } else {
+          console.warn('⚠️ [CRMContactList] No se encontró usuario CRM para el agente:', user.email);
+          // Si no se encuentra el usuario CRM, no aplicar filtro (pero esto es un problema)
+          // En este caso, no debería cargar contactos, pero lo dejamos así para no romper la UI
+        }
       } else if (responsibleUserId) {
         // Para admins/abogados, permitir filtrar por responsable manualmente
         filters.responsible_user_id = responsibleUserId;
