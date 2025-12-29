@@ -190,7 +190,9 @@ export const CallForm = memo(function CallForm({
 
   const loadUsers = async () => {
     try {
-      const usersData = await crmService.getUsers(true);
+      const allUsers = await crmService.getUsers(true);
+      // Filtrar para incluir solo lawyers y agentes (no solo lawyers)
+      const usersData = allUsers.filter(u => u.role_name === 'lawyer' || u.role_name === 'agent');
       setUsers(usersData);
       
       // Pre-llenar responsable con el usuario actual si no hay uno ya asignado
@@ -745,7 +747,7 @@ export const CallForm = memo(function CallForm({
                 </div>
               )}
               <p className="text-xs text-gray-500 mt-1">
-                Solo abogados y administradores pueden ser responsables
+                Solo abogados y agentes pueden ser responsables
               </p>
             </div>
           </div>

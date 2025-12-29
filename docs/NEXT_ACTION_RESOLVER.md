@@ -230,3 +230,4 @@ Requerida: No
 **Estado**: ✅ Implementado  
 **Versión**: 1.0.0
 
+

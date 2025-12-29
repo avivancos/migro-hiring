@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { crmService } from '@/services/crmService';
+import { opportunityApi } from '@/services/opportunityApi';
 import type { KommoContact, ContactFilters, CRMUser } from '@/types/crm';
 import {
   Search,

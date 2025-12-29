@@ -115,11 +115,13 @@ export function CRMContactDetail() {
       setNotes(notesData.items || []);
       setUsers(usersData);
       
-      // Cargar oportunidades relacionadas
+      // Cargar oportunidades relacionadas (filtrar por contact_id)
       if (contactData?.id) {
         setLoadingOpportunities(true);
         try {
-          const oppsResponse = await opportunityApi.list({ limit: 10 });
+          // Cargar todas las oportunidades y filtrar por contact_id
+          // Nota: El backend expande automáticamente assigned_to en las oportunidades
+          const oppsResponse = await opportunityApi.list({ limit: 100 });
           const related = (oppsResponse.opportunities || []).filter(
             (opp: any) => opp.contact_id === contactData.id
           );
@@ -729,6 +731,20 @@ export function CRMContactDetail() {
                     <div className="flex items-center gap-2 text-gray-700">
                       <MapPin className="w-4 h-4 text-gray-500" />
                       <span className="text-sm">Provincia: {contact.state}</span>
+                    </div>
+                  )}
+                  {/* Responsable/Agente asignado a través de la oportunidad */}
+                  {relatedOpportunities.length > 0 && relatedOpportunities[0]?.assigned_to && (
+                    <div className="flex items-center gap-2 text-gray-700 mt-3 pt-3 border-t border-gray-200">
+                      <Users className="w-4 h-4 text-gray-500" />
+                      <div className="flex flex-col">
+                        <span className="text-xs text-gray-500">Responsable</span>
+                        <span className="text-sm font-medium text-gray-900">
+                          {relatedOpportunities[0].assigned_to.name || 
+                           relatedOpportunities[0].assigned_to.email || 
+                           'Sin asignar'}
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>

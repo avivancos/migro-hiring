@@ -175,3 +175,4 @@ export const OpportunityTableRow = memo<OpportunityTableRowProps>(({ opportunity
 
 OpportunityTableRow.displayName = 'OpportunityTableRow';
 
+

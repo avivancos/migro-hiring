@@ -72,10 +72,11 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
   const loadUsers = async () => {
     setLoadingUsers(true);
     try {
-      const usersData = await crmService.getUsers(true);
-      console.log('Usuarios cargados en LeadForm:', usersData);
-      if (Array.isArray(usersData)) {
-        const validUsers = usersData.filter(u => u && u.id);
+      const allUsers = await crmService.getUsers(true);
+      console.log('Usuarios cargados en LeadForm:', allUsers);
+      if (Array.isArray(allUsers)) {
+        // Filtrar para incluir solo lawyers y agentes (no solo lawyers)
+        const validUsers = allUsers.filter(u => u && u.id && (u.role_name === 'lawyer' || u.role_name === 'agent'));
         setUsers(validUsers);
         
         // Pre-llenar responsable con el usuario actual si no hay uno ya asignado
@@ -304,7 +305,7 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
               </select>
               <p className="text-xs text-gray-500 mt-1">
                 {formData.responsible_user_id 
-                  ? 'Solo abogados y administradores pueden ser responsables'
+                  ? 'Solo abogados y agentes pueden ser responsables'
                   : 'Si no seleccionas un responsable, el sistema asignará automáticamente el lead a un agente disponible según cuota diaria y disponibilidad.'}
               </p>
             </div>

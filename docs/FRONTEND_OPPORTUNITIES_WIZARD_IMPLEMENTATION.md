@@ -336,3 +336,4 @@ El sistema utiliza TanStack Query para gestión de estado del servidor:
 
 
 
+

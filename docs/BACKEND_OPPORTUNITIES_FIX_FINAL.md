@@ -223,3 +223,4 @@ opportunities = list(result.unique().scalars().all())
 
 
 
+
