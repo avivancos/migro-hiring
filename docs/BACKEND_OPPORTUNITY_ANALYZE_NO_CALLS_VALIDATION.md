@@ -48,24 +48,19 @@ El backend ahora valida en múltiples puntos:
 
 ## 🔄 Comportamiento del Frontend
 
-### **Manejo del Error 400**
+### **Manejo del Error 400 - ✅ Implementado**
 
-El frontend debe manejar este error de manera user-friendly:
+El frontend ahora maneja el error 400 de manera user-friendly:
 
-```typescript
-try {
-  const analysis = await caseAnalysisApi.analyzeOpportunity(opportunityId);
-  // ... mostrar análisis
-} catch (error) {
-  if (error.response?.status === 400) {
-    // Mostrar mensaje amigable al usuario
-    showError("Esta oportunidad aún no tiene llamadas. Por favor, realiza al menos una llamada antes de analizar.");
-  } else {
-    // Otros errores
-    showError("Error al analizar la oportunidad");
-  }
-}
-```
+**Componente:** `AnalysisStateIndicator.tsx`
+- Detecta si el error es 400 (oportunidad sin llamadas)
+- Muestra el mensaje del backend al usuario
+- Agrega mensaje adicional: "Realiza al menos una llamada al contacto antes de analizar la oportunidad"
+- Oculta el botón "Reintentar" para errores 400 (ya que reintentar no ayudaría)
+
+**Página:** `CRMCaseAnalysis.tsx`
+- Pasa el error al componente `AnalysisStateIndicator`
+- El componente muestra el mensaje apropiado según el tipo de error
 
 ---
 
@@ -105,5 +100,6 @@ try {
 ---
 
 **Estado:** ✅ Implementado en Backend  
+**Frontend:** ✅ Actualizado para manejar error 400 con mensaje claro  
 **Fecha:** 2025-01-28
 

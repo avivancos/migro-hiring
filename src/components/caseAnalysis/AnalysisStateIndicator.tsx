@@ -5,15 +5,6 @@ import { Button } from '@/components/ui/button';
 import { AlertCircle, AlertTriangle, User } from 'lucide-react';
 import { AnalysisState } from '@/types/caseAnalysis';
 
-type ErrorWithResponse = Error & {
-  response?: {
-    status?: number;
-    data?: {
-      detail?: string;
-    };
-  };
-};
-
 interface AnalysisStateIndicatorProps {
   state: AnalysisState;
   onRetry?: () => void;

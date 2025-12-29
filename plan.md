@@ -165,6 +165,11 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - Documentación: `docs/BACKEND_PILI_ANALYSIS_STORAGE.md` ✅
   - Prompt para backend: `docs/BACKEND_OPPORTUNITY_ANALYZE_PROMPT.md` ✅
   - Estado: Documentación lista, pendiente implementación en backend ⏳
+- [x] **✅ Validación: Oportunidades sin llamadas**: Implementado en backend ✅
+  - Endpoint retorna HTTP 400 cuando oportunidad no tiene llamadas
+  - Mensaje claro: "No se puede analizar una oportunidad sin llamadas..."
+  - Frontend actualizado para mostrar mensaje amigable al usuario ✅
+  - Documentación: `docs/BACKEND_OPPORTUNITY_ANALYZE_NO_CALLS_VALIDATION.md` ✅
 
 ### ⚠️ Problemas Pendientes del Backend (Enero 2025)
 - [x] **🚨 CRÍTICO: Error 500 en `/crm/opportunities` - SELECT DISTINCT con JSON**: Corregido ✅

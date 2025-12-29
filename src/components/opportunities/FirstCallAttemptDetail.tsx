@@ -169,7 +169,6 @@ export function FirstCallAttemptDetail({
                   {attemptData.status === 'orange' && 'Sin contacto / Fallido'}
                   {attemptData.status === 'red' && 'Cliente descartó interés'}
                   {attemptData.status === 'green' && 'Llamada exitosa'}
-                  {attemptData.status === 'pending' && 'Pendiente'}
                 </p>
               </div>
             )}
