@@ -146,8 +146,12 @@ export function AssignRandomOpportunities({ agents, onAssignComplete }: AssignRa
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-blue-900">
           <UserPlus className="w-5 h-5" />
-          Asignación Rápida de Oportunidades
+          Asignación Rápida: 50 Oportunidades Aleatorias
         </CardTitle>
+        <p className="text-sm text-blue-700 mt-2">
+          Asigna automáticamente 50 oportunidades aleatorias no asignadas a un agente. 
+          Estas oportunidades se seleccionan de forma aleatoria del sistema.
+        </p>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>

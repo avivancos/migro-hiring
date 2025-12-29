@@ -41,6 +41,7 @@ export function AdminOpportunities() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterAssigned, setFilterAssigned] = useState<string>('unassigned'); // Por defecto mostrar solo no asignadas
+  const [filterAssignedToAgent, setFilterAssignedToAgent] = useState<string>(''); // Filtrar por agente específico
   
   // Filtros rápidos
   const [filterSinSituacion, setFilterSinSituacion] = useState(false);
@@ -144,7 +145,7 @@ export function AdminOpportunities() {
   // Cargar oportunidades
   useEffect(() => {
     loadOpportunities();
-  }, [pagination.page, pagination.limit, filterStatus, filterAssigned, searchQuery, sortField, sortOrder, filterSinSituacion, filterIntentosDisponibles, filterConInfoAsignada]);
+  }, [pagination.page, pagination.limit, filterStatus, filterAssigned, filterAssignedToAgent, searchQuery, sortField, sortOrder, filterSinSituacion, filterIntentosDisponibles, filterConInfoAsignada]);
   
   const loadOpportunities = async () => {
     setLoading(true);
@@ -162,13 +163,20 @@ export function AdminOpportunities() {
         filters.status = filterStatus as LeadOpportunity['status'];
       }
       
-      if (filterAssigned !== 'all') {
-        if (filterAssigned === 'assigned') {
-          // Necesitamos filtrar por oportunidades que tengan assigned_to_id
-          // El backend debería soportar esto, si no, filtraremos localmente
-        } else if (filterAssigned === 'unassigned') {
-          // Filtrar por oportunidades sin asignar
-          // Podríamos necesitar un filtro especial o filtrar localmente
+      // Si hay un agente específico seleccionado, usar ese filtro
+      if (filterAssignedToAgent) {
+        filters.assigned_to = filterAssignedToAgent;
+      }
+      
+      // Para el filtro "unassigned" o "assigned", aumentar significativamente el límite
+      // porque el filtro se aplica localmente después de recibir los datos
+      // Si solo pedimos 20, solo podremos filtrar de esas 20
+      if (filterAssigned !== 'all' && !filterAssignedToAgent) {
+        if (filterAssigned === 'unassigned' || filterAssigned === 'assigned') {
+          // Aumentar límite para obtener más oportunidades y poder filtrar correctamente
+          // Esto asegura que podamos mostrar suficientes oportunidades después del filtrado local
+          filters.limit = 1000; // Solicitar muchos datos para poder filtrar localmente
+          filters.page = 1; // Siempre empezar desde la página 1 cuando filtramos localmente
         }
       }
       
@@ -177,12 +185,18 @@ export function AdminOpportunities() {
       // Aplicar filtros localmente
       let filteredOpportunities = response.opportunities;
       
-      // Filtro por asignación
-      if (filterAssigned === 'assigned') {
-        filteredOpportunities = filteredOpportunities.filter(opp => opp.assigned_to_id);
-      } else if (filterAssigned === 'unassigned') {
-        filteredOpportunities = filteredOpportunities.filter(opp => !opp.assigned_to_id);
+      // Inicializar realTotal con el total del backend por defecto
+      let realTotal = response.total;
+      
+      // Filtro por asignación (solo si no hay agente específico seleccionado)
+      if (!filterAssignedToAgent) {
+        if (filterAssigned === 'assigned') {
+          filteredOpportunities = filteredOpportunities.filter(opp => opp.assigned_to_id);
+        } else if (filterAssigned === 'unassigned') {
+          filteredOpportunities = filteredOpportunities.filter(opp => !opp.assigned_to_id);
+        }
       }
+      // Si hay un agente específico, el filtro ya se aplicó en el backend
       
       // Filtro: Sin situación conocida (no tiene grading_situacion)
       if (filterSinSituacion) {
@@ -236,10 +250,22 @@ export function AdminOpportunities() {
         return sortOrder === 'asc' ? comparison : -comparison;
       });
       
+      // Calcular el total real después de aplicar TODOS los filtros locales
+      if (filterAssigned !== 'all' && !filterAssignedToAgent) {
+        // Para filtros locales (unassigned/assigned), el total real es el número de resultados filtrados
+        // después de aplicar todos los filtros
+        realTotal = filteredOpportunities.length;
+      }
+      
+      // Aplicar paginación local después de filtrar (si usamos límite aumentado)
+      if (filterAssigned !== 'all' && !filterAssignedToAgent) {
+        const startIndex = (pagination.page - 1) * pagination.limit;
+        const endIndex = startIndex + pagination.limit;
+        filteredOpportunities = filteredOpportunities.slice(startIndex, endIndex);
+      }
+      
       setOpportunities(filteredOpportunities);
-      // Si filtramos localmente, ajustar el total (aunque no es exacto porque el backend puede tener más)
-      // Por ahora usamos el total del backend, pero idealmente el backend debería soportar estos filtros
-      setTotal(response.total);
+      setTotal(realTotal);
     } catch (error) {
       console.error('Error cargando oportunidades:', error);
       setOpportunities([]);
@@ -340,7 +366,8 @@ export function AdminOpportunities() {
   const clearFilters = () => {
     setSearchQuery('');
     setFilterStatus('all');
-    setFilterAssigned('all');
+    setFilterAssigned('unassigned'); // Volver al valor por defecto
+    setFilterAssignedToAgent('');
     setFilterSinSituacion(false);
     setFilterIntentosDisponibles(null);
     setFilterConInfoAsignada(null);
@@ -351,6 +378,7 @@ export function AdminOpportunities() {
     searchQuery,
     filterStatus !== 'all' ? filterStatus : null,
     filterAssigned !== 'all' ? filterAssigned : null,
+    filterAssignedToAgent ? 'agent' : null,
     filterSinSituacion ? 'sin-situacion' : null,
     filterIntentosDisponibles !== null ? `intentos-${filterIntentosDisponibles}` : null,
     filterConInfoAsignada !== null ? (filterConInfoAsignada ? 'con-info' : 'sin-info') : null,
@@ -403,6 +431,41 @@ export function AdminOpportunities() {
     return 'text-red-600 font-semibold';
   };
   
+  // Helper para obtener el nombre del agente asignado
+  const getAssignedToDisplayName = (opportunity: LeadOpportunity): string | null => {
+    // Primero: Si viene expandido del backend (assigned_to), usarlo directamente
+    if (opportunity.assigned_to) {
+      // CRMUser tiene el campo 'name'
+      const name = opportunity.assigned_to.name || opportunity.assigned_to.email;
+      if (name) return name;
+    }
+    
+    // Segundo: Si no viene expandido pero tenemos assigned_to_id, buscarlo en la lista de agentes del sistema
+    // NOTA: Los agentes cargados son del tipo User (sistema), no CRMUser
+    // assigned_to_id debería corresponder al ID de un usuario del sistema
+    if (opportunity.assigned_to_id && agents.length > 0) {
+      const agent = agents.find(a => {
+        // Comparación estricta de strings, normalizando espacios
+        const agentId = String(a.id || '').trim();
+        const assignedId = String(opportunity.assigned_to_id || '').trim();
+        return agentId === assignedId;
+      });
+      
+      if (agent) {
+        return agent.full_name || agent.email || 'Usuario sin nombre';
+      }
+      
+      // Si no se encuentra, log para debugging
+      console.warn(`⚠️ [AdminOpportunities] Agente no encontrado para assigned_to_id: "${opportunity.assigned_to_id}"`, {
+        opportunityId: opportunity.id,
+        totalAgents: agents.length,
+        availableIds: agents.slice(0, 3).map(a => a.id),
+      });
+    }
+    
+    return null;
+  };
+  
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -421,11 +484,17 @@ export function AdminOpportunities() {
         }}
       />
 
-      {/* Asignación Bulk */}
+      {/* Asignación Manual de Oportunidades Seleccionadas - CASO DE USO 2 */}
       {selectedIds.size > 0 && (
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+        <Card className="bg-green-50 border-green-300">
+          <CardHeader>
+            <CardTitle className="text-green-900 flex items-center gap-2">
+              <UserCheck className="w-5 h-5" />
+              Asignar Oportunidades Seleccionadas Manualmente
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
               <div className="flex-1">
                 <Label className="text-sm font-medium text-gray-700 mb-2 block">
                   Asignar {selectedIds.size} oportunidad(es) seleccionada(s) a:
@@ -443,36 +512,27 @@ export function AdminOpportunities() {
                     </option>
                   ))}
                 </select>
+                <p className="text-xs text-gray-500 mt-2">
+                  Selecciona las oportunidades usando los checkboxes y asígnalas al agente seleccionado
+                </p>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleBulkAssign}
-                  disabled={!bulkAgentId || assigning}
-                  className="flex items-center gap-2"
-                >
-                  {assigning ? (
-                    <>
-                      <LoadingSpinner size="sm" />
-                      Asignando...
-                    </>
-                  ) : (
-                    <>
-                      <UserCheck size={18} />
-                      Asignar
-                    </>
-                  )}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedIds(new Set());
-                    setBulkAgentId('');
-                  }}
-                  disabled={assigning}
-                >
-                  Cancelar
-                </Button>
-              </div>
+              <Button
+                onClick={handleBulkAssign}
+                disabled={!bulkAgentId || assigning}
+                className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 whitespace-nowrap"
+              >
+                {assigning ? (
+                  <>
+                    <LoadingSpinner size="sm" />
+                    <span>Asignando...</span>
+                  </>
+                ) : (
+                  <>
+                    <UserCheck className="w-4 h-4" />
+                    <span>Asignar Seleccionadas</span>
+                  </>
+                )}
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -528,11 +588,15 @@ export function AdminOpportunities() {
             {/* Filtro de Asignación - Visible siempre */}
             <div className="pt-4 border-t">
               <Label className="text-sm font-medium text-gray-700 mb-2 block">Ver Oportunidades</Label>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2">
                 <select
                   value={filterAssigned}
                   onChange={(e) => {
                     setFilterAssigned(e.target.value);
+                    // Si se selecciona "Solo No Asignadas", limpiar el filtro de agente
+                    if (e.target.value === 'unassigned') {
+                      setFilterAssignedToAgent('');
+                    }
                     setPagination({ ...pagination, page: 1 });
                   }}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
@@ -541,6 +605,25 @@ export function AdminOpportunities() {
                   <option value="assigned">Solo Asignadas</option>
                   <option value="all">Todas</option>
                 </select>
+                
+                {/* Select de agente específico - Solo visible cuando no es "Solo No Asignadas" */}
+                {filterAssigned !== 'unassigned' && (
+                  <select
+                    value={filterAssignedToAgent}
+                    onChange={(e) => {
+                      setFilterAssignedToAgent(e.target.value);
+                      setPagination({ ...pagination, page: 1 });
+                    }}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                  >
+                    <option value="">Todos los agentes</option>
+                    {agents.map(agent => (
+                      <option key={agent.id} value={agent.id}>
+                        {agent.full_name ? `${agent.full_name} (${agent.email})` : agent.email}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
             </div>
 
@@ -653,14 +736,35 @@ export function AdminOpportunities() {
                       value={filterAssigned}
                       onChange={(e) => {
                         setFilterAssigned(e.target.value);
+                        // Si se selecciona "Sin asignar", limpiar el filtro de agente
+                        if (e.target.value === 'unassigned') {
+                          setFilterAssignedToAgent('');
+                        }
                         setPagination({ ...pagination, page: 1 });
                       }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary mb-2"
                     >
                       <option value="all">Todas</option>
                       <option value="assigned">Asignadas</option>
                       <option value="unassigned">Sin asignar</option>
                     </select>
+                    {filterAssigned !== 'unassigned' && (
+                      <select
+                        value={filterAssignedToAgent}
+                        onChange={(e) => {
+                          setFilterAssignedToAgent(e.target.value);
+                          setPagination({ ...pagination, page: 1 });
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary mt-2"
+                      >
+                        <option value="">Todos los agentes</option>
+                        {agents.map(agent => (
+                          <option key={agent.id} value={agent.id}>
+                            {agent.full_name ? `${agent.full_name} (${agent.email})` : agent.email}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </div>
                 </div>
               </div>
@@ -778,16 +882,19 @@ export function AdminOpportunities() {
                             {getStatusBadge(opportunity.status)}
                           </td>
                           <td className="py-3 px-4">
-                            {opportunity.assigned_to ? (
-                              <Badge className="bg-green-100 text-green-700 border-green-300 flex items-center gap-1.5 w-fit">
-                                <UserCheck size={12} />
-                                <span>{opportunity.assigned_to.name || opportunity.assigned_to.email}</span>
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-300">
-                                Sin asignar
-                              </Badge>
-                            )}
+                            {(() => {
+                              const assignedName = getAssignedToDisplayName(opportunity);
+                              return assignedName ? (
+                                <Badge className="bg-green-100 text-green-700 border-green-300 flex items-center gap-1.5 w-fit">
+                                  <UserCheck size={12} />
+                                  <span>{assignedName}</span>
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-300">
+                                  Sin asignar
+                                </Badge>
+                              );
+                            })()}
                           </td>
                           <td className="py-3 px-4 text-sm text-gray-500">
                             {new Date(opportunity.detected_at).toLocaleDateString('es-ES')}
@@ -846,16 +953,19 @@ export function AdminOpportunities() {
                           <div className="text-sm">
                             <div className="text-gray-600">
                               <strong>Asignado a:</strong>{' '}
-                              {opportunity.assigned_to ? (
-                                <Badge className="bg-green-100 text-green-700 border-green-300 inline-flex items-center gap-1.5 ml-1">
-                                  <UserCheck size={12} />
-                                  <span>{opportunity.assigned_to.name || opportunity.assigned_to.email}</span>
-                                </Badge>
-                              ) : (
-                                <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-300 ml-1">
-                                  Sin asignar
-                                </Badge>
-                              )}
+                              {(() => {
+                                const assignedName = getAssignedToDisplayName(opportunity);
+                                return assignedName ? (
+                                  <Badge className="bg-green-100 text-green-700 border-green-300 inline-flex items-center gap-1.5 ml-1">
+                                    <UserCheck size={12} />
+                                    <span>{assignedName}</span>
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="outline" className="bg-gray-50 text-gray-500 border-gray-300 ml-1">
+                                    Sin asignar
+                                  </Badge>
+                                );
+                              })()}
                             </div>
                             <p className="text-gray-500 mt-1">
                               Detectada: {new Date(opportunity.detected_at).toLocaleDateString('es-ES')}
