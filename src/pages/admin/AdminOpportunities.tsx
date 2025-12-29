@@ -61,42 +61,82 @@ export function AdminOpportunities() {
   // Cargar agentes del sistema (no usuarios CRM)
   useEffect(() => {
     const loadAgents = async () => {
-      try {
-        const response = await adminService.getAllUsers({ 
-          is_active: true,
-          limit: 1000 // Obtener todos los usuarios activos
-        });
-        
-        // Filtrar solo agentes y abogados que pueden ser asignados a oportunidades
-        const agentsFiltered = response.items.filter((u: User) => 
-          u.role === 'agent' || u.role === 'lawyer' || u.role === 'admin'
-        );
-        
-        console.log('👥 [AdminOpportunities] Usuarios del sistema cargados:', {
-          total: response.items.length,
-          filtrados: agentsFiltered.length,
-          usuarios: agentsFiltered
-        });
-        
-        setAgents(agentsFiltered);
-        
-        if (agentsFiltered.length === 0) {
-          console.warn('⚠️ [AdminOpportunities] No se encontraron agentes/abogados activos en el sistema');
+      const allAgents: User[] = [];
+      
+      // Intentar cargar usuarios filtrando por cada role que necesitamos
+      // Esto puede ayudar a evitar el usuario problemático si el backend filtra antes de validar
+      const rolesToLoad = ['agent', 'lawyer', 'admin'];
+      
+      for (const role of rolesToLoad) {
+        try {
+          console.log(`🔄 [AdminOpportunities] Intentando cargar usuarios con role: ${role}`);
+          const response = await adminService.getAllUsers({ 
+            is_active: true,
+            role: role,
+            limit: 1000
+          });
+          
+          if (response.items && response.items.length > 0) {
+            allAgents.push(...response.items);
+            console.log(`✅ [AdminOpportunities] Cargados ${response.items.length} usuarios con role ${role}`);
+          }
+        } catch (error: any) {
+          console.warn(`⚠️ [AdminOpportunities] Error cargando usuarios con role ${role}:`, error?.response?.status, error?.response?.data?.detail);
+          
+          // Si falla con un role específico, continuar con los demás
+          if (error?.response?.status === 500 && 
+              error?.response?.data?.detail?.includes('phone_number')) {
+            console.error(`⚠️ [AdminOpportunities] Error del backend al cargar role ${role}: Hay usuarios con phone_number vacío. ` +
+              'El backend necesita permitir valores null/vacíos para phone_number. ' +
+              'Ver docs/BACKEND_USERS_PHONE_NUMBER_VALIDATION_ERROR.md');
+          }
         }
-      } catch (error: any) {
-        console.error('❌ [AdminOpportunities] Error cargando agentes del sistema:', error);
-        
-        // Si el error es 500 relacionado con validación de phone_number, mostrar mensaje útil
-        if (error?.response?.status === 500 && 
-            error?.response?.data?.detail?.includes('phone_number')) {
-          console.error('⚠️ [AdminOpportunities] Error del backend: Hay usuarios con phone_number vacío. ' +
-            'El backend necesita permitir valores null/vacíos para phone_number. ' +
-            'Ver docs/BACKEND_USERS_PHONE_NUMBER_VALIDATION_ERROR.md');
+      }
+      
+      // Si no pudimos cargar ningún usuario, intentar sin filtrar por role como último recurso
+      if (allAgents.length === 0) {
+        try {
+          console.log('🔄 [AdminOpportunities] Intentando cargar todos los usuarios sin filtrar por role');
+          const response = await adminService.getAllUsers({ 
+            is_active: true,
+            limit: 1000
+          });
+          
+          // Filtrar localmente por roles
+          const agentsFiltered = response.items.filter((u: User) => 
+            u.role === 'agent' || u.role === 'lawyer' || u.role === 'admin'
+          );
+          
+          allAgents.push(...agentsFiltered);
+        } catch (error: any) {
+          console.error('❌ [AdminOpportunities] Error cargando usuarios sin filtrar:', error);
+          
+          if (error?.response?.status === 500 && 
+              error?.response?.data?.detail?.includes('phone_number')) {
+            console.error('⚠️ [AdminOpportunities] Error del backend: Hay usuarios con phone_number vacío. ' +
+              'El backend necesita permitir valores null/vacíos para phone_number. ' +
+              'Ver docs/BACKEND_USERS_PHONE_NUMBER_VALIDATION_ERROR.md');
+          }
         }
-        
-        setAgents([]); // Asegurar que agents esté vacío en caso de error
+      }
+      
+      // Eliminar duplicados por ID
+      const uniqueAgents = Array.from(
+        new Map(allAgents.map(agent => [agent.id, agent])).values()
+      );
+      
+      console.log('👥 [AdminOpportunities] Usuarios finales cargados:', {
+        total: uniqueAgents.length,
+        usuarios: uniqueAgents.map(u => ({ id: u.id, email: u.email, role: u.role, full_name: u.full_name }))
+      });
+      
+      setAgents(uniqueAgents);
+      
+      if (uniqueAgents.length === 0) {
+        console.warn('⚠️ [AdminOpportunities] No se pudieron cargar agentes/abogados. El backend tiene un error de validación con phone_number vacío.');
       }
     };
+    
     loadAgents();
   }, []);
   
