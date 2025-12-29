@@ -16,7 +16,6 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  CheckCircle2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { LeadOpportunity, OpportunityFilters } from '@/types/opportunity';

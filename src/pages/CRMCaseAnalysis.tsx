@@ -19,7 +19,7 @@ export function CRMCaseAnalysis() {
   const navigate = useNavigate();
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
-  const { analysis, state, refetch } = useOpportunityAnalysis(
+  const { analysis, state, error, refetch } = useOpportunityAnalysis(
     opportunityId,
     true // Auto-fetch cuando se monta
   );
@@ -90,7 +90,7 @@ export function CRMCaseAnalysis() {
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">Análisis de Caso</h1>
         </div>
-        <AnalysisStateIndicator state={state} onRetry={() => refetch()} />
+        <AnalysisStateIndicator state={state} error={error} onRetry={() => refetch()} />
       </div>
     );
   }

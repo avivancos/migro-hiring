@@ -32,7 +32,7 @@ import {
 import { useAuth } from '@/providers/AuthProvider';
 import { formatContractStatus, formatCallStatus, formatLeadStatus, formatPriority } from '@/utils/statusTranslations';
 import { opportunityApi } from '@/services/opportunityApi';
-import { isAgent, isAdminOrSuperuser } from '@/utils/searchValidation';
+import { isAgent } from '@/utils/searchValidation';
 
 export function CRMDashboardPage() {
   // Medir rendimiento de la página
@@ -57,7 +57,7 @@ export function CRMDashboardPage() {
   
   // Determinar si el usuario es agente
   const userIsAgent = user ? isAgent(user.role) : false;
-  const userIsAdmin = user ? isAdminOrSuperuser(user.role, user.is_superuser) : false;
+  // const userIsAdmin = user ? isAdminOrSuperuser(user.role, user.is_superuser) : false;
 
   // Solo cargar datos si está autenticado
   useEffect(() => {
@@ -143,7 +143,7 @@ export function CRMDashboardPage() {
       setTotalContractsCount(contractsResponse.total || 0);
       
       // Ordenar contratos por fecha (más recientes primero)
-      const sortedContracts = (contractsResponse.items || []).sort((a, b) => {
+      const sortedContracts = (contractsResponse.items || []).sort((a: any, b: any) => {
         const dateA = new Date(a.created_at).getTime();
         const dateB = new Date(b.created_at).getTime();
         return dateB - dateA;
@@ -178,7 +178,7 @@ export function CRMDashboardPage() {
 
       // Obtener stages del pipeline principal
       if (pipelinesData.length > 0) {
-        const mainPipeline = pipelinesData.find(p => p.is_main) || pipelinesData[0];
+        const mainPipeline = pipelinesData.find((p: any) => p.is_main) || pipelinesData[0];
         try {
           const stagesData = await crmService.getPipelineStages(mainPipeline.id);
           setStages(stagesData);

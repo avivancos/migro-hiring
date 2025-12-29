@@ -122,14 +122,14 @@ export function PipelineModifyWizard({
       </div>
 
       {/* Contenido del wizard */}
-      <Card className="shadow-lg">
-        <CardHeader className="border-b bg-gray-50">
+      <Card className="shadow-lg flex flex-col h-full max-h-full">
+        <CardHeader className="border-b bg-gray-50 flex-shrink-0">
           <CardTitle className="text-xl md:text-2xl text-center">
             Modificar Pipeline
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="p-4 md:p-6">
+        <CardContent className="p-4 md:p-6 overflow-y-auto flex-1 min-h-0">
           {/* Paso 1: Vista general */}
           {currentStep === 1 && (
             <PipelineOverviewStep
@@ -178,7 +178,7 @@ export function PipelineModifyWizard({
 
         {/* Navegación inferior - Solo en desktop */}
         {currentStep > 1 && currentStep < 4 && (
-          <div className="hidden md:flex items-center justify-between p-6 border-t bg-gray-50">
+          <div className="hidden md:flex items-center justify-between p-6 border-t bg-gray-50 flex-shrink-0">
             <Button
               variant="outline"
               onClick={handlePrevious}

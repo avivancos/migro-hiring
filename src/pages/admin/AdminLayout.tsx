@@ -11,7 +11,7 @@ import { Drawer } from '@/components/common/Drawer';
 export function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isAuthenticated, isLoading, isAdmin } = useAuth();
+  const { isAuthenticated, isLoading, isAdmin, user } = useAuth();
   const [isAdminMode, setIsAdminMode] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Mobile sidebar state
 

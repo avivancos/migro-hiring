@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { OpportunityCard } from './OpportunityCard';
+import { OpportunityTableRow } from './OpportunityTableRow';
 import { OpportunityFilters } from './OpportunityFilters';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
@@ -9,7 +10,10 @@ import { useOpportunities } from '@/hooks/useOpportunities';
 import type { OpportunityFilters as OpportunityFiltersType } from '@/types/opportunity';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Grid3x3, List } from 'lucide-react';
+
+type ViewMode = 'cards' | 'table';
+const VIEW_MODE_STORAGE_KEY = 'crm_opportunities_view_mode';
 
 interface OpportunityListProps {
   filters?: OpportunityFiltersType;
@@ -22,6 +26,17 @@ export function OpportunityList({
   onOpportunitySelect,
   availableAgents = [],
 }: OpportunityListProps) {
+  // Estado de vista (tabla o cards) con persistencia en localStorage
+  const [viewMode, setViewMode] = React.useState<ViewMode>(() => {
+    const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+    return (saved === 'table' || saved === 'cards') ? saved : 'cards';
+  });
+
+  // Guardar preferencia en localStorage cuando cambie
+  React.useEffect(() => {
+    localStorage.setItem(VIEW_MODE_STORAGE_KEY, viewMode);
+  }, [viewMode]);
+
   // Usar initialFilters como base, pero permitir que se actualicen
   const [filters, setFilters] = React.useState<OpportunityFiltersType>(initialFilters);
   
@@ -31,15 +46,38 @@ export function OpportunityList({
       setFilters(prev => ({ ...prev, ...initialFilters }));
     }
   }, [initialFilters]);
+  
   const {
-    opportunities,
-    total,
+    opportunities: rawOpportunities,
+    total: _total,
     page,
-    limit,
+    limit: _limit,
     totalPages,
     isLoading,
     error,
   } = useOpportunities(filters);
+  
+  // Oportunidades filtradas localmente (por filtros rápidos)
+  const [filteredOpportunities, setFilteredOpportunities] = React.useState<typeof rawOpportunities>(rawOpportunities);
+  
+  // Callback memoizado para actualizar oportunidades filtradas
+  const handleFilteredOpportunitiesChange = React.useCallback((filtered: typeof rawOpportunities) => {
+    setFilteredOpportunities(filtered);
+  }, []);
+  
+  // Ref para trackear si hay filtros rápidos activos
+  const hasActiveQuickFilters = React.useRef(false);
+  
+  // Actualizar oportunidades filtradas cuando cambian las oportunidades raw
+  // Solo si no hay filtros rápidos activos
+  React.useEffect(() => {
+    if (!hasActiveQuickFilters.current) {
+      setFilteredOpportunities(rawOpportunities);
+    }
+  }, [rawOpportunities]);
+  
+  // Usar oportunidades filtradas para mostrar
+  const opportunities = filteredOpportunities;
 
   const handlePageChange = (newPage: number) => {
     setFilters((prev) => ({ ...prev, page: newPage }));
@@ -127,26 +165,106 @@ export function OpportunityList({
         filters={filters}
         onFiltersChange={setFilters}
         availableAgents={availableAgents}
+        opportunities={rawOpportunities}
+        onFilteredOpportunitiesChange={handleFilteredOpportunitiesChange}
       />
 
-      {/* Lista de oportunidades */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {opportunities.map((opportunity) => (
-          <OpportunityCard
-            key={opportunity.id}
-            opportunity={opportunity}
-            onSelect={onOpportunitySelect}
-            showActions={true}
-          />
-        ))}
+      {/* Barra de herramientas con toggle de vista */}
+      <div className="flex items-center justify-between gap-4">
+        <div className="text-sm text-gray-600">
+          {opportunities.length} {opportunities.length === 1 ? 'oportunidad' : 'oportunidades'}
+          {filteredOpportunities.length !== rawOpportunities.length && ' (filtradas)'}
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setViewMode(viewMode === 'table' ? 'cards' : 'table')}
+            title={viewMode === 'table' ? 'Vista de tarjetas' : 'Vista de tabla'}
+            className="flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
+          >
+            {viewMode === 'table' ? (
+              <>
+                <Grid3x3 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="ml-1 sm:ml-2 sm:hidden">Vista</span>
+                <span className="hidden sm:inline">Tarjetas</span>
+              </>
+            ) : (
+              <>
+                <List className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="ml-1 sm:ml-2 sm:hidden">Vista</span>
+                <span className="hidden sm:inline">Tabla</span>
+              </>
+            )}
+          </Button>
+        </div>
       </div>
+
+      {/* Lista de oportunidades - Vista de Cards */}
+      {viewMode === 'cards' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {opportunities.map((opportunity) => (
+            <OpportunityCard
+              key={opportunity.id}
+              opportunity={opportunity}
+              onSelect={onOpportunitySelect}
+              showActions={true}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Lista de oportunidades - Vista de Tabla */}
+      {viewMode === 'table' && (
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Contacto
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Score
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Prioridad
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Estado
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Contacto
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Razón
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Responsable
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {opportunities.map((opportunity) => (
+                    <OpportunityTableRow
+                      key={opportunity.id}
+                      opportunity={opportunity}
+                      onSelect={onOpportunitySelect}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Paginación */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-4 border-t">
           <div className="text-sm text-gray-600">
-            Mostrando {(page - 1) * limit + 1} a {Math.min(page * limit, total)} de{' '}
-            {total} oportunidades
+            Mostrando {opportunities.length > 0 ? 1 : 0} a {opportunities.length} de{' '}
+            {opportunities.length} oportunidades {filteredOpportunities.length !== rawOpportunities.length ? '(filtradas)' : ''}
           </div>
           <div className="flex items-center gap-2">
             <Button

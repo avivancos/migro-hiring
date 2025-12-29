@@ -19,6 +19,8 @@ import type { FirstCallAttemptRequest } from '@/types/opportunity';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { PipelineWizardModal } from '@/components/pipelines/Wizards/PipelineWizardModal';
 import { PipelineActionsList } from '@/components/pipelines/PipelineActionsList';
+import { SuggestedNextAction } from '@/components/opportunities/SuggestedNextAction';
+import { usePipelineActions } from '@/hooks/usePipelineActions';
 
 export function CRMOpportunityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -43,6 +45,13 @@ export function CRMOpportunityDetail() {
     ? `${opportunity.contact.name} - Detalle de Oportunidad | Migro.es`
     : 'Detalle de Oportunidad | Migro.es';
   usePageTitle(opportunityTitle);
+
+  // Obtener acciones del pipeline para la siguiente acción sugerida
+  // Debe estar después de los hooks condicionales pero antes de los early returns
+  const { actions: pipelineActions } = usePipelineActions(
+    opportunity ? 'leads' : null,
+    opportunity?.id || null
+  );
 
   if (isLoading) {
     return (
@@ -74,18 +83,6 @@ export function CRMOpportunityDetail() {
   }
 
   const contact = opportunity.contact;
-
-  // Debug: verificar datos del responsable
-  console.log('🔍 [CRMOpportunityDetail] Opportunity data:', {
-    id: opportunity.id,
-    status: opportunity.status,
-    assigned_to_id: opportunity.assigned_to_id,
-    assigned_to: opportunity.assigned_to,
-    hasAssignedTo: !!opportunity.assigned_to,
-    first_call_attempts: opportunity.first_call_attempts,
-    first_call_completed: opportunity.first_call_completed,
-    first_call_successful_attempt: opportunity.first_call_successful_attempt,
-  });
 
   // Manejar click en badge de intento
   const handleAttemptClick = (attemptNumber: number) => {
@@ -154,11 +151,29 @@ export function CRMOpportunityDetail() {
           {contact && (
             <Card>
               <CardHeader>
-                <CardTitle>Información del Contacto</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Información del Contacto</CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(`/crm/contacts/${opportunity.contact_id}`)}
+                    className="flex items-center gap-2"
+                  >
+                    <User className="h-4 w-4" />
+                    Ver Contacto Completo
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">{contact.name}</h3>
+                  <h3 className="font-semibold text-lg mb-2">
+                    <button
+                      onClick={() => navigate(`/crm/contacts/${opportunity.contact_id}`)}
+                      className="hover:text-primary hover:underline transition-colors"
+                    >
+                      {contact.name}
+                    </button>
+                  </h3>
                 </div>
                 <div className="space-y-2">
                   {contact.email && (
@@ -218,6 +233,21 @@ export function CRMOpportunityDetail() {
 
         {/* Sidebar con acciones */}
         <div className="space-y-6">
+          {/* Siguiente Acción Sugerida - Siempre visible */}
+          <SuggestedNextAction
+            opportunity={opportunity}
+            completedActions={pipelineActions}
+            currentStage={opportunity.pipeline_stage?.current_stage as any}
+            onActionClick={(actionCode) => {
+              if (actionCode === 'make_call') {
+                // Redirigir al handler de llamadas con el contacto
+                navigate(`/crm/call-handler?contact_id=${opportunity.contact_id}&opportunity_id=${opportunity.id}`);
+              } else if (actionCode === 'analyze') {
+                navigate(`/crm/opportunities/${opportunity.id}/analyze`);
+              }
+            }}
+          />
+
           {/* Si existe pipeline, mostrar acciones del pipeline */}
           {opportunity.pipeline_stage_id || opportunity.pipeline_stage ? (
             <>

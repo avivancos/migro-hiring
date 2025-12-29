@@ -74,15 +74,16 @@ export function Modal({
     >
       <Card
         className={cn(
-          'w-full bg-white shadow-xl',
+          'w-full bg-white shadow-xl flex flex-col',
           sizeClasses[size],
           'animate-in fade-in-0 zoom-in-95 duration-200',
+          'max-h-[90vh] md:max-h-[95vh]',
           className
         )}
         onClick={(e) => e.stopPropagation()}
       >
         {(title || showCloseButton) && (
-          <div className="flex items-center justify-between p-6 border-b">
+          <div className="flex items-center justify-between p-6 border-b flex-shrink-0">
             {title && (
               <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
             )}
@@ -99,10 +100,12 @@ export function Modal({
           </div>
         )}
         
-        <div className="p-6">{children}</div>
+        <div className="p-6 overflow-y-auto flex-1 min-h-0">
+          {children}
+        </div>
         
         {footer && (
-          <div className="flex items-center justify-end gap-2 p-6 border-t">
+          <div className="flex items-center justify-end gap-2 p-6 border-t flex-shrink-0">
             {footer}
           </div>
         )}

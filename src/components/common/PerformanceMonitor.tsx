@@ -26,8 +26,8 @@ export function PerformanceMonitor({
     if (!enabled) return;
 
     // Configurar servicio
-    performanceTracingService.setEnabled(true);
-    performanceTracingService.setLogToConsole(true);
+    performanceTracingService.setEnabled(enabled);
+    performanceTracingService.setLogToConsole(enabled && import.meta.env.DEV);
     performanceTracingService.setSlowThreshold(slowThreshold);
 
     // Medir tiempo de carga de página
@@ -42,16 +42,19 @@ export function PerformanceMonitor({
       performanceTracingService.end(pageMarkName, 'success', { route: location.pathname });
 
       // Generar reporte actualizado (para uso futuro si es necesario)
-      const currentReport = performanceTracingService.getReport();
-
-      // Log si hay métricas lentas
-      if (showSlowOnly) {
-        const slowMetrics = currentReport.metrics.filter(
-          (m: PerformanceMetric) => m.duration && m.duration > slowThreshold
+      // Solo mostrar métricas de la página actual, no todas las acumuladas
+      if (showSlowOnly && import.meta.env.DEV) {
+        const currentReport = performanceTracingService.getReport();
+        // Filtrar solo métricas de la página actual
+        const currentPageMetrics = currentReport.metrics.filter(
+          (m: PerformanceMetric) => 
+            m.route === location.pathname && 
+            m.duration && 
+            m.duration > slowThreshold
         );
-        if (slowMetrics.length > 0) {
-          console.group('🐌 Métricas Lentas Detectadas');
-          slowMetrics.forEach((metric: PerformanceMetric) => {
+        if (currentPageMetrics.length > 0) {
+          console.group(`🐌 Métricas Lentas - ${location.pathname}`);
+          currentPageMetrics.forEach((metric: PerformanceMetric) => {
             console.warn(
               `${metric.type.toUpperCase()}: ${metric.name} - ${metric.duration?.toFixed(2)}ms`
             );

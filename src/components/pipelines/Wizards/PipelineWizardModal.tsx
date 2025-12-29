@@ -33,7 +33,7 @@ export function PipelineWizardModal({
       title="Modificar Pipeline"
       size="xl"
     >
-      <div className="p-4 md:p-6">
+      <div className="min-h-0">
         <PipelineModifyWizard
           entityType={entityType}
           entityId={entityId}

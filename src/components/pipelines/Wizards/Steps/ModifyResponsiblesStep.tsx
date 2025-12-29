@@ -25,8 +25,8 @@ interface ModifyResponsiblesStepProps {
 }
 
 export function ModifyResponsiblesStep({
-  stage,
-  actions,
+  stage: _stage,
+  actions: _actions,
   changes,
   onNext,
   onPrevious,

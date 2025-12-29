@@ -155,6 +155,17 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - Documentación: `docs/FRONTEND_PILI_DISABLED.md` ✅
   - **Razón**: Pili LLM movido a repositorio externo ✅
 
+### 💾 Almacenamiento de Análisis de Pili (Enero 2025)
+- [ ] **🔴 Almacenar análisis de Pili en base de datos del backend**: Pendiente implementación 🚨
+  - Problema: Endpoint `/crm/opportunities/{id}/analyze` da timeout (30s) porque llama a Pili cada vez
+  - Solución: Guardar análisis en tabla `case_analyses`, retornar análisis existente si existe
+  - Si `force_reanalyze=false` (default) → retornar análisis existente si existe
+  - Si `force_reanalyze=true` → generar nuevo análisis y guardarlo
+  - Mejora rendimiento: de 30+ segundos a < 100ms cuando existe análisis previo
+  - Documentación: `docs/BACKEND_PILI_ANALYSIS_STORAGE.md` ✅
+  - Prompt para backend: `docs/BACKEND_OPPORTUNITY_ANALYZE_PROMPT.md` ✅
+  - Estado: Documentación lista, pendiente implementación en backend ⏳
+
 ### ⚠️ Problemas Pendientes del Backend (Enero 2025)
 - [x] **🚨 CRÍTICO: Error 500 en `/crm/opportunities` - SELECT DISTINCT con JSON**: Corregido ✅
   - Error: `could not identify an equality operator for type json`

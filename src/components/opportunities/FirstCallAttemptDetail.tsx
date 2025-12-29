@@ -138,7 +138,11 @@ export function FirstCallAttemptDetail({
     }
   };
 
-  const currentStatus: FirstCallAttemptStatus = attemptData?.status || 'pending';
+  // Determinar el status actual - si existe attemptData pero no tiene status válido, usar 'pending'
+  const currentStatus: FirstCallAttemptStatus = (attemptData?.status && 
+    (attemptData.status === 'orange' || attemptData.status === 'red' || attemptData.status === 'green'))
+    ? attemptData.status 
+    : 'pending';
 
   return (
     <Drawer open={isOpen} onClose={onClose} title="Detalle de Intento" size="md">
@@ -156,16 +160,19 @@ export function FirstCallAttemptDetail({
         </div>
 
         {/* Información existente si hay datos */}
-        {attemptData && attemptData.status !== 'pending' && (
+        {attemptData && (
           <div className="space-y-4 bg-gray-50 p-4 rounded-lg border">
-            <div>
-              <Label className="text-xs text-gray-500 uppercase tracking-wide">Estado Actual</Label>
-              <p className="mt-1 text-sm font-medium text-gray-900 capitalize">
-                {attemptData.status === 'orange' && 'Sin contacto / Fallido'}
-                {attemptData.status === 'red' && 'Cliente descartó interés'}
-                {attemptData.status === 'green' && 'Llamada exitosa'}
-              </p>
-            </div>
+            {attemptData.status && attemptData.status !== 'pending' && (
+              <div>
+                <Label className="text-xs text-gray-500 uppercase tracking-wide">Estado Actual</Label>
+                <p className="mt-1 text-sm font-medium text-gray-900 capitalize">
+                  {attemptData.status === 'orange' && 'Sin contacto / Fallido'}
+                  {attemptData.status === 'red' && 'Cliente descartó interés'}
+                  {attemptData.status === 'green' && 'Llamada exitosa'}
+                  {attemptData.status === 'pending' && 'Pendiente'}
+                </p>
+              </div>
+            )}
 
             {attemptData.attempted_at && (
               <div className="flex items-center gap-2">
@@ -191,6 +198,17 @@ export function FirstCallAttemptDetail({
                   <Label className="text-xs text-gray-500 uppercase tracking-wide">ID de Llamada</Label>
                   <p className="mt-0.5 text-sm text-gray-600 font-mono">{attemptData.call_id}</p>
                 </div>
+              </div>
+            )}
+
+            {(!attemptData.status || attemptData.status === 'pending') && 
+             !attemptData.attempted_at && 
+             !attemptData.notes && 
+             !attemptData.call_id && (
+              <div className="text-center py-2">
+                <p className="text-sm text-gray-500 italic">
+                  Este intento aún no tiene información registrada. Completa el formulario abajo para registrarlo.
+                </p>
               </div>
             )}
           </div>

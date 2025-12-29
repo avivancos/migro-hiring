@@ -183,6 +183,7 @@ function AppContent() {
             
             {/* CRM Call Handler */}
             <Route path="call" element={<LazyLoadWrapper fallback="spinner"><CRMCallHandler /></LazyLoadWrapper>} />
+            <Route path="call-handler" element={<LazyLoadWrapper fallback="spinner"><CRMCallHandler /></LazyLoadWrapper>} />
             
             {/* CRM Settings */}
             <Route path="settings" element={<LazyLoadWrapper fallback="spinner"><CRMSettings /></LazyLoadWrapper>} />
@@ -204,7 +205,7 @@ function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
-          <PerformanceMonitor enabled={true} showSlowOnly={true} slowThreshold={1000} />
+          <PerformanceMonitor enabled={import.meta.env.DEV} showSlowOnly={true} slowThreshold={3000} />
           <AppContent />
         </AuthProvider>
       </BrowserRouter>

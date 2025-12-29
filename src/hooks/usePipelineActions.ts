@@ -21,17 +21,29 @@ export function usePipelineActions(
   const [validating, setValidating] = useState<string | null>(null);
 
   const loadActions = useCallback(async () => {
-    if (!entityType || !entityId) return;
+    if (!entityType || !entityId) {
+      setActions([]);
+      return;
+    }
 
     setLoading(true);
     setError(null);
 
     try {
       const response = await pipelineApi.listActions(entityType, entityId);
-      setActions(response.items);
-    } catch (err) {
+      setActions(response.items || []);
+    } catch (err: any) {
+      // 404 es esperado si no hay pipeline o acciones aún - no es un error crítico
+      if (err?.response?.status === 404) {
+        setActions([]);
+        setError(null); // No tratar 404 como error
+        return;
+      }
+      
+      // Para otros errores, sí mostrar error
       setError(err instanceof Error ? err : new Error('Error al cargar acciones'));
       console.error('Error loading pipeline actions:', err);
+      setActions([]);
     } finally {
       setLoading(false);
     }

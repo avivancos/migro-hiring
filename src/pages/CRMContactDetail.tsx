@@ -38,6 +38,10 @@ import { formatCallStatus } from '@/utils/statusTranslations';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { PipelineWizardModal } from '@/components/pipelines/Wizards/PipelineWizardModal';
 import { opportunityApi } from '@/services/opportunityApi';
+import type { LeadOpportunity } from '@/types/opportunity';
+import { Briefcase } from 'lucide-react';
+
+export function CRMContactDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -61,7 +65,7 @@ import { opportunityApi } from '@/services/opportunityApi';
   const [updatingProximaAccion, setUpdatingProximaAccion] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showPipelineWizard, setShowPipelineWizard] = useState(false);
-  const [relatedOpportunities, setRelatedOpportunities] = useState<any[]>([]);
+  const [relatedOpportunities, setRelatedOpportunities] = useState<LeadOpportunity[]>([]);
   const [loadingOpportunities, setLoadingOpportunities] = useState(false);
   const { isAdmin } = useAuth();
   
@@ -903,6 +907,9 @@ import { opportunityApi } from '@/services/opportunityApi';
               <TabsTrigger value="leads" className="text-xs sm:text-sm">
                 Leads <span className="ml-1 sm:ml-2 text-xs">({leads.length})</span>
               </TabsTrigger>
+              <TabsTrigger value="opportunities" className="text-xs sm:text-sm">
+                Oportunidades <span className="ml-1 sm:ml-2 text-xs">({relatedOpportunities.length})</span>
+              </TabsTrigger>
               <TabsTrigger value="tasks" className="text-xs sm:text-sm">
                 Tareas <span className="ml-1 sm:ml-2 text-xs">({tasks.length})</span>
               </TabsTrigger>
@@ -1063,6 +1070,99 @@ import { opportunityApi } from '@/services/opportunityApi';
                     <p className="text-center text-gray-500 py-8">No hay leads asociados</p>
                   )}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="opportunities">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Briefcase className="w-5 h-5" />
+                  Oportunidades Relacionadas
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {loadingOpportunities ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {relatedOpportunities.map((opportunity) => (
+                      <div
+                        key={opportunity.id}
+                        className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                        onClick={() => navigate(`/crm/opportunities/${opportunity.id}`)}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Briefcase className="w-4 h-4 text-gray-400" />
+                              <h4 className="font-semibold text-gray-900">
+                                Oportunidad #{opportunity.id.slice(0, 8)}
+                              </h4>
+                              {opportunity.priority && (
+                                <span className={`text-xs px-2 py-1 rounded ${
+                                  opportunity.priority === 'high' ? 'bg-red-100 text-red-800' :
+                                  opportunity.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                                  'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {opportunity.priority === 'high' ? 'Alta' :
+                                   opportunity.priority === 'medium' ? 'Media' : 'Baja'}
+                                </span>
+                              )}
+                            </div>
+                            <div className="space-y-1 text-sm text-gray-600">
+                              <p>
+                                <span className="font-medium">Score:</span> {opportunity.opportunity_score}/100
+                              </p>
+                              <p>
+                                <span className="font-medium">Estado:</span> {
+                                  opportunity.status === 'pending' ? 'Pendiente' :
+                                  opportunity.status === 'assigned' ? 'Asignada' :
+                                  opportunity.status === 'contacted' ? 'Contactada' :
+                                  opportunity.status === 'converted' ? 'Convertida' :
+                                  opportunity.status === 'expired' ? 'Expirada' : 'Perdida'
+                                }
+                              </p>
+                              {opportunity.assigned_to && (
+                                <p>
+                                  <span className="font-medium">Asignada a:</span> {opportunity.assigned_to.name}
+                                </p>
+                              )}
+                              {opportunity.detected_at && (
+                                <p>
+                                  <span className="font-medium">Detectada:</span>{' '}
+                                  {new Date(opportunity.detected_at).toLocaleDateString('es-ES', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric'
+                                  })}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/crm/opportunities/${opportunity.id}`);
+                            }}
+                            className="flex-shrink-0"
+                          >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            Ver Detalle
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    {relatedOpportunities.length === 0 && !loadingOpportunities && (
+                      <p className="text-center text-gray-500 py-8">No hay oportunidades asociadas a este contacto</p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

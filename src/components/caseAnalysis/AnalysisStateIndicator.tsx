@@ -5,15 +5,26 @@ import { Button } from '@/components/ui/button';
 import { AlertCircle, AlertTriangle, User } from 'lucide-react';
 import { AnalysisState } from '@/types/caseAnalysis';
 
+type ErrorWithResponse = Error & {
+  response?: {
+    status?: number;
+    data?: {
+      detail?: string;
+    };
+  };
+};
+
 interface AnalysisStateIndicatorProps {
   state: AnalysisState;
   onRetry?: () => void;
+  error?: Error | null;
   className?: string;
 }
 
 export function AnalysisStateIndicator({
   state,
   onRetry,
+  error,
   className,
 }: AnalysisStateIndicatorProps) {
   switch (state) {
@@ -31,11 +42,28 @@ export function AnalysisStateIndicator({
       );
 
     case AnalysisState.ERROR:
+      // Verificar si es un error 400 (oportunidad sin llamadas)
+      const is400Error = error && typeof error === 'object' && 'response' in error 
+        ? (error as any).response?.status === 400 
+        : false;
+      
+      const errorMessage = is400Error && error && typeof error === 'object' && 'response' in error
+        ? (error as any).response?.data?.detail || 'No se puede analizar una oportunidad sin llamadas'
+        : 'Error al analizar el caso';
+      
       return (
         <div className={`flex flex-col items-center justify-center py-12 ${className || ''}`}>
           <AlertCircle className="h-12 w-12 text-red-500 mb-4" />
-          <p className="text-red-500 text-center mb-4">Error al analizar el caso</p>
-          {onRetry && (
+          <p className="text-red-500 text-center mb-2 font-medium">Error al analizar el caso</p>
+          <p className="text-gray-600 text-center text-sm mb-4 px-4 max-w-md">
+            {errorMessage}
+          </p>
+          {is400Error && (
+            <p className="text-gray-500 text-center text-xs mb-4 px-4 max-w-md italic">
+              Realiza al menos una llamada al contacto antes de analizar la oportunidad.
+            </p>
+          )}
+          {onRetry && !is400Error && (
             <Button onClick={onRetry} variant="outline" className="min-h-[44px]">
               Reintentar
             </Button>

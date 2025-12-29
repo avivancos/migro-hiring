@@ -16,7 +16,6 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Edit,
   ExternalLink,
   Copy,
   Check,
@@ -25,9 +24,11 @@ import {
   CreditCard,
   Users,
   Link as LinkIcon,
+  Pencil,
 } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
+import { Modal } from '@/components/common/Modal';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -217,10 +218,21 @@ export function AdminContractDetail() {
 
   const handleOpenUpdateStatusModal = () => {
     if (!contract) return;
+    
+    // Para grado C, solo permitir suscripción (no existe pago único)
+    const defaultPaymentType = contract.grade === 'C' 
+      ? 'subscription' 
+      : (contract.payment_type || 'one_time');
+    
+    // Si es grado C y tiene payment_type 'one_time', cambiarlo a 'subscription'
+    const paymentType = contract.grade === 'C' && contract.payment_type === 'one_time'
+      ? 'subscription'
+      : defaultPaymentType;
+    
     setUpdateForm({
       status: contract.status,
       amount: (contract.amount / 100).toFixed(2),
-      payment_type: contract.payment_type || 'one_time',
+      payment_type: paymentType as 'one_time' | 'subscription',
       manual_payment_confirmed: contract.manual_payment_confirmed || false,
       manual_payment_method: contract.manual_payment_method || '',
       manual_payment_note: contract.manual_payment_note || '',
@@ -446,9 +458,24 @@ export function AdminContractDetail() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm text-gray-600">Estado</div>
-                <div className="mt-2">{getStatusBadge(contract.status)}</div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-sm text-gray-600">Estado</div>
+                  <button
+                    onClick={handleOpenUpdateStatusModal}
+                    className="text-green-600 hover:text-green-700 p-1 hover:bg-green-50 rounded transition-colors"
+                    title="Modificar estado y pago"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                </div>
+                <button
+                  onClick={handleOpenUpdateStatusModal}
+                  className="mt-2 hover:opacity-80 transition-opacity cursor-pointer"
+                  title="Haz clic para modificar estado y pago"
+                >
+                  {getStatusBadge(contract.status)}
+                </button>
               </div>
               {contract.status === 'completed' ? (
                 <CheckCircle className="text-green-500" size={24} />
@@ -877,15 +904,6 @@ export function AdminContractDetail() {
                 Modificar Estado y Pago
               </Button>
               <Button
-                onClick={() => navigate(`/admin/contracts/${code}/edit`)}
-                variant="outline"
-                className="w-full justify-start"
-                size="sm"
-              >
-                <Edit size={16} className="mr-2" />
-                Editar Contrato
-              </Button>
-              <Button
                 onClick={handleOpenLink}
                 variant="outline"
                 className="w-full justify-start"
@@ -922,13 +940,31 @@ export function AdminContractDetail() {
       </div>
 
       {/* Modal para Modificar Estado y Pago */}
-      {showUpdateStatusModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <CardTitle>Modificar Estado y Pago</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+      <Modal
+        open={showUpdateStatusModal}
+        onClose={handleCloseUpdateStatusModal}
+        title="Modificar Estado y Pago"
+        size="md"
+        footer={
+          <>
+            <Button
+              onClick={handleCloseUpdateStatusModal}
+              variant="outline"
+              disabled={updating}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleUpdateStatus}
+              className="bg-green-600 hover:bg-green-700 text-white"
+              disabled={updating || !updateForm.amount || parseFloat(updateForm.amount) <= 0}
+            >
+              {updating ? 'Guardando...' : 'Guardar Cambios'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
               <div>
                 <Label htmlFor="status">Estado del Contrato *</Label>
                 <select
@@ -950,12 +986,34 @@ export function AdminContractDetail() {
                 <select
                   id="payment_type"
                   value={updateForm.payment_type}
-                  onChange={(e) => setUpdateForm({ ...updateForm, payment_type: e.target.value as 'one_time' | 'subscription' })}
+                  onChange={(e) => {
+                    const newPaymentType = e.target.value as 'one_time' | 'subscription';
+                    // Si es grado C, forzar subscription siempre
+                    if (contract?.grade === 'C') {
+                      setUpdateForm(prev => ({ ...prev, payment_type: 'subscription' }));
+                    } else {
+                      setUpdateForm({ ...updateForm, payment_type: newPaymentType });
+                    }
+                  }}
                   className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                 >
-                  <option value="one_time">Pago Único</option>
-                  <option value="subscription">Suscripción</option>
+                  {contract?.grade !== 'C' && (
+                    <option value="one_time">Pago Único (2 pagos: 200€ + 200€ = 400€ total)</option>
+                  )}
+                  <option value="subscription">
+                    Suscripción ({contract?.grade === 'C' ? '10 pagos de 68€ = 680€ total' : '10 pagos de 48€ = 480€ total'})
+                  </option>
                 </select>
+                {contract?.grade === 'C' && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    ⚠️ Para expedientes grado C solo está disponible la opción de Suscripción (10 pagos mensuales de 68€ = 680€ total)
+                  </p>
+                )}
+                {contract?.grade !== 'C' && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Pago Único: 2 pagos (200€ + 200€ = 400€ total) | Suscripción: 10 pagos de 48€ = 480€ total
+                  </p>
+                )}
               </div>
 
               <div>
@@ -971,9 +1029,26 @@ export function AdminContractDetail() {
                   required
                 />
                 {contract && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Importe actual: {formatCurrency(contract.amount, contract.currency)}
-                  </p>
+                  <>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Importe actual: {formatCurrency(contract.amount, contract.currency)}
+                    </p>
+                    {contract.grade === 'C' && updateForm.payment_type === 'subscription' && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        💡 Para grado C con suscripción, el importe debería ser 680€ (10 pagos de 68€)
+                      </p>
+                    )}
+                    {(contract.grade === 'A' || contract.grade === 'B') && updateForm.payment_type === 'one_time' && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        💡 Para grado {contract.grade} con pago único, el importe debería ser 400€ (2 pagos de 200€)
+                      </p>
+                    )}
+                    {(contract.grade === 'A' || contract.grade === 'B') && updateForm.payment_type === 'subscription' && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        💡 Para grado {contract.grade} con suscripción, el importe debería ser 480€ (10 pagos de 48€)
+                      </p>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -1081,28 +1156,8 @@ export function AdminContractDetail() {
                   )}
                 </>
               )}
-
-              <div className="flex gap-2 pt-4">
-                <Button
-                  onClick={handleCloseUpdateStatusModal}
-                  variant="outline"
-                  className="flex-1"
-                  disabled={updating}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleUpdateStatus}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                  disabled={updating || !updateForm.amount || parseFloat(updateForm.amount) <= 0}
-                >
-                  {updating ? 'Guardando...' : 'Guardar Cambios'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

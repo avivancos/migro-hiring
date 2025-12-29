@@ -33,8 +33,8 @@ class PerformanceTracingService {
   private metrics: PerformanceMetric[] = [];
   private maxMetrics = 1000; // Límite de métricas en memoria
   private enabled = true;
-  private logToConsole = true;
-  private logSlowThreshold = 1000; // Log métricas lentas > 1s
+  private logToConsole = import.meta.env.DEV; // Solo en desarrollo
+  private logSlowThreshold = 3000; // Log métricas lentas > 3s (aumentado para reducir ruido)
 
   /**
    * Habilitar o deshabilitar el tracing

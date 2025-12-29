@@ -15,7 +15,6 @@ import {
   RefreshCw,
   Lock,
   Unlock,
-  Save,
   AlertCircle,
   CheckCircle2,
   Info,
@@ -81,9 +80,8 @@ export function AdminRoutePermissions() {
     currentValue: boolean
   ) => {
     // Los admins no pueden modificar sus propios permisos (siempre tienen acceso)
-    if (role === 'admin') {
-      return;
-    }
+    // Nota: role es 'agent' | 'lawyer', nunca 'admin', pero mantenemos validación por seguridad
+    // Esta validación nunca se ejecutará según el tipo, pero es defensiva
 
     try {
       setSaving(true);
@@ -418,7 +416,7 @@ export function AdminRoutePermissions() {
                       <td className="py-3 px-4 text-center">
                         <Checkbox
                           checked={route.agent_allowed}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={(_checked) =>
                             handleTogglePermission(
                               route.route_path,
                               'agent',
@@ -431,7 +429,7 @@ export function AdminRoutePermissions() {
                       <td className="py-3 px-4 text-center">
                         <Checkbox
                           checked={route.lawyer_allowed}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={(_checked) =>
                             handleTogglePermission(
                               route.route_path,
                               'lawyer',

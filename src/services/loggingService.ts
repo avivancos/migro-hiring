@@ -1,6 +1,5 @@
 // Servicio de logging y tracing integrado con SQLite
 import { localDatabase } from './localDatabase';
-import { useAuth } from '@/providers/AuthProvider';
 
 export type LogLevel = 'info' | 'warn' | 'error' | 'debug';
 export type TraceStatus = 'success' | 'error' | 'warning';
@@ -11,6 +10,10 @@ interface LogOptions {
   user_role?: string;
   route_path?: string;
   metadata?: Record<string, any>;
+  trace_id?: string;
+  span_id?: string;
+  duration_ms?: number;
+  status?: string;
 }
 
 interface TraceOptions {

@@ -128,6 +128,7 @@ export interface ActionTypeRead {
   validation_role?: UserRole;
   default_due_days: number;
   is_active: boolean;
+  applicable_stages?: PipelineStage[];
 }
 
 export interface CallAnalysisResponse {

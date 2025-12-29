@@ -1,5 +1,6 @@
 // Servicio de base de datos SQLite local para privilegios, logging y tracing
-import initSqlJs, { Database } from 'sql.js';
+import initSqlJs from 'sql.js';
+import type { Database } from 'sql.js';
 
 export interface RoutePermission {
   id: number;
@@ -224,7 +225,7 @@ class LocalDatabaseService {
 
     return values.map((row: any[]) => {
       const obj: any = {};
-      columns.forEach((col, idx) => {
+      columns.forEach((col: string, idx: number) => {
         obj[col] = row[idx];
       });
       return {
@@ -255,7 +256,7 @@ class LocalDatabaseService {
       const row = result[0].values[0];
       const columns = result[0].columns;
       const obj: any = {};
-      columns.forEach((col, idx) => {
+      columns.forEach((col: string, idx: number) => {
         obj[col] = row[idx];
       });
       return {
@@ -455,7 +456,7 @@ class LocalDatabaseService {
 
     return values.map((row: any[]) => {
       const obj: any = {};
-      columns.forEach((col, idx) => {
+      columns.forEach((col: string, idx: number) => {
         obj[col] = row[idx];
       });
       return {
@@ -567,7 +568,7 @@ class LocalDatabaseService {
 
     return values.map((row: any[]) => {
       const obj: any = {};
-      columns.forEach((col, idx) => {
+      columns.forEach((col: string, idx: number) => {
         obj[col] = row[idx];
       });
       return {

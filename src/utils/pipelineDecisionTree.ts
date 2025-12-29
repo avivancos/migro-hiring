@@ -209,8 +209,8 @@ function canUserPerformAction(
   const actionType = actionTypes.find((at) => at.action_code === actionCode);
   if (!actionType) return false;
 
-  // Superusuarios y admins pueden hacer todo
-  if (userRole === 'admin' || userRole === 'superuser') {
+  // Admins pueden hacer todo (userRole solo puede ser 'lawyer' | 'agent' según el tipo, pero validamos por seguridad)
+  if (userRole === 'admin') {
     return true;
   }
 

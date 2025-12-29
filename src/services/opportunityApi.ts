@@ -34,45 +34,15 @@ export const opportunityApi = {
     // No es necesario el parámetro 'expand', pero lo mantenemos por compatibilidad
     
     const url = `${CRM_BASE_PATH}/opportunities?${params.toString()}`;
-    console.log('🔍 [opportunityApi] GET', url);
-    console.log('🔍 [opportunityApi] Filters:', JSON.stringify(filters, null, 2));
     
     try {
       const { data } = await api.get<any>(url);
-      
-      // Log de la respuesta raw para debugging
-      console.log('🔍 [opportunityApi] Raw response:', data);
-      console.log('🔍 [opportunityApi] Response type:', typeof data);
-      console.log('🔍 [opportunityApi] Is array?:', Array.isArray(data));
-      if (data && typeof data === 'object') {
-        console.log('🔍 [opportunityApi] Keys:', Object.keys(data));
-        if ('items' in data) {
-          console.log('🔍 [opportunityApi] items type:', typeof data.items);
-          console.log('🔍 [opportunityApi] items is array?:', Array.isArray(data.items));
-          console.log('🔍 [opportunityApi] items length:', data.items?.length);
-          // Log detallado de la primera oportunidad del raw response
-          if (Array.isArray(data.items) && data.items.length > 0) {
-            const firstItem = data.items[0];
-            console.log('🔍 [opportunityApi] PRIMERA OPORTUNIDAD RAW (items[0]):', JSON.stringify(firstItem, null, 2));
-            console.log('🔍 [opportunityApi] Keys de primera oportunidad:', Object.keys(firstItem));
-            console.log('🔍 [opportunityApi] Tiene contact?:', 'contact' in firstItem);
-            console.log('🔍 [opportunityApi] contact value:', firstItem.contact);
-            console.log('🔍 [opportunityApi] contact_id:', firstItem.contact_id);
-          }
-        }
-        if ('opportunities' in data) {
-          console.log('🔍 [opportunityApi] opportunities type:', typeof data.opportunities);
-          console.log('🔍 [opportunityApi] opportunities is array?:', Array.isArray(data.opportunities));
-          console.log('🔍 [opportunityApi] opportunities length:', data.opportunities?.length);
-        }
-      }
       
       // Normalizar la respuesta según diferentes formatos posibles
       let normalizedResponse: OpportunityListResponse;
       
       // Formato 1: Array directo
       if (Array.isArray(data)) {
-        console.log('🔍 [opportunityApi] Formato: Array directo');
         normalizedResponse = {
           opportunities: data,
           total: data.length,
@@ -83,7 +53,6 @@ export const opportunityApi = {
       }
       // Formato 2: Objeto con _embedded/_page (formato Kommo)
       else if (data && typeof data === 'object' && data._embedded && data._embedded.opportunities) {
-        console.log('🔍 [opportunityApi] Formato: _embedded/_page');
         const opportunities = Array.isArray(data._embedded.opportunities) ? data._embedded.opportunities : [];
         const page = data._page?.page || filters?.page || 1;
         const limit = data._page?.limit || filters?.limit || 50;
@@ -98,7 +67,6 @@ export const opportunityApi = {
       }
       // Formato 3: Objeto con campo 'opportunities' (formato esperado)
       else if (data && typeof data === 'object' && 'opportunities' in data) {
-        console.log('🔍 [opportunityApi] Formato: Campo opportunities');
         const opportunities = Array.isArray(data.opportunities) ? data.opportunities : [];
         
         // El backend ahora siempre incluye el contacto expandido
@@ -116,23 +84,7 @@ export const opportunityApi = {
       }
       // Formato 4: Objeto con campo 'items' (formato alternativo)
       else if (data && typeof data === 'object' && 'items' in data) {
-        console.log('🔍 [opportunityApi] Formato: Campo items');
         const opportunities = Array.isArray(data.items) ? data.items : [];
-        
-        // Log detallado de la primera oportunidad para debugging
-        if (opportunities.length > 0) {
-          const firstOpp = opportunities[0];
-          console.log('🔍 [opportunityApi] Primera oportunidad (muestra):', {
-            id: firstOpp.id,
-            contact_id: firstOpp.contact_id,
-            hasContact: !!firstOpp.contact,
-            contactType: typeof firstOpp.contact,
-            contactKeys: firstOpp.contact ? Object.keys(firstOpp.contact) : null,
-            contactName: firstOpp.contact?.name,
-            contactFirstName: firstOpp.contact?.first_name,
-            contactEmail: firstOpp.contact?.email,
-          });
-        }
         
         // El backend ahora siempre incluye el contacto expandido
         // Ya no es necesario obtener contactos individualmente
@@ -149,7 +101,6 @@ export const opportunityApi = {
       }
       // Formato desconocido: intentar usar tal cual
       else {
-        console.warn('⚠️ [opportunityApi] Formato desconocido, intentando usar tal cual');
         normalizedResponse = {
           opportunities: Array.isArray(data?.opportunities) ? data.opportunities : (Array.isArray(data?.items) ? data.items : []),
           total: data?.total || 0,
@@ -158,14 +109,6 @@ export const opportunityApi = {
           total_pages: data?.total_pages ?? Math.ceil((data?.total || 0) / (data?.limit || filters?.limit || 50)),
         };
       }
-      
-      console.log('✅ [opportunityApi] Response normalizada:', {
-        opportunitiesCount: normalizedResponse.opportunities?.length || 0,
-        total: normalizedResponse.total,
-        page: normalizedResponse.page,
-        limit: normalizedResponse.limit,
-        totalPages: normalizedResponse.total_pages,
-      });
       
       return normalizedResponse;
     } catch (error: any) {

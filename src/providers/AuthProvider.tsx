@@ -74,14 +74,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await api.get('/users/me');
       const userData = response.data;
       
-      // DEBUG: Log datos del usuario recibidos del backend
-      console.log('🔍 [AuthProvider] Datos del usuario desde /users/me:', {
-        email: userData.email,
-        role: userData.role,
-        is_superuser: userData.is_superuser,
-        is_active: userData.is_active,
-        full_userData: userData,
-      });
       
       // Mapear a tipo User
       const mappedUser: User = {
@@ -105,27 +97,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
         updated_at: userData.updated_at,
       };
       
-      // DEBUG: Log usuario mapeado
-      console.log('🔍 [AuthProvider] Usuario mapeado:', {
-        email: mappedUser.email,
-        role: mappedUser.role,
-        is_superuser: mappedUser.is_superuser,
-        is_active: mappedUser.is_active,
-      });
       
       setUser(mappedUser);
       
       // Calcular is_admin para localStorage
       const is_admin = mappedUser.is_superuser || mappedUser.role === 'admin' || mappedUser.role === 'superuser';
       
-      // DEBUG: Log cálculo de is_admin
-      console.log('🔍 [AuthProvider] Cálculo de is_admin:', {
-        is_superuser: mappedUser.is_superuser,
-        role: mappedUser.role,
-        role_is_admin: mappedUser.role === 'admin',
-        role_is_superuser: mappedUser.role === 'superuser',
-        is_admin_calculated: is_admin,
-      });
       
       // Guardar también en formato admin_user para compatibilidad
       localStorage.setItem('admin_user', JSON.stringify({
@@ -224,7 +201,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     // Verificar autenticación solo una vez al montar
     // El interceptor de axios ya maneja el refresh de tokens proactivamente
-    console.log('🔍 [AuthProvider] Verificando autenticación al montar...');
     checkAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Solo ejecutar al montar - verificar una sola vez
@@ -235,7 +211,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     if (!user && !isLoading) {
       const token = TokenStorage.getAccessToken();
       if (token && !isPublicRoute(location.pathname)) {
-        console.log('🔍 [AuthProvider] Usuario no cargado, verificando autenticación en cambio de ruta...');
         checkAuth();
       }
     }
@@ -312,38 +287,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const isAdmin = user ? (user.is_superuser || user.role === 'admin' || user.role === 'superuser') : false;
   
-  // DEBUG: Log cálculo de isAdmin
-  if (user) {
-    console.log('🔍 [AuthProvider] Cálculo de isAdmin:', {
-      email: user.email,
-      role: user.role,
-      is_superuser: user.is_superuser,
-      role_is_admin: user.role === 'admin',
-      role_is_superuser: user.role === 'superuser',
-      isAdmin_calculated: isAdmin,
-    });
-  } else {
-    console.log('🔍 [AuthProvider] Usuario es null, isAdmin será false');
-  }
-  
   // Si hay tokens válidos, considerar autenticado incluso si el usuario no está cargado todavía
   // Esto evita redirecciones prematuras al login durante la verificación inicial
   const hasValidTokens = TokenStorage.hasTokens() && 
                         TokenStorage.getAccessToken() && 
                         !TokenStorage.isRefreshTokenExpired();
   
-  // DEBUG: Log estado de autenticación
-  console.log('🔍 [AuthProvider] Estado de autenticación:', {
-    hasUser: !!user,
-    userIsActive: user?.is_active,
-    hasValidTokens,
-    isLoading,
-    isAuthenticated_before: (!!user && user.is_active) || (hasValidTokens && !isLoading),
-  });
-  
   // Cambiar lógica: solo considerar autenticado si hay usuario cargado Y está activo
   // O si hay tokens válidos pero aún está cargando (para evitar redirección prematura)
-  const isAuthenticated = (!!user && user.is_active) || (hasValidTokens && isLoading);
+  const isAuthenticated: boolean = Boolean((!!user && user.is_active) || (hasValidTokens && isLoading));
 
   return (
     <AuthContext.Provider
