@@ -82,8 +82,16 @@ export function CRMTaskCalendar() {
       const usersData = await crmService.getResponsibleUsers(true);
       setUsers(usersData);
       console.log('👥 [CRMTaskCalendar] Usuarios responsables cargados:', usersData.length);
+      if (usersData.length > 0) {
+        console.log('👥 [CRMTaskCalendar] Ejemplo de usuarios:', usersData.slice(0, 5).map(u => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          role_name: u.role_name,
+        })));
+      }
     } catch (err) {
-      console.error('Error loading users:', err);
+      console.error('❌ [CRMTaskCalendar] Error loading users:', err);
     }
   };
 
@@ -143,12 +151,24 @@ export function CRMTaskCalendar() {
           contact_id: call.contact_id,
           contact_name: call.contact_name,
           phone: call.phone || call.phone_number,
+          responsible_user_id: call.responsible_user_id,
           created_at: call.created_at,
         })));
         
         // Verificar cuántas tienen contact_name
         const withContactName = callsData.filter(c => c.contact_name).length;
         console.log(`📞 [CRMTaskCalendar] Llamadas con contact_name: ${withContactName}/${callsData.length}`);
+        
+        // Verificar responsables únicos en llamadas
+        const responsibleIds = callsData
+          .filter(c => c.responsible_user_id)
+          .map(c => c.responsible_user_id)
+          .filter((id, index, self) => self.indexOf(id) === index);
+        console.log('👥 [CRMTaskCalendar] IDs de responsables únicos en llamadas:', responsibleIds);
+        console.log('👥 [CRMTaskCalendar] Usuarios disponibles:', users.length);
+        if (users.length > 0) {
+          console.log('👥 [CRMTaskCalendar] IDs de usuarios disponibles:', users.map(u => u.id).slice(0, 10));
+        }
       } else {
         console.warn('⚠️ [CRMTaskCalendar] No se cargaron llamadas. Verificar endpoint y filtros de fecha.');
       }
@@ -396,28 +416,70 @@ export function CRMTaskCalendar() {
   const getResponsibleName = (userId: string | undefined): string => {
     if (!userId) return 'Sin asignar';
     
+    // Si no hay usuarios cargados aún, mostrar mensaje temporal
     if (users.length === 0) {
+      console.warn(`⚠️ [CRMTaskCalendar] getResponsibleName: Usuarios no cargados aún para ID: "${userId}"`);
       return 'Cargando...';
     }
     
+    // Buscar usuario en el array - comparación estricta de strings
     const user = users.find(u => {
+      // Comparar IDs como strings, normalizando espacios
       const uId = String(u.id || '').trim();
       const searchId = String(userId || '').trim();
-      return uId === searchId;
+      const matches = uId === searchId;
+      if (matches) {
+        console.log(`✅ [CRMTaskCalendar] Usuario encontrado:`, {
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          searchId: userId,
+        });
+      }
+      return matches;
     });
     
     if (user) {
+      // Usar name (que debería contener el nombre completo del usuario del CRM)
       const name = user.name?.trim();
       if (name && name.length > 0) {
+        // Log si el nombre contiene "abogado de prueba" para debugging
+        if (name.toLowerCase().includes('abogado de prueba') || name.toLowerCase().includes('prueba')) {
+          console.warn(`⚠️ [CRMTaskCalendar] Usuario con nombre sospechoso encontrado:`, {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            searchId: userId,
+          });
+        }
         return name;
       }
+      // Fallback a email si no hay name
       const email = user.email?.trim();
       if (email && email.length > 0) {
-        return email.split('@')[0];
+        return email.split('@')[0]; // Mostrar solo la parte antes del @
       }
       return 'Usuario sin nombre';
     }
     
+    // Si no se encuentra, puede ser que los usuarios aún no se hayan cargado
+    // o que el ID no coincida exactamente
+    console.warn(`⚠️ [CRMTaskCalendar] Usuario no encontrado para ID: "${userId}". Total usuarios cargados: ${users.length}`);
+    if (users.length > 0) {
+      console.log('📋 [CRMTaskCalendar] IDs de usuarios disponibles:', users.map(u => ({ id: u.id, name: u.name, email: u.email })).slice(0, 10));
+      console.log('📋 [CRMTaskCalendar] ID buscado:', userId, 'Tipo:', typeof userId);
+      // Verificar si hay algún usuario con nombre "abogado de prueba"
+      const pruebaUser = users.find(u => u.name?.toLowerCase().includes('abogado de prueba') || u.name?.toLowerCase().includes('prueba'));
+      if (pruebaUser) {
+        console.warn(`⚠️ [CRMTaskCalendar] Usuario "abogado de prueba" encontrado en lista:`, {
+          id: pruebaUser.id,
+          name: pruebaUser.name,
+          email: pruebaUser.email,
+        });
+      }
+    }
+    
+    // Mostrar ID truncado si no se encuentra el usuario
     return userId.substring(0, 8) + '...';
   };
 

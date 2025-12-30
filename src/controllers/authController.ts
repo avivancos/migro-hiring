@@ -24,11 +24,12 @@ class AuthController {
   };
 
   /**
-   * Inicializar sesión desde localStorage
+   * Inicializar sesión desde TokenStorage (lee de múltiples fuentes)
    */
   initializeSession(): AuthSession {
-    const accessToken = localStorage.getItem('access_token');
-    const refreshToken = localStorage.getItem('refresh_token');
+    // ⚠️ CRÍTICO: Usar TokenStorage para leer tokens (lee de localStorage, cookies, sessionStorage)
+    const accessToken = TokenStorage.getAccessToken();
+    const refreshToken = TokenStorage.getRefreshToken();
     const adminUserStr = localStorage.getItem('admin_user');
 
     if (accessToken && adminUserStr) {
@@ -43,7 +44,11 @@ class AuthController {
         };
       } catch (error) {
         console.error('Error parsing admin_user from localStorage:', error);
-        this.clearSession();
+        // ⚠️ CRÍTICO: NO limpiar sesión aquí, puede ser error temporal
+        // Solo limpiar si realmente no hay tokens válidos
+        if (!TokenStorage.hasValidTokens()) {
+          this.clearSession();
+        }
       }
     }
 
@@ -109,9 +114,14 @@ class AuthController {
    * Verificar sesión actual contra la API
    */
   async verifySession(): Promise<AuthSession> {
-    const accessToken = localStorage.getItem('access_token');
+    // ⚠️ CRÍTICO: Usar TokenStorage para leer tokens (lee de múltiples fuentes)
+    const accessToken = TokenStorage.getAccessToken();
+    const refreshToken = TokenStorage.getRefreshToken();
 
-    if (!accessToken) {
+    // ⚠️ CRÍTICO: NO limpiar sesión si no hay access token pero hay refresh token válido
+    // El refresh token puede usarse para obtener un nuevo access token
+    if (!accessToken && (!refreshToken || TokenStorage.isRefreshTokenExpired())) {
+      // Solo limpiar si realmente no hay tokens válidos
       this.clearSession();
       return this.session;
     }
@@ -124,8 +134,8 @@ class AuthController {
       // Actualizar sesión
       this.session = {
         user,
-        accessToken,
-        refreshToken: localStorage.getItem('refresh_token'),
+        accessToken: accessToken || TokenStorage.getAccessToken(), // Asegurar que tenemos el token
+        refreshToken: refreshToken || TokenStorage.getRefreshToken(), // Asegurar que tenemos el refresh token
         isAuthenticated: true,
         isAdmin: user.is_superuser || user.role === 'admin',
       };
@@ -148,17 +158,12 @@ class AuthController {
       // Y no hay refresh token disponible para recuperar la sesión
       // NO limpiar en errores temporales (500, 404, timeout, etc.)
       if (error.response?.status === 401 || error.response?.status === 403) {
-        // Verificar si hay refresh token disponible antes de limpiar
-        const refreshToken = localStorage.getItem('refresh_token');
-        // Usar TokenStorage para leer de múltiples fuentes (localStorage, cookies, sessionStorage)
-        const refreshExpiresAt = localStorage.getItem('migro_refresh_expires_at') || 
-                                 TokenStorage.getRefreshToken() ? 
-                                 (localStorage.getItem('migro_refresh_expires_at') || 
-                                  document.cookie.split(';').find(c => c.trim().startsWith('migro_refresh_expires_at='))?.split('=')[1] || 
-                                  sessionStorage.getItem('migro_refresh_expires_at')) : null;
+        // ⚠️ CRÍTICO: Usar TokenStorage para verificar tokens (lee de múltiples fuentes)
+        const refreshToken = TokenStorage.getRefreshToken();
+        const isRefreshTokenExpired = TokenStorage.isRefreshTokenExpired();
         
         // Solo limpiar si realmente no hay forma de recuperar la sesión
-        if (!refreshToken || (refreshExpiresAt && Date.now() >= parseInt(refreshExpiresAt))) {
+        if (!refreshToken || isRefreshTokenExpired) {
           console.warn('⚠️ Error 401/403 y no hay refresh token disponible, limpiando sesión');
           this.clearSession();
         } else {
