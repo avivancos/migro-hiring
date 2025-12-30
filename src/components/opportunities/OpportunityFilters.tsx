@@ -64,8 +64,7 @@ export function OpportunityFilters({
     // Filtro: Intentos disponibles
     if (filterIntentosDisponibles !== null) {
       result = result.filter(opp => {
-        const attempts = opp.first_call_attempts || {};
-        const usedAttempts = Object.keys(attempts).length;
+        const usedAttempts = getValidAttemptsCount(opp.first_call_attempts);
         const availableAttempts = 5 - usedAttempts;
         return availableAttempts === filterIntentosDisponibles;
       });

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { crmService } from '@/services/crmService';
 import type { KommoContact, KommoLead, Task, Call, Note, CallCreateRequest, TaskCreateRequest, NoteCreateRequest } from '@/types/crm';
@@ -40,6 +41,9 @@ import { PipelineWizardModal } from '@/components/pipelines/Wizards/PipelineWiza
 import { opportunityApi } from '@/services/opportunityApi';
 import type { LeadOpportunity } from '@/types/opportunity';
 import { Briefcase } from 'lucide-react';
+import { OpportunityPriorityBadge } from '@/components/opportunities/OpportunityPriorityBadge';
+import { OpportunityScore } from '@/components/opportunities/OpportunityScore';
+import { getDetectionReasonBadges } from '@/utils/opportunity';
 
 export function CRMContactDetail() {
   const { id } = useParams<{ id: string }>();
@@ -915,28 +919,138 @@ export function CRMContactDetail() {
           </CardContent>
         </Card>
 
+        {/* Oportunidad Enlazada - Siempre visible */}
+        {relatedOpportunities.length > 0 ? (
+          <Card className="mb-4 sm:mb-6 border-2 border-blue-200 bg-blue-50">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-blue-600" />
+                  Oportunidad Enlazada
+                </CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/crm/opportunities/${relatedOpportunities[0].id}`)}
+                  className="flex items-center gap-2"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Ver Detalle Completo
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Score y Prioridad */}
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Score</span>
+                      <span className="text-sm text-gray-500">
+                        {relatedOpportunities[0].opportunity_score}/100
+                      </span>
+                    </div>
+                    <OpportunityScore score={relatedOpportunities[0].opportunity_score} />
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-700 block mb-2">Prioridad</span>
+                    <OpportunityPriorityBadge priority={relatedOpportunities[0].priority} />
+                  </div>
+                </div>
+
+                {/* Estado y Razón de Detección */}
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-sm font-medium text-gray-700 block mb-2">Estado</span>
+                    <Badge
+                      variant={
+                        relatedOpportunities[0].status === 'pending' ? 'neutral' :
+                        relatedOpportunities[0].status === 'assigned' ? 'info' :
+                        relatedOpportunities[0].status === 'contacted' ? 'info' :
+                        relatedOpportunities[0].status === 'converted' ? 'success' :
+                        relatedOpportunities[0].status === 'expired' ? 'warning' : 'error'
+                      }
+                    >
+                      {relatedOpportunities[0].status === 'pending' ? 'Pendiente' :
+                       relatedOpportunities[0].status === 'assigned' ? 'Asignada' :
+                       relatedOpportunities[0].status === 'contacted' ? 'Contactada' :
+                       relatedOpportunities[0].status === 'converted' ? 'Convertida' :
+                       relatedOpportunities[0].status === 'expired' ? 'Expirada' : 'Perdida'}
+                    </Badge>
+                  </div>
+                  {relatedOpportunities[0].detection_reason && (
+                    <div>
+                      <span className="text-sm font-medium text-gray-700 block mb-2">Razón de Detección</span>
+                      <div className="flex flex-wrap gap-2">
+                        {getDetectionReasonBadges(relatedOpportunities[0].detection_reason).map((badge, index) => (
+                          <Badge key={index} variant="neutral" className="text-sm">
+                            {badge}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {relatedOpportunities[0].assigned_to && (
+                    <div>
+                      <span className="text-sm font-medium text-gray-700 block mb-1">Asignada a</span>
+                      <span className="text-sm text-gray-900">
+                        {relatedOpportunities[0].assigned_to.name || 
+                         relatedOpportunities[0].assigned_to.email || 
+                         'Sin asignar'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="mb-4 sm:mb-6 border-2 border-gray-200 bg-gray-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="w-5 h-5 text-gray-400" />
+                Oportunidad Enlazada
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 text-center py-4">
+                No hay oportunidad enlazada a este contacto
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Pestañas */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="overflow-x-auto -mx-4 sm:mx-0 mb-6">
-            <TabsList className="mb-6 min-w-max sm:min-w-0 inline-flex">
-              <TabsTrigger value="info" className="text-xs sm:text-sm">Información</TabsTrigger>
-              <TabsTrigger value="leads" className="text-xs sm:text-sm">
-                Leads <span className="ml-1 sm:ml-2 text-xs">({leads.length})</span>
-              </TabsTrigger>
-              <TabsTrigger value="opportunities" className="text-xs sm:text-sm">
-                Oportunidades <span className="ml-1 sm:ml-2 text-xs">({relatedOpportunities.length})</span>
-              </TabsTrigger>
-              <TabsTrigger value="tasks" className="text-xs sm:text-sm">
-                Tareas <span className="ml-1 sm:ml-2 text-xs">({tasks.length})</span>
-              </TabsTrigger>
-              <TabsTrigger value="calls" className="text-xs sm:text-sm">
-                Llamadas <span className="ml-1 sm:ml-2 text-xs">({calls.length})</span>
-              </TabsTrigger>
-              <TabsTrigger value="notes" className="text-xs sm:text-sm">
-                Notas <span className="ml-1 sm:ml-2 text-xs">({notes.length})</span>
-              </TabsTrigger>
-              <TabsTrigger value="history" className="text-xs sm:text-sm">Historial</TabsTrigger>
-            </TabsList>
+          <div className="w-full mb-6">
+            <div className="overflow-x-auto scrollbar-hide -mx-4 sm:mx-0 px-4 sm:px-0 pb-2">
+              <TabsList className="mb-6 min-w-max w-full sm:w-auto inline-flex h-auto gap-1">
+                <TabsTrigger value="info" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 py-2 flex-shrink-0">
+                  <span className="hidden sm:inline">Información</span>
+                  <span className="sm:hidden">Info</span>
+                </TabsTrigger>
+                <TabsTrigger value="leads" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 py-2 flex-shrink-0">
+                  Leads <span className="ml-1 text-xs">({leads.length})</span>
+                </TabsTrigger>
+                <TabsTrigger value="opportunities" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 py-2 flex-shrink-0">
+                  <span className="hidden sm:inline">Oportunidades</span>
+                  <span className="sm:hidden">Opps</span>
+                  <span className="ml-1 text-xs">({relatedOpportunities.length})</span>
+                </TabsTrigger>
+                <TabsTrigger value="tasks" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 py-2 flex-shrink-0">
+                  Tareas <span className="ml-1 text-xs">({tasks.length})</span>
+                </TabsTrigger>
+                <TabsTrigger value="calls" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 py-2 flex-shrink-0">
+                  Llamadas <span className="ml-1 text-xs">({calls.length})</span>
+                </TabsTrigger>
+                <TabsTrigger value="notes" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 py-2 flex-shrink-0">
+                  Notas <span className="ml-1 text-xs">({notes.length})</span>
+                </TabsTrigger>
+                <TabsTrigger value="history" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 py-2 flex-shrink-0">
+                  Historial
+                </TabsTrigger>
+              </TabsList>
+            </div>
           </div>
 
           {/* Contenido de Pestañas */}

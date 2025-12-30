@@ -24,7 +24,7 @@ import { usePipelineActions } from '@/hooks/usePipelineActions';
 import { useAuth } from '@/providers/AuthProvider';
 import { Modal } from '@/components/common/Modal';
 import { Label } from '@/components/ui/label';
-import { crmService } from '@/services/crmService';
+import { useCRMUsers } from '@/hooks/useCRMUsers';
 import type { CRMUser } from '@/types/crm';
 
 export function CRMOpportunityDetail() {
@@ -36,9 +36,10 @@ export function CRMOpportunityDetail() {
   const [isSavingAttempt, setIsSavingAttempt] = useState(false);
   const [showPipelineWizard, setShowPipelineWizard] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
-  const [availableUsers, setAvailableUsers] = useState<CRMUser[]>([]);
-  const [loadingUsers, setLoadingUsers] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
+  
+  // Cargar usuarios usando el hook (filtrados por lawyer y agent)
+  const { users: availableUsers, loading: loadingUsers } = useCRMUsers({ isActive: true });
 
   const {
     opportunity,
@@ -65,6 +66,18 @@ export function CRMOpportunityDetail() {
     opportunity ? 'leads' : null,
     opportunity?.id || null
   );
+  
+  // Filtrar usuarios para solo mostrar lawyers y agentes
+  const filteredUsers = availableUsers.filter(u => u.role_name === 'lawyer' || u.role_name === 'agent');
+  
+  // Actualizar selectedUserId cuando cambia opportunity.assigned_to_id
+  useEffect(() => {
+    if (opportunity?.assigned_to_id) {
+      setSelectedUserId(opportunity.assigned_to_id);
+    } else {
+      setSelectedUserId('');
+    }
+  }, [opportunity?.assigned_to_id]);
 
   if (isLoading) {
     return (
@@ -96,6 +109,31 @@ export function CRMOpportunityDetail() {
   }
 
   const contact = opportunity.contact;
+  
+  // Helper para obtener el nombre del responsable asignado
+  const getAssignedToDisplayName = (): string => {
+    if (opportunity.assigned_to) {
+      // Si viene expandido del backend, usar name o email
+      return opportunity.assigned_to.name?.trim() || 
+             opportunity.assigned_to.email?.trim() || 
+             'Sin nombre';
+    }
+    
+    // Si solo tenemos el ID, buscar en la lista de usuarios disponibles
+    if (opportunity.assigned_to_id && filteredUsers.length > 0) {
+      const user = filteredUsers.find(u => u.id === opportunity.assigned_to_id);
+      if (user) {
+        return user.name?.trim() || user.email?.trim() || 'Sin nombre';
+      }
+    }
+    
+    // Fallback: mostrar ID truncado
+    if (opportunity.assigned_to_id) {
+      return `Usuario ${opportunity.assigned_to_id.substring(0, 8)}...`;
+    }
+    
+    return 'Sin asignar';
+  };
 
   // Manejar click en badge de intento
   const handleAttemptClick = (attemptNumber: number) => {
@@ -127,43 +165,14 @@ export function CRMOpportunityDetail() {
     ? opportunity.first_call_attempts?.[selectedAttempt.toString()] || null
     : null;
 
-  // Cargar usuarios cuando se abre el modal
-  useEffect(() => {
-    if (showAssignModal) {
-      loadUsers();
-    }
-  }, [showAssignModal]);
-
-  const loadUsers = async () => {
-    setLoadingUsers(true);
-    try {
-      const allUsers = await crmService.getUsers(true);
-      // Filtrar para incluir solo lawyers y agentes
-      const usersData = allUsers.filter(u => u.role_name === 'lawyer' || u.role_name === 'agent');
-      setAvailableUsers(usersData);
-      
-      // Preseleccionar el agente actual si existe
-      if (opportunity?.assigned_to_id) {
-        setSelectedUserId(opportunity.assigned_to_id);
-      } else if (usersData.length > 0) {
-        setSelectedUserId('');
-      }
-    } catch (err) {
-      console.error('Error loading users:', err);
-      setAvailableUsers([]);
-    } finally {
-      setLoadingUsers(false);
-    }
-  };
-
   const handleOpenAssignModal = () => {
-    setShowAssignModal(true);
     // Preseleccionar el agente actual
     if (opportunity?.assigned_to_id) {
       setSelectedUserId(opportunity.assigned_to_id);
     } else {
       setSelectedUserId('');
     }
+    setShowAssignModal(true);
   };
 
   const handleCloseAssignModal = () => {
@@ -444,8 +453,7 @@ export function CRMOpportunityDetail() {
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-blue-600 font-medium mb-1">Asignado a</p>
                       <p className="text-sm text-blue-900 font-semibold truncate">
-                        {opportunity.assigned_to?.name || 
-                         (opportunity.assigned_to_id ? `Usuario ${opportunity.assigned_to_id.substring(0, 8)}...` : 'Sin asignar')}
+                        {getAssignedToDisplayName()}
                       </p>
                     </div>
                   </div>
@@ -548,8 +556,8 @@ export function CRMOpportunityDetail() {
                 disabled={isAssigning}
               >
                 <option value="">Sin asignar</option>
-                {availableUsers.map(user => {
-                  const displayName = user.name?.trim() || user.email || `Usuario ${user.id?.slice(0, 8) || 'N/A'}`;
+                {filteredUsers.map(user => {
+                  const displayName = user.name?.trim() || user.email?.trim() || `Usuario ${user.id?.slice(0, 8) || 'N/A'}`;
                   const roleLabel = user.role_name === 'lawyer' ? 'Abogado' : 
                                    user.role_name === 'agent' ? 'Agente' : 
                                    user.role_name || 'Usuario';

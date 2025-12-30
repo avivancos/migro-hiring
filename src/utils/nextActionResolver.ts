@@ -3,6 +3,7 @@
 
 import type { LeadOpportunity } from '@/types/opportunity';
 import type { PipelineActionRead, PipelineStage } from '@/types/pipeline';
+import { getValidAttemptsCount } from './opportunity';
 
 export interface SuggestedNextAction {
   action_code: string;
@@ -24,8 +25,7 @@ export function getSuggestedNextAction(
 ): SuggestedNextAction | null {
   // 1. PRIMERA PRIORIDAD: Realizar primera llamada (si no se ha completado)
   if (!opportunity.first_call_completed) {
-    const attempts = opportunity.first_call_attempts || {};
-    const attemptCount = Object.keys(attempts).length;
+    const attemptCount = getValidAttemptsCount(opportunity.first_call_attempts);
     
     if (attemptCount < 5) {
       // Aún hay intentos disponibles
@@ -264,8 +264,7 @@ export function getSuggestedNextAction(
 export function hasNextAction(opportunity: LeadOpportunity): boolean {
   // Si no ha completado la primera llamada y tiene intentos disponibles
   if (!opportunity.first_call_completed) {
-    const attempts = opportunity.first_call_attempts || {};
-    return Object.keys(attempts).length < 5;
+    return getValidAttemptsCount(opportunity.first_call_attempts) < 5;
   }
   
   // Siempre hay una acción siguiente (al menos seguimiento general)
@@ -277,8 +276,7 @@ export function hasNextAction(opportunity: LeadOpportunity): boolean {
  */
 export function getOpportunityStatusMessage(opportunity: LeadOpportunity): string {
   if (!opportunity.first_call_completed) {
-    const attempts = opportunity.first_call_attempts || {};
-    const attemptCount = Object.keys(attempts).length;
+    const attemptCount = getValidAttemptsCount(opportunity.first_call_attempts);
     return `Pendiente de primera llamada (${attemptCount}/5 intentos)`;
   }
   
@@ -308,5 +306,6 @@ export function getOpportunityStatusMessage(opportunity: LeadOpportunity): strin
   
   return 'En proceso';
 }
+
 
 

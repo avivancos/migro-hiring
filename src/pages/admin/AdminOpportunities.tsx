@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { opportunityApi } from '@/services/opportunityApi';
 import { adminService } from '@/services/adminService';
+import { getValidAttemptsCount } from '@/utils/opportunity';
 import {
   Briefcase,
   Search,
@@ -240,8 +241,7 @@ export function AdminOpportunities() {
       // Filtro: Intentos disponibles (1-5)
       if (filterIntentosDisponibles !== null) {
         filteredOpportunities = filteredOpportunities.filter(opp => {
-          const attempts = opp.first_call_attempts || {};
-          const usedAttempts = Object.keys(attempts).length;
+          const usedAttempts = getValidAttemptsCount(opp.first_call_attempts);
           const availableAttempts = 5 - usedAttempts;
           return availableAttempts === filterIntentosDisponibles;
         });

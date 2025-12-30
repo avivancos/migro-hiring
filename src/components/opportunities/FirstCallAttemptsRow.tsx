@@ -2,7 +2,8 @@
 
 import { FirstCallAttemptBadge, type FirstCallAttemptStatus } from './FirstCallAttemptBadge';
 import { Check } from 'lucide-react';
-import type { FirstCallAttempt } from '@/types/opportunity';
+import type { FirstCallAttempt, FirstCallAttempts } from '@/types/opportunity';
+import { getValidAttemptsCount } from '@/utils/opportunity';
 
 export interface FirstCallAttemptsRowProps {
   attempts: { [key: string]: FirstCallAttempt } | null;
@@ -25,7 +26,8 @@ export function FirstCallAttemptsRow({
   };
 
   // Calcular intentos realizados y disponibles
-  const attemptsCompleted = attempts ? Object.keys(attempts).length : 0;
+  // Validar que solo se cuenten las claves válidas (1-5)
+  const attemptsCompleted = getValidAttemptsCount(attempts);
   const attemptsAvailable = 5 - attemptsCompleted;
 
   return (

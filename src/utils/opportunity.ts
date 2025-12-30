@@ -1,5 +1,17 @@
 // Opportunity Utilities - Funciones helper para el módulo de oportunidades
 
+import type { FirstCallAttempts } from '@/types/opportunity';
+
+/**
+ * Cuenta el número de intentos válidos (1-5) en first_call_attempts
+ * Solo cuenta las claves válidas para evitar problemas con datos corruptos
+ */
+export function getValidAttemptsCount(attempts: FirstCallAttempts | null | undefined): number {
+  if (!attempts) return 0;
+  const validAttemptNumbers = ['1', '2', '3', '4', '5'];
+  return Object.keys(attempts).filter(key => validAttemptNumbers.includes(key)).length;
+}
+
 /**
  * Obtiene las razones de detección como un array de strings
  * Puede ser un string o un objeto con propiedades específicas

@@ -33,7 +33,7 @@ import {
   GripVertical,
 } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
-import { isAgent, isExactSearch } from '@/utils/searchValidation';
+import { isAgent, isExactSearch, isAdminOrSuperuser } from '@/utils/searchValidation';
 import { Modal } from '@/components/common/Modal';
 import { Switch } from '@/components/ui/switch';
 import { ContactCard } from '@/components/CRM/ContactCard';
@@ -70,6 +70,7 @@ export function CRMContactList() {
   const [searchParams, setSearchParams] = useSearchParams();
   const { isAuthenticated, user } = useAuth();
   const userIsAgent = user ? isAgent(user.role) : false;
+  const userIsAdmin = user ? isAdminOrSuperuser(user.role, user.is_superuser) : false;
   const [loading, setLoading] = useState(true);
   const [contacts, setContacts] = useState<KommoContact[]>([]);
   const [users, setUsers] = useState<CRMUser[]>([]);
@@ -243,11 +244,12 @@ export function CRMContactList() {
         limit: pagination.limit,
       };
       
-      // NUEVO: Para todos los usuarios (no solo agentes), filtrar contactos por oportunidades asignadas
-      // Solo mostrar contactos que tienen oportunidades asignadas al usuario actual
+      // Para agentes: filtrar contactos por oportunidades asignadas
+      // Para admins: cargar TODOS los contactos sin filtrar por oportunidades
       let contactIdsFromOpportunities: string[] = [];
       
-      if (user?.id) {
+      // Solo filtrar por oportunidades si el usuario es agente (no admin)
+      if (userIsAgent && user?.id) {
         try {
           // Obtener todas las oportunidades asignadas al usuario actual
           const opportunitiesResponse = await opportunityApi.list({
@@ -265,7 +267,7 @@ export function CRMContactList() {
             )
           );
           
-          console.log('📋 [CRMContactList] Contactos con oportunidades asignadas al usuario:', {
+          console.log('📋 [CRMContactList] Contactos con oportunidades asignadas al usuario (agente):', {
             userId: user.id,
             userEmail: user.email,
             totalOpportunities: opportunitiesResponse.total,
@@ -275,12 +277,13 @@ export function CRMContactList() {
           console.error('❌ [CRMContactList] Error cargando oportunidades asignadas:', oppError);
           // Si falla, continuar sin filtrar por oportunidades (mostrar todos)
         }
+      } else if (userIsAdmin) {
+        console.log('👑 [CRMContactList] Usuario admin detectado, cargando TODOS los contactos sin filtrar por oportunidades');
       }
       
-      // Si hay contactos con oportunidades asignadas, filtrar por esos IDs
-      // Si no hay contactos con oportunidades, no mostrar ningún contacto
-      if (contactIdsFromOpportunities.length === 0 && user?.id) {
-        // El usuario no tiene oportunidades asignadas, mostrar lista vacía
+      // Solo para agentes: si no hay contactos con oportunidades asignadas, mostrar lista vacía
+      if (userIsAgent && contactIdsFromOpportunities.length === 0 && user?.id) {
+        // El agente no tiene oportunidades asignadas, mostrar lista vacía
         setContacts([]);
         setTotalContacts(0);
         setLoading(false);
@@ -347,16 +350,17 @@ export function CRMContactList() {
 
       const response = await crmService.getContacts(filters);
       
-      // Filtrar contactos por aquellos que tienen oportunidades asignadas al usuario actual
+      // Filtrar contactos por oportunidades asignadas SOLO para agentes
+      // Los admins ven TODOS los contactos sin filtrar
       let filteredContacts = response.items || [];
       
-      if (contactIdsFromOpportunities.length > 0) {
-        // Filtrar solo los contactos que están en la lista de contact_id de oportunidades asignadas
+      if (userIsAgent && contactIdsFromOpportunities.length > 0) {
+        // Solo para agentes: filtrar los contactos que están en la lista de contact_id de oportunidades asignadas
         filteredContacts = filteredContacts.filter(contact => 
           contactIdsFromOpportunities.includes(contact.id)
         );
         
-        console.log('🔍 [CRMContactList] Contactos filtrados por oportunidades asignadas:', {
+        console.log('🔍 [CRMContactList] Contactos filtrados por oportunidades asignadas (agente):', {
           totalCargados: response.items?.length || 0,
           totalFiltrados: filteredContacts.length,
           contactIdsFromOpps: contactIdsFromOpportunities.length,
@@ -366,6 +370,9 @@ export function CRMContactList() {
         const startIndex = pagination.skip;
         const endIndex = startIndex + pagination.limit;
         filteredContacts = filteredContacts.slice(startIndex, endIndex);
+      } else if (userIsAdmin) {
+        // Para admins, usar los contactos directamente sin filtrar por oportunidades
+        console.log('👑 [CRMContactList] Admin: usando todos los contactos sin filtrar por oportunidades');
       }
       
       // Obtener el total real de contactos usando el endpoint de count (sin paginación)
@@ -385,22 +392,27 @@ export function CRMContactList() {
           proxima_llamada_hasta: filters.proxima_llamada_hasta,
         });
         
-        // Si filtramos por oportunidades, el total real es el número de contactos filtrados
-        const realTotal = contactIdsFromOpportunities.length > 0 
+        // Si filtramos por oportunidades (solo para agentes), el total real es el número de contactos filtrados
+        // Para admins, usar el totalCount completo del API
+        const realTotal = (userIsAgent && contactIdsFromOpportunities.length > 0)
           ? filteredContacts.length 
           : totalCount;
         
         console.log('📊 [CRMContactList] Total count:', {
           fromAPI: totalCount,
-          filteredByOpportunities: filteredContacts.length,
+          filteredByOpportunities: userIsAgent && contactIdsFromOpportunities.length > 0,
+          filteredCount: filteredContacts.length,
           realTotal: realTotal,
+          isAdmin: userIsAdmin,
+          isAgent: userIsAgent,
         });
         
         setTotalContacts(realTotal);
       } catch (countError) {
         console.warn('⚠️ [CRMContactList] Error getting total count, using response total:', countError);
-        // Si filtramos por oportunidades, usar el número total de contact_ids únicos
-        const fallbackTotal = contactIdsFromOpportunities.length > 0 
+        // Si filtramos por oportunidades (solo para agentes), usar el número total de contact_ids únicos
+        // Para admins, usar el total de la respuesta
+        const fallbackTotal = (userIsAgent && contactIdsFromOpportunities.length > 0)
           ? contactIdsFromOpportunities.length 
           : (response.total ?? response.items?.length ?? 0);
         setTotalContacts(fallbackTotal);

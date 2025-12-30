@@ -170,3 +170,4 @@ const handleOpenUpdateStatusModal = () => {
 3. **Documentación**: Actualizar la documentación del backend para reflejar esta restricción
 
 
+

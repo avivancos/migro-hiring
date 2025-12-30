@@ -47,3 +47,4 @@ export function ExpedienteStatusBadge({ status, className }: ExpedienteStatusBad
 
 
 
+

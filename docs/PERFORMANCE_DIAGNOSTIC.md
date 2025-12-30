@@ -232,3 +232,4 @@ No se están usando `React.memo`, `useMemo`, o `useCallback` en componentes crí
 
 
 
+
