@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotes } from '@/hooks/useNotes';
 import NoteList from '@/components/CRM/Notes/NoteList';
-import NoteForm from '@/components/CRM/NoteForm';
+import { NoteForm } from '@/components/CRM/NoteForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, ArrowLeft } from 'lucide-react';
