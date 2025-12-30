@@ -21,6 +21,9 @@ import {
   MapPin,
   Flag,
   Loader2,
+  CheckSquare,
+  StickyNote,
+  TrendingUp,
 } from 'lucide-react';
 import { MigroLogo } from '@/components/common/MigroLogo';
 import { useState, useEffect, useRef } from 'react';
@@ -127,6 +130,9 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
   const navItems = [
     { path: '/crm', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/crm/contacts', label: 'Contactos', icon: Users },
+    { path: '/crm/opportunities', label: 'Oportunidades', icon: TrendingUp },
+    { path: '/crm/tasks', label: 'Tareas', icon: CheckSquare },
+    { path: '/crm/notes', label: 'Notas', icon: StickyNote },
     { path: '/crm/calendar', label: 'Calendario', icon: Calendar },
     { path: '/crm/call', label: 'Llamadas', icon: Phone },
     { path: '/crm/expedientes', label: 'Expedientes', icon: FileText },

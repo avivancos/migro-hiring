@@ -7,13 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { Task, CRMUser, KommoContact, KommoLead } from '@/types/crm';
+import type { Task, CRMUser, KommoContact } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { adminService } from '@/services/adminService';
 
 interface TaskFormProps {
   task?: Task;
-  defaultEntityType?: 'leads' | 'contacts' | 'companies';
+  defaultEntityType?: 'contacts' | 'companies';
   defaultEntityId?: string;
   defaultText?: string;
   defaultTaskType?: string;
@@ -36,8 +36,6 @@ export const TaskForm = memo(function TaskForm({
   const [loadingEntities, setLoadingEntities] = useState(false);
   const [users, setUsers] = useState<CRMUser[]>([]);
   const [contacts, setContacts] = useState<KommoContact[]>([]);
-  const [leads, setLeads] = useState<KommoLead[]>([]);
-  const [selectedLead, setSelectedLead] = useState<KommoLead | null>(null);
   const [selectedContact, setSelectedContact] = useState<KommoContact | null>(null);
   
   // Calcular fecha por defecto (mañana a las 10:00)
@@ -49,12 +47,12 @@ export const TaskForm = memo(function TaskForm({
   };
 
   // Normalizar defaultEntityType a formato plural
-  const normalizedEntityType = defaultEntityType || 'leads';
+  const normalizedEntityType = defaultEntityType || 'contacts';
 
   const [formData, setFormData] = useState({
     text: task?.text || defaultText || '',
     task_type: task?.task_type || defaultTaskType || 'call',
-    entity_type: task?.entity_type || normalizedEntityType,
+    entity_type: (task?.entity_type === 'leads' ? 'contacts' : task?.entity_type) || normalizedEntityType,
     entity_id: task?.entity_id || defaultEntityId || '',
     responsible_user_id: task?.responsible_user_id || '',
     complete_till: task?.complete_till 
@@ -71,9 +69,11 @@ export const TaskForm = memo(function TaskForm({
     loadEntities();
   }, []);
 
-  // Cargar entidades cuando cambie el tipo
+  // Cargar entidades cuando cambie el tipo (solo si es contacts)
   useEffect(() => {
-    loadEntities();
+    if (formData.entity_type === 'contacts') {
+      loadEntities();
+    }
   }, [formData.entity_type]);
 
   const loadUsers = async () => {
@@ -123,52 +123,26 @@ export const TaskForm = memo(function TaskForm({
   const loadEntities = async () => {
     setLoadingEntities(true);
     try {
-      // Si viene un defaultEntityId, cargar específicamente esa entidad
-      if (defaultEntityId && defaultEntityType) {
-        if (defaultEntityType === 'leads') {
-          try {
-            const lead = await crmService.getLead(defaultEntityId);
-            setSelectedLead(lead);
-            setLeads([lead]);
-            // Cargar también el contacto asociado si existe
-            if (lead.contact_id) {
-              try {
-                const contact = await crmService.getContact(lead.contact_id);
-                setSelectedContact(contact);
-              } catch (err) {
-                console.warn('Error loading contact for lead:', err);
-              }
-            }
-          } catch (err) {
-            console.error('Error loading lead:', err);
-            setSelectedLead(null);
-          }
-        } else if (defaultEntityType === 'contacts') {
-          try {
-            const contact = await crmService.getContact(defaultEntityId);
-            setSelectedContact(contact);
-            setContacts([contact]);
-          } catch (err) {
-            console.error('Error loading contact:', err);
-            setSelectedContact(null);
-          }
+      // Si viene un defaultEntityId, cargar específicamente ese contacto
+      if (defaultEntityId && defaultEntityType === 'contacts') {
+        try {
+          const contact = await crmService.getContact(defaultEntityId);
+          setSelectedContact(contact);
+          setContacts([contact]);
+        } catch (err) {
+          console.error('Error loading contact:', err);
+          setSelectedContact(null);
         }
       } else {
-        // Cargar lista de entidades
+        // Cargar lista de contactos
         if (formData.entity_type === 'contacts') {
           const contactsData = await crmService.getContacts({ limit: 100 });
           setContacts(contactsData.items || []);
-          setLeads([]);
-        } else if (formData.entity_type === 'leads') {
-          const leadsData = await crmService.getLeads({ limit: 100 });
-          setLeads(leadsData.items || []);
-          setContacts([]);
         }
       }
     } catch (err) {
       console.error('Error loading entities:', err);
       setContacts([]);
-      setLeads([]);
     } finally {
       setLoadingEntities(false);
     }
@@ -183,9 +157,7 @@ export const TaskForm = memo(function TaskForm({
       const submitData: any = {
         text: formData.text,
         task_type: formData.task_type,
-        entity_type: formData.entity_type === 'contact' ? 'contacts' : 
-                     formData.entity_type === 'lead' ? 'leads' : 
-                     formData.entity_type,
+        entity_type: formData.entity_type === 'contact' ? 'contacts' : formData.entity_type,
         entity_id: formData.entity_id,
         responsible_user_id: formData.responsible_user_id,
         complete_till: new Date(formData.complete_till).toISOString(),
@@ -324,11 +296,10 @@ export const TaskForm = memo(function TaskForm({
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px]"
                   required
                 >
-                  <option value="leads">Lead</option>
                   <option value="contacts">Contacto</option>
                 </select>
                 <p className="text-xs text-gray-500 mt-1">
-                  Selecciona si la tarea está relacionada con un Lead o un Contacto
+                  La tarea está relacionada con un Contacto
                 </p>
               </div>
             )}
@@ -337,7 +308,7 @@ export const TaskForm = memo(function TaskForm({
             {!defaultEntityId && (
               <div className="md:col-span-2">
                 <Label htmlFor="entity_id">
-                  {formData.entity_type === 'leads' ? 'Lead' : 'Contacto'}
+                  Contacto
                   <span className="text-red-500">*</span>
                 </Label>
                 <select
@@ -351,62 +322,36 @@ export const TaskForm = memo(function TaskForm({
                   <option value="">
                     {loadingEntities 
                       ? 'Cargando...' 
-                      : `Seleccionar ${formData.entity_type === 'leads' ? 'lead' : 'contacto'}...`}
+                      : 'Seleccionar contacto...'}
                   </option>
-                  {formData.entity_type === 'contacts' ? (
-                    contacts.map(contact => {
-                      const displayName = contact.name || 
-                        `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 
-                        contact.email || 
-                        `Contacto ${contact.id?.slice(0, 8) || 'N/A'}`;
-                      return (
-                        <option key={contact.id} value={contact.id}>
-                          {displayName}
-                        </option>
-                      );
-                    })
-                  ) : (
-                    leads.map(lead => (
-                      <option key={lead.id} value={lead.id}>
-                        {lead.name || `Lead ${lead.id?.slice(0, 8) || 'N/A'}`}
+                  {contacts.map(contact => {
+                    const displayName = contact.name || 
+                      `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 
+                      contact.email || 
+                      `Contacto ${contact.id?.slice(0, 8) || 'N/A'}`;
+                    return (
+                      <option key={contact.id} value={contact.id}>
+                        {displayName}
                       </option>
-                    ))
-                  )}
+                    );
+                  })}
                 </select>
               </div>
             )}
-            {/* Mostrar información del lead/contacto cuando viene predefinido */}
-            {defaultEntityId && defaultEntityType && (
+            {/* Mostrar información del contacto cuando viene predefinido */}
+            {defaultEntityId && defaultEntityType === 'contacts' && (
               <div className="md:col-span-2 space-y-2">
                 <div>
                   <Label>Relacionado con</Label>
                   <div className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
-                    {defaultEntityType === 'leads' ? (
-                      <div>
-                        <div className="text-gray-700">
-                          <strong>Lead:</strong> {selectedLead?.name || leads.find(l => l.id === defaultEntityId)?.name || `Lead ${defaultEntityId?.slice(0, 8) || 'N/A'}`}
-                        </div>
-                        {selectedContact && (
-                          <div className="text-sm text-gray-600 mt-1">
-                            <strong>Contacto asociado:</strong> {
-                              selectedContact.name || 
-                              `${selectedContact.first_name || ''} ${selectedContact.last_name || ''}`.trim() || 
-                              selectedContact.email || 
-                              `Contacto ${selectedContact.id?.slice(0, 8) || 'N/A'}`
-                            }
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="text-gray-700">
-                        <strong>Contacto:</strong> {
-                          selectedContact?.name || 
-                          contacts.find(c => c.id === defaultEntityId)?.name || 
-                          contacts.find(c => c.id === defaultEntityId)?.email || 
-                          `Contacto ${typeof defaultEntityId === 'string' ? defaultEntityId.slice(0, 8) : defaultEntityId || 'N/A'}`
-                        }
-                      </span>
-                    )}
+                    <span className="text-gray-700">
+                      <strong>Contacto:</strong> {
+                        selectedContact?.name || 
+                        contacts.find(c => c.id === defaultEntityId)?.name || 
+                        contacts.find(c => c.id === defaultEntityId)?.email || 
+                        `Contacto ${typeof defaultEntityId === 'string' ? defaultEntityId.slice(0, 8) : defaultEntityId || 'N/A'}`
+                      }
+                    </span>
                   </div>
                 </div>
               </div>

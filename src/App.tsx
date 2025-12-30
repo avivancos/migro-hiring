@@ -44,6 +44,7 @@ const CRMTaskDetail = lazy(() => import('@/pages/CRMTaskDetail').then(m => ({ de
 const CRMTasks = lazy(() => import('@/pages/CRMTasks').then(m => ({ default: m.CRMTasks })));
 const CRMNotes = lazy(() => import('@/pages/CRMNotes').then(m => ({ default: m.CRMNotes })));
 const CRMContracts = lazy(() => import('@/pages/CRMContracts').then(m => ({ default: m.CRMContracts })));
+const CRMAgentJournal = lazy(() => import('@/pages/CRMAgentJournal').then(m => ({ default: m.CRMAgentJournal })));
 
 // Admin Pages - Lazy load componentes pesados
 const AdminLayout = lazy(() => import('@/pages/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
@@ -159,6 +160,9 @@ function AppContent() {
             
             {/* CRM Notes */}
             <Route path="notes" element={<LazyLoadWrapper fallback="spinner"><CRMNotes /></LazyLoadWrapper>} />
+            
+            {/* CRM Agent Journal */}
+            <Route path="journal" element={<LazyLoadWrapper fallback="spinner"><CRMAgentJournal /></LazyLoadWrapper>} />
             
             {/* CRM Actions & Expedientes */}
             <Route path="actions" element={<LazyLoadWrapper fallback="spinner"><CRMActions /></LazyLoadWrapper>} />

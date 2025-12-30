@@ -11,7 +11,9 @@ import {
   ChevronLeft,
   ChevronRight,
   FileCheck,
-  TrendingUp
+  TrendingUp,
+  CheckSquare,
+  StickyNote
 } from 'lucide-react';
 import { MigroLogo } from '@/components/common/MigroLogo';
 
@@ -19,6 +21,8 @@ const navigation = [
   { name: 'Dashboard', href: '/crm', icon: LayoutDashboard },
   { name: 'Contactos', href: '/crm/contacts', icon: Users },
   { name: 'Oportunidades', href: '/crm/opportunities', icon: TrendingUp },
+  { name: 'Tareas', href: '/crm/tasks', icon: CheckSquare },
+  { name: 'Notas', href: '/crm/notes', icon: StickyNote },
   { name: 'Contratos', href: '/crm/contracts', icon: FileCheck },
   { name: 'Calendario', href: '/crm/calendar', icon: Calendar },
   { name: 'Llamadas', href: '/crm/call', icon: Phone },

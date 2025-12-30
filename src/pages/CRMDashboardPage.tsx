@@ -33,6 +33,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { formatContractStatus, formatCallStatus, formatLeadStatus, formatPriority } from '@/utils/statusTranslations';
 import { opportunityApi } from '@/services/opportunityApi';
 import { isAgent } from '@/utils/searchValidation';
+import { AgentJournalWidget } from '@/components/agentJournal/AgentJournalWidget';
 
 export function CRMDashboardPage() {
   // Medir rendimiento de la página
@@ -504,6 +505,11 @@ export function CRMDashboardPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Agent Daily Journal Widget - Solo para agentes */}
+        {userIsAgent && (
+          <AgentJournalWidget />
+        )}
 
         {/* Grid Principal: Mini Calendario y Últimos Contratos */}
         <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${userIsAgent ? '' : 'lg:grid-cols-3'}`}>

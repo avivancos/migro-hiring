@@ -50,6 +50,7 @@ export const PAGE_TITLES: Record<string, string> = {
   '/crm/expedientes': 'Expedientes - CRM | Migro.es',
   '/crm/expedientes/new': 'Nuevo Expediente | Migro.es',
   '/crm/call': 'Manejo de Llamadas - CRM | Migro.es',
+  '/crm/journal': 'Diario de Trabajo Diario - CRM | Migro.es',
   '/crm/settings': 'Configuración - CRM | Migro.es',
   '/crm/settings/task-templates': 'Plantillas de Tareas | Migro.es',
   '/crm/settings/custom-fields': 'Campos Personalizados | Migro.es',

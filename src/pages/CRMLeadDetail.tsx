@@ -1103,7 +1103,7 @@ export function CRMLeadDetail() {
                 </Button>
               </div>
               <TaskForm
-                defaultEntityType="leads"
+                defaultEntityType="contacts"
                 defaultEntityId={id || undefined}
                 defaultText={quickTaskType ? getQuickTaskConfig(quickTaskType).text : undefined}
                 defaultTaskType={quickTaskType ? getQuickTaskConfig(quickTaskType).task_type : undefined}

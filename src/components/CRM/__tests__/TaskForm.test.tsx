@@ -27,7 +27,7 @@ describe('TaskForm - Tests Automatizados', () => {
   });
 
   it('debe renderizar el formulario', async () => {
-    const { container } = render(<TaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} defaultEntityType="lead" defaultEntityId="1" />);
+    const { container } = render(<TaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} defaultEntityType="contacts" defaultEntityId="1" />);
 
     await waitFor(() => {
       expect(screen.getByLabelText(/descripción/i)).toBeInTheDocument();
@@ -35,7 +35,7 @@ describe('TaskForm - Tests Automatizados', () => {
   });
 
   it('debe validar campos requeridos', async () => {
-    const { container } = render(<TaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} defaultEntityType="lead" defaultEntityId="1" />);
+    const { container } = render(<TaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} defaultEntityType="contacts" defaultEntityId="1" />);
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /crear tarea/i })).toBeInTheDocument();
@@ -50,7 +50,7 @@ describe('TaskForm - Tests Automatizados', () => {
   });
 
   it('debe enviar el formulario con datos válidos', async () => {
-    const { container } = render(<TaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} defaultEntityType="lead" defaultEntityId="1" />);
+    const { container } = render(<TaskForm onSubmit={mockOnSubmit} onCancel={mockOnCancel} defaultEntityType="contacts" defaultEntityId="1" />);
 
     await waitFor(() => {
       expect(screen.getByLabelText(/descripción/i)).toBeInTheDocument();
@@ -72,7 +72,7 @@ describe('TaskForm - Tests Automatizados', () => {
       expect(mockOnSubmit).toHaveBeenCalledWith(
         expect.objectContaining({
           text: 'Llamar al cliente',
-          entity_type: 'lead',
+          entity_type: 'contacts',
           entity_id: 1,
         })
       );

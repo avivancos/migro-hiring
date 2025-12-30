@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TaskList from '@/components/CRM/Tasks/TaskList';
-import TaskForm from '@/components/CRM/TaskForm';
+import { TaskForm } from '@/components/CRM/TaskForm';
 import type { TaskFilters, TaskCreateRequest } from '@/types/crm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
