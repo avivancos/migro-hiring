@@ -111,9 +111,14 @@ export const CallForm = memo(function CallForm({
   const loadCallTypes = async () => {
     try {
       const types = await crmService.getCallTypes();
-      setCallTypes(types);
+      console.log('✅ [CallForm] Tipos de llamada cargados:', types);
+      setCallTypes(types.length > 0 ? types : [
+        { id: '1', name: 'Primera Llamada', code: 'primera_llamada' },
+        { id: '2', name: 'Seguimiento', code: 'seguimiento' },
+        { id: '3', name: 'Llamada de Venta', code: 'venta' },
+      ]);
     } catch (err) {
-      console.error('Error loading call types:', err);
+      console.error('❌ [CallForm] Error loading call types, usando tipos por defecto:', err);
       // Fallback a tipos por defecto
       setCallTypes([
         { id: '1', name: 'Primera Llamada', code: 'primera_llamada' },
@@ -160,11 +165,7 @@ export const CallForm = memo(function CallForm({
             }
           }
           
-          // Si no se encuentra el usuario actual (no debería pasar), usar el primero disponible como fallback
-          if (!initialValue && users.length > 0) {
-            initialValue = users[0].id;
-            console.log('⚠️ [CallForm] useEffect editingResponsible - Usando primer usuario disponible como fallback:', initialValue);
-          }
+          // NO usar fallback - si no se encuentra el usuario de sesión, dejar vacío
         }
         
         if (initialValue) {
@@ -246,48 +247,62 @@ export const CallForm = memo(function CallForm({
       console.log('🔍 [CallForm] loadUsers - Usuarios responsables obtenidos:', usersData.length, usersData.map(u => ({ id: u.id, name: u.name, email: u.email })));
       setUsers(usersData);
       
-      // Pre-llenar responsable con el usuario actual si no hay uno ya asignado
+      // SIEMPRE pre-llenar responsable con el usuario actual de la sesión si no hay uno ya asignado
       setFormData(prev => {
         console.log('🔍 [CallForm] loadUsers - formData actual:', { responsible_user_id: prev.responsible_user_id });
         
-        // Si ya hay un responsable asignado, mantenerlo
-        if (prev.responsible_user_id && prev.responsible_user_id.trim() !== '' && prev.responsible_user_id !== 'undefined') {
-          console.log('✅ [CallForm] loadUsers - Ya hay responsable asignado, manteniendo:', prev.responsible_user_id);
+        // Si ya hay un responsable asignado explícitamente (no vacío), mantenerlo
+        // Solo mantener si es una llamada existente (call existe) y tiene responsable
+        if (call && call.responsible_user_id && prev.responsible_user_id && prev.responsible_user_id.trim() !== '' && prev.responsible_user_id !== 'undefined') {
+          console.log('✅ [CallForm] loadUsers - Llamada existente con responsable asignado, manteniendo:', prev.responsible_user_id);
           return prev;
         }
         
-        // Intentar encontrar el usuario actual de la sesión
+        // Para nuevas llamadas o llamadas sin responsable, SIEMPRE buscar el usuario de la sesión
         const currentUser = adminService.getUser();
-        console.log('🔍 [CallForm] loadUsers - Usuario actual de sesión:', currentUser);
+        console.log('🔍 [CallForm] loadUsers - Buscando usuario de sesión:', currentUser);
         
         if (currentUser?.id || currentUser?.email) {
-          // Buscar el usuario actual en la lista de usuarios del CRM (por ID o email)
-          // El usuario de sesión DEBE estar en la lista de responsables
           const currentEmail = currentUser.email?.toLowerCase();
-          const currentCRMUser = usersData.find(u => 
-            u.id === currentUser.id || 
-            u.email === currentUser.email ||
-            (currentEmail && u.email?.toLowerCase() === currentEmail)
-          );
+          const currentUserId = currentUser.id;
+          console.log('🔍 [CallForm] loadUsers - Buscando en lista de usuarios por:', { id: currentUserId, email: currentEmail });
+          console.log('🔍 [CallForm] loadUsers - Lista de usuarios disponibles:', usersData.map(u => ({ id: u.id, email: u.email?.toLowerCase(), name: u.name })));
+          
+          // Buscar el usuario actual en la lista de usuarios del CRM (por ID o email)
+          const currentCRMUser = usersData.find(u => {
+            const matchesId = currentUserId && u.id === currentUserId;
+            const matchesEmail = currentEmail && (
+              u.email?.toLowerCase() === currentEmail || 
+              u.email === currentUser.email
+            );
+            const result = matchesId || matchesEmail;
+            if (result) {
+              console.log('✅ [CallForm] loadUsers - Match encontrado:', {
+                session: { id: currentUserId, email: currentEmail },
+                crmUser: { id: u.id, email: u.email?.toLowerCase(), name: u.name },
+                matchesId,
+                matchesEmail
+              });
+            }
+            return result;
+          });
           
           if (currentCRMUser) {
-            console.log('✅ [CallForm] loadUsers - Usuario actual encontrado en CRM, pre-llenando:', currentCRMUser.id, currentCRMUser.name || currentCRMUser.email);
+            console.log('✅ [CallForm] loadUsers - Usuario de sesión encontrado, preseleccionando:', currentCRMUser.id, currentCRMUser.name || currentCRMUser.email);
             return { ...prev, responsible_user_id: currentCRMUser.id };
           } else {
-            console.warn('⚠️ [CallForm] loadUsers - Usuario actual NO encontrado en lista de responsables. El usuario de sesión debería estar en la lista.');
+            console.error('❌ [CallForm] loadUsers - Usuario de sesión NO encontrado en lista de responsables:', {
+              sessionUser: { id: currentUser.id, email: currentUser.email },
+              availableUsers: usersData.map(u => ({ id: u.id, email: u.email }))
+            });
+            // NO usar fallback - dejar vacío para que el usuario tenga que seleccionar manualmente
+            // Esto ayuda a identificar el problema
+            return prev;
           }
         } else {
-          console.warn('⚠️ [CallForm] loadUsers - No hay usuario actual de sesión');
+          console.error('❌ [CallForm] loadUsers - No hay usuario de sesión disponible');
+          return prev;
         }
-        
-        // Si no se encuentra el usuario actual (no debería pasar), usar el primero disponible como fallback
-        if (usersData.length > 0) {
-          console.warn('⚠️ [CallForm] loadUsers - Usando primer usuario disponible como fallback:', usersData[0].id, usersData[0].name || usersData[0].email);
-          return { ...prev, responsible_user_id: usersData[0].id };
-        }
-        
-        console.log('⚠️ [CallForm] loadUsers - No hay usuarios disponibles');
-        return prev;
       });
     } catch (err) {
       console.error('❌ [CallForm] Error loading users:', err);
@@ -364,11 +379,7 @@ export const CallForm = memo(function CallForm({
         }
       }
       
-      // Si no se encuentra el usuario actual (no debería pasar), usar el primero disponible como fallback
-      if (!initialValue && users.length > 0) {
-        initialValue = users[0].id;
-        console.warn('⚠️ [CallForm] handleStartEditResponsible - Usando primer usuario disponible como fallback:', initialValue, users[0].name || users[0].email);
-      }
+      // NO usar fallback - si no se encuentra el usuario de sesión, dejar vacío
     } else {
       console.log('✅ [CallForm] handleStartEditResponsible - Ya hay responsable asignado:', initialValue);
     }
@@ -807,12 +818,25 @@ export const CallForm = memo(function CallForm({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="">Seleccionar tipo...</option>
-                {callTypes.map((type) => (
-                  <option key={type.id} value={type.code}>
-                    {type.name}
-                  </option>
-                ))}
+                {callTypes.length > 0 ? (
+                  callTypes.map((type) => (
+                    <option key={type.id} value={type.code}>
+                      {type.name}
+                    </option>
+                  ))
+                ) : (
+                  <>
+                    <option value="primera_llamada">Primera Llamada</option>
+                    <option value="seguimiento">Seguimiento</option>
+                    <option value="venta">Llamada de Venta</option>
+                  </>
+                )}
               </select>
+              {callTypes.length === 0 && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Cargando tipos de llamada...
+                </p>
+              )}
             </div>
 
             {/* Responsable - Campo protegido */}

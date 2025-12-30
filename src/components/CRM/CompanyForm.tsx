@@ -50,27 +50,28 @@ export function CompanyForm({ company, onSubmit, onCancel }: CompanyFormProps) {
           return prev;
         }
         
-        // Intentar encontrar el usuario actual de la sesión (debe estar en la lista de responsables)
+        // SIEMPRE buscar el usuario de la sesión - NO usar fallback del primer usuario
         const currentUser = adminService.getUser();
         if (currentUser?.id || currentUser?.email) {
           const currentEmail = currentUser.email?.toLowerCase();
-          // Buscar el usuario actual en la lista de usuarios del CRM (por ID o email)
-          const currentCRMUser = usersData.find(u => 
-            u.id === currentUser.id || 
-            u.email === currentUser.email ||
-            (currentEmail && u.email?.toLowerCase() === currentEmail)
-          );
+          const currentCRMUser = usersData.find(u => {
+            const matchesId = u.id === currentUser.id;
+            const matchesEmail = u.email === currentUser.email || (currentEmail && u.email?.toLowerCase() === currentEmail);
+            return matchesId || matchesEmail;
+          });
+          
           if (currentCRMUser) {
+            console.log('✅ [CompanyForm] Usuario de sesión encontrado, preseleccionando:', currentCRMUser.id, currentCRMUser.name || currentCRMUser.email);
             return { ...prev, responsible_user_id: currentCRMUser.id };
           } else {
-            console.warn('⚠️ [CompanyForm] Usuario actual NO encontrado en lista de responsables. El usuario de sesión debería estar en la lista.');
+            console.error('❌ [CompanyForm] Usuario de sesión NO encontrado en lista de responsables:', {
+              sessionUser: { id: currentUser.id, email: currentUser.email },
+              availableUsers: usersData.map(u => ({ id: u.id, email: u.email }))
+            });
           }
         }
         
-        // Si no se encuentra el usuario actual (no debería pasar), usar el primero disponible como fallback
-        if (usersData.length > 0) {
-          return { ...prev, responsible_user_id: usersData[0].id };
-        }
+        // NO usar fallback - si no se encuentra el usuario de sesión, dejar vacío
         
         return prev;
       });
