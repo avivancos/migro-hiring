@@ -39,22 +39,41 @@ export function CompanyForm({ company, onSubmit, onCancel }: CompanyFormProps) {
 
   const loadUsers = async () => {
     try {
-      const allUsers = await crmService.getUsers(true);
-      // Filtrar para incluir solo lawyers y agentes (no solo lawyers)
-      const usersData = allUsers.filter(u => u.role_name === 'lawyer' || u.role_name === 'agent');
+      // Usar el nuevo endpoint optimizado que devuelve solo responsables (lawyers y agents)
+      const usersData = await crmService.getResponsibleUsers(true);
       setUsers(usersData);
       
       // Pre-llenar responsable con el usuario actual si no hay uno ya asignado
-      if (!formData.responsible_user_id) {
+      setFormData(prev => {
+        // Si ya hay un responsable asignado, mantenerlo
+        if (prev.responsible_user_id && prev.responsible_user_id !== undefined) {
+          return prev;
+        }
+        
+        // Intentar encontrar el usuario actual de la sesión (debe estar en la lista de responsables)
         const currentUser = adminService.getUser();
-        if (currentUser?.id) {
-          // Buscar el usuario actual en la lista de usuarios del CRM
-          const currentCRMUser = usersData.find(u => u.id === currentUser.id || u.email === currentUser.email);
+        if (currentUser?.id || currentUser?.email) {
+          const currentEmail = currentUser.email?.toLowerCase();
+          // Buscar el usuario actual en la lista de usuarios del CRM (por ID o email)
+          const currentCRMUser = usersData.find(u => 
+            u.id === currentUser.id || 
+            u.email === currentUser.email ||
+            (currentEmail && u.email?.toLowerCase() === currentEmail)
+          );
           if (currentCRMUser) {
-            setFormData(prev => ({ ...prev, responsible_user_id: currentCRMUser.id }));
+            return { ...prev, responsible_user_id: currentCRMUser.id };
+          } else {
+            console.warn('⚠️ [CompanyForm] Usuario actual NO encontrado en lista de responsables. El usuario de sesión debería estar en la lista.');
           }
         }
-      }
+        
+        // Si no se encuentra el usuario actual (no debería pasar), usar el primero disponible como fallback
+        if (usersData.length > 0) {
+          return { ...prev, responsible_user_id: usersData[0].id };
+        }
+        
+        return prev;
+      });
     } catch (err) {
       console.error('Error loading users:', err);
     }

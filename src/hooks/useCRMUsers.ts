@@ -5,27 +5,41 @@ import { useState, useEffect } from 'react';
 import { crmService } from '@/services/crmService';
 import type { CRMUser } from '@/types/crm';
 
-export function useCRMUsers(filters?: { role?: string; isActive?: boolean }) {
+export function useCRMUsers(filters?: { role?: string; isActive?: boolean; onlyResponsibles?: boolean }) {
   const [users, setUsers] = useState<CRMUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     loadUsers();
-  }, [filters?.role, filters?.isActive]);
+  }, [filters?.role, filters?.isActive, filters?.onlyResponsibles]);
 
   const loadUsers = async () => {
     try {
       setLoading(true);
       setError(null);
-      const allUsers = await crmService.getUsers(filters?.isActive, true);
       
-      // Filtrar por rol si se especifica
-      const filtered = filters?.role
-        ? allUsers.filter((u) => u.role_name === filters.role)
-        : allUsers;
-      
-      setUsers(filtered);
+      // Si se solicita solo responsables, usar el endpoint optimizado
+      if (filters?.onlyResponsibles || (filters?.role && (filters.role === 'lawyer' || filters.role === 'agent'))) {
+        const responsibleUsers = await crmService.getResponsibleUsers(filters?.isActive ?? true, true);
+        
+        // Si se especifica un rol específico además, filtrar por ese rol
+        const filtered = filters?.role && (filters.role === 'lawyer' || filters.role === 'agent')
+          ? responsibleUsers.filter((u) => u.role_name === filters.role)
+          : responsibleUsers;
+        
+        setUsers(filtered);
+      } else {
+        // Para otros casos, usar el endpoint general
+        const allUsers = await crmService.getUsers(filters?.isActive, true);
+        
+        // Filtrar por rol si se especifica
+        const filtered = filters?.role
+          ? allUsers.filter((u) => u.role_name === filters.role)
+          : allUsers;
+        
+        setUsers(filtered);
+      }
     } catch (err) {
       console.error('Error cargando usuarios CRM:', err);
       setError(err instanceof Error ? err : new Error('Error desconocido'));

@@ -37,8 +37,8 @@ export function CRMOpportunityDetail() {
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   
-  // Cargar usuarios usando el hook (filtrados por lawyer y agent)
-  const { users: availableUsers, loading: loadingUsers } = useCRMUsers({ isActive: true });
+  // Cargar usuarios responsables usando el hook optimizado
+  const { users: filteredUsers, loading: loadingUsers } = useCRMUsers({ isActive: true, onlyResponsibles: true });
 
   const {
     opportunity,
@@ -65,9 +65,6 @@ export function CRMOpportunityDetail() {
     opportunity ? 'leads' : null,
     opportunity?.id || null
   );
-  
-  // Filtrar usuarios para solo mostrar lawyers y agentes
-  const filteredUsers = availableUsers.filter(u => u.role_name === 'lawyer' || u.role_name === 'agent');
   
   // Actualizar selectedUserId cuando cambia opportunity.assigned_to_id
   useEffect(() => {

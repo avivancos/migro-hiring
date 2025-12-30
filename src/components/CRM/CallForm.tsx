@@ -43,6 +43,7 @@ export const CallForm = memo(function CallForm({
   const [editingResponsible, setEditingResponsible] = useState(false);
   const [tempPhone, setTempPhone] = useState('');
   const [tempResponsibleId, setTempResponsibleId] = useState('');
+  const [loadingUsers, setLoadingUsers] = useState(false);
   
   // Datos de primera llamada
   const [firstCallData, setFirstCallData] = useState({
@@ -127,6 +128,55 @@ export const CallForm = memo(function CallForm({
     loadEntities();
   }, [formData.entity_type]);
 
+  // Cuando se activa el modo de edición del responsable y hay usuarios disponibles, asegurarse de que tempResponsibleId tenga un valor
+  useEffect(() => {
+    if (editingResponsible && !loadingUsers && users.length > 0) {
+      console.log('🔍 [CallForm] useEffect editingResponsible - Modo edición activo, usuarios disponibles:', users.length);
+      console.log('🔍 [CallForm] useEffect editingResponsible - tempResponsibleId:', tempResponsibleId);
+      console.log('🔍 [CallForm] useEffect editingResponsible - formData.responsible_user_id:', formData.responsible_user_id);
+      
+      if (!tempResponsibleId || tempResponsibleId.trim() === '') {
+        console.log('⚠️ [CallForm] useEffect editingResponsible - tempResponsibleId vacío, intentando pre-llenar');
+        
+        // Si el modo de edición está activo pero no hay valor temporal, pre-llenar
+        let initialValue = formData.responsible_user_id;
+        
+        if (!initialValue || initialValue.trim() === '') {
+          const currentUser = adminService.getUser();
+          console.log('🔍 [CallForm] useEffect editingResponsible - Usuario actual de sesión:', currentUser);
+          
+          if ((currentUser?.id || currentUser?.email) && users.length > 0) {
+            const currentEmail = currentUser.email?.toLowerCase();
+            const currentCRMUser = users.find(u => 
+              u.id === currentUser.id || 
+              u.email === currentUser.email ||
+              (currentEmail && u.email?.toLowerCase() === currentEmail)
+            );
+            if (currentCRMUser) {
+              initialValue = currentCRMUser.id;
+              console.log('✅ [CallForm] useEffect editingResponsible - Usuario actual encontrado:', initialValue);
+            } else {
+              console.warn('⚠️ [CallForm] useEffect editingResponsible - Usuario actual NO encontrado en lista de responsables');
+            }
+          }
+          
+          // Si no se encuentra el usuario actual (no debería pasar), usar el primero disponible como fallback
+          if (!initialValue && users.length > 0) {
+            initialValue = users[0].id;
+            console.log('⚠️ [CallForm] useEffect editingResponsible - Usando primer usuario disponible como fallback:', initialValue);
+          }
+        }
+        
+        if (initialValue) {
+          console.log('✅ [CallForm] useEffect editingResponsible - Estableciendo tempResponsibleId:', initialValue);
+          setTempResponsibleId(initialValue);
+        } else {
+          console.log('⚠️ [CallForm] useEffect editingResponsible - No se pudo establecer valor');
+        }
+      }
+    }
+  }, [editingResponsible, users, loadingUsers, tempResponsibleId, formData.responsible_user_id]);
+
   // Cargar contacto seleccionado y verificar si es primera llamada
   // Nota: Los leads ahora son contactos unificados, así que siempre cargamos como contacto
   useEffect(() => {
@@ -189,30 +239,60 @@ export const CallForm = memo(function CallForm({
   };
 
   const loadUsers = async () => {
+    setLoadingUsers(true);
     try {
-      const allUsers = await crmService.getUsers(true);
-      // Filtrar para incluir solo lawyers y agentes (no solo lawyers)
-      const usersData = allUsers.filter(u => u.role_name === 'lawyer' || u.role_name === 'agent');
+      // Usar el nuevo endpoint optimizado que devuelve solo responsables (lawyers y agents)
+      const usersData = await crmService.getResponsibleUsers(true);
+      console.log('🔍 [CallForm] loadUsers - Usuarios responsables obtenidos:', usersData.length, usersData.map(u => ({ id: u.id, name: u.name, email: u.email })));
       setUsers(usersData);
       
       // Pre-llenar responsable con el usuario actual si no hay uno ya asignado
-      if (!formData.responsible_user_id) {
-        const currentUser = adminService.getUser();
-        if (currentUser?.id) {
-          // Buscar el usuario actual en la lista de usuarios del CRM
-          const currentCRMUser = usersData.find(u => u.id === currentUser.id || u.email === currentUser.email);
-          if (currentCRMUser) {
-            setFormData(prev => ({ ...prev, responsible_user_id: currentCRMUser.id }));
-          } else if (usersData.length > 0) {
-            // Si no se encuentra, usar el primero disponible
-            setFormData(prev => ({ ...prev, responsible_user_id: usersData[0].id }));
-          }
-        } else if (usersData.length > 0) {
-          setFormData(prev => ({ ...prev, responsible_user_id: usersData[0].id }));
+      setFormData(prev => {
+        console.log('🔍 [CallForm] loadUsers - formData actual:', { responsible_user_id: prev.responsible_user_id });
+        
+        // Si ya hay un responsable asignado, mantenerlo
+        if (prev.responsible_user_id && prev.responsible_user_id.trim() !== '' && prev.responsible_user_id !== 'undefined') {
+          console.log('✅ [CallForm] loadUsers - Ya hay responsable asignado, manteniendo:', prev.responsible_user_id);
+          return prev;
         }
-      }
+        
+        // Intentar encontrar el usuario actual de la sesión
+        const currentUser = adminService.getUser();
+        console.log('🔍 [CallForm] loadUsers - Usuario actual de sesión:', currentUser);
+        
+        if (currentUser?.id || currentUser?.email) {
+          // Buscar el usuario actual en la lista de usuarios del CRM (por ID o email)
+          // El usuario de sesión DEBE estar en la lista de responsables
+          const currentEmail = currentUser.email?.toLowerCase();
+          const currentCRMUser = usersData.find(u => 
+            u.id === currentUser.id || 
+            u.email === currentUser.email ||
+            (currentEmail && u.email?.toLowerCase() === currentEmail)
+          );
+          
+          if (currentCRMUser) {
+            console.log('✅ [CallForm] loadUsers - Usuario actual encontrado en CRM, pre-llenando:', currentCRMUser.id, currentCRMUser.name || currentCRMUser.email);
+            return { ...prev, responsible_user_id: currentCRMUser.id };
+          } else {
+            console.warn('⚠️ [CallForm] loadUsers - Usuario actual NO encontrado en lista de responsables. El usuario de sesión debería estar en la lista.');
+          }
+        } else {
+          console.warn('⚠️ [CallForm] loadUsers - No hay usuario actual de sesión');
+        }
+        
+        // Si no se encuentra el usuario actual (no debería pasar), usar el primero disponible como fallback
+        if (usersData.length > 0) {
+          console.warn('⚠️ [CallForm] loadUsers - Usando primer usuario disponible como fallback:', usersData[0].id, usersData[0].name || usersData[0].email);
+          return { ...prev, responsible_user_id: usersData[0].id };
+        }
+        
+        console.log('⚠️ [CallForm] loadUsers - No hay usuarios disponibles');
+        return prev;
+      });
     } catch (err) {
-      console.error('Error loading users:', err);
+      console.error('❌ [CallForm] Error loading users:', err);
+    } finally {
+      setLoadingUsers(false);
     }
   };
 
@@ -243,8 +323,59 @@ export const CallForm = memo(function CallForm({
   };
 
   // Funciones para manejar edición protegida de responsable
-  const handleStartEditResponsible = () => {
-    setTempResponsibleId(formData.responsible_user_id);
+  const handleStartEditResponsible = async () => {
+    console.log('🔍 [CallForm] handleStartEditResponsible - Iniciando edición de responsable');
+    console.log('🔍 [CallForm] handleStartEditResponsible - formData.responsible_user_id:', formData.responsible_user_id);
+    console.log('🔍 [CallForm] handleStartEditResponsible - users disponibles:', users.length);
+    console.log('🔍 [CallForm] handleStartEditResponsible - loadingUsers:', loadingUsers);
+    
+    // Si los usuarios aún no se han cargado, cargarlos primero
+    if (users.length === 0 && !loadingUsers) {
+      console.log('⚠️ [CallForm] handleStartEditResponsible - Usuarios no cargados, cargando primero...');
+      await loadUsers();
+    }
+    
+    // Obtener el responsable actual del formData
+    let initialValue = formData.responsible_user_id;
+    
+    // Verificar si el valor está vacío o es undefined
+    const isEmpty = !initialValue || initialValue.trim() === '' || initialValue === 'undefined';
+    console.log('🔍 [CallForm] handleStartEditResponsible - isEmpty:', isEmpty, 'initialValue:', initialValue);
+    
+    if (isEmpty) {
+      // Si no hay responsable, buscar el usuario actual de la sesión
+      const currentUser = adminService.getUser();
+      console.log('🔍 [CallForm] handleStartEditResponsible - Usuario actual de sesión:', currentUser);
+      
+      if ((currentUser?.id || currentUser?.email) && users.length > 0) {
+        const currentEmail = currentUser.email?.toLowerCase();
+        // Buscar el usuario actual en la lista de usuarios del CRM
+        const currentCRMUser = users.find(u => 
+          u.id === currentUser.id || 
+          u.email === currentUser.email ||
+          (currentEmail && u.email?.toLowerCase() === currentEmail)
+        );
+        
+        if (currentCRMUser) {
+          initialValue = currentCRMUser.id;
+          console.log('✅ [CallForm] handleStartEditResponsible - Usuario actual encontrado, usando:', initialValue, currentCRMUser.name || currentCRMUser.email);
+        } else {
+          console.warn('⚠️ [CallForm] handleStartEditResponsible - Usuario actual NO encontrado en lista de responsables. El usuario de sesión debería estar en la lista.');
+        }
+      }
+      
+      // Si no se encuentra el usuario actual (no debería pasar), usar el primero disponible como fallback
+      if (!initialValue && users.length > 0) {
+        initialValue = users[0].id;
+        console.warn('⚠️ [CallForm] handleStartEditResponsible - Usando primer usuario disponible como fallback:', initialValue, users[0].name || users[0].email);
+      }
+    } else {
+      console.log('✅ [CallForm] handleStartEditResponsible - Ya hay responsable asignado:', initialValue);
+    }
+    
+    // Establecer el valor inicial del select (nunca dejar undefined)
+    console.log('🔍 [CallForm] handleStartEditResponsible - Estableciendo tempResponsibleId:', initialValue || '');
+    setTempResponsibleId(initialValue || '');
     setEditingResponsible(true);
   };
 

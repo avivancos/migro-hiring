@@ -72,24 +72,45 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
   const loadUsers = async () => {
     setLoadingUsers(true);
     try {
-      const allUsers = await crmService.getUsers(true);
-      console.log('Usuarios cargados en LeadForm:', allUsers);
-      if (Array.isArray(allUsers)) {
-        // Filtrar para incluir solo lawyers y agentes (no solo lawyers)
-        const validUsers = allUsers.filter(u => u && u.id && (u.role_name === 'lawyer' || u.role_name === 'agent'));
-        setUsers(validUsers);
+      // Usar el nuevo endpoint optimizado que devuelve solo responsables (lawyers y agents)
+      const validUsers = await crmService.getResponsibleUsers(true);
+      console.log('Usuarios responsables cargados en LeadForm:', validUsers);
+      if (Array.isArray(validUsers)) {
+        // Ya están filtrados por el endpoint, solo validar que tengan id
+        const filteredUsers = validUsers.filter(u => u && u.id);
+        setUsers(filteredUsers);
         
         // Pre-llenar responsable con el usuario actual si no hay uno ya asignado
-        if (!formData.responsible_user_id) {
+        setFormData((prev: any) => {
+          // Si ya hay un responsable asignado, mantenerlo
+          if (prev.responsible_user_id && prev.responsible_user_id !== undefined) {
+            return prev;
+          }
+          
+          // Intentar encontrar el usuario actual de la sesión (debe estar en la lista de responsables)
           const currentUser = adminService.getUser();
-          if (currentUser?.id) {
-            // Buscar el usuario actual en la lista de usuarios del CRM
-            const currentCRMUser = validUsers.find(u => u.id === currentUser.id || u.email === currentUser.email);
+          if (currentUser?.id || currentUser?.email) {
+            const currentEmail = currentUser.email?.toLowerCase();
+            // Buscar el usuario actual en la lista de usuarios del CRM (por ID o email)
+            const currentCRMUser = filteredUsers.find(u =>
+              u.id === currentUser.id || 
+              u.email === currentUser.email ||
+              (currentEmail && u.email?.toLowerCase() === currentEmail)
+            );
             if (currentCRMUser) {
-              setFormData((prev: any) => ({ ...prev, responsible_user_id: currentCRMUser.id }));
+              return { ...prev, responsible_user_id: currentCRMUser.id };
+            } else {
+              console.warn('⚠️ [LeadForm] Usuario actual NO encontrado en lista de responsables. El usuario de sesión debería estar en la lista.');
             }
           }
-        }
+          
+          // Si no se encuentra el usuario actual (no debería pasar), usar el primero disponible como fallback
+          if (filteredUsers.length > 0) {
+            return { ...prev, responsible_user_id: filteredUsers[0].id };
+          }
+          
+          return prev;
+        });
       } else {
         setUsers([]);
       }

@@ -766,6 +766,34 @@ export const crmService = {
   },
 
   /**
+   * Obtener usuarios que pueden ser asignados como responsables (lawyers y agents)
+   * Endpoint optimizado que devuelve solo usuarios elegibles como responsables
+   */
+  async getResponsibleUsers(isActive: boolean = true, useCache: boolean = true): Promise<CRMUser[]> {
+    const cacheKey = APICache.generateKey(`${CRM_BASE_PATH}/users/responsibles`, { is_active: isActive });
+    
+    // Intentar obtener del caché primero
+    if (useCache) {
+      const cached = apiCache.get<CRMUser[]>(cacheKey);
+      if (cached) {
+        console.log(`💾 [crmService] Usuarios responsables obtenidos del caché`);
+        return cached;
+      }
+    }
+    
+    const { data } = await api.get<CRMUser[]>(`${CRM_BASE_PATH}/users/responsibles`, {
+      params: { is_active: isActive },
+    });
+    
+    // Guardar en caché (10 minutos TTL - usuarios cambian poco)
+    if (useCache) {
+      apiCache.set(cacheKey, data, 10 * 60 * 1000);
+    }
+    
+    return data;
+  },
+
+  /**
    * Obtener un usuario CRM por ID
    */
   async getUser(id: string): Promise<CRMUser> {
@@ -1351,7 +1379,12 @@ export const crmService = {
       const { data } = await api.get('/crm/call-types');
       return Array.isArray(data) ? data : [];
     } catch (error: any) {
-      console.error('Error getting call types:', error);
+      // Si es 404, el endpoint no existe aún - usar tipos por defecto silenciosamente
+      if (error?.response?.status === 404) {
+        console.log('ℹ️ [crmService] Endpoint /crm/call-types no disponible, usando tipos por defecto');
+      } else {
+        console.error('Error getting call types:', error);
+      }
       // Fallback a tipos por defecto si falla
       return [
         { id: '1', name: 'Primera Llamada', code: 'primera_llamada' },
