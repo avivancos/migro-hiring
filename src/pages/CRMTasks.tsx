@@ -1,320 +1,114 @@
-// CRM Tasks - Gestión de tareas
+// CRM Tasks - Página principal de tareas
+// Mobile-first con diseño moderno usando nuevos componentes
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '@/components/ui/card';
+import TaskList from '@/components/CRM/Tasks/TaskList';
+import TaskForm from '@/components/CRM/TaskForm';
+import type { TaskFilters, TaskCreateRequest } from '@/types/crm';
 import { Button } from '@/components/ui/button';
-import { adminService } from '@/services/adminService';
+import { Card, CardContent } from '@/components/ui/card';
+import { Plus, ArrowLeft, Calendar } from 'lucide-react';
+import { useTasks } from '@/hooks/useTasks';
 import { crmService } from '@/services/crmService';
-import type { Task } from '@/types/crm';
-import {
-  ArrowLeft,
-  CheckSquare,
-  Calendar,
-  Phone,
-  Mail,
-  Users,
-  Clock,
-  Plus,
-} from 'lucide-react';
 
 export function CRMTasks() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('pending');
+  const [showForm, setShowForm] = useState(false);
+  const [filters, setFilters] = useState<TaskFilters>({
+    is_completed: false, // Por defecto mostrar pendientes
+  });
+  
+  const { createTask, completeTask, refresh } = useTasks({
+    filters,
+    autoLoad: true,
+    pageSize: 20,
+  });
 
-  useEffect(() => {
-    if (!adminService.isAuthenticated()) {
-      navigate('/admin/login');
-      return;
-    }
-
-    loadData();
-  }, [navigate, filter]);
-
-  const loadData = async () => {
-    setLoading(true);
+  const handleCreateTask = async (taskData: TaskCreateRequest) => {
     try {
-      const tasksResponse = await crmService.getTasks({
-        is_completed: filter === 'pending' ? false : filter === 'completed' ? true : undefined,
-        skip: 0,
-        limit: 100,
-      });
-      
-      setTasks(tasksResponse.items || []);
+      await createTask(taskData);
+      setShowForm(false);
+      refresh();
     } catch (err) {
-      console.error('Error loading tasks:', err);
-    } finally {
-      setLoading(false);
+      console.error('Error creating task:', err);
+      alert('Error al crear la tarea');
     }
   };
 
   const handleCompleteTask = async (taskId: string) => {
     try {
-      await crmService.completeTask(taskId);
-      await loadData();
+      await completeTask(taskId);
+      refresh();
     } catch (err) {
       console.error('Error completing task:', err);
+      alert('Error al completar la tarea');
     }
   };
 
-  const getTaskIcon = (taskType: string) => {
-    switch (taskType) {
-      case 'call':
-        return Phone;
-      case 'email':
-        return Mail;
-      case 'meeting':
-        return Users;
-      default:
-        return CheckSquare;
-    }
+  const handleTaskPress = (task: any) => {
+    navigate(`/crm/tasks/${task.id}`);
   };
-
-  const formatDate = (dateString: string | undefined): string => {
-    if (!dateString) return 'Sin fecha';
-    const date = new Date(dateString);
-    const now = new Date();
-    const diff = date.getTime() - now.getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-
-    if (days < 0) return 'Vencida';
-    if (days === 0) return 'Hoy';
-    if (days === 1) return 'Mañana';
-    return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-  };
-
-  const isOverdue = (dueDate: string | undefined): boolean => {
-    if (!dueDate) return false;
-    return new Date(dueDate) < new Date();
-  };
-
-  const groupTasksByDate = (tasks: Task[]) => {
-    const today: Task[] = [];
-    const upcoming: Task[] = [];
-    const overdue: Task[] = [];
-
-    tasks.forEach(task => {
-      const dueDate = task.complete_till || task.due_date;
-      if (isOverdue(dueDate) && !task.is_completed) {
-        overdue.push(task);
-      } else if (formatDate(dueDate) === 'Hoy') {
-        today.push(task);
-      } else {
-        upcoming.push(task);
-      }
-    });
-
-    return { overdue, today, upcoming };
-  };
-
-  const { overdue, today, upcoming } = groupTasksByDate(tasks);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-4 md:py-8">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
             <Button
-              onClick={() => navigate('/admin/crm')}
+              onClick={() => navigate('/crm')}
               variant="ghost"
               size="icon"
+              className="md:hidden"
             >
               <ArrowLeft size={20} />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Tareas</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Tareas</h1>
               <p className="text-gray-600 mt-1">
-                {tasks.filter(t => !t.is_completed).length} tareas pendientes
+                Gestiona tus tareas y recordatorios
               </p>
             </div>
           </div>
-          <Button
-            onClick={() => navigate('/admin/crm/tasks/new')}
-            className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
-          >
-            <Plus size={18} />
-            Nueva Tarea
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => navigate('/crm/calendar')}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Calendar size={18} />
+              <span className="hidden md:inline">Calendario</span>
+            </Button>
+            <Button
+              onClick={() => setShowForm(!showForm)}
+              className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
+            >
+              <Plus size={18} />
+              Nueva Tarea
+            </Button>
+          </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-2 mb-6">
-          <Button
-            variant={filter === 'pending' ? 'default' : 'outline'}
-            onClick={() => setFilter('pending')}
-            className={filter === 'pending' ? 'bg-green-600 hover:bg-green-700' : ''}
-          >
-            Pendientes ({tasks.filter(t => !t.is_completed).length})
-          </Button>
-          <Button
-            variant={filter === 'completed' ? 'default' : 'outline'}
-            onClick={() => setFilter('completed')}
-          >
-            Completadas ({tasks.filter(t => t.is_completed).length})
-          </Button>
-          <Button
-            variant={filter === 'all' ? 'default' : 'outline'}
-            onClick={() => setFilter('all')}
-          >
-            Todas ({tasks.length})
-          </Button>
-        </div>
-
-        {loading ? (
-          <Card>
-            <CardContent className="py-12 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Cargando tareas...</p>
+        {/* Formulario de creación */}
+        {showForm && (
+          <Card className="mb-6">
+            <CardContent className="pt-6">
+              <TaskForm
+                onSubmit={handleCreateTask}
+                onCancel={() => setShowForm(false)}
+              />
             </CardContent>
           </Card>
-        ) : (
-          <div className="space-y-6">
-            {/* Overdue Tasks */}
-            {overdue.length > 0 && (
-              <div>
-                <h2 className="text-lg font-semibold text-red-600 mb-4">
-                  Vencidas ({overdue.length})
-                </h2>
-                <div className="space-y-3">
-                  {overdue.map((task) => {
-                    const Icon = getTaskIcon(task.task_type);
-                    return (
-                      <Card key={task.id} className="border-l-4 border-red-500">
-                        <CardContent className="pt-6">
-                          <div className="flex items-start gap-4">
-                            <div className="bg-red-100 p-2 rounded text-red-600">
-                              <Icon size={20} />
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-medium text-gray-900">{task.text}</h3>
-                              <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                                <span className="flex items-center gap-1">
-                                  <Clock size={14} />
-                                  {formatDate(task.complete_till || task.due_date)}
-                                </span>
-                                <span>{task.task_type}</span>
-                                <span>{task.entity_type} #{task.entity_id}</span>
-                              </div>
-                            </div>
-                            <Button
-                              size="sm"
-                              onClick={() => handleCompleteTask(task.id)}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <CheckSquare size={16} className="mr-1" />
-                              Completar
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Today's Tasks */}
-            {today.length > 0 && (
-              <div>
-                <h2 className="text-lg font-semibold text-orange-600 mb-4">
-                  Hoy ({today.length})
-                </h2>
-                <div className="space-y-3">
-                  {today.map((task) => {
-                    const Icon = getTaskIcon(task.task_type);
-                    return (
-                      <Card key={task.id} className="border-l-4 border-orange-500">
-                        <CardContent className="pt-6">
-                          <div className="flex items-start gap-4">
-                            <div className="bg-orange-100 p-2 rounded text-orange-600">
-                              <Icon size={20} />
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-medium text-gray-900">{task.text}</h3>
-                              <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                                <span>{task.task_type}</span>
-                                <span>{task.entity_type} #{task.entity_id}</span>
-                              </div>
-                            </div>
-                            {!task.is_completed && (
-                              <Button
-                                size="sm"
-                                onClick={() => handleCompleteTask(task.id)}
-                                className="bg-green-600 hover:bg-green-700"
-                              >
-                                Completar
-                              </Button>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Upcoming Tasks */}
-            {upcoming.length > 0 && (
-              <div>
-                <h2 className="text-lg font-semibold text-blue-600 mb-4">
-                  Próximas ({upcoming.length})
-                </h2>
-                <div className="space-y-3">
-                  {upcoming.map((task) => {
-                    const Icon = getTaskIcon(task.task_type);
-                    return (
-                      <Card key={task.id} className="border-l-4 border-blue-500">
-                        <CardContent className="pt-6">
-                          <div className="flex items-start gap-4">
-                            <div className="bg-blue-100 p-2 rounded text-blue-600">
-                              <Icon size={20} />
-                            </div>
-                            <div className="flex-1">
-                              <h3 className="font-medium text-gray-900">{task.text}</h3>
-                              <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                                <span className="flex items-center gap-1">
-                                  <Calendar size={14} />
-                                  {formatDate(task.complete_till || task.due_date)}
-                                </span>
-                                <span>{task.task_type}</span>
-                                <span>{task.entity_type} #{task.entity_id}</span>
-                              </div>
-                            </div>
-                            {!task.is_completed && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleCompleteTask(task.id)}
-                              >
-                                Completar
-                              </Button>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {tasks.length === 0 && (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <p className="text-gray-500">
-                    {filter === 'pending' ? 'No tienes tareas pendientes' : 'No hay tareas'}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
         )}
+
+        {/* Lista de tareas */}
+        <TaskList
+          initialFilters={filters}
+          showFilters={true}
+          onTaskPress={handleTaskPress}
+        />
       </div>
     </div>
   );
 }
-

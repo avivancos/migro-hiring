@@ -41,6 +41,8 @@ const CRMExpedientesList = lazy(() => import('@/pages/CRMExpedientesList').then(
 const CRMExpedienteDetail = lazy(() => import('@/pages/CRMExpedienteDetail').then(m => ({ default: m.CRMExpedienteDetail })));
 const CRMCallHandler = lazy(() => import('@/pages/CRMCallHandler').then(m => ({ default: m.CRMCallHandler })));
 const CRMTaskDetail = lazy(() => import('@/pages/CRMTaskDetail').then(m => ({ default: m.CRMTaskDetail })));
+const CRMTasks = lazy(() => import('@/pages/CRMTasks').then(m => ({ default: m.CRMTasks })));
+const CRMNotes = lazy(() => import('@/pages/CRMNotes').then(m => ({ default: m.CRMNotes })));
 const CRMContracts = lazy(() => import('@/pages/CRMContracts').then(m => ({ default: m.CRMContracts })));
 
 // Admin Pages - Lazy load componentes pesados
@@ -152,7 +154,11 @@ function AppContent() {
             <Route path="calendar" element={<LazyLoadWrapper fallback="spinner"><CRMTaskCalendar /></LazyLoadWrapper>} />
             
             {/* CRM Tasks */}
+            <Route path="tasks" element={<LazyLoadWrapper fallback="spinner"><CRMTasks /></LazyLoadWrapper>} />
             <Route path="tasks/:id" element={<LazyLoadWrapper fallback="spinner"><CRMTaskDetail /></LazyLoadWrapper>} />
+            
+            {/* CRM Notes */}
+            <Route path="notes" element={<LazyLoadWrapper fallback="spinner"><CRMNotes /></LazyLoadWrapper>} />
             
             {/* CRM Actions & Expedientes */}
             <Route path="actions" element={<LazyLoadWrapper fallback="spinner"><CRMActions /></LazyLoadWrapper>} />

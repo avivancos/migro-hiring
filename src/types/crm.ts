@@ -168,36 +168,37 @@ export interface PipelineStatus {
 
 export interface Task {
   id: string; // UUID
+  task_type_id?: number | null; // ID del tipo de tarea (legacy)
+  task_type?: string | null; // 'call', 'meeting', 'email', 'reminder', 'other'
   text: string;
-  task_type: string; // 'call', 'meeting', 'email', 'deadline', 'follow_up', 'reminder'
-  entity_id: string; // UUID
-  entity_type: 'lead' | 'contact' | 'company' | 'contacts' | 'leads'; // API usa 'contacts'/'leads'
-  contact_id?: string; // UUID - Alias directo cuando entity_type == "contacts" (solo en endpoints de calendario)
-  contact_name?: string; // Nombre del contacto cuando entity_type == "contacts" (solo en endpoints de calendario)
-  responsible_user_id: string; // UUID
-  due_date?: string; // Legacy
-  complete_till?: string; // Fecha límite calculada
+  responsible_user_id?: string | null; // UUID - Opcional según documentación
+  complete_till?: string | null; // Fecha límite (ISO datetime)
   is_completed: boolean;
-  completed_at?: string;
-  result_text?: string;
-  created_by: string; // UUID
-  updated_by: string; // UUID
+  completed_at?: string | null;
+  entity_id?: string | null; // UUID
+  entity_type?: 'contacts' | 'leads' | 'companies' | null; // API usa 'contacts'/'leads'
+  result_text?: string | null;
+  task_template_id?: string | null; // UUID
+  contact_id?: string | null; // UUID - Alias directo cuando entity_type == "contacts" (solo en endpoints de calendario)
+  contact_name?: string | null; // Nombre del contacto cuando entity_type == "contacts" (solo en endpoints de calendario)
   created_at: string;
   updated_at: string;
   
-  // Relación con plantilla
-  task_template_id?: string; // UUID
+  // Campos legacy (mantener para compatibilidad)
+  due_date?: string; // Legacy
+  created_by?: string; // UUID (legacy)
+  updated_by?: string; // UUID (legacy)
   task_template?: TaskTemplate;
 }
 
 export interface Note {
   id: string; // UUID
-  entity_id: string; // UUID
-  entity_type: 'lead' | 'contact' | 'company' | 'contacts' | 'leads'; // API usa 'contacts'/'leads'
-  note_type: string; // 'comment', 'call_in', 'call_out', 'meeting', 'email', 'system', 'common'
+  note_type?: string | null; // 'comment', 'call', 'email', 'system', 'other'
   content: string;
-  params?: Record<string, any>;
-  created_by: string; // UUID
+  created_by?: string | null; // UUID
+  entity_id?: string | null; // UUID
+  entity_type?: 'contacts' | 'leads' | 'companies' | null; // API usa 'contacts'/'leads'
+  params?: Record<string, any> | null;
   created_at: string;
   updated_at: string;
 }
@@ -424,22 +425,45 @@ export interface ContactCreateRequest {
 }
 
 export interface TaskCreateRequest {
-  text: string;
-  task_type?: string;
-  entity_type: 'lead' | 'contact' | 'company' | 'contacts' | 'leads';
-  entity_id: string; // UUID
-  responsible_user_id: string; // UUID
-  complete_till?: string; // Fecha límite (ISO string)
+  text: string; // Requerido
+  task_type?: string; // 'call', 'meeting', 'email', 'reminder', 'other'
+  responsible_user_id?: string; // UUID - Opcional: si no se proporciona, se asigna automáticamente al usuario de la sesión
+  complete_till?: string; // Fecha límite (ISO datetime)
+  entity_id?: string; // UUID
+  entity_type?: 'contacts' | 'leads' | 'companies'; // Opcional
+  result_text?: string | null;
+  task_template_id?: string | null; // UUID
+  
+  // Campos legacy (mantener para compatibilidad)
   due_date?: string; // Legacy
-  result_text?: string;
-  task_template_id?: string; // UUID
 }
 
 export interface NoteCreateRequest {
-  entity_type: 'lead' | 'contact' | 'company' | 'contacts' | 'leads';
-  entity_id: string; // UUID
+  content: string; // Requerido (mínimo 1 carácter)
+  note_type?: string; // 'comment', 'call', 'email', 'system', 'other'
+  created_by?: string; // UUID - Opcional: debería auto-asignarse al usuario de la sesión (pendiente en backend)
+  entity_id?: string; // UUID
+  entity_type?: 'contacts' | 'leads' | 'companies'; // Opcional
+  params?: Record<string, any>; // Parámetros adicionales (metadata, detalles de llamada, etc.)
+}
+
+export interface TaskUpdateRequest {
+  text?: string;
+  task_type?: string;
+  responsible_user_id?: string;
+  complete_till?: string;
+  is_completed?: boolean;
+  entity_id?: string;
+  entity_type?: 'contacts' | 'leads' | 'companies';
+  result_text?: string | null;
+  task_template_id?: string | null;
+}
+
+export interface NoteUpdateRequest {
+  content?: string;
   note_type?: string;
-  content: string;
+  entity_id?: string;
+  entity_type?: 'contacts' | 'leads' | 'companies';
   params?: Record<string, any>;
 }
 
