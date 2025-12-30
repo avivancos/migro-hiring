@@ -7,11 +7,12 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { ContactSearchSelect } from './ContactSearchSelect';
 import type { Note } from '@/types/crm';
 
 interface NoteFormProps {
   note?: Note;
-  defaultEntityType?: 'contacts' | 'leads';
+  defaultEntityType?: 'contacts';
   defaultEntityId?: string;
   onSubmit: (data: any) => Promise<void>;
   onCancel: () => void;
@@ -113,25 +114,17 @@ export const NoteForm = memo(function NoteForm({
                 required
               >
                 <option value="contacts">Contacto</option>
-                <option value="leads">Lead</option>
               </select>
             </div>
           )}
 
           {/* Entity ID (oculto si viene por default) */}
-          {!defaultEntityId && (
+          {!defaultEntityId && formData.entity_type === 'contacts' && (
             <div>
-              <Label htmlFor="entity_id">
-                ID de {formData.entity_type === 'contacts' ? 'Contacto' : 'Lead'}
-                <span className="text-red-500">*</span>
-              </Label>
-              <input
-                id="entity_id"
-                type="text"
+              <ContactSearchSelect
                 value={formData.entity_id}
-                onChange={(e) => handleChange('entity_id', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="UUID"
+                onChange={(contactId) => handleChange('entity_id', contactId)}
+                label="Contacto"
                 required
               />
             </div>

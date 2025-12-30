@@ -110,13 +110,13 @@ export function CRMCallHandler() {
   const loadInitialData = async () => {
     try {
       const [usersData, pipelinesData, callTypesData] = await Promise.all([
-        crmService.getUsers(true),
+        crmService.getResponsibleUsers(true),
         crmService.getPipelines().catch(() => []),
         crmService.getCallTypes().catch(() => []),
       ]);
       
       setUsers(usersData);
-      console.log('👥 [CRMCallHandler] Usuarios cargados:', usersData.length);
+      console.log('👥 [CRMCallHandler] Usuarios responsables cargados:', usersData.length);
       if (usersData.length > 0) {
         console.log('👥 [CRMCallHandler] Ejemplo de usuario:', {
           id: usersData[0].id,
@@ -396,8 +396,17 @@ export function CRMCallHandler() {
     });
     
     if (user) {
-      const name = user.name?.trim() || user.email?.trim() || 'Usuario sin nombre';
-      return name;
+      // Usar name (que debería contener el nombre completo del usuario del CRM)
+      const name = user.name?.trim();
+      if (name && name.length > 0) {
+        return name;
+      }
+      // Fallback a email si no hay name
+      const email = user.email?.trim();
+      if (email && email.length > 0) {
+        return email.split('@')[0]; // Mostrar solo la parte antes del @
+      }
+      return 'Usuario sin nombre';
     }
     
     // Si no se encuentra, puede ser que los usuarios aún no se hayan cargado
@@ -405,9 +414,11 @@ export function CRMCallHandler() {
     console.warn(`⚠️ [CRMCallHandler] Usuario no encontrado para ID: "${userId}". Total usuarios cargados: ${users.length}`);
     if (users.length > 0) {
       console.log('📋 [CRMCallHandler] IDs de usuarios disponibles:', users.map(u => ({ id: u.id, name: u.name })).slice(0, 5));
+      console.log('📋 [CRMCallHandler] ID buscado:', userId);
     }
     
-    return 'Usuario desconocido';
+    // Mostrar ID truncado si no se encuentra el usuario
+    return userId.substring(0, 8) + '...';
   };
 
   const loadLeadPipelineData = async (lead: KommoLead) => {
@@ -835,39 +846,43 @@ export function CRMCallHandler() {
                             <div className="font-medium text-gray-900">
                               {getCallTitle(call)}
                             </div>
-                            <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                              <span className="flex items-center gap-1">
-                                <Calendar size={14} />
-                                {new Date(call.started_at || call.created_at).toLocaleString('es-ES', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                  year: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
-                              </span>
-                              {call.duration > 0 && (
+                            <div className="flex flex-col gap-2 mt-1">
+                              <div className="flex items-center gap-4 text-sm text-gray-600">
                                 <span className="flex items-center gap-1">
-                                  <Clock size={14} />
-                                  {Math.floor(call.duration / 60)}:{(call.duration % 60).toString().padStart(2, '0')}
+                                  <Calendar size={14} />
+                                  {new Date(call.started_at || call.created_at).toLocaleString('es-ES', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
                                 </span>
-                              )}
-                              <span className={`text-xs px-2 py-1 rounded ${
-                                call.call_status === 'completed' || call.status === 'answered' || call.status === 'completed'
-                                  ? 'bg-green-100 text-green-800'
-                                  : (call.call_status === 'no_answer' || call.status === 'no_answer')
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-red-100 text-red-800'
-                              }`}>
-                                {formatCallStatus(call.call_status || call.status)}
-                              </span>
-                              {getCallTypeBadge(call.call_type)}
-                              {call.responsible_user_id && (
-                                <span className="text-xs px-2 py-1 rounded bg-gray-100 text-gray-800 flex items-center gap-1">
-                                  <User size={12} />
-                                  {getResponsibleName(call.responsible_user_id)}
+                                {call.duration > 0 && (
+                                  <span className="flex items-center gap-1">
+                                    <Clock size={14} />
+                                    {Math.floor(call.duration / 60)}:{(call.duration % 60).toString().padStart(2, '0')}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className={`text-xs px-2 py-1 rounded ${
+                                  call.call_status === 'completed' || call.status === 'answered' || call.status === 'completed'
+                                    ? 'bg-green-100 text-green-800'
+                                    : (call.call_status === 'no_answer' || call.status === 'no_answer')
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {formatCallStatus(call.call_status || call.status)}
                                 </span>
-                              )}
+                                {getCallTypeBadge(call.call_type)}
+                                {call.responsible_user_id && (
+                                  <span className="text-xs px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5 font-medium">
+                                    <User size={12} className="flex-shrink-0" />
+                                    <span className="truncate max-w-[150px]">{getResponsibleName(call.responsible_user_id)}</span>
+                                  </span>
+                                )}
+                              </div>
                             </div>
                             {call.resumen_llamada && (
                               <p className="text-sm text-gray-700 mt-2 line-clamp-2">

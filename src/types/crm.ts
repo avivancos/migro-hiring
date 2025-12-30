@@ -197,7 +197,7 @@ export interface Note {
   content: string;
   created_by?: string | null; // UUID
   entity_id?: string | null; // UUID
-  entity_type?: 'contacts' | 'leads' | 'companies' | null; // API usa 'contacts'/'leads'
+  entity_type?: 'contacts' | null; // API usa 'contacts'
   params?: Record<string, any> | null;
   created_at: string;
   updated_at: string;
@@ -443,7 +443,7 @@ export interface NoteCreateRequest {
   note_type?: string; // 'comment', 'call', 'email', 'system', 'other'
   created_by?: string; // UUID - Opcional: debería auto-asignarse al usuario de la sesión (pendiente en backend)
   entity_id?: string; // UUID
-  entity_type?: 'contacts' | 'leads' | 'companies'; // Opcional
+  entity_type?: 'contacts'; // Opcional
   params?: Record<string, any>; // Parámetros adicionales (metadata, detalles de llamada, etc.)
 }
 
@@ -463,7 +463,7 @@ export interface NoteUpdateRequest {
   content?: string;
   note_type?: string;
   entity_id?: string;
-  entity_type?: 'contacts' | 'leads' | 'companies';
+  entity_type?: 'contacts';
   params?: Record<string, any>;
 }
 

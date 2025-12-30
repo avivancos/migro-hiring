@@ -1,2 +1,3 @@
 # Dependencias adicionales para las nuevas funcionalidades
 apscheduler>=3.10.0  # Para cron jobs automáticos
+pytz>=2024.1  # Para gestión de zonas horarias

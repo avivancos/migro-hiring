@@ -4,19 +4,23 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Plus, ExternalLink, Phone } from 'lucide-react';
-import type { Task, Call, KommoContact, KommoLead } from '@/types/crm';
+import { ChevronLeft, ChevronRight, Plus, ExternalLink, Phone, User, MessageSquare } from 'lucide-react';
+import type { Task, Call, Note, KommoContact, KommoLead, CRMUser } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { formatCallStatus } from '@/utils/statusTranslations';
+import { useAuth } from '@/hooks/useAuth';
 
 type ViewMode = 'month' | 'week' | 'day';
 
 export function CRMTaskCalendar() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [calls, setCalls] = useState<Call[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [users, setUsers] = useState<CRMUser[]>([]);
   const [entityNames, setEntityNames] = useState<Record<string, string>>({});
 
   // Leer parámetros de URL
@@ -66,8 +70,22 @@ export function CRMTaskCalendar() {
   }, [view, currentDate]);
 
   useEffect(() => {
+    loadUsers();
+  }, []);
+
+  useEffect(() => {
     loadData();
   }, [currentDate, view]);
+
+  const loadUsers = async () => {
+    try {
+      const usersData = await crmService.getResponsibleUsers(true);
+      setUsers(usersData);
+      console.log('👥 [CRMTaskCalendar] Usuarios responsables cargados:', usersData.length);
+    } catch (err) {
+      console.error('Error loading users:', err);
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -81,8 +99,8 @@ export function CRMTaskCalendar() {
         view,
       });
       
-      // Cargar tareas y llamadas en paralelo usando endpoints específicos del calendario
-      const [tasksData, callsData] = await Promise.all([
+      // Cargar tareas, llamadas y notas en paralelo usando endpoints específicos del calendario
+      const [tasksData, callsData, notesData] = await Promise.all([
         crmService.getCalendarTasks({
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
@@ -93,6 +111,13 @@ export function CRMTaskCalendar() {
           end_date: endDate.toISOString(),
         }).catch((err) => {
           console.warn('⚠️ [CRMTaskCalendar] Error cargando llamadas del calendario:', err);
+          return [];
+        }),
+        // Cargar notas usando el endpoint normal con filtros de fecha
+        crmService.getNotes({
+          limit: 1000, // Cargar muchas notas para el rango de fechas
+        }).then(response => response.items || []).catch((err) => {
+          console.warn('⚠️ [CRMTaskCalendar] Error cargando notas:', err);
           return [];
         }),
       ]);
@@ -128,8 +153,35 @@ export function CRMTaskCalendar() {
         console.warn('⚠️ [CRMTaskCalendar] No se cargaron llamadas. Verificar endpoint y filtros de fecha.');
       }
       
-      setTasks(tasksData);
-      setCalls(callsData);
+      // Filtrar por creador (solo mostrar a creadores o admins)
+      const isAdmin = user?.is_superuser || user?.role === 'admin' || user?.role === 'superuser';
+      const currentUserId = user?.id;
+
+      // Filtrar tareas
+      const filteredTasks = isAdmin 
+        ? tasksData 
+        : tasksData.filter(task => task.created_by === currentUserId || task.responsible_user_id === currentUserId);
+
+      // Filtrar llamadas
+      const filteredCalls = isAdmin 
+        ? callsData 
+        : callsData.filter(call => call.responsible_user_id === currentUserId);
+
+      // Filtrar notas
+      const filteredNotes = isAdmin 
+        ? notesData 
+        : notesData.filter(note => note.created_by === currentUserId);
+
+      // Filtrar notas por fecha (usando created_at)
+      const notesInRange = filteredNotes.filter(note => {
+        if (!note.created_at) return false;
+        const noteDate = new Date(note.created_at);
+        return noteDate >= startDate && noteDate <= endDate;
+      });
+
+      setTasks(filteredTasks);
+      setCalls(filteredCalls);
+      setNotes(notesInRange);
       
       // Cargar nombres de contactos/leads para todas las llamadas con entity_id que no tienen contact_name
       await loadEntityNames(callsData);
@@ -324,6 +376,109 @@ export function CRMTaskCalendar() {
     }
     
     return filtered;
+  };
+
+  const getNotesForDate = (date: Date): Note[] => {
+    const dateStr = date.toISOString().split('T')[0];
+    return notes.filter(note => {
+      if (!note.created_at) return false;
+      try {
+        const noteDate = new Date(note.created_at).toISOString().split('T')[0];
+        return noteDate === dateStr;
+      } catch (err) {
+        console.warn('⚠️ [CRMTaskCalendar] Error parseando fecha de nota:', note.id, note.created_at, err);
+        return false;
+      }
+    });
+  };
+
+  // Helper para obtener nombre del responsable
+  const getResponsibleName = (userId: string | undefined): string => {
+    if (!userId) return 'Sin asignar';
+    
+    if (users.length === 0) {
+      return 'Cargando...';
+    }
+    
+    const user = users.find(u => {
+      const uId = String(u.id || '').trim();
+      const searchId = String(userId || '').trim();
+      return uId === searchId;
+    });
+    
+    if (user) {
+      const name = user.name?.trim();
+      if (name && name.length > 0) {
+        return name;
+      }
+      const email = user.email?.trim();
+      if (email && email.length > 0) {
+        return email.split('@')[0];
+      }
+      return 'Usuario sin nombre';
+    }
+    
+    return userId.substring(0, 8) + '...';
+  };
+
+  // Helper para obtener badge del tipo de llamada
+  const getCallTypeBadge = (callType: string | undefined) => {
+    if (!callType) return null;
+    
+    const typeConfig: Record<string, { label: string; bg: string; text: string }> = {
+      'primera_llamada': { label: 'Contacto Inicial', bg: 'bg-blue-100', text: 'text-blue-800' },
+      'contacto_inicial': { label: 'Contacto Inicial', bg: 'bg-blue-100', text: 'text-blue-800' },
+      'seguimiento': { label: 'Seguimiento', bg: 'bg-green-100', text: 'text-green-800' },
+      'venta': { label: 'Venta', bg: 'bg-purple-100', text: 'text-purple-800' },
+    };
+
+    const config = typeConfig[callType] || { label: callType, bg: 'bg-gray-100', text: 'text-gray-800' };
+    
+    return (
+      <span className={`text-xs px-2 py-1 rounded ${config.bg} ${config.text}`}>
+        {config.label}
+      </span>
+    );
+  };
+
+  // Helper para obtener badge del tipo de tarea
+  const getTaskTypeBadge = (taskType: string | undefined) => {
+    if (!taskType) return null;
+    
+    const typeConfig: Record<string, { label: string; bg: string; text: string }> = {
+      'call': { label: 'Llamada', bg: 'bg-blue-100', text: 'text-blue-800' },
+      'meeting': { label: 'Reunión', bg: 'bg-purple-100', text: 'text-purple-800' },
+      'email': { label: 'Email', bg: 'bg-yellow-100', text: 'text-yellow-800' },
+      'reminder': { label: 'Recordatorio', bg: 'bg-orange-100', text: 'text-orange-800' },
+    };
+
+    const config = typeConfig[taskType] || { label: taskType, bg: 'bg-gray-100', text: 'text-gray-800' };
+    
+    return (
+      <span className={`text-xs px-2 py-1 rounded ${config.bg} ${config.text}`}>
+        {config.label}
+      </span>
+    );
+  };
+
+  // Helper para obtener badge del tipo de nota
+  const getNoteTypeBadge = (noteType: string | undefined) => {
+    if (!noteType) return null;
+    
+    const typeConfig: Record<string, { label: string; bg: string; text: string }> = {
+      'comment': { label: 'Comentario', bg: 'bg-gray-100', text: 'text-gray-800' },
+      'call': { label: 'Llamada', bg: 'bg-blue-100', text: 'text-blue-800' },
+      'email': { label: 'Email', bg: 'bg-yellow-100', text: 'text-yellow-800' },
+      'system': { label: 'Sistema', bg: 'bg-purple-100', text: 'text-purple-800' },
+    };
+
+    const config = typeConfig[noteType] || { label: noteType, bg: 'bg-gray-100', text: 'text-gray-800' };
+    
+    return (
+      <span className={`text-xs px-2 py-1 rounded ${config.bg} ${config.text}`}>
+        {config.label}
+      </span>
+    );
   };
 
   const renderMonthView = () => {
@@ -577,8 +732,9 @@ export function CRMTaskCalendar() {
   const renderDayView = () => {
     const dayTasks = getTasksForDate(currentDate);
     const dayCalls = getCallsForDate(currentDate);
+    const dayNotes = getNotesForDate(currentDate);
     const isToday = currentDate.toDateString() === new Date().toDateString();
-    const hasItems = dayTasks.length > 0 || dayCalls.length > 0;
+    const hasItems = dayTasks.length > 0 || dayCalls.length > 0 || dayNotes.length > 0;
     
     return (
       <div className="space-y-3">
@@ -603,21 +759,31 @@ export function CRMTaskCalendar() {
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
                       <h3 className="font-semibold">{task.text}</h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Tipo: {task.task_type}
-                      </p>
-                      {task.complete_till && (
-                        <p className="text-sm text-gray-500 mt-1">
-                          {new Date(task.complete_till).toLocaleString('es-ES')}
-                        </p>
-                      )}
+                      <div className="flex flex-col gap-2 mt-1">
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          {task.complete_till && (
+                            <span>
+                              {new Date(task.complete_till).toLocaleString('es-ES')}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {getTaskTypeBadge(task.task_type)}
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            task.is_completed ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {task.is_completed ? 'Completada' : 'Pendiente'}
+                          </span>
+                          {task.responsible_user_id && (
+                            <span className="text-xs px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5 font-medium">
+                              <User size={12} className="flex-shrink-0" />
+                              <span className="truncate max-w-[150px]">{getResponsibleName(task.responsible_user_id)}</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
                     <div className="flex flex-col items-end gap-2 ml-4">
-                      <span className={`px-2 py-1 rounded text-xs ${
-                        task.is_completed ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {task.is_completed ? 'Completada' : 'Pendiente'}
-                      </span>
                       {task.entity_id && task.entity_type && (
                         <Button
                           size="sm"
@@ -673,31 +839,81 @@ export function CRMTaskCalendar() {
                           <h3 className="font-semibold truncate">
                             {displayTitle}
                           </h3>
-                          <p className="text-sm text-gray-600 mt-1">
-                            Grabada: {callDate.toLocaleString('es-ES')}
-                          </p>
-                          {(call.phone || call.phone_number) && (
-                            <p className="text-sm text-gray-500 mt-1">
-                              Tel: {call.phone || call.phone_number}
-                            </p>
-                          )}
-                          {call.duration && call.duration > 0 && (
-                            <p className="text-sm text-gray-500 mt-1">
-                              Duración: {Math.floor(call.duration / 60)}:{(call.duration % 60).toString().padStart(2, '0')}
-                            </p>
-                          )}
+                          <div className="flex flex-col gap-2 mt-1">
+                            <div className="flex items-center gap-4 text-sm text-gray-600">
+                              <span>Grabada: {callDate.toLocaleString('es-ES')}</span>
+                              {call.duration && call.duration > 0 && (
+                                <span>Duración: {Math.floor(call.duration / 60)}:{(call.duration % 60).toString().padStart(2, '0')}</span>
+                              )}
+                            </div>
+                            {(call.phone || call.phone_number) && (
+                              <p className="text-sm text-gray-500">
+                                Tel: {call.phone || call.phone_number}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className={`text-xs px-2 py-1 rounded ${
+                                call.call_status === 'completed' || call.status === 'completed' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : (call.call_status === 'no_answer' || call.status === 'no_answer')
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-gray-100 text-gray-800'
+                              }`}>
+                                {formatCallStatus(call.call_status || call.status)}
+                              </span>
+                              {getCallTypeBadge(call.call_type)}
+                              {call.responsible_user_id && (
+                                <span className="text-xs px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5 font-medium">
+                                  <User size={12} className="flex-shrink-0" />
+                                  <span className="truncate max-w-[150px]">{getResponsibleName(call.responsible_user_id)}</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <div className="flex flex-col items-end gap-2 ml-4">
-                        <span className={`px-2 py-1 rounded text-xs ${
-                          call.call_status === 'completed' || call.status === 'completed' 
-                            ? 'bg-green-100 text-green-800' 
-                            : (call.call_status === 'no_answer' || call.status === 'no_answer')
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {formatCallStatus(call.call_status || call.status)}
-                        </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+            {/* Notas */}
+            {dayNotes.map(note => {
+              const noteDate = new Date(note.created_at);
+              return (
+                <Card
+                  key={note.id}
+                  className="cursor-pointer hover:shadow-md bg-gray-50 border-gray-200"
+                  onClick={() => {
+                    if (note.entity_id) {
+                      const entityType = note.entity_type === 'leads' ? 'leads' : 'contacts';
+                      navigate(`/crm/${entityType}/${note.entity_id}`);
+                    }
+                  }}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3 flex-1">
+                        <MessageSquare className="w-5 h-5 text-gray-600 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-gray-700 line-clamp-3">
+                            {note.content}
+                          </p>
+                          <div className="flex flex-col gap-2 mt-2">
+                            <div className="flex items-center gap-4 text-sm text-gray-600">
+                              <span>Creada: {noteDate.toLocaleString('es-ES')}</span>
+                            </div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {getNoteTypeBadge(note.note_type)}
+                              {note.created_by && (
+                                <span className="text-xs px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5 font-medium">
+                                  <User size={12} className="flex-shrink-0" />
+                                  <span className="truncate max-w-[150px]">{getResponsibleName(note.created_by)}</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -707,7 +923,7 @@ export function CRMTaskCalendar() {
           </div>
         ) : (
           <div className="text-center py-12 text-gray-500">
-            No hay tareas ni llamadas para este día
+            No hay tareas, llamadas ni notas para este día
           </div>
         )}
       </div>

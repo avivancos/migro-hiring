@@ -25,8 +25,8 @@ export function useTokenRefresh() {
       // Verificar si el refresh token está expirado
       // IMPORTANTE: Solo limpiar si realmente está expirado (sin buffer)
       // El buffer solo aplica al access token, no al refresh token
-      const refreshExpiresAt = localStorage.getItem('refresh_expires_at');
-      if (refreshExpiresAt && Date.now() >= parseInt(refreshExpiresAt)) {
+      // Usar TokenStorage.isRefreshTokenExpired() que lee de múltiples fuentes
+      if (TokenStorage.isRefreshTokenExpired()) {
         // Refresh token realmente expirado, limpiar tokens
         console.warn('⚠️ Refresh token expirado, limpiando tokens');
         TokenStorage.clearTokens();

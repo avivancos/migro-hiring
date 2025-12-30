@@ -10,7 +10,7 @@ interface UseNotesOptions {
   skip?: number;
   limit?: number;
   entityId?: string;
-  entityType?: 'contacts' | 'leads' | 'companies';
+  entityType?: 'contacts';
   autoLoad?: boolean;
 }
 

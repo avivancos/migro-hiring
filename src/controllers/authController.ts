@@ -150,7 +150,12 @@ class AuthController {
       if (error.response?.status === 401 || error.response?.status === 403) {
         // Verificar si hay refresh token disponible antes de limpiar
         const refreshToken = localStorage.getItem('refresh_token');
-        const refreshExpiresAt = localStorage.getItem('refresh_expires_at');
+        // Usar TokenStorage para leer de múltiples fuentes (localStorage, cookies, sessionStorage)
+        const refreshExpiresAt = localStorage.getItem('migro_refresh_expires_at') || 
+                                 TokenStorage.getRefreshToken() ? 
+                                 (localStorage.getItem('migro_refresh_expires_at') || 
+                                  document.cookie.split(';').find(c => c.trim().startsWith('migro_refresh_expires_at='))?.split('=')[1] || 
+                                  sessionStorage.getItem('migro_refresh_expires_at')) : null;
         
         // Solo limpiar si realmente no hay forma de recuperar la sesión
         if (!refreshToken || (refreshExpiresAt && Date.now() >= parseInt(refreshExpiresAt))) {

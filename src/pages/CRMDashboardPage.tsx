@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { crmService } from '@/services/crmService';
 import { contractsService } from '@/services/contractsService';
-import type { KommoLead, PipelineStatus, Call, Task } from '@/types/crm';
+import type { KommoLead, PipelineStatus, Call, Task, Note } from '@/types/crm';
 import type { Contract } from '@/types/contracts';
 import {
   Users,
@@ -34,6 +34,7 @@ import { formatContractStatus, formatCallStatus, formatLeadStatus, formatPriorit
 import { opportunityApi } from '@/services/opportunityApi';
 import { isAgent } from '@/utils/searchValidation';
 import { AgentJournalWidget } from '@/components/agentJournal/AgentJournalWidget';
+import { PerformanceDashboardView } from '@/components/agentJournal/PerformanceDashboardView';
 
 export function CRMDashboardPage() {
   // Medir rendimiento de la página
@@ -55,6 +56,8 @@ export function CRMDashboardPage() {
   const [weekTasks, setWeekTasks] = useState<Record<string, Task[]>>({});
   const [myOpportunitiesCount, setMyOpportunitiesCount] = useState<number>(0);
   const [recentOpportunities, setRecentOpportunities] = useState<any[]>([]);
+  const [recentTasks, setRecentTasks] = useState<Task[]>([]);
+  const [recentNotes, setRecentNotes] = useState<any[]>([]);
   
   // Determinar si el usuario es agente
   const userIsAgent = user ? isAgent(user.role) : false;
@@ -120,7 +123,13 @@ export function CRMDashboardPage() {
         );
       }
       
-      const [pipelinesData, contractsResponse, weekCallsData, weekTasksData, allContacts, totalCount, opportunitiesResponse] = await Promise.all(loadPromises);
+      // Cargar tareas y notas recientes
+      loadPromises.push(
+        crmService.getTasks({ limit: 10, is_completed: false }).catch(() => ({ items: [] })),
+        crmService.getNotes({ limit: 10 }).catch(() => ({ items: [] }))
+      );
+      
+      const [pipelinesData, contractsResponse, weekCallsData, weekTasksData, allContacts, totalCount, opportunitiesResponse, recentTasksResponse, recentNotesResponse] = await Promise.all(loadPromises);
 
       // Los contactos ahora incluyen todos los campos de leads (service_type, status, etc.)
       // Usar contactos directamente como "leads" (son lo mismo ahora)
@@ -142,6 +151,17 @@ export function CRMDashboardPage() {
           .slice(0, 5);
         setRecentOpportunities(sorted);
       }
+      
+      // Guardar tareas y notas recientes
+      const sortedRecentTasks = (recentTasksResponse?.items || [])
+        .sort((a: Task, b: Task) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 5);
+      setRecentTasks(sortedRecentTasks);
+      
+      const sortedRecentNotes = (recentNotesResponse?.items || [])
+        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 5);
+      setRecentNotes(sortedRecentNotes);
       setTotalContractsCount(contractsResponse.total || 0);
       
       // Ordenar contratos por fecha (más recientes primero)
@@ -506,15 +526,23 @@ export function CRMDashboardPage() {
           </Card>
         </div>
 
-        {/* Agent Daily Journal Widget - Solo para agentes */}
+        {/* 1. Métricas de Productividad - Solo para agentes */}
         {userIsAgent && (
-          <AgentJournalWidget />
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base sm:text-lg font-bold">Métricas de Productividad</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PerformanceDashboardView />
+            </CardContent>
+          </Card>
         )}
 
-        {/* Grid Principal: Mini Calendario y Últimos Contratos */}
-        <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${userIsAgent ? '' : 'lg:grid-cols-3'}`}>
-          {/* Mini Calendario Semanal */}
-          <Card className={userIsAgent ? '' : 'lg:col-span-2'}>
+        {/* 2. Grid: Calendario y Journal - Solo para agentes */}
+        {userIsAgent && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            {/* Mini Calendario Semanal */}
+            <Card>
             <CardHeader className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base sm:text-lg font-bold">Semana Actual</CardTitle>
@@ -691,8 +719,140 @@ export function CRMDashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Últimos Contratos - Oculto para agentes */}
-          {!userIsAgent && (
+          {/* Agent Journal Widget */}
+          <AgentJournalWidget />
+        </div>
+        )}
+
+        {/* Últimos Contratos - Solo para no agentes */}
+        {!userIsAgent && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            {/* Mini Calendario Semanal */}
+            <Card className="lg:col-span-2">
+              <CardHeader className="p-3 sm:p-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base sm:text-lg font-bold">Semana Actual</CardTitle>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 sm:h-8 sm:w-8"
+                      onClick={() => navigateWeek('prev')}
+                    >
+                      <ArrowRight className="w-4 h-4 rotate-180" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 sm:h-8 sm:w-8"
+                      onClick={() => navigateWeek('next')}
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                  {(() => {
+                    const weekDays = getWeekDays();
+                    const start = weekDays[0].date;
+                    const end = weekDays[6].date;
+                    return `${start.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })} - ${end.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+                  })()}
+                </p>
+              </CardHeader>
+              <CardContent className="p-3 sm:p-4">
+                <div className="space-y-2">
+                  {getWeekDays().map((dayInfo) => {
+                    const dayCalls = getCallsForDay(dayInfo.dateKey);
+                    const dayTasks = getTasksForDay(dayInfo.dateKey);
+                    const today = isToday(dayInfo.date);
+                    const totalItems = dayCalls.length + dayTasks.length;
+                    
+                    return (
+                      <div
+                        key={dayInfo.dateKey}
+                        className={`
+                          p-2 sm:p-3 rounded-lg border transition-colors cursor-pointer
+                          ${today 
+                            ? 'bg-primary/10 border-primary' 
+                            : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                          }
+                        `}
+                        onClick={() => navigate('/crm/calendar')}
+                      >
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className={`
+                              text-xs sm:text-sm font-semibold
+                              ${today ? 'text-primary' : 'text-gray-700'}
+                            `}>
+                              {getDayName(dayInfo.date)}
+                            </span>
+                            <span className={`
+                              text-sm sm:text-base font-bold
+                              ${today ? 'text-primary' : 'text-gray-900'}
+                            `}>
+                              {dayInfo.dayNumber}
+                            </span>
+                          </div>
+                          {totalItems > 0 && (
+                            <span className="text-xs font-medium text-gray-600">
+                              {totalItems} {totalItems === 1 ? 'item' : 'items'}
+                            </span>
+                          )}
+                        </div>
+                        {totalItems > 0 ? (
+                          <div className="space-y-1.5 mt-2">
+                            {dayCalls.slice(0, 2).map((call) => {
+                              const CallIcon = getCallIcon(call);
+                              const iconColor = getCallStatusColor(call);
+                              const callTitle = getCallTitle(call);
+                              return (
+                                <div
+                                  key={`call-${call.id}`}
+                                  className={`
+                                    p-2 rounded-md bg-white border text-xs
+                                    ${call.direction === 'inbound' ? 'border-green-200 bg-green-50/50' : 'border-blue-200 bg-blue-50/50'}
+                                  `}
+                                >
+                                  <div className="flex items-start gap-2">
+                                    <CallIcon className={`w-3 h-3 sm:w-4 sm:h-4 ${iconColor} flex-shrink-0 mt-0.5`} />
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-medium text-gray-900 truncate">
+                                        {callTitle}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            {totalItems > 2 && (
+                              <div className="p-2 rounded-md bg-gray-100 border border-gray-200 text-center">
+                                <span className="text-xs font-medium text-gray-600">
+                                  +{totalItems - 2} más
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-gray-400 mt-1">Sin eventos</div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full mt-3 text-xs sm:text-sm"
+                  onClick={() => navigate('/crm/calendar')}
+                >
+                  Ver Calendario Completo
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Últimos Contratos */}
             <Card>
               <CardHeader className="p-3 sm:p-4 md:p-6">
                 <div className="flex items-center justify-between">
@@ -764,10 +924,11 @@ export function CRMDashboardPage() {
                 )}
               </CardContent>
             </Card>
-          )}
+          </div>
+        )}
 
-          {/* Oportunidades Recientes */}
-          {recentOpportunities.length > 0 && (
+        {/* 3. Oportunidades Recientes */}
+        {recentOpportunities.length > 0 && (
             <Card>
               <CardHeader className="p-3 sm:p-4 md:p-6">
                 <div className="flex items-center justify-between">
@@ -846,6 +1007,141 @@ export function CRMDashboardPage() {
               </CardContent>
             </Card>
           )}
+
+        {/* 4. Tareas y Notas Recientes */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          {/* Tareas Recientes */}
+          <Card>
+            <CardHeader className="p-3 sm:p-4 md:p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-purple-600" />
+                  <CardTitle className="text-base sm:text-lg md:text-xl font-bold">Tareas Recientes</CardTitle>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/crm/tasks')}
+                  className="text-xs sm:text-sm"
+                >
+                  Ver todas
+                  <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              {recentTasks.length > 0 ? (
+                <div className="space-y-3">
+                  {recentTasks.map((task) => {
+                    const taskIcon = task.task_type === 'call' ? Phone : 
+                                    task.task_type === 'meeting' ? Calendar :
+                                    task.task_type === 'email' ? Mail : FileText;
+                    return (
+                      <div
+                        key={task.id}
+                        className="flex items-start gap-3 sm:gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                        onClick={() => {
+                          if (task.entity_id && task.entity_type) {
+                            navigate(`/crm/${task.entity_type}/${task.entity_id}`);
+                          } else {
+                            navigate(`/crm/tasks/${task.id}`);
+                          }
+                        }}
+                      >
+                        <div className="p-2 rounded-full bg-white text-purple-600 flex-shrink-0">
+                          {taskIcon === Phone && <Phone className="w-4 h-4 sm:w-5 sm:h-5" />}
+                          {taskIcon === Calendar && <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />}
+                          {taskIcon === Mail && <Mail className="w-4 h-4 sm:w-5 sm:h-5" />}
+                          {taskIcon === FileText && <FileText className="w-4 h-4 sm:w-5 sm:h-5" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <p className="font-semibold text-sm sm:text-base text-gray-900 line-clamp-2">
+                              {task.text}
+                            </p>
+                            {task.is_completed ? (
+                              <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+                            ) : (
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
+                                Pendiente
+                              </span>
+                            )}
+                          </div>
+                          {task.complete_till && (
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                              <span>Vence: {formatDate(task.complete_till)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-8 text-center text-gray-500">
+                  <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <p className="text-sm">No hay tareas recientes</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Notas Recientes */}
+          <Card>
+            <CardHeader className="p-3 sm:p-4 md:p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                  <CardTitle className="text-base sm:text-lg md:text-xl font-bold">Notas Recientes</CardTitle>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/crm/notes')}
+                  className="text-xs sm:text-sm"
+                >
+                  Ver todas
+                  <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="p-3 sm:p-4 md:p-6">
+              {recentNotes.length > 0 ? (
+                <div className="space-y-3">
+                  {recentNotes.map((note: Note) => (
+                    <div
+                      key={note.id}
+                      className="flex items-start gap-3 sm:gap-4 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                      onClick={() => {
+                        if (note.entity_id && note.entity_type) {
+                          navigate(`/crm/${note.entity_type}/${note.entity_id}`);
+                        }
+                      }}
+                    >
+                      <div className="p-2 rounded-full bg-white text-blue-600 flex-shrink-0">
+                        <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm sm:text-base text-gray-900 mb-1 line-clamp-2">
+                          {note.text || 'Sin contenido'}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span>Creada: {formatDate(note.created_at)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-8 text-center text-gray-500">
+                  <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <p className="text-sm">No hay notas recientes</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Mis Contactos para Llamadas */}

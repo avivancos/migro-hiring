@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatCallStatus } from '@/utils/statusTranslations';
-import type { Call } from '@/types/crm';
+import type { Call, CRMUser } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import {
   Phone,
@@ -15,6 +15,7 @@ import {
   Pause,
   Clock,
   Calendar,
+  User,
 } from 'lucide-react';
 
 interface CallHistoryProps {
@@ -26,10 +27,49 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
   const [calls, setCalls] = useState<Call[]>([]);
   const [loading, setLoading] = useState(true);
   const [playingCallId, setPlayingCallId] = useState<string | null>(null);
+  const [users, setUsers] = useState<CRMUser[]>([]);
 
   useEffect(() => {
     loadCalls();
+    loadUsers();
   }, [entityType, entityId]);
+
+  const loadUsers = async () => {
+    try {
+      const usersData = await crmService.getResponsibleUsers(true);
+      setUsers(usersData);
+    } catch (err) {
+      console.error('Error loading users:', err);
+    }
+  };
+
+  // Helper para obtener nombre del responsable
+  const getResponsibleName = (userId: string | undefined): string => {
+    if (!userId) return 'Sin asignar';
+    
+    if (users.length === 0) {
+      return 'Cargando...';
+    }
+    
+    const user = users.find(u => String(u.id).trim() === String(userId).trim());
+    
+    if (user) {
+      // Usar name (que debería contener el nombre completo del usuario)
+      const name = user.name?.trim();
+      if (name && name.length > 0) {
+        return name;
+      }
+      // Fallback a email si no hay name
+      const email = user.email?.trim();
+      if (email && email.length > 0) {
+        return email.split('@')[0]; // Mostrar solo la parte antes del @
+      }
+      return 'Usuario sin nombre';
+    }
+    
+    // Mostrar ID truncado si no se encuentra el usuario
+    return userId.substring(0, 8) + '...';
+  };
 
   const loadCalls = async () => {
     setLoading(true);
@@ -196,7 +236,7 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
                       {getCallTypeBadge(call.call_type)}
                     </div>
                     
-                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
+                    <div className="flex items-center gap-4 mt-1 text-sm text-gray-600 flex-wrap">
                       <span className="flex items-center gap-1">
                         <Calendar size={14} />
                         {formatDateTime(call.started_at)}
@@ -205,6 +245,12 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
                         <span className="flex items-center gap-1">
                           <Clock size={14} />
                           {formatDuration(call.duration)}
+                        </span>
+                      )}
+                      {call.responsible_user_id && (
+                        <span className="text-xs px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5 font-medium">
+                          <User size={12} className="flex-shrink-0" />
+                          <span className="truncate max-w-[150px]">{getResponsibleName(call.responsible_user_id)}</span>
                         </span>
                       )}
                     </div>

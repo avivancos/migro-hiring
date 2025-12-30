@@ -3,7 +3,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Settings, FileText, Users, BarChart3, List } from 'lucide-react';
+import { Settings, FileText, Users, BarChart3, List, Clock } from 'lucide-react';
 
 export function CRMSettings() {
   const navigate = useNavigate();
@@ -36,6 +36,13 @@ export function CRMSettings() {
       icon: Users,
       path: '/crm/settings/users',
       color: 'bg-purple-500',
+    },
+    {
+      title: 'Zona Horaria',
+      description: 'Configura tu zona horaria preferida para visualizar fechas y horas',
+      icon: Clock,
+      path: '/crm/settings/timezone',
+      color: 'bg-indigo-500',
     },
   ];
 

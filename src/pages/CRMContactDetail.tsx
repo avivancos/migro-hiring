@@ -120,18 +120,57 @@ export function CRMContactDetail() {
       setUsers(usersData);
       
       // Cargar oportunidades relacionadas (filtrar por contact_id)
+      // Si existe relación 1:1, cargar todas las oportunidades para asegurar encontrar la relacionada
       if (contactData?.id) {
         setLoadingOpportunities(true);
         try {
-          // Cargar todas las oportunidades y filtrar por contact_id
-          // Nota: El backend expande automáticamente assigned_to en las oportunidades
-          const oppsResponse = await opportunityApi.list({ limit: 100 });
-          const related = (oppsResponse.opportunities || []).filter(
+          // Cargar todas las oportunidades paginando si es necesario
+          // Ya que existe relación 1:1, debemos asegurarnos de encontrar la oportunidad relacionada
+          let allOpportunities: any[] = [];
+          let page = 1;
+          const limit = 100;
+          let hasMore = true;
+          
+          while (hasMore) {
+            const oppsResponse = await opportunityApi.list({ limit, page });
+            const opportunities = oppsResponse.opportunities || [];
+            allOpportunities.push(...opportunities);
+            
+            // Si hay menos oportunidades que el límite, no hay más páginas
+            hasMore = opportunities.length === limit && 
+                      (oppsResponse.total_pages || 0) > page;
+            page++;
+            
+            // Buscar la oportunidad relacionada mientras cargamos
+            const found = opportunities.find(
+              (opp: any) => opp.contact_id === contactData.id
+            );
+            if (found) {
+              // Si encontramos la oportunidad, no necesitamos cargar más páginas
+              setRelatedOpportunities([found]);
+              setLoadingOpportunities(false);
+              return; // Salir temprano si encontramos la oportunidad
+            }
+            
+            // Limitar a 10 páginas máximo (1000 oportunidades) para evitar loops infinitos
+            if (page > 10) {
+              console.warn('⚠️ [CRMContactDetail] Límite de páginas alcanzado al buscar oportunidad');
+              break;
+            }
+          }
+          
+          // Si no encontramos en el loop, buscar en todas las cargadas
+          const related = allOpportunities.filter(
             (opp: any) => opp.contact_id === contactData.id
           );
           setRelatedOpportunities(related);
+          
+          if (related.length === 0) {
+            console.warn(`⚠️ [CRMContactDetail] No se encontró oportunidad para contacto ${contactData.id} después de cargar ${allOpportunities.length} oportunidades`);
+          }
         } catch (err) {
           console.error('Error cargando oportunidades:', err);
+          setRelatedOpportunities([]);
         } finally {
           setLoadingOpportunities(false);
         }
@@ -203,9 +242,24 @@ export function CRMContactDetail() {
   // Obtener nombre del usuario por ID
   const getUserName = (userId?: string): string => {
     if (!userId) return 'No especificado';
-    const user = users.find(u => u.id === userId);
-    if (!user) return `Usuario ${userId.slice(0, 8)}...`;
-    return user.name?.trim() || user.email || `Usuario ${userId.slice(0, 8)}...`;
+    
+    if (users.length === 0) {
+      return 'Cargando...';
+    }
+    
+    const user = users.find(u => String(u.id).trim() === String(userId).trim());
+    if (!user) {
+      return `Usuario ${userId.slice(0, 8)}...`;
+    }
+    
+    // Usar name (que debería contener el nombre completo del usuario del CRM)
+    const name = user.name?.trim();
+    if (name && name.length > 0) {
+      return name;
+    }
+    
+    // Fallback a email si no hay name
+    return user.email || `Usuario ${userId.slice(0, 8)}...`;
   };
 
   // Crear timeline unificado de actividades

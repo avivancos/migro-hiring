@@ -36,6 +36,7 @@ const CRMTaskCalendar = lazy(() => import('@/pages/CRMTaskCalendar').then(m => (
 const CRMSettings = lazy(() => import('@/pages/CRMSettings').then(m => ({ default: m.CRMSettings })));
 const CRMTaskTemplatesSettings = lazy(() => import('@/pages/CRMTaskTemplatesSettings').then(m => ({ default: m.CRMTaskTemplatesSettings })));
 const CRMCustomFieldsSettings = lazy(() => import('@/pages/CRMCustomFieldsSettings').then(m => ({ default: m.CRMCustomFieldsSettings })));
+const CRMTimezoneSettings = lazy(() => import('@/pages/CRMTimezoneSettings').then(m => ({ default: m.CRMTimezoneSettings })));
 const CRMActions = lazy(() => import('@/pages/CRMActions').then(m => ({ default: m.CRMActions })));
 const CRMExpedientesList = lazy(() => import('@/pages/CRMExpedientesList').then(m => ({ default: m.CRMExpedientesList })));
 const CRMExpedienteDetail = lazy(() => import('@/pages/CRMExpedienteDetail').then(m => ({ default: m.CRMExpedienteDetail })));
@@ -199,6 +200,7 @@ function AppContent() {
             <Route path="settings" element={<LazyLoadWrapper fallback="spinner"><CRMSettings /></LazyLoadWrapper>} />
             <Route path="settings/task-templates" element={<LazyLoadWrapper fallback="spinner"><CRMTaskTemplatesSettings /></LazyLoadWrapper>} />
             <Route path="settings/custom-fields" element={<LazyLoadWrapper fallback="spinner"><CRMCustomFieldsSettings /></LazyLoadWrapper>} />
+            <Route path="settings/timezone" element={<LazyLoadWrapper fallback="spinner"><CRMTimezoneSettings /></LazyLoadWrapper>} />
           </Route>
           
           {/* Client login (futuro) */}

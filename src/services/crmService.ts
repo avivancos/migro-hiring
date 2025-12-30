@@ -410,11 +410,59 @@ export const crmService = {
 
   /**
    * Obtener lista de tareas
+   * La API puede devolver un array directamente o un objeto con _embedded/_page
+   * El backend puede aceptar 'skip' o 'page' según la versión
    */
   async getTasks(filters?: TaskFilters): Promise<TasksListResponse> {
-    const { data } = await api.get<TasksListResponse>(`${CRM_BASE_PATH}/tasks`, {
-      params: filters,
+    const params: any = { ...filters };
+    
+    // El backend puede aceptar 'skip' directamente o requerir 'page'
+    // Intentamos primero con 'skip' si está disponible, y si el backend requiere 'page',
+    // lo convertimos. Esto hace el código compatible con ambas versiones del backend.
+    if (params.skip !== undefined && params.page === undefined) {
+      // Algunas versiones del backend usan 'page' en lugar de 'skip'
+      // Convertimos skip a page: page = floor(skip / limit) + 1
+      const limit = params.limit || 50;
+      params.page = Math.floor((params.skip || 0) / limit) + 1;
+      // Mantenemos skip también por si el backend lo acepta directamente
+      // El backend ignorará el que no use
+    }
+    
+    const { data } = await api.get<any>(`${CRM_BASE_PATH}/tasks`, {
+      params,
     });
+    
+    // Si la respuesta es un array, convertir a formato estándar
+    if (Array.isArray(data)) {
+      return {
+        items: data,
+        total: data.length,
+        skip: filters?.skip || 0,
+        limit: filters?.limit || 20,
+      };
+    }
+    
+    // Si tiene formato _embedded/_page (backend con formato Kommo)
+    if (data._embedded && data._embedded.tasks) {
+      return {
+        items: data._embedded.tasks,
+        total: data._page?.total || data._embedded.tasks.length,
+        skip: ((data._page?.page || 1) - 1) * (data._page?.limit || 50),
+        limit: data._page?.limit || 50,
+      };
+    }
+    
+    // Si tiene formato estándar con 'items' directamente
+    if (data.items && Array.isArray(data.items)) {
+      return {
+        items: data.items,
+        total: data.total || data.items.length,
+        skip: data.skip ?? (filters?.skip || 0),
+        limit: data.limit ?? (filters?.limit || 20),
+      };
+    }
+    
+    // Si ya tiene formato estándar, devolverlo
     return data;
   },
 
@@ -556,10 +604,7 @@ export const crmService = {
     const apiNote: any = {
       ...note,
       // Normalizar entity_type a plural (el backend también lo hace, pero por consistencia)
-      entity_type: note.entity_type === 'contact' ? 'contacts' : 
-                   note.entity_type === 'lead' ? 'leads' : 
-                   note.entity_type === 'company' ? 'companies' :
-                   note.entity_type,
+      entity_type: note.entity_type === 'contact' ? 'contacts' : note.entity_type,
     };
     
     console.log('📝 [crmService] Creando nota:', apiNote);

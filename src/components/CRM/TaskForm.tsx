@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { Task, CRMUser, KommoContact } from '@/types/crm';
+import { ContactSearchSelect } from './ContactSearchSelect';
+import type { Task, CRMUser } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { adminService } from '@/services/adminService';
 
@@ -33,10 +34,7 @@ export const TaskForm = memo(function TaskForm({
   onCancel 
 }: TaskFormProps) {
   const [loading, setLoading] = useState(false);
-  const [loadingEntities, setLoadingEntities] = useState(false);
   const [users, setUsers] = useState<CRMUser[]>([]);
-  const [contacts, setContacts] = useState<KommoContact[]>([]);
-  const [selectedContact, setSelectedContact] = useState<KommoContact | null>(null);
   
   // Calcular fecha por defecto (mañana a las 10:00)
   const getDefaultDueDate = () => {
@@ -66,15 +64,7 @@ export const TaskForm = memo(function TaskForm({
 
   useEffect(() => {
     loadUsers();
-    loadEntities();
   }, []);
-
-  // Cargar entidades cuando cambie el tipo (solo si es contacts)
-  useEffect(() => {
-    if (formData.entity_type === 'contacts') {
-      loadEntities();
-    }
-  }, [formData.entity_type]);
 
   const loadUsers = async () => {
     try {
@@ -120,33 +110,6 @@ export const TaskForm = memo(function TaskForm({
     }
   };
 
-  const loadEntities = async () => {
-    setLoadingEntities(true);
-    try {
-      // Si viene un defaultEntityId, cargar específicamente ese contacto
-      if (defaultEntityId && defaultEntityType === 'contacts') {
-        try {
-          const contact = await crmService.getContact(defaultEntityId);
-          setSelectedContact(contact);
-          setContacts([contact]);
-        } catch (err) {
-          console.error('Error loading contact:', err);
-          setSelectedContact(null);
-        }
-      } else {
-        // Cargar lista de contactos
-        if (formData.entity_type === 'contacts') {
-          const contactsData = await crmService.getContacts({ limit: 100 });
-          setContacts(contactsData.items || []);
-        }
-      }
-    } catch (err) {
-      console.error('Error loading entities:', err);
-      setContacts([]);
-    } finally {
-      setLoadingEntities(false);
-    }
-  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -307,52 +270,26 @@ export const TaskForm = memo(function TaskForm({
             {/* ID de entidad - Oculto si viene predefinido */}
             {!defaultEntityId && (
               <div className="md:col-span-2">
-                <Label htmlFor="entity_id">
-                  Contacto
-                  <span className="text-red-500">*</span>
-                </Label>
-                <select
-                  id="entity_id"
+                <ContactSearchSelect
                   value={formData.entity_id}
-                  onChange={(e) => handleChange('entity_id', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px]"
+                  onChange={(contactId) => handleChange('entity_id', contactId)}
+                  label="Contacto"
                   required
-                  disabled={loadingEntities}
-                >
-                  <option value="">
-                    {loadingEntities 
-                      ? 'Cargando...' 
-                      : 'Seleccionar contacto...'}
-                  </option>
-                  {contacts.map(contact => {
-                    const displayName = contact.name || 
-                      `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 
-                      contact.email || 
-                      `Contacto ${contact.id?.slice(0, 8) || 'N/A'}`;
-                    return (
-                      <option key={contact.id} value={contact.id}>
-                        {displayName}
-                      </option>
-                    );
-                  })}
-                </select>
+                />
               </div>
             )}
             {/* Mostrar información del contacto cuando viene predefinido */}
             {defaultEntityId && defaultEntityType === 'contacts' && (
-              <div className="md:col-span-2 space-y-2">
-                <div>
-                  <Label>Relacionado con</Label>
-                  <div className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
-                    <span className="text-gray-700">
-                      <strong>Contacto:</strong> {
-                        selectedContact?.name || 
-                        contacts.find(c => c.id === defaultEntityId)?.name || 
-                        contacts.find(c => c.id === defaultEntityId)?.email || 
-                        `Contacto ${typeof defaultEntityId === 'string' ? defaultEntityId.slice(0, 8) : defaultEntityId || 'N/A'}`
-                      }
-                    </span>
-                  </div>
+              <div className="md:col-span-2">
+                <Label>Relacionado con</Label>
+                <div className="px-3 py-2 border border-gray-300 rounded-md bg-gray-50">
+                  <span className="text-gray-700">
+                    <strong>Contacto:</strong> {
+                      typeof defaultEntityId === 'string' 
+                        ? `ID: ${defaultEntityId.slice(0, 8)}...` 
+                        : defaultEntityId || 'N/A'
+                    }
+                  </span>
                 </div>
               </div>
             )}

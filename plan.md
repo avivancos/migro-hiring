@@ -28,6 +28,25 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 
 ## 📋 Tareas Pendientes
 
+### ✅ Sistema de Gestión de Zonas Horarias (Enero 2025)
+- [x] Implementación completa del sistema de zonas horarias ✅
+  - [x] Módulo de utilidades timezone (`app/utils/timezone.py`) ✅
+  - [x] Servicio de timezone con acceso a base de datos (`app/services/timezone_service.py`) ✅
+  - [x] Schemas Pydantic para timezone (`app/schemas/timezone.py`) ✅
+  - [x] Endpoints de API (`app/api/endpoints/timezone.py`) ✅
+  - [x] Actualización de dependencias (`pytz>=2024.1` en requirements.txt) ✅
+  - [x] Documentación completa en `docs/BACKEND_TIMEZONE_SYSTEM.md` ✅
+  - **Estado**: ✅ COMPLETADO - Backend implementado
+  - **Características**: 
+    - Zona horaria base: Europe/Madrid
+    - Configuración personalizada por usuario
+    - Conversión automática de fechas
+    - Lista de zonas horarias disponibles
+  - **Pendiente**: 
+    - Agregar campo `timezone` al modelo `UserProfile` en BD
+    - Registrar router en aplicación principal
+    - Implementar frontend para configuración
+
 ### ✅ Análisis de Casos Migratorios (Enero 2025)
 - [x] Implementación completa del módulo de análisis de casos migratorios ✅
   - [x] Tipos TypeScript completos ✅

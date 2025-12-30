@@ -51,7 +51,7 @@ export function CRMExpedientes() {
         const [tasks, calls, notes] = await Promise.all([
           crmService.getTasks({ entity_id: lead.id, entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
           crmService.getCalls({ entity_id: lead.id, entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
-          crmService.getNotes({ entity_id: lead.id, entity_type: 'leads', limit: 50 }).catch(() => ({ items: [] })),
+          crmService.getNotes({ entity_id: lead.id, entity_type: 'contacts', limit: 50 }).catch(() => ({ items: [] })),
         ]);
 
         // Determinar estado del expediente

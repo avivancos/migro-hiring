@@ -9,7 +9,7 @@ import { Loader2 } from 'lucide-react';
 
 interface NoteListProps {
   entityId?: string;
-  entityType?: 'contacts' | 'leads' | 'companies';
+  entityType?: 'contacts';
   showActions?: boolean;
   onNotePress?: (note: Note) => void;
   onNoteEdit?: (note: Note) => void;

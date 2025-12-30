@@ -37,15 +37,33 @@ export function useAuth() {
               isAuthenticated: true,
               isLoading: false,
             });
-          } catch {
-            // Token invalid, clear everything
-            authService.logout();
-            setAuthState({
-              user: null,
-              token: null,
-              isAuthenticated: false,
-              isLoading: false,
-            });
+          } catch (error: any) {
+            // ⚠️ CRÍTICO: NO limpiar tokens en error
+            // Puede ser error temporal de red o servidor
+            // Solo limpiar si el refresh token está realmente expirado
+            console.warn('⚠️ Error al obtener usuario, pero manteniendo sesión:', error);
+            
+            // Si hay tokens válidos, mantener el estado como autenticado
+            // El usuario puede estar offline o el servidor puede estar temporalmente caído
+            const hasValidTokens = authService.isAuthenticated();
+            
+            if (hasValidTokens) {
+              // Hay tokens válidos, mantener sesión aunque no se pudo obtener el usuario
+              setAuthState({
+                user: cachedUser, // Usar usuario cacheado si existe
+                token,
+                isAuthenticated: true,
+                isLoading: false,
+              });
+            } else {
+              // No hay tokens válidos, limpiar sesión
+              setAuthState({
+                user: null,
+                token: null,
+                isAuthenticated: false,
+                isLoading: false,
+              });
+            }
           }
         }
       } else {

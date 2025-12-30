@@ -1,4 +1,4 @@
-// ActivityTimeline - Timeline of notes and activities for leads/contacts
+// ActivityTimeline - Timeline of notes and activities for contacts
 
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 interface ActivityTimelineProps {
-  entityType: 'lead' | 'contact' | 'company';
+  entityType: 'contact';
   entityId: string;
 }
 
@@ -40,7 +40,7 @@ export function ActivityTimeline({ entityType, entityId }: ActivityTimelineProps
       }
       
       const notesData = await crmService.getNotes({ 
-        entity_type: entityType === 'lead' ? 'leads' : entityType === 'contact' ? 'contacts' : entityType,
+        entity_type: 'contacts',
         entity_id: entityId, 
         limit: 50 
       });

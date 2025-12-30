@@ -280,7 +280,7 @@ export function LeadDetail() {
             </Card>
 
             {/* Activity Timeline */}
-            <ActivityTimeline entityType="lead" entityId={lead.id} />
+            <ActivityTimeline entityType="contact" entityId={lead.id} />
           </div>
 
           {/* Sidebar */}
