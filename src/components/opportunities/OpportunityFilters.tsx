@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import type { OpportunityFilters as OpportunityFiltersType } from '@/types/opportunity';
 import type { LeadOpportunity } from '@/types/opportunity';
 import { X, Filter, Search } from 'lucide-react';
+import { getValidAttemptsCount } from '@/utils/opportunity';
 
 interface OpportunityFiltersProps {
   filters: OpportunityFiltersType;

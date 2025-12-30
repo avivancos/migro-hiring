@@ -25,7 +25,6 @@ import { useAuth } from '@/providers/AuthProvider';
 import { Modal } from '@/components/common/Modal';
 import { Label } from '@/components/ui/label';
 import { useCRMUsers } from '@/hooks/useCRMUsers';
-import type { CRMUser } from '@/types/crm';
 
 export function CRMOpportunityDetail() {
   const { id } = useParams<{ id: string }>();

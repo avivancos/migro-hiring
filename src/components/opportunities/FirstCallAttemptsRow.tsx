@@ -2,7 +2,7 @@
 
 import { FirstCallAttemptBadge, type FirstCallAttemptStatus } from './FirstCallAttemptBadge';
 import { Check } from 'lucide-react';
-import type { FirstCallAttempt, FirstCallAttempts } from '@/types/opportunity';
+import type { FirstCallAttempt } from '@/types/opportunity';
 import { getValidAttemptsCount } from '@/utils/opportunity';
 
 export interface FirstCallAttemptsRowProps {
