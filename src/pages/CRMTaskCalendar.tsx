@@ -750,8 +750,7 @@ export function CRMTaskCalendar() {
                         if (call.contact_id) {
                           navigate(`/crm/contacts/${call.contact_id}`);
                         } else if (call.entity_id) {
-                          const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
-                          navigate(`/crm/${entityType}/${call.entity_id}`);
+                          navigate(`/crm/contacts/${call.entity_id}`);
                         } else {
                           console.log('📞 [CRMTaskCalendar] Llamada sin contacto asociado:', call);
                         }
