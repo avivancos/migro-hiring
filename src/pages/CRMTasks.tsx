@@ -10,16 +10,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, ArrowLeft, Calendar } from 'lucide-react';
 import { useTasks } from '@/hooks/useTasks';
-import { crmService } from '@/services/crmService';
 
 export function CRMTasks() {
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
-  const [filters, setFilters] = useState<TaskFilters>({
+  const [filters] = useState<TaskFilters>({
     is_completed: false, // Por defecto mostrar pendientes
   });
   
-  const { createTask, completeTask, refresh } = useTasks({
+  const { createTask, refresh } = useTasks({
     filters,
     autoLoad: true,
     pageSize: 20,
@@ -33,16 +32,6 @@ export function CRMTasks() {
     } catch (err) {
       console.error('Error creating task:', err);
       alert('Error al crear la tarea');
-    }
-  };
-
-  const handleCompleteTask = async (taskId: string) => {
-    try {
-      await completeTask(taskId);
-      refresh();
-    } catch (err) {
-      console.error('Error completing task:', err);
-      alert('Error al completar la tarea');
     }
   };
 

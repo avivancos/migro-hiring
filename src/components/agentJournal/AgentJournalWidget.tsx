@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useDailyReport, useSyncMetrics } from '@/hooks/useAgentJournal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MetricCard } from './MetricCard';
 import { ProductivityScoreBadge } from './ProductivityScoreBadge';
 import { SignReportDialog } from './SignReportDialog';
 import { Phone, PhoneCall, Clock, CheckCircle, FileText, Briefcase, BookOpen, ArrowRight, RefreshCw, PenTool } from 'lucide-react';
@@ -21,7 +20,7 @@ export function AgentJournalWidget() {
 
   const handleSync = async () => {
     try {
-      await syncMetrics.mutateAsync();
+      await syncMetrics.mutateAsync(undefined);
       refetch();
     } catch (err) {
       console.error('Error al sincronizar:', err);

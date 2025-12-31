@@ -21,7 +21,7 @@ export function PerformanceDashboardView() {
 
   const handleSync = async () => {
     try {
-      await syncMetrics.mutateAsync();
+      await syncMetrics.mutateAsync(undefined);
       refetch();
     } catch (err) {
       console.error('Error al sincronizar:', err);
@@ -170,13 +170,13 @@ export function PerformanceDashboardView() {
                 ) : (
                   <div className="flex items-center gap-4">
                     <Badge variant="default" className="text-2xl px-4 py-2">
-                      #{rank}
+                      #{rank ?? 'N/A'}
                     </Badge>
                     <p className="text-sm text-gray-600">
                       {rank === 1 && '🥇 ¡Eres el mejor del equipo!'}
                       {rank === 2 && '🥈 Muy bien, estás en segundo lugar'}
                       {rank === 3 && '🥉 Buen trabajo, tercer lugar'}
-                      {rank > 3 && `Mantente enfocado, puedes mejorar tu posición`}
+                      {rank && rank > 3 && `Mantente enfocado, puedes mejorar tu posición`}
                     </p>
                   </div>
                 )}

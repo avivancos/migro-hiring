@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Plus, ExternalLink, Phone, User, MessageSquare } from 'lucide-react';
-import type { Task, Call, Note, KommoContact, KommoLead, CRMUser } from '@/types/crm';
+import type { Task, Call, Note, KommoContact, CRMUser } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { formatCallStatus } from '@/utils/statusTranslations';
 import { useAuth } from '@/hooks/useAuth';
@@ -203,7 +203,7 @@ export function CRMTaskCalendar() {
       setCalls(filteredCalls);
       setNotes(notesInRange);
       
-      // Cargar nombres de contactos/leads para todas las llamadas con entity_id que no tienen contact_name
+      // Cargar nombres de contactos para todas las llamadas con entity_id que no tienen contact_name
       await loadEntityNames(callsData);
     } catch (err) {
       console.error('❌ [CRMTaskCalendar] Error loading data:', err);
@@ -246,14 +246,10 @@ export function CRMTaskCalendar() {
       const call = calls.find(c => c.entity_id === entityId);
       if (!call) return;
 
-      const contactId = call.contact_id || (call.entity_type === 'contacts' || call.entity_type === 'contact' ? call.entity_id : null);
-      const isContact = !!contactId;
+      const contactId = call.contact_id || call.entity_id;
       
-      const promise = (isContact
-        ? crmService.getContact(contactId)
-        : crmService.getLead(entityId)
-      )
-        .then((entity: KommoContact | KommoLead) => {
+      const promise = crmService.getContact(contactId)
+        .then((entity: KommoContact) => {
           const name = entity.name || 
             (('first_name' in entity) ? `${entity.first_name || ''} ${entity.last_name || ''}`.trim() : '') ||
             'Sin nombre';
@@ -261,10 +257,10 @@ export function CRMTaskCalendar() {
           if (contactId && contactId !== entityId) {
             names[contactId] = name;
           }
-          console.log(`✅ [CRMTaskCalendar] Nombre cargado para ${isContact ? 'contact' : 'lead'} ${entityId}:`, name);
+          console.log(`✅ [CRMTaskCalendar] Nombre cargado para contact ${entityId}:`, name);
         })
         .catch((err) => {
-          console.warn(`⚠️ [CRMTaskCalendar] Error cargando ${isContact ? 'contact' : 'lead'} ${entityId}:`, err);
+          console.warn(`⚠️ [CRMTaskCalendar] Error cargando contact ${entityId}:`, err);
           // Usar teléfono como fallback
           const call = calls.find(c => c.entity_id === entityId);
           if (call?.phone || call?.phone_number) {
@@ -413,7 +409,7 @@ export function CRMTaskCalendar() {
   };
 
   // Helper para obtener nombre del responsable
-  const getResponsibleName = (userId: string | undefined): string => {
+  const getResponsibleName = (userId: string | null | undefined): string => {
     if (!userId) return 'Sin asignar';
     
     // Si no hay usuarios cargados aún, mostrar mensaje temporal
@@ -637,8 +633,7 @@ export function CRMTaskCalendar() {
                             if (call.contact_id) {
                               navigate(`/crm/contacts/${call.contact_id}`);
                             } else if (call.entity_id) {
-                              const entityType = call.entity_type === 'leads' || call.entity_type === 'lead' ? 'leads' : 'contacts';
-                              navigate(`/crm/${entityType}/${call.entity_id}`);
+                              navigate(`/crm/contacts/${call.entity_id}`);
                             } else if (call.phone || call.phone_number) {
                               // Si no hay entity_id, al menos mostrar información de la llamada
                               console.log('📞 [CRMTaskCalendar] Llamada sin contacto asociado:', call);
@@ -726,8 +721,7 @@ export function CRMTaskCalendar() {
                           variant="outline"
                           onClick={(e) => {
                             e.stopPropagation();
-                            const entityType = task.entity_type === 'leads' || task.entity_type === 'lead' ? 'leads' : 'contacts';
-                            navigate(`/crm/${entityType}/${task.entity_id}`);
+                            navigate(`/crm/contacts/${task.entity_id}`);
                           }}
                           className="ml-2 h-6 text-xs px-2"
                         >
@@ -830,7 +824,7 @@ export function CRMTaskCalendar() {
                           )}
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          {getTaskTypeBadge(task.task_type)}
+                          {getTaskTypeBadge(task.task_type ?? undefined)}
                           <span className={`text-xs px-2 py-1 rounded ${
                             task.is_completed ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                           }`}>
@@ -852,8 +846,7 @@ export function CRMTaskCalendar() {
                           variant="outline"
                           onClick={(e) => {
                             e.stopPropagation();
-                            const entityType = task.entity_type === 'leads' || task.entity_type === 'lead' ? 'leads' : 'contacts';
-                            navigate(`/crm/${entityType}/${task.entity_id}`);
+                            navigate(`/crm/contacts/${task.entity_id}`);
                           }}
                           className="text-xs"
                         >
@@ -948,8 +941,7 @@ export function CRMTaskCalendar() {
                   className="cursor-pointer hover:shadow-md bg-gray-50 border-gray-200"
                   onClick={() => {
                     if (note.entity_id) {
-                      const entityType = note.entity_type === 'leads' ? 'leads' : 'contacts';
-                      navigate(`/crm/${entityType}/${note.entity_id}`);
+                      navigate(`/crm/contacts/${note.entity_id}`);
                     }
                   }}
                 >
@@ -966,7 +958,7 @@ export function CRMTaskCalendar() {
                               <span>Creada: {noteDate.toLocaleString('es-ES')}</span>
                             </div>
                             <div className="flex items-center gap-2 flex-wrap">
-                              {getNoteTypeBadge(note.note_type)}
+                              {getNoteTypeBadge(note.note_type ?? undefined)}
                               {note.created_by && (
                                 <span className="text-xs px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5 font-medium">
                                   <User size={12} className="flex-shrink-0" />

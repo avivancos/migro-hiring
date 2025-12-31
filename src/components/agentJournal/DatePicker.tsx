@@ -1,6 +1,5 @@
 // DatePicker - Selector de fecha para reporte diario
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, addDays, subDays, startOfToday } from 'date-fns';

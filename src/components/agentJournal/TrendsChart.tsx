@@ -102,7 +102,7 @@ export function TrendsChart({ data, metric, loading = false }: TrendsChartProps)
                 borderRadius: '8px',
               }}
               labelFormatter={(label) => `Fecha: ${chartData.find(d => d.fecha === label)?.fechaCompleta || label}`}
-              formatter={(value: number) => [value, metricLabels[metric]]}
+              formatter={(value: number | undefined) => [value ?? 0, metricLabels[metric]]}
             />
             <Legend />
             <Line 

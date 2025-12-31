@@ -59,7 +59,7 @@ export function ActivityTimeline({ entityType, entityId }: ActivityTimelineProps
     setAdding(true);
     try {
       await crmService.createNote({
-        entity_type: entityType,
+        entity_type: 'contacts',
         entity_id: entityId,
         note_type: 'comment',
         content: newNote,
@@ -157,7 +157,7 @@ export function ActivityTimeline({ entityType, entityId }: ActivityTimelineProps
             </p>
           ) : (
             notes.map((note, index) => {
-              const Icon = getNoteIcon(note.note_type);
+              const Icon = getNoteIcon(note.note_type || 'comment');
               
               return (
                 <div key={note.id} className="flex gap-4">
@@ -184,7 +184,7 @@ export function ActivityTimeline({ entityType, entityId }: ActivityTimelineProps
                           {note.note_type === 'comment' && 'Comentario'}
                         </span>
                         <span className="text-xs text-gray-500">
-                          {formatDateTime(note.created_at)}
+                          {note.created_at ? formatDateTime(note.created_at) : 'Fecha no disponible'}
                         </span>
                       </div>
                       <p className="text-sm text-gray-700 whitespace-pre-wrap">

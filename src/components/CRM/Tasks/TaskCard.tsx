@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { Task } from '@/types/crm';
-import { formatDate, formatDateTime } from '@/utils/formatters';
+import { formatDate } from '@/utils/formatters';
 
 // Helper para formatear solo la hora
 const formatTime = (dateString: string): string => {

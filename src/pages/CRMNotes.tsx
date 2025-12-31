@@ -9,13 +9,12 @@ import { NoteForm } from '@/components/CRM/NoteForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, ArrowLeft } from 'lucide-react';
-import { crmService } from '@/services/crmService';
 import type { NoteCreateRequest } from '@/types/crm';
 
 export function CRMNotes() {
   const navigate = useNavigate();
   const [showForm, setShowForm] = useState(false);
-  const { notes, loading, refresh, createNote, deleteNote } = useNotes({
+  const { notes, refresh, createNote, deleteNote } = useNotes({
     autoLoad: true,
     limit: 50,
   });

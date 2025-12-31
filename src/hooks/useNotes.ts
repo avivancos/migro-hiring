@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { crmService } from '@/services/crmService';
-import type { Note, NoteCreateRequest, NoteUpdateRequest } from '@/types/crm';
+import type { Note, NoteCreateRequest, NoteUpdateRequest, CRMUser } from '@/types/crm';
 import { useAuth } from './useAuth';
 
 interface UseNotesOptions {
@@ -11,17 +11,33 @@ interface UseNotesOptions {
   limit?: number;
   entityId?: string;
   entityType?: 'contacts';
+  createdBy?: string; // UUID del creador - Solo para admins
   autoLoad?: boolean;
 }
 
 export function useNotes(options: UseNotesOptions = {}) {
-  const { skip = 0, limit = 50, entityId, entityType, autoLoad = true } = options;
+  const { skip = 0, limit = 50, entityId, entityType, createdBy, autoLoad = true } = options;
   const { user } = useAuth();
   
   const [notes, setNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [total, setTotal] = useState(0);
+  const [crmUsers, setCrmUsers] = useState<CRMUser[]>([]);
+
+  // Cargar usuarios CRM una vez al montar el componente
+  useEffect(() => {
+    const loadCRMUsers = async () => {
+      try {
+        const users = await crmService.getUsers(true);
+        setCrmUsers(users);
+      } catch (err) {
+        console.warn('⚠️ [useNotes] Error cargando usuarios CRM:', err);
+        setCrmUsers([]);
+      }
+    };
+    loadCRMUsers();
+  }, []);
 
   const fetchNotes = useCallback(async () => {
     setLoading(true);
@@ -41,24 +57,83 @@ export function useNotes(options: UseNotesOptions = {}) {
         filters.entity_type = entityType;
       }
 
-      // ⚠️ IMPORTANTE: Actualmente el backend NO filtra por usuario
-      // Los usuarios regulares deberían ver solo sus notas, pero esto debe implementarse en el backend
-      // Por ahora, el frontend puede filtrar como medida temporal
-      // TODO: Implementar filtrado por created_by en el backend
+      const isAdmin = user?.role === 'admin' || user?.is_superuser;
+      
+      // Para usuarios regulares: buscar el usuario CRM correspondiente y establecer created_by
+      if (!isAdmin) {
+        // Si hay un filtro de created_by explícito, eliminarlo (solo admins pueden usarlo)
+        if (createdBy) {
+          // No hacer nada, el filtro no se aplicará
+        }
+        
+        // Buscar el usuario CRM correspondiente al usuario del sistema usando el email
+        if (user?.email && crmUsers.length > 0) {
+          const crmUser = crmUsers.find(u => u.email === user.email);
+          if (crmUser) {
+            filters.created_by = crmUser.id;
+            console.log('🔍 [useNotes] Usuario regular, filtrando por CRM user:', {
+              systemUserId: user.id,
+              systemUserEmail: user.email,
+              crmUserId: crmUser.id,
+              crmUserName: crmUser.name,
+            });
+          } else {
+            console.warn('⚠️ [useNotes] No se encontró usuario CRM para:', user.email);
+          }
+        } else if (user?.email && crmUsers.length === 0) {
+          // Si aún no se han cargado los usuarios CRM, intentar cargarlos ahora
+          try {
+            const users = await crmService.getUsers(true);
+            setCrmUsers(users);
+            const crmUser = users.find(u => u.email === user.email);
+            if (crmUser) {
+              filters.created_by = crmUser.id;
+              console.log('🔍 [useNotes] Usuario CRM encontrado después de carga:', {
+                crmUserId: crmUser.id,
+                crmUserName: crmUser.name,
+              });
+            }
+          } catch (err) {
+            console.warn('⚠️ [useNotes] Error cargando usuarios CRM:', err);
+          }
+        }
+      } else if (isAdmin && createdBy) {
+        // Para admins: permitir filtrar por created_by si se especifica
+        filters.created_by = createdBy;
+      }
+
+      // Debug: Log de filtros
+      if (isAdmin) {
+        console.log('🔍 [useNotes] Admin filtrando notas:', {
+          created_by: filters.created_by,
+          filters: filters,
+        });
+      }
 
       const response = await crmService.getNotes(filters);
       
       const notesList = response.items || [];
       
-      // ⚠️ Filtrado temporal en el cliente (hasta que el backend lo implemente)
-      const isAdmin = user?.role === 'admin' || user?.is_superuser;
+      // ⚠️ Filtrado adicional de seguridad en el cliente (medida de seguridad)
+      // Verificar que los usuarios regulares solo ven sus propias notas
       let filteredNotes = notesList;
       
-      if (!isAdmin && user?.id) {
-        // Filtrar solo notas del usuario actual
-        filteredNotes = notesList.filter(note => 
-          note.created_by === user.id
-        );
+      if (!isAdmin && user?.email) {
+        // Buscar el usuario CRM para comparar correctamente
+        const crmUser = crmUsers.find(u => u.email === user.email) || 
+                       (crmUsers.length === 0 ? null : null);
+        
+        if (crmUser) {
+          // Filtrar solo notas del usuario CRM actual (medida de seguridad adicional)
+          filteredNotes = notesList.filter(note => 
+            note.created_by === crmUser.id
+          );
+        } else if (filters.created_by) {
+          // Si ya se filtró por created_by en el backend, usar ese filtro
+          filteredNotes = notesList.filter(note => 
+            note.created_by === filters.created_by
+          );
+        }
       }
 
       setNotes(filteredNotes);
@@ -69,7 +144,7 @@ export function useNotes(options: UseNotesOptions = {}) {
     } finally {
       setLoading(false);
     }
-  }, [skip, limit, entityId, entityType, user]);
+  }, [skip, limit, entityId, entityType, createdBy, user, crmUsers]);
 
   const createNote = useCallback(async (noteData: NoteCreateRequest): Promise<Note> => {
     try {

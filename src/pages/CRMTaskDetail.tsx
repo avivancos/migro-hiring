@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { crmService } from '@/services/crmService';
-import type { Task, CRMUser, KommoContact, KommoLead } from '@/types/crm';
+import type { Task, CRMUser, KommoContact } from '@/types/crm';
 import {
   ArrowLeft,
   Edit,
@@ -28,7 +28,7 @@ export function CRMTaskDetail() {
   const [task, setTask] = useState<Task | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [users, setUsers] = useState<CRMUser[]>([]);
-  const [entity, setEntity] = useState<KommoContact | KommoLead | null>(null);
+  const [entity, setEntity] = useState<KommoContact | null>(null);
   const [entityNotFound, setEntityNotFound] = useState(false);
   const [editing, setEditing] = useState(false);
 
@@ -51,8 +51,7 @@ export function CRMTaskDetail() {
       setTask(taskData);
       setUsers(usersData);
 
-      // Cargar la entidad asociada (contacto o lead unificado)
-      // Nota: Los leads ahora están unificados con contactos, siempre usar getContact
+      // Cargar la entidad asociada (contacto)
       if (taskData.entity_id) {
         console.log('🔍 [CRMTaskDetail] Cargando entidad asociada:', {
           entity_id: taskData.entity_id,
@@ -60,21 +59,7 @@ export function CRMTaskDetail() {
         });
         setEntityNotFound(false);
         try {
-          // Intentar cargar como contacto primero (ya que leads están unificados)
-          const contact = await crmService.getContact(taskData.entity_id).catch(async (err) => {
-            // Si falla, intentar como lead (fallback para compatibilidad)
-            console.warn('⚠️ [CRMTaskDetail] No se pudo cargar como contacto, intentando como lead:', err);
-            try {
-              const lead = await crmService.getLead(taskData.entity_id);
-              return lead as any;
-            } catch (leadErr) {
-              console.error('❌ [CRMTaskDetail] Tampoco se pudo cargar como lead:', leadErr);
-              // Marcar que la entidad no se encontró
-              setEntityNotFound(true);
-              setEntity(null);
-              return null;
-            }
-          });
+          const contact = await crmService.getContact(taskData.entity_id);
           if (contact) {
             console.log('✅ [CRMTaskDetail] Entidad cargada exitosamente:', contact?.id, contact?.name);
             setEntity(contact);
@@ -139,7 +124,7 @@ export function CRMTaskDetail() {
     }
   };
 
-  const getUserName = (userId?: string): string => {
+  const getUserName = (userId?: string | null): string => {
     if (!userId) return 'No especificado';
     const user = users.find(u => u.id === userId);
     if (!user) return `Usuario ${userId.slice(0, 8)}...`;
@@ -157,7 +142,8 @@ export function CRMTaskDetail() {
     });
   };
 
-  const getTaskTypeLabel = (type: string): string => {
+  const getTaskTypeLabel = (type: string | null | undefined): string => {
+    if (!type) return 'Tarea';
     const labels: Record<string, string> = {
       call: 'Llamada',
       meeting: 'Reunión',
@@ -171,7 +157,8 @@ export function CRMTaskDetail() {
     return labels[type] || type;
   };
 
-  const getTaskTypeIcon = (type: string) => {
+  const getTaskTypeIcon = (type: string | null | undefined) => {
+    if (!type) return FileText;
     switch (type) {
       case 'call':
       case 'first_call':
@@ -290,7 +277,6 @@ export function CRMTaskDetail() {
                         <Button
                           variant="outline"
                           onClick={() => {
-                            // Los leads están unificados con contactos, siempre navegar a contacts
                             console.log('🔗 [CRMTaskDetail] Navegando a contacto:', task.entity_id);
                             navigate(`/crm/contacts/${task.entity_id}`);
                           }}
@@ -399,27 +385,26 @@ export function CRMTaskDetail() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="font-semibold text-gray-900">
-                            {(entity as KommoContact).name || 
-                             `${(entity as KommoContact).first_name || ''} ${(entity as KommoContact).last_name || ''}`.trim() ||
-                             (entity as KommoLead).name}
+                            {entity.name || 
+                             `${entity.first_name || ''} ${entity.last_name || ''}`.trim() ||
+                             'Sin nombre'}
                           </p>
-                          {(entity as KommoContact).email && (
+                          {entity.email && (
                             <p className="text-sm text-gray-600 mt-1">
                               <Mail className="w-4 h-4 inline mr-1" />
-                              {(entity as KommoContact).email}
+                              {entity.email}
                             </p>
                           )}
-                          {((entity as KommoContact).phone || (entity as KommoLead).contact?.phone) && (
+                          {entity.phone && (
                             <p className="text-sm text-gray-600 mt-1">
                               <Phone className="w-4 h-4 inline mr-1" />
-                              {(entity as KommoContact).phone || (entity as KommoLead).contact?.phone}
+                              {entity.phone}
                             </p>
                           )}
                         </div>
                         <Button
                           variant="outline"
                           onClick={() => {
-                            // Los leads están unificados con contactos, siempre navegar a contacts
                             navigate(`/crm/contacts/${task.entity_id}`);
                           }}
                         >

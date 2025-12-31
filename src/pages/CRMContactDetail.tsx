@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { crmService } from '@/services/crmService';
-import type { KommoContact, KommoLead, Task, Call, Note, CallCreateRequest, TaskCreateRequest, NoteCreateRequest } from '@/types/crm';
+import type { KommoContact, Task, Call, Note, CallCreateRequest, TaskCreateRequest, NoteCreateRequest } from '@/types/crm';
 import {
   ArrowLeft,
   Edit,
@@ -52,7 +52,6 @@ export function CRMContactDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [contact, setContact] = useState<KommoContact | null>(null);
-  const [leads, setLeads] = useState<KommoLead[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [calls, setCalls] = useState<Call[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -105,7 +104,6 @@ export function CRMContactDetail() {
         setError(null);
       }
       
-      setLeads([]); // Los leads están unificados con contactos, no hay leads separados
       setTasks(tasksData.items || []);
       
       // Ordenar llamadas de más recientes a más antiguas
@@ -1083,9 +1081,6 @@ export function CRMContactDetail() {
                   <span className="hidden sm:inline">Información</span>
                   <span className="sm:hidden">Info</span>
                 </TabsTrigger>
-                <TabsTrigger value="leads" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 py-2 flex-shrink-0">
-                  Leads <span className="ml-1 text-xs">({leads.length})</span>
-                </TabsTrigger>
                 <TabsTrigger value="opportunities" className="text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4 py-2 flex-shrink-0">
                   <span className="hidden sm:inline">Oportunidades</span>
                   <span className="sm:hidden">Opps</span>
@@ -1210,49 +1205,6 @@ export function CRMContactDetail() {
                 {/* Campos Personalizados */}
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <ContactCustomFields contactId={id} />
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="leads">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Leads</CardTitle>
-                  <Button size="sm" onClick={() => navigate(`/crm/leads/new?contact_id=${id}`)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Nuevo Lead
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {leads.map((lead) => (
-                    <div
-                      key={lead.id}
-                      className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
-                      onClick={() => navigate(`/crm/leads/${lead.id}`)}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{lead.name}</h4>
-                          <p className="text-sm text-gray-600">{lead.service_type}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-green-600">
-                            {new Intl.NumberFormat('es-ES', {
-                              style: 'currency',
-                              currency: 'EUR',
-                            }).format(lead.price)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {leads.length === 0 && (
-                    <p className="text-center text-gray-500 py-8">No hay leads asociados</p>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1399,8 +1351,7 @@ export function CRMContactDetail() {
                             variant="outline"
                             onClick={(e) => {
                               e.stopPropagation();
-                              const entityType = task.entity_type === 'leads' || task.entity_type === 'lead' ? 'leads' : 'contacts';
-                              navigate(`/crm/${entityType}/${task.entity_id}`);
+                              navigate(`/crm/contacts/${task.entity_id}`);
                             }}
                             className="ml-4"
                           >
@@ -1480,7 +1431,6 @@ export function CRMContactDetail() {
                               variant="outline"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                // Los leads están unificados con contactos, siempre navegar a contacts
                                 navigate(`/crm/contacts/${call.entity_id}`);
                               }}
                             >
@@ -1539,8 +1489,7 @@ export function CRMContactDetail() {
                             variant="outline"
                             onClick={(e) => {
                               e.stopPropagation();
-                              const entityType = note.entity_type === 'leads' || note.entity_type === 'lead' ? 'leads' : 'contacts';
-                              navigate(`/crm/${entityType}/${note.entity_id}`);
+                              navigate(`/crm/contacts/${note.entity_id}`);
                             }}
                             className="ml-4"
                           >
@@ -1652,7 +1601,6 @@ export function CRMContactDetail() {
                               variant="outline"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                // Los leads están unificados con contactos, siempre navegar a contacts
                                 navigate(`/crm/contacts/${call.entity_id}`);
                               }}
                               className="text-xs"
@@ -1710,8 +1658,7 @@ export function CRMContactDetail() {
                                           variant="outline"
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            const entityType = task.entity_type === 'leads' || task.entity_type === 'lead' ? 'leads' : 'contacts';
-                                            navigate(`/crm/${entityType}/${task.entity_id}`);
+                                            navigate(`/crm/contacts/${task.entity_id}`);
                                           }}
                                           className="text-xs"
                                         >
@@ -1743,8 +1690,7 @@ export function CRMContactDetail() {
                                           variant="outline"
                                           onClick={(e) => {
                                             e.stopPropagation();
-                                            const entityType = note.entity_type === 'leads' || note.entity_type === 'lead' ? 'leads' : 'contacts';
-                                            navigate(`/crm/${entityType}/${note.entity_id}`);
+                                            navigate(`/crm/contacts/${note.entity_id}`);
                                           }}
                                           className="text-xs"
                                         >

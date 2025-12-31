@@ -120,7 +120,7 @@ export const TaskForm = memo(function TaskForm({
       const submitData: any = {
         text: formData.text,
         task_type: formData.task_type,
-        entity_type: formData.entity_type === 'contact' ? 'contacts' : formData.entity_type,
+        entity_type: formData.entity_type,
         entity_id: formData.entity_id,
         responsible_user_id: formData.responsible_user_id,
         complete_till: new Date(formData.complete_till).toISOString(),

@@ -1124,7 +1124,7 @@ export function CRMDashboardPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm sm:text-base text-gray-900 mb-1 line-clamp-2">
-                          {note.text || 'Sin contenido'}
+                          {note.content || 'Sin contenido'}
                         </p>
                         <div className="flex items-center gap-2 text-xs text-gray-500">
                           <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />

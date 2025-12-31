@@ -84,8 +84,8 @@ export function CRMActions() {
           title: task.text,
           description: `Tarea: ${task.task_type}`,
           dueDate: task.complete_till,
-          entityId: task.entity_id,
-          entityType: task.entity_type as 'contacts' | 'leads',
+          entityId: task.entity_id || '',
+          entityType: (task.entity_type || 'contacts') as 'contacts' | 'leads',
           entityName: 'Cargando...',
           status: task.is_completed ? 'completed' : 'pending',
         });

@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
 import type { OpportunityDetail } from '@/types/agentJournal';
 import { formatCallTime } from '@/utils/agentJournal';
-import { cn } from '@/lib/utils';
 
 interface OpportunityDetailCardProps {
   opportunity: OpportunityDetail;

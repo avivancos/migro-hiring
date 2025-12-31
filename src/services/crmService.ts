@@ -523,16 +523,7 @@ export const crmService = {
    * Crear una nueva tarea
    */
   async createTask(task: TaskCreateRequest): Promise<Task> {
-    // Normalizar entity_type a plural si es necesario
-    const apiTask: any = {
-      ...task,
-      entity_type: task.entity_type === 'contact' ? 'contacts' : 
-                   task.entity_type === 'lead' ? 'leads' : 
-                   task.entity_type === 'company' ? 'companies' :
-                   task.entity_type,
-    };
-    
-    const { data } = await api.post<Task>(`${CRM_BASE_PATH}/tasks`, apiTask);
+    const { data } = await api.post<Task>(`${CRM_BASE_PATH}/tasks`, task);
     return data;
   },
 
@@ -599,12 +590,8 @@ export const crmService = {
    * Crear una nota
    */
   async createNote(note: NoteCreateRequest): Promise<Note> {
-    // El backend ahora acepta variaciones y las normaliza automáticamente
-    // Pero mantenemos la normalización aquí para consistencia
     const apiNote: any = {
       ...note,
-      // Normalizar entity_type a plural (el backend también lo hace, pero por consistencia)
-      entity_type: note.entity_type === 'contact' ? 'contacts' : note.entity_type,
     };
     
     console.log('📝 [crmService] Creando nota:', apiNote);

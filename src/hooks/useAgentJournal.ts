@@ -3,8 +3,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { agentJournalApi } from '@/services/agentJournalApi';
 import type {
-  DailyReportResponse,
-  PerformanceDashboardResponse,
   PeriodType,
 } from '@/types/agentJournal';
 

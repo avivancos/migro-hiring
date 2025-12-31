@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { crmService } from '@/services/crmService';
-import type { Task, TaskCreateRequest, TaskUpdateRequest, TaskFilters } from '@/types/crm';
+import type { Task, TaskCreateRequest, TaskUpdateRequest, TaskFilters, CRMUser } from '@/types/crm';
 import { useAuth } from './useAuth';
 
 interface UseTasksOptions {
@@ -22,6 +22,21 @@ export function useTasks(options: UseTasksOptions = {}) {
   const [total, setTotal] = useState(0);
   const [skip, setSkip] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [crmUsers, setCrmUsers] = useState<CRMUser[]>([]);
+
+  // Cargar usuarios CRM una vez al montar el componente
+  useEffect(() => {
+    const loadCRMUsers = async () => {
+      try {
+        const users = await crmService.getUsers(true);
+        setCrmUsers(users);
+      } catch (err) {
+        console.warn('⚠️ [useTasks] Error cargando usuarios CRM:', err);
+        setCrmUsers([]);
+      }
+    };
+    loadCRMUsers();
+  }, []);
 
   const fetchTasks = useCallback(async (reset = false) => {
     if (loading) return;
@@ -37,13 +52,54 @@ export function useTasks(options: UseTasksOptions = {}) {
         limit: pageSize,
       };
 
-      // ⚠️ IMPORTANTE: Los usuarios regulares NO pueden filtrar por otros usuarios
-      // El backend aplica automáticamente el filtro de seguridad
-      // Solo admins pueden usar responsible_user_id para filtrar
       const isAdmin = user?.role === 'admin' || user?.is_superuser;
-      if (!isAdmin && requestFilters.responsible_user_id) {
-        // Remover el filtro para usuarios regulares - el backend lo aplicará automáticamente
-        delete requestFilters.responsible_user_id;
+      
+      // Para usuarios regulares: buscar el usuario CRM correspondiente y establecer responsible_user_id
+      if (!isAdmin) {
+        // Si hay un filtro de responsible_user_id explícito, eliminarlo (solo admins pueden usarlo)
+        if (requestFilters.responsible_user_id) {
+          delete requestFilters.responsible_user_id;
+        }
+        
+        // Buscar el usuario CRM correspondiente al usuario del sistema usando el email
+        if (user?.email && crmUsers.length > 0) {
+          const crmUser = crmUsers.find(u => u.email === user.email);
+          if (crmUser) {
+            requestFilters.responsible_user_id = crmUser.id;
+            console.log('🔍 [useTasks] Usuario regular, filtrando por CRM user:', {
+              systemUserId: user.id,
+              systemUserEmail: user.email,
+              crmUserId: crmUser.id,
+              crmUserName: crmUser.name,
+            });
+          } else {
+            console.warn('⚠️ [useTasks] No se encontró usuario CRM para:', user.email);
+          }
+        } else if (user?.email && crmUsers.length === 0) {
+          // Si aún no se han cargado los usuarios CRM, intentar cargarlos ahora
+          try {
+            const users = await crmService.getUsers(true);
+            setCrmUsers(users);
+            const crmUser = users.find(u => u.email === user.email);
+            if (crmUser) {
+              requestFilters.responsible_user_id = crmUser.id;
+              console.log('🔍 [useTasks] Usuario CRM encontrado después de carga:', {
+                crmUserId: crmUser.id,
+                crmUserName: crmUser.name,
+              });
+            }
+          } catch (err) {
+            console.warn('⚠️ [useTasks] Error cargando usuarios CRM:', err);
+          }
+        }
+      }
+
+      // Debug: Log de filtros
+      if (isAdmin) {
+        console.log('🔍 [useTasks] Admin filtrando tareas:', {
+          responsible_user_id: requestFilters.responsible_user_id,
+          filters: requestFilters,
+        });
       }
 
       const response = await crmService.getTasks(requestFilters);
@@ -65,7 +121,7 @@ export function useTasks(options: UseTasksOptions = {}) {
     } finally {
       setLoading(false);
     }
-  }, [filters, skip, pageSize, loading, user]);
+  }, [filters, skip, pageSize, loading, user, crmUsers]);
 
   const createTask = useCallback(async (taskData: TaskCreateRequest): Promise<Task> => {
     try {
