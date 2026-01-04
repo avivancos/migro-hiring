@@ -194,6 +194,63 @@ export const pipelineApi = {
     );
     return data;
   },
+
+  /**
+   * Validar token de aprobación de hiring code
+   * GET /api/pipelines/admin/approve-hiring-code/validate?token={token_hash}
+   * Endpoint público - no requiere autenticación
+   */
+  async validateHiringCodeApprovalToken(token: string): Promise<{
+    valid: boolean;
+    token_id: string;
+    pipeline_stage_id: string;
+    hiring_payment: {
+      id: number;
+      hiring_code: string;
+      amount: number;
+      currency: string;
+      payment_type: string;
+    };
+    expires_at: string;
+    admin_email: string;
+  }> {
+    const { data } = await api.get(
+      `${PIPELINES_BASE_PATH}/admin/approve-hiring-code/validate`,
+      {
+        params: { token },
+        // No incluir headers de autenticación - endpoint público
+      }
+    );
+    return data;
+  },
+
+  /**
+   * Aprobar solicitud de hiring code con token
+   * POST /api/pipelines/admin/approve-hiring-code?token={token_hash}
+   * Endpoint público - no requiere autenticación
+   */
+  async approveHiringCodeWithToken(token: string): Promise<{
+    success: boolean;
+    message: string;
+    pipeline_stage_id: string;
+    hiring_payment: {
+      id: number;
+      hiring_code: string;
+      amount: number;
+      currency: string;
+    };
+    approved_at: string;
+  }> {
+    const { data } = await api.post(
+      `${PIPELINES_BASE_PATH}/admin/approve-hiring-code`,
+      {},
+      {
+        params: { token },
+        // No incluir headers de autenticación - endpoint público
+      }
+    );
+    return data;
+  },
 };
 
 

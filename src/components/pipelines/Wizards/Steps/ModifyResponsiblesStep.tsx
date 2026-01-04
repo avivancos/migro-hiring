@@ -32,7 +32,8 @@ export function ModifyResponsiblesStep({
   onPrevious,
   onChange,
 }: ModifyResponsiblesStepProps) {
-  const { users, loading: loadingUsers } = useCRMUsers({ isActive: true });
+  // Usar onlyResponsibles para cargar solo lawyers y agents (no todos los usuarios)
+  const { users, loading: loadingUsers } = useCRMUsers({ isActive: true, onlyResponsibles: true });
   const [selectedActionIndex, setSelectedActionIndex] = useState(0);
   const [actionConfig, setActionConfig] = useState<{
     responsibleId?: string;

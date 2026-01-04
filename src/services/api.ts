@@ -40,7 +40,8 @@ api.interceptors.request.use(
       '/auth/refresh',
       // Pili LLM deshabilitado - movido a repositorio externo
       // '/ai/pili-openai/health', // Health check no requiere autenticación
-      '/hiring/' // Endpoints públicos de contratación (no requieren autenticación)
+      '/hiring/', // Endpoints públicos de contratación (no requieren autenticación)
+      '/pipelines/admin/approve-hiring-code' // Endpoint público de aprobación con token
     ];
     const isPublicEndpoint = config.url && publicEndpoints.some(endpoint => config.url!.includes(endpoint));
     

@@ -10,6 +10,7 @@ export const PAGE_TITLES: Record<string, string> = {
   '/privacy': 'Privacy Policy | Migro.es',
   '/borrador': 'Borrador PDF | Migro.es',
   '/colaboradores': 'Colaboradores | Migro.es',
+  '/colaboradores-agentes': 'Convenio de Colaboración - Agentes de Ventas | Migro.es',
   '/closer': 'Closer | Migro.es',
   '/pili': 'Pili - Asistente IA | Migro.es',
   
@@ -37,6 +38,7 @@ export const PAGE_TITLES: Record<string, string> = {
   '/admin/contracts/create': 'Crear Contrato | Migro.es',
   '/admin/call-types': 'Tipos de Llamada | Migro.es',
   '/admin/tracing': 'Dashboard de Tracing - Rendimiento | Migro.es',
+  '/admin/approve-hiring-code': 'Aprobar Código de Contratación | Migro.es',
   
   // Módulo CRM
   '/crm': 'CRM - Gestión de Clientes | Migro.es',

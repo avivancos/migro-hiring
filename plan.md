@@ -14,6 +14,11 @@
 - **Repositorio:** https://github.com/avivancos/migro-hiring
 - **Deploy URL:** https://contratacion.migro.es
 
+### ⚠️ Pendiente Crítico: Permisos de Rutas para Agentes - Contratos
+- [ ] **HABILITAR `/admin/contracts/:code` para agentes** en `/admin/route-permissions` ⚠️ CRÍTICO
+  - Los agentes no pueden ver detalles de contratos porque esta ruta solo está habilitada para admin
+  - Documentación completa en `docs/FRONTEND_AGENT_CONTRACTS_ROUTES_PERMISSIONS.md` ✅
+
 ---
 
 ## 🎯 Objetivos Actuales (UI Redesign)
@@ -60,6 +65,89 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - **Estado**: ✅ COMPLETADO - Listo para uso
   - **Enfoque**: Mobile First + Alta Usabilidad
   - **Características**: Análisis de oportunidades, componentes colapsables, exportación JSON, compartir nativo
+
+### ✅ Componentes Frontend Tipo Servicio (Enero 2025)
+- [x] Implementación completa de componentes para tipo de servicio y resumen de primera llamada ✅
+  - [x] TipoServicioSelector.tsx - Selector con búsqueda y agrupación por categoría ✅
+  - [x] FirstCallSummary.tsx - Editor de resumen con auto-resize y validación ✅
+  - [x] OpportunityTipoServicioSection.tsx - Sección integrada completa ✅
+  - [x] Estilos mobile-first con bottom sheet para móvil y dropdown para desktop ✅
+  - [x] Accesibilidad completa (WCAG AA, ARIA, keyboard navigation, screen readers) ✅
+  - [x] Documentación completa y granular:
+    - [x] `docs/FRONTEND_TIPO_SERVICIO_COMPONENTS_SUMMARY.md` - Resumen ejecutivo ✅
+    - [x] `docs/FRONTEND_TIPO_SERVICIO_TECNICAL.md` - Guía técnica detallada ✅
+    - [x] `docs/FRONTEND_TIPO_SERVICIO_INTEGRATION.md` - Guía de integración ✅
+    - [x] `docs/FRONTEND_TIPO_SERVICIO_TESTING.md` - Guía de testing ✅
+    - [x] `docs/FRONTEND_TIPO_SERVICIO_ACCESSIBILITY.md` - Guía de accesibilidad ✅
+    - [x] `docs/FRONTEND_TIPO_SERVICIO_QUICK_START.md` - Quick start guide ✅
+  - **Estado**: ✅ COMPLETADO - Componentes listos para usar
+  - **Características**: 
+    - Mobile-first con bottom sheet en móvil y dropdown en desktop
+    - Búsqueda con debounce (300ms)
+    - Validación para nacionalidad/asilo
+    - Auto-resize textarea con contador de caracteres
+    - Auto-save con indicadores visuales
+    - Touch targets ≥ 44px
+    - Navegación completa por teclado
+    - Soporte completo para screen readers
+  - **Pendiente**: 
+    - Copiar componentes al proyecto frontend
+    - Instalar dependencia `lucide-react`
+    - Integrar en OpportunityDetail
+    - Configurar endpoints de API
+    - Escribir tests unitarios e integration
+
+### ✅ Solicitud de Código de Contratación para Agentes (Enero 2025)
+- [x] Documentación completa del sistema de solicitud de código de contratación ✅
+  - [x] Resumen ejecutivo con endpoint API y estructura del formulario ✅
+  - [x] Guía técnica detallada con tipos TypeScript y validaciones ✅
+  - [x] Guía de integración paso a paso ✅
+  - [x] Guía de testing (unit, integration, E2E, accessibility) ✅
+  - [x] Quick start guide para implementación rápida ✅
+  - **Estado**: ✅ DOCUMENTACIÓN COMPLETA - Frontend Pendiente de Implementación
+  - **Características**: 
+    - Formulario completo con validaciones en tiempo real
+    - Pre-llenado inteligente desde oportunidad/contacto
+    - Selección de servicio (catálogo o texto libre)
+    - Selección de precio (monto fijo o por grado)
+    - Soporte para pago único y suscripción
+    - Modal de éxito con código destacado y copia al portapapeles
+    - Mobile-first responsive
+    - Accesibilidad completa (WCAG AA)
+  - **Documentación creada**:
+    - [x] `docs/FRONTEND_AGENT_HIRING_CODE_REQUEST_SUMMARY.md` - Resumen ejecutivo ✅
+    - [x] `docs/FRONTEND_AGENT_HIRING_CODE_REQUEST_TECHNICAL.md` - Guía técnica ✅
+    - [x] `docs/FRONTEND_AGENT_HIRING_CODE_REQUEST_INTEGRATION.md` - Guía de integración ✅
+    - [x] `docs/FRONTEND_AGENT_HIRING_CODE_REQUEST_TESTING.md` - Guía de testing ✅
+    - [x] `docs/FRONTEND_AGENT_HIRING_CODE_REQUEST_QUICK_START.md` - Quick start ✅
+  - **Pendiente**: 
+    - Implementar componente RequestHiringCodeForm
+    - Implementar modal/drawer para mobile
+    - Implementar modal de éxito con código
+    - Integrar en OpportunityDetail con condiciones de visibilidad
+    - Crear servicio API y hook personalizado
+    - Escribir tests unitarios e integration
+    - Validar accesibilidad y mobile responsiveness
+
+### ✅ Frontend: Aprobación de Hiring Code con Token Hash (Enero 2025)
+- [x] **Ruta pública de aprobación**: `/admin/approve-hiring-code?token={token_hash}` ✅
+  - [x] Componente `ApproveHiringCode.tsx` implementado ✅
+  - [x] Métodos agregados a `pipelineApi.ts` (validate, approve) ✅
+  - [x] Ruta pública configurada en `App.tsx` (no requiere autenticación) ✅
+  - [x] Título de página agregado en `pageTitles.ts` ✅
+  - [x] Endpoint configurado como público en `api.ts` ✅
+  - [x] Estados implementados: loading, error, review, success ✅
+  - [x] Diseño mobile-first responsive ✅
+  - [x] Redirección automática después de aprobar ✅
+  - [x] Manejo de errores (token inválido, expirado, usado) ✅
+  - [x] Documentación completa en `docs/FRONTEND_APROBACION_HIRING_CODE_TOKEN.md` ✅
+  - **Estado**: ✅ COMPLETADO - Frontend implementado y funcional
+  - **Características**:
+    - Validación de token al cargar
+    - Visualización de información de solicitud
+    - Aprobación con confirmación
+    - Código de contratación destacado
+    - Redirección a `/admin/opportunities` después de 5 segundos
 
 ## 📋 Tareas Pendientes (Anteriores)
 

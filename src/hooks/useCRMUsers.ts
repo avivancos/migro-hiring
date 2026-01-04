@@ -19,13 +19,24 @@ export function useCRMUsers(filters?: { role?: string; isActive?: boolean; onlyR
       setLoading(true);
       setError(null);
       
-      // Si se solicita solo responsables, usar el endpoint optimizado
-      if (filters?.onlyResponsibles || (filters?.role && (filters.role === 'lawyer' || filters.role === 'agent'))) {
-        const responsibleUsers = await crmService.getResponsibleUsers(filters?.isActive ?? true, true);
+      // Si se solicita solo responsables, incluir lawyers, agents y admins
+      if (filters?.onlyResponsibles || (filters?.role && (filters.role === 'lawyer' || filters.role === 'agent' || filters.role === 'admin'))) {
+        // Cargar todos los usuarios activos y filtrar por roles responsables
+        const allUsers = await crmService.getUsers(filters?.isActive ?? true, true);
+        
+        // Filtrar solo usuarios que pueden ser responsables: lawyers, agents y admins
+        const responsibleUsers = allUsers.filter((u) => 
+          u.role_name === 'lawyer' || 
+          u.role_name === 'agent' || 
+          u.role_name === 'admin' ||
+          u.role === 'lawyer' ||
+          u.role === 'agent' ||
+          u.role === 'admin'
+        );
         
         // Si se especifica un rol específico además, filtrar por ese rol
-        const filtered = filters?.role && (filters.role === 'lawyer' || filters.role === 'agent')
-          ? responsibleUsers.filter((u) => u.role_name === filters.role)
+        const filtered = filters?.role && (filters.role === 'lawyer' || filters.role === 'agent' || filters.role === 'admin')
+          ? responsibleUsers.filter((u) => u.role_name === filters.role || u.role === filters.role)
           : responsibleUsers;
         
         setUsers(filtered);
@@ -35,7 +46,7 @@ export function useCRMUsers(filters?: { role?: string; isActive?: boolean; onlyR
         
         // Filtrar por rol si se especifica
         const filtered = filters?.role
-          ? allUsers.filter((u) => u.role_name === filters.role)
+          ? allUsers.filter((u) => u.role_name === filters.role || u.role === filters.role)
           : allUsers;
         
         setUsers(filtered);

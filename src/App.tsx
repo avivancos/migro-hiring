@@ -16,6 +16,7 @@ import { PrivacyPolicy } from '@/pages/PrivacyPolicy';
 import { BorradorPDF } from '@/pages/BorradorPDF';
 import { Colaboradores } from '@/pages/Colaboradores';
 import { Closer } from '@/pages/Closer';
+import { ColaboradoresAgentes } from '@/pages/ColaboradoresAgentes';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LazyLoadWrapper } from '@/components/common/LazyLoadWrapper';
 import { PerformanceMonitor } from '@/components/common/PerformanceMonitor';
@@ -63,6 +64,7 @@ const AdminCallTypes = lazy(() => import('@/pages/admin/AdminCallTypes').then(m 
 const AdminTracingDashboard = lazy(() => import('@/pages/admin/AdminTracingDashboard').then(m => ({ default: m.AdminTracingDashboard })));
 const AdminRoutePermissions = lazy(() => import('@/pages/admin/AdminRoutePermissions').then(m => ({ default: m.AdminRoutePermissions })));
 const AdminOpportunities = lazy(() => import('@/pages/admin/AdminOpportunities').then(m => ({ default: m.AdminOpportunities })));
+const ApproveHiringCode = lazy(() => import('@/pages/admin/ApproveHiringCode').then(m => ({ default: m.ApproveHiringCode })));
 
 function AppContent() {
   // Activar refresh automático de tokens
@@ -83,6 +85,7 @@ function AppContent() {
           <Route path="/privacy" element={<PrivacyPolicy />} /> {/* Alias en inglés */}
           <Route path="/borrador" element={<BorradorPDF />} />
           <Route path="/colaboradores" element={<Colaboradores />} />
+          <Route path="/colaboradores-agentes" element={<ColaboradoresAgentes />} />
           <Route path="/closer" element={<Closer />} />
           <Route path="/pili" element={<AdminPili />} />
           
@@ -96,6 +99,12 @@ function AppContent() {
           
           {/* Servicio de contratación y firma - Dashboard */}
           <Route path="/contrato/dashboard" element={<AdminDashboard />} />
+          
+          {/* Ruta pública de aprobación de hiring code (no requiere autenticación) */}
+          <Route 
+            path="/admin/approve-hiring-code" 
+            element={<LazyLoadWrapper fallback="spinner"><ApproveHiringCode /></LazyLoadWrapper>} 
+          />
           
           {/* Admin Module - Panel de administración */}
           <Route

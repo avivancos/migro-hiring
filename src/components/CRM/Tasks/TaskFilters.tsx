@@ -14,7 +14,8 @@ interface TaskFiltersProps {
 
 export default function TaskFilters({ filters, onFiltersChange }: TaskFiltersProps) {
   const { user } = useAuth();
-  const { users, loading: usersLoading } = useCRMUsers({ isActive: true });
+  // Usar onlyResponsibles para cargar responsables: lawyers, agents y admins
+  const { users, loading: usersLoading } = useCRMUsers({ isActive: true, onlyResponsibles: true });
   
   const isAdmin = user?.role === 'admin' || user?.is_superuser;
 

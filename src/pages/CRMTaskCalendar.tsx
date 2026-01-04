@@ -79,15 +79,24 @@ export function CRMTaskCalendar() {
 
   const loadUsers = async () => {
     try {
-      const usersData = await crmService.getResponsibleUsers(true);
-      setUsers(usersData);
-      console.log('👥 [CRMTaskCalendar] Usuarios responsables cargados:', usersData.length);
-      if (usersData.length > 0) {
-        console.log('👥 [CRMTaskCalendar] Ejemplo de usuarios:', usersData.slice(0, 5).map(u => ({
+      // Cargar todos los usuarios activos y filtrar por roles responsables (lawyers, agents y admins)
+      const allUsers = await crmService.getUsers(true);
+      const responsibleUsers = allUsers.filter((u) => 
+        u.role_name === 'lawyer' || 
+        u.role_name === 'agent' || 
+        u.role_name === 'admin' ||
+        u.role === 'lawyer' ||
+        u.role === 'agent' ||
+        u.role === 'admin'
+      );
+      setUsers(responsibleUsers);
+      console.log('👥 [CRMTaskCalendar] Usuarios responsables cargados:', responsibleUsers.length);
+      if (responsibleUsers.length > 0) {
+        console.log('👥 [CRMTaskCalendar] Ejemplo de usuarios:', responsibleUsers.slice(0, 5).map(u => ({
           id: u.id,
           name: u.name,
           email: u.email,
-          role_name: u.role_name,
+          role_name: u.role_name || u.role,
         })));
       }
     } catch (err) {
