@@ -84,10 +84,7 @@ export function CRMTaskCalendar() {
       const responsibleUsers = allUsers.filter((u) => 
         u.role_name === 'lawyer' || 
         u.role_name === 'agent' || 
-        u.role_name === 'admin' ||
-        u.role === 'lawyer' ||
-        u.role === 'agent' ||
-        u.role === 'admin'
+        u.role_name === 'admin'
       );
       setUsers(responsibleUsers);
       console.log('👥 [CRMTaskCalendar] Usuarios responsables cargados:', responsibleUsers.length);
@@ -96,7 +93,7 @@ export function CRMTaskCalendar() {
           id: u.id,
           name: u.name,
           email: u.email,
-          role_name: u.role_name || u.role,
+          role_name: u.role_name,
         })));
       }
     } catch (err) {

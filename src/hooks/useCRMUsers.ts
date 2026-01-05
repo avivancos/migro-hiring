@@ -28,15 +28,12 @@ export function useCRMUsers(filters?: { role?: string; isActive?: boolean; onlyR
         const responsibleUsers = allUsers.filter((u) => 
           u.role_name === 'lawyer' || 
           u.role_name === 'agent' || 
-          u.role_name === 'admin' ||
-          u.role === 'lawyer' ||
-          u.role === 'agent' ||
-          u.role === 'admin'
+          u.role_name === 'admin'
         );
         
         // Si se especifica un rol específico además, filtrar por ese rol
         const filtered = filters?.role && (filters.role === 'lawyer' || filters.role === 'agent' || filters.role === 'admin')
-          ? responsibleUsers.filter((u) => u.role_name === filters.role || u.role === filters.role)
+          ? responsibleUsers.filter((u) => u.role_name === filters.role)
           : responsibleUsers;
         
         setUsers(filtered);
@@ -46,7 +43,7 @@ export function useCRMUsers(filters?: { role?: string; isActive?: boolean; onlyR
         
         // Filtrar por rol si se especifica
         const filtered = filters?.role
-          ? allUsers.filter((u) => u.role_name === filters.role || u.role === filters.role)
+          ? allUsers.filter((u) => u.role_name === filters.role)
           : allUsers;
         
         setUsers(filtered);
