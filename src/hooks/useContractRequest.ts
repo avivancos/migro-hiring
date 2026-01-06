@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useHiringData } from './useHiringData';
 import { pipelineApi } from '@/services/pipelineApi';
-import { contractsService } from '@/services/contractsService';
 import type { PipelineStageRead } from '@/types/pipeline';
 import type { EntityType } from '@/types/pipeline';
 
@@ -49,7 +48,7 @@ export function useContractRequest(
         setError(null);
 
         // Intentar obtener el stage completo que puede incluir el hiring code
-        const stage = await pipelineApi.getStage(entityType, entityId);
+        // const stage = await pipelineApi.getStage(entityType, entityId);
         
         // Si el stage tiene hiring_code_id, necesitamos obtener el hiring code
         // Por ahora, asumimos que el backend puede devolver el hiring code en alguna respuesta

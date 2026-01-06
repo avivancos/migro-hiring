@@ -1,6 +1,6 @@
 // CRMTaskCalendar - Vista de calendario para tareas y llamadas (mensual/semanal/diaria)
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,8 @@ export function CRMTaskCalendar() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [users, setUsers] = useState<CRMUser[]>([]);
   const [entityNames, setEntityNames] = useState<Record<string, string>>({});
+  const isInitialMount = useRef(true);
+  const lastLoadParams = useRef<{ dateStr: string; view: string } | null>(null);
 
   // Leer parámetros de URL
   const view = useMemo(() => {
@@ -32,50 +34,64 @@ export function CRMTaskCalendar() {
     return 'month';
   }, [searchParams]);
 
-  const currentDate = useMemo(() => {
+  // Memoizar la fecha como string para evitar recreaciones innecesarias
+  const currentDateStr = useMemo(() => {
     const dateParam = searchParams.get('date');
     if (dateParam) {
-      try {
-        // Parsear fecha en formato YYYY-MM-DD como fecha local (no UTC)
-        // Esto evita problemas de zona horaria
-        const [year, month, day] = dateParam.split('-').map(Number);
-        if (year && month && day) {
-          const parsedDate = new Date(year, month - 1, day);
-          if (!isNaN(parsedDate.getTime())) {
-            return parsedDate;
-          }
-        }
-      } catch (e) {
-        console.warn('⚠️ [CRMTaskCalendar] Error parseando fecha de URL:', dateParam, e);
+      // Validar formato YYYY-MM-DD
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
+        return dateParam;
       }
     }
-    return new Date();
+    return new Date().toISOString().split('T')[0];
   }, [searchParams]);
 
-  // Actualizar URL cuando cambien view o currentDate
-  // Solo actualizar si los parámetros actuales son diferentes
-  useEffect(() => {
-    const currentView = searchParams.get('view') || 'month';
-    const currentDateParam = searchParams.get('date');
-    const currentDateStr = currentDate.toISOString().split('T')[0];
-    
-    // Solo actualizar si hay diferencia
-    if (currentView !== view || currentDateParam !== currentDateStr) {
-      const params = new URLSearchParams();
-      params.set('view', view);
-      params.set('date', currentDateStr);
-      setSearchParams(params, { replace: true });
+  const currentDate = useMemo(() => {
+    try {
+      const [year, month, day] = currentDateStr.split('-').map(Number);
+      const parsedDate = new Date(year, month - 1, day);
+      if (!isNaN(parsedDate.getTime())) {
+        return parsedDate;
+      }
+    } catch (e) {
+      console.warn('⚠️ [CRMTaskCalendar] Error parseando fecha:', currentDateStr, e);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, currentDate]);
+    return new Date();
+  }, [currentDateStr]);
+
+  // Actualizar URL solo en el montaje inicial si no hay parámetros
+  useEffect(() => {
+    if (isInitialMount.current) {
+      const currentView = searchParams.get('view');
+      const currentDateParam = searchParams.get('date');
+      
+      if (!currentView || !currentDateParam) {
+        const params = new URLSearchParams();
+        params.set('view', view);
+        params.set('date', currentDateStr);
+        setSearchParams(params, { replace: true });
+      }
+      isInitialMount.current = false;
+    }
+  }, [view, currentDateStr, searchParams, setSearchParams]);
 
   useEffect(() => {
     loadUsers();
   }, []);
 
+  // Cargar datos solo cuando cambien realmente los parámetros
   useEffect(() => {
-    loadData();
-  }, [currentDate, view]);
+    const loadKey = `${currentDateStr}-${view}`;
+    const lastKey = lastLoadParams.current 
+      ? `${lastLoadParams.current.dateStr}-${lastLoadParams.current.view}` 
+      : null;
+    
+    // Solo cargar si los parámetros realmente cambiaron
+    if (loadKey !== lastKey) {
+      lastLoadParams.current = { dateStr: currentDateStr, view };
+      loadData();
+    }
+  }, [currentDateStr, view]);
 
   const loadUsers = async () => {
     try {
@@ -240,7 +256,15 @@ export function CRMTaskCalendar() {
 
     if (entityIdsToLoad.size === 0) {
       console.log('📞 [CRMTaskCalendar] Todos los nombres ya están disponibles (contact_name)');
-      setEntityNames(prev => ({ ...prev, ...names }));
+      // Solo actualizar si hay nombres nuevos
+      if (Object.keys(names).length > 0) {
+        setEntityNames(prev => {
+          const updated = { ...prev, ...names };
+          // Solo actualizar si realmente hay cambios
+          const hasChanges = Object.keys(names).some(key => prev[key] !== names[key]);
+          return hasChanges ? updated : prev;
+        });
+      }
       return;
     }
 
@@ -283,6 +307,12 @@ export function CRMTaskCalendar() {
     console.log(`📞 [CRMTaskCalendar] Nombres cargados (${Object.keys(names).length} entidades):`, names);
     setEntityNames(prev => {
       const updated = { ...prev, ...names };
+      // Solo actualizar si realmente hay cambios
+      const hasChanges = Object.keys(names).some(key => prev[key] !== names[key]);
+      if (!hasChanges) {
+        console.log('📞 [CRMTaskCalendar] No hay cambios en entityNames, evitando actualización');
+        return prev;
+      }
       console.log(`📞 [CRMTaskCalendar] Estado entityNames actualizado. Total: ${Object.keys(updated).length} entidades`);
       return updated;
     });

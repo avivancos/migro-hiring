@@ -609,6 +609,7 @@ export function CRMOpportunityDetail() {
         contact={contact}
         onSuccess={(hiringCode) => {
           // Recargar datos de la oportunidad
+          // hiringCode está disponible pero no se usa en este callback
           queryClient.invalidateQueries({ queryKey: ['opportunity', id] });
           queryClient.invalidateQueries({ queryKey: ['pipelines'] });
           setShowRequestContractModal(false);

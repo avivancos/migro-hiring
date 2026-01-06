@@ -55,17 +55,17 @@ export function RequestContractModal({
   const [formData, setFormData] = useState<RequestContractForm>({
     agent_signature: '',
     contract_template: 'standard',
-    service_name: opportunity?.tipo_servicio || '',
+    service_name: opportunity?.pipeline_stage?.name || '',
     grade: 'B',
     payment_type: 'two_payments',
     expires_in_days: 30,
     currency: 'EUR',
     // Pre-llenar datos del cliente desde el contacto si están disponibles
-    client_name: contact?.name || contact?.full_name || '',
+    client_name: contact?.name || '',
     client_passport: '',
     client_nie: '',
     client_address: contact?.address || '',
-    client_province: contact?.province || '',
+    client_province: contact?.state || '',
     client_postal_code: contact?.postal_code || '',
   });
 
@@ -169,16 +169,16 @@ export function RequestContractModal({
       setFormData({
         agent_signature: '',
         contract_template: 'standard',
-        service_name: opportunity?.tipo_servicio || '',
+        service_name: opportunity?.pipeline_stage?.name || '',
         grade: 'B',
         payment_type: 'two_payments',
         expires_in_days: 30,
         currency: 'EUR',
-        client_name: contact?.name || contact?.full_name || '',
+        client_name: contact?.name || '',
         client_passport: '',
         client_nie: '',
         client_address: contact?.address || '',
-        client_province: contact?.province || '',
+        client_province: contact?.state || '',
         client_postal_code: contact?.postal_code || '',
       });
       onClose();

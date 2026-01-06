@@ -158,14 +158,15 @@ export function ContractDataRequestModal({
     }
   };
 
-  const hasMissingData = () => {
-    if (!hiringDetails) return false;
-    return (
-      !hiringDetails.client_name ||
-      (!hiringDetails.client_passport && !hiringDetails.client_nie) ||
-      !hiringDetails.client_address
-    );
-  };
+  // Función para verificar datos faltantes (no se usa actualmente, pero se mantiene para referencia futura)
+  // const hasMissingData = () => {
+  //   if (!hiringDetails) return false;
+  //   return (
+  //     !hiringDetails.client_name ||
+  //     (!hiringDetails.client_passport && !hiringDetails.client_nie) ||
+  //     !hiringDetails.client_address
+  //   );
+  // };
 
   if (success) {
     return (
