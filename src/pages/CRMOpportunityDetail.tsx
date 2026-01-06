@@ -18,13 +18,16 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { FirstCallAttemptRequest } from '@/types/opportunity';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { PipelineWizardModal } from '@/components/pipelines/Wizards/PipelineWizardModal';
-import { PipelineActionsList } from '@/components/pipelines/PipelineActionsList';
 import { SuggestedNextAction } from '@/components/opportunities/SuggestedNextAction';
 import { usePipelineActions } from '@/hooks/usePipelineActions';
 import { useAuth } from '@/providers/AuthProvider';
 import { Modal } from '@/components/common/Modal';
 import { Label } from '@/components/ui/label';
 import { useCRMUsers } from '@/hooks/useCRMUsers';
+import { ContractDataRequestModal } from '@/components/opportunities/ContractDataRequestModal';
+import { RequestContractModal } from '@/components/opportunities/RequestContractModal';
+import { useContractRequest } from '@/hooks/useContractRequest';
+import { FileText, AlertCircle } from 'lucide-react';
 
 export function CRMOpportunityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +39,7 @@ export function CRMOpportunityDetail() {
   const [showPipelineWizard, setShowPipelineWizard] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
+  const [showRequestContractModal, setShowRequestContractModal] = useState(false);
   
   // Cargar usuarios responsables usando el hook optimizado
   const { users: filteredUsers, loading: loadingUsers } = useCRMUsers({ isActive: true, onlyResponsibles: true });
@@ -51,6 +55,41 @@ export function CRMOpportunityDetail() {
     update,
     isAssigning,
   } = useOpportunityDetail(id);
+
+  // Detectar solicitud de contrato pendiente (debe estar después de la definición de opportunity)
+  const contractRequest = useContractRequest(
+    opportunity?.pipeline_stage,
+    opportunity ? 'leads' : null,
+    opportunity?.id || null
+  );
+
+  // Verificar si se puede solicitar un contrato
+  const canRequestContract = () => {
+    if (!opportunity) return false;
+    
+    // Requisito principal: debe haber completado la primera llamada
+    const hasFirstCallCompleted = opportunity.first_call_completed === true;
+    
+    if (!hasFirstCallCompleted) return false;
+    
+    // Si hay pipeline stage, verificar que no tenga hiring code aún
+    if (opportunity.pipeline_stage) {
+      const hasHiringCode = opportunity.pipeline_stage.hiring_code_id;
+      if (hasHiringCode) return false; // Ya tiene un contrato solicitado
+      
+      // Si está en un stage avanzado (más allá de admin_contract), no mostrar
+      const stage = opportunity.pipeline_stage.current_stage;
+      if (stage === 'client_signature' || stage === 'expediente_created') {
+        return false;
+      }
+    }
+    
+    // Si llegamos aquí, mostrar el botón:
+    // - Primera llamada completada ✓
+    // - No tiene hiring code aún ✓
+    // - No está en un stage final ✓
+    return true;
+  };
 
   // IMPORTANTE: usePageTitle debe llamarse ANTES de los early returns
   // para cumplir con las reglas de los hooks de React
@@ -335,18 +374,69 @@ export function CRMOpportunityDetail() {
           {/* Si existe pipeline, mostrar acciones del pipeline */}
           {opportunity.pipeline_stage_id || opportunity.pipeline_stage ? (
             <>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Acciones del Pipeline</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <PipelineActionsList
-                    entityType="leads"
-                    entityId={opportunity.id}
-                    showCreateButton={true}
-                  />
-                </CardContent>
-              </Card>
+              {/* Botón para solicitar contrato */}
+              {canRequestContract() && (
+                <Card className="border-l-4 border-l-green-500">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-green-600" />
+                      <CardTitle className="text-green-900">Solicitar Contrato</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <p className="text-sm text-gray-700">
+                        La primera llamada ha sido completada. Puedes solicitar un código de contratación para avanzar con la venta.
+                      </p>
+                      <Button
+                        onClick={() => setShowRequestContractModal(true)}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Solicitar Código de Contratación
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Alerta de solicitud de contrato pendiente */}
+              {contractRequest.hiringCode && contractRequest.hasMissingData && (
+                <Card className="border-l-4 border-l-yellow-500">
+                  <CardHeader>
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="h-5 w-5 text-yellow-600" />
+                      <CardTitle className="text-yellow-900">Solicitud de Contrato Pendiente</CardTitle>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <p className="text-sm text-gray-700">
+                        Hay una solicitud de contrato pendiente que requiere completar los datos faltantes.
+                      </p>
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p className="text-sm font-medium text-yellow-900 mb-2">
+                          Datos faltantes:
+                        </p>
+                        <ul className="text-sm text-yellow-800 list-disc list-inside space-y-1">
+                          {!contractRequest.hiringCode && (
+                            <li>Nombre completo del cliente</li>
+                          )}
+                          <li>Número de pasaporte o NIE</li>
+                          <li>Dirección completa</li>
+                        </ul>
+                      </div>
+                      <Button
+                        onClick={contractRequest.openModal}
+                        className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        Completar Datos del Contrato
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
               <Card>
                 <CardHeader>
                   <CardTitle>Otras Acciones</CardTitle>
@@ -505,6 +595,38 @@ export function CRMOpportunityDetail() {
             console.log('Pipeline modificado:', changes);
             // Recargar datos de la oportunidad
             queryClient.invalidateQueries({ queryKey: ['opportunity', id] });
+          }}
+        />
+      )}
+
+      {/* Modal para solicitar contrato */}
+      <RequestContractModal
+        isOpen={showRequestContractModal}
+        onClose={() => setShowRequestContractModal(false)}
+        entityType="leads"
+        entityId={opportunity.id}
+        opportunity={opportunity}
+        contact={contact}
+        onSuccess={(hiringCode) => {
+          // Recargar datos de la oportunidad
+          queryClient.invalidateQueries({ queryKey: ['opportunity', id] });
+          queryClient.invalidateQueries({ queryKey: ['pipelines'] });
+          setShowRequestContractModal(false);
+        }}
+      />
+
+      {/* Modal para completar datos del contrato */}
+      {contractRequest.hiringCode && (
+        <ContractDataRequestModal
+          isOpen={contractRequest.isModalOpen}
+          onClose={contractRequest.closeModal}
+          hiringCode={contractRequest.hiringCode}
+          contactName={contact?.name}
+          contactEmail={contact?.email}
+          onSuccess={() => {
+            // Recargar datos de la oportunidad
+            queryClient.invalidateQueries({ queryKey: ['opportunity', id] });
+            contractRequest.closeModal();
           }}
         />
       )}

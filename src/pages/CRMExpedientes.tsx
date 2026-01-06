@@ -5,15 +5,15 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import type { KommoLead, KommoContact, Task, Call, Note } from '@/types/crm';
+import type { Lead, Contact, Task, Call, Note } from '@/types/crm';
 // Importar iconos de lucide-react (se usan en JSX pero TypeScript no los detecta)
 import * as LucideIcons from 'lucide-react';
 const { FileText, Search, Calendar, User, DollarSign, Clock } = LucideIcons;
 import { crmService } from '@/services/crmService';
 
 interface ExpedienteData {
-  lead: KommoLead;
-  contact?: KommoContact;
+  lead: Lead;
+  contact?: Contact;
   tasks: Task[];
   calls: Call[];
   notes: Note[];

@@ -5,14 +5,14 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import type { KommoLead, LeadCreateRequest, CRMUser, KommoContact } from '@/types/crm';
+import type { Lead, LeadCreateRequest, CRMUser, Contact } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { adminService } from '@/services/adminService';
 import { Save, X } from 'lucide-react';
 
 interface LeadFormProps {
-  lead?: KommoLead;
-  onSave: (lead: KommoLead) => void;
+  lead?: Lead;
+  onSave: (lead: Lead) => void;
   onCancel: () => void;
 }
 
@@ -47,7 +47,7 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingContacts, setLoadingContacts] = useState(false);
   const [users, setUsers] = useState<CRMUser[]>([]);
-  const [contacts, setContacts] = useState<KommoContact[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [price, setPrice] = useState<number | null>(lead?.price ?? null);
   const [formData, setFormData] = useState<any>({
     name: lead?.name || '',
@@ -200,7 +200,7 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
       });
 
       // Construir lead completo para pasar a onSave
-      const savedLead: KommoLead = {
+      const savedLead: Lead = {
         ...lead!,
         ...payload,
         price: payload.price ?? 0,

@@ -40,6 +40,7 @@ import {
 } from '@/types/contracts';
 import { formatDate, formatCurrency } from '@/utils/formatters';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { EditContractModal } from '@/components/contracts/EditContractModal';
 
 export function AdminContractDetail() {
   const navigate = useNavigate();
@@ -49,6 +50,7 @@ export function AdminContractDetail() {
   const [downloading, setDownloading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showUpdateStatusModal, setShowUpdateStatusModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [updateForm, setUpdateForm] = useState({
     status: 'pending' as ContractStatus,
@@ -410,6 +412,18 @@ export function AdminContractDetail() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Button
+            onClick={() => {
+              console.log('🖊️ Abriendo modal de edición desde header');
+              setShowEditModal(true);
+            }}
+            variant="default"
+            size="sm"
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white border-2 border-green-700"
+          >
+            <Pencil size={16} />
+            Editar Contrato
+          </Button>
           <Button
             onClick={handleCopyLink}
             variant="outline"
@@ -895,9 +909,21 @@ export function AdminContractDetail() {
             </CardHeader>
             <CardContent className="space-y-2">
               <Button
+                onClick={() => {
+                  console.log('🖊️ Abriendo modal de edición completa');
+                  setShowEditModal(true);
+                }}
+                variant="default"
+                className="w-full justify-start bg-green-600 hover:bg-green-700 text-white border-2 border-green-700"
+                size="sm"
+              >
+                <Pencil size={16} className="mr-2" />
+                Editar Contrato Completo
+              </Button>
+              <Button
                 onClick={handleOpenUpdateStatusModal}
                 variant="default"
-                className="w-full justify-start bg-green-600 hover:bg-green-700 text-white"
+                className="w-full justify-start bg-blue-600 hover:bg-blue-700 text-white"
                 size="sm"
               >
                 <DollarSign size={16} className="mr-2" />
@@ -1158,6 +1184,21 @@ export function AdminContractDetail() {
               )}
         </div>
       </Modal>
+
+      {/* Modal de Edición Completa */}
+      {contract && (
+        <EditContractModal
+          contract={contract}
+          visible={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={(updatedContract) => {
+            setContract(updatedContract);
+            setShowEditModal(false);
+            // Recargar para asegurar datos actualizados
+            loadContract();
+          }}
+        />
+      )}
     </div>
   );
 }

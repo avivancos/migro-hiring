@@ -3,21 +3,21 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import type { KommoLead, Pipeline, PipelineStatus } from '@/types/crm';
+import type { Lead, Pipeline, PipelineStatus } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { DollarSign, User, Calendar, Phone } from 'lucide-react';
 
 interface PipelineKanbanProps {
   pipelineId?: string;
-  onLeadClick?: (lead: KommoLead) => void;
+  onLeadClick?: (lead: Lead) => void;
 }
 
 export function PipelineKanban({ pipelineId, onLeadClick }: PipelineKanbanProps) {
   const [loading, setLoading] = useState(true);
   const [pipeline, setPipeline] = useState<Pipeline | null>(null);
   const [stages, setStages] = useState<PipelineStatus[]>([]);
-  const [leadsByStage, setLeadsByStage] = useState<Record<string, KommoLead[]>>({});
-  const [draggedLead, setDraggedLead] = useState<KommoLead | null>(null);
+  const [leadsByStage, setLeadsByStage] = useState<Record<string, Lead[]>>({});
+  const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
 
   useEffect(() => {
     loadPipeline();
@@ -51,7 +51,7 @@ export function PipelineKanban({ pipelineId, onLeadClick }: PipelineKanbanProps)
       });
 
       // Agrupar leads por stage
-      const grouped: Record<string, KommoLead[]> = {};
+      const grouped: Record<string, Lead[]> = {};
       stagesData.forEach(stage => {
         grouped[stage.id] = (leadsResponse.items || []).filter(
           lead => lead.status === stage.name?.toLowerCase() || 
@@ -67,7 +67,7 @@ export function PipelineKanban({ pipelineId, onLeadClick }: PipelineKanbanProps)
     }
   };
 
-  const handleDragStart = (lead: KommoLead) => {
+  const handleDragStart = (lead: Lead) => {
     setDraggedLead(lead);
   };
 

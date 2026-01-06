@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/providers/AuthProvider';
 import { crmService } from '@/services/crmService';
-import type { KommoContact } from '@/types/crm';
+import type { Contact } from '@/types/crm';
 import {
   LayoutDashboard,
   Users,
@@ -39,7 +39,7 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<KommoContact[]>([]);
+  const [searchResults, setSearchResults] = useState<Contact[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);

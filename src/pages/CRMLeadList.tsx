@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search, List, LayoutGrid } from 'lucide-react';
-import type { KommoLead, Pipeline } from '@/types/crm';
+import type { Lead, Pipeline } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { DollarSign, User, Calendar } from 'lucide-react';
 import { formatLeadStatus } from '@/utils/statusTranslations';
@@ -23,12 +23,12 @@ export function CRMLeadList() {
   const navigate = useNavigate();
   const [view, setView] = useState<'kanban' | 'list'>('kanban');
   const [loading, setLoading] = useState(true);
-  const [leads, setLeads] = useState<KommoLead[]>([]);
-  const [filteredLeads, setFilteredLeads] = useState<KommoLead[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPipeline, setSelectedPipeline] = useState<string>('');
   const [pipelines, setPipelines] = useState<Pipeline[]>([]);
-  const [draggedLead, setDraggedLead] = useState<KommoLead | null>(null);
+  const [draggedLead, setDraggedLead] = useState<Lead | null>(null);
 
   useEffect(() => {
     loadData();
@@ -86,7 +86,7 @@ export function CRMLeadList() {
     setFilteredLeads(filtered);
   };
 
-  const handleDragStart = (lead: KommoLead) => {
+  const handleDragStart = (lead: Lead) => {
     setDraggedLead(lead);
   };
 

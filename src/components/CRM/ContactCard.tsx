@@ -6,11 +6,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Phone, Flag, Calendar, ChevronRight } from 'lucide-react';
-import type { KommoContact } from '@/types/crm';
+import type { Contact } from '@/types/crm';
 import { useNavigate } from 'react-router-dom';
 
 interface ContactCardProps {
-  contact: KommoContact;
+  contact: Contact;
   onNavigate?: (id: string) => void;
 }
 

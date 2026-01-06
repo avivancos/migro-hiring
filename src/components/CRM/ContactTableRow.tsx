@@ -3,12 +3,12 @@
 
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { KommoContact } from '@/types/crm';
+import type { Contact } from '@/types/crm';
 import { Badge } from '@/components/ui/badge';
 import { Mail, Phone, Flag, Calendar, Star } from 'lucide-react';
 
 interface ContactTableRowProps {
-  contact: KommoContact;
+  contact: Contact;
   visibleColumns: string[];
   onNavigate?: (id: string) => void;
 }
@@ -44,7 +44,7 @@ const formatDate = (dateString?: string): string => {
 };
 
 // Función helper para renderizar celda
-const renderCell = (contact: KommoContact, columnKey: string) => {
+const renderCell = (contact: Contact, columnKey: string) => {
   switch (columnKey) {
     case 'name':
       return (

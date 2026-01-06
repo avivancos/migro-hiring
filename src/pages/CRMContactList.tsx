@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { crmService } from '@/services/crmService';
 import { opportunityApi } from '@/services/opportunityApi';
-import type { KommoContact, ContactFilters, CRMUser } from '@/types/crm';
+import type { Contact, ContactFilters, CRMUser } from '@/types/crm';
 import {
   Search,
   Plus,
@@ -72,7 +72,7 @@ export function CRMContactList() {
   const userIsAgent = user ? isAgent(user.role) : false;
   const userIsAdmin = user ? isAdminOrSuperuser(user.role, user.is_superuser) : false;
   const [loading, setLoading] = useState(true);
-  const [contacts, setContacts] = useState<KommoContact[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [users, setUsers] = useState<CRMUser[]>([]);
   const [totalContacts, setTotalContacts] = useState(0);
   
@@ -180,7 +180,7 @@ export function CRMContactList() {
   }, [searchParams]);
 
   // Función helper para enriquecer un contacto con información de llamadas
-  const enrichContactWithCallInfo = async (contact: KommoContact): Promise<KommoContact> => {
+  const enrichContactWithCallInfo = async (contact: Contact): Promise<Contact> => {
     try {
       // Obtener llamadas y tareas del contacto
       const [callsResponse, tasksResponse] = await Promise.all([
@@ -428,7 +428,7 @@ export function CRMContactList() {
         // Solo enriquecer si es necesario y hay contactos filtrados
         // Usar batches más pequeños para evitar sobrecarga
         const batchSize = 5; // Reducido de 10 a 5 para mejor rendimiento
-        const enrichedContacts: KommoContact[] = [];
+        const enrichedContacts: Contact[] = [];
         
         for (let i = 0; i < filteredContacts.length; i += batchSize) {
           const batch = filteredContacts.slice(i, i + batchSize);
@@ -793,7 +793,7 @@ export function CRMContactList() {
 
   // Helper para renderizar celda de columna (no usado actualmente - reservado para uso futuro)
   // @ts-expect-error - Función reservada para uso futuro
-  const renderColumnCell = (contact: KommoContact, columnKey: ColumnKey) => {
+  const renderColumnCell = (contact: Contact, columnKey: ColumnKey) => {
     const classNameMap: Record<ColumnKey, string> = {
       name: 'px-3 sm:px-6 py-4 overflow-hidden',
       email: 'px-3 sm:px-6 py-4 hidden lg:table-cell overflow-hidden',

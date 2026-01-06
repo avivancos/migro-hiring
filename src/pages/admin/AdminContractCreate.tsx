@@ -10,7 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { adminService } from '@/services/adminService';
 import { crmService } from '@/services/crmService';
 import { GRADE_PRICING, GRADE_PRICING_SUBSCRIPTION, GRADE_DESCRIPTIONS, type ClientGrade, type PaymentType } from '@/types/admin';
-import type { KommoContact } from '@/types/crm';
+import type { Contact } from '@/types/crm';
 import { UserPlus, CheckCircle, Copy, AlertCircle, ArrowLeft, Search, X, Users } from 'lucide-react';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
@@ -41,9 +41,9 @@ export function AdminContractCreate() {
 
   // Contact search
   const [contactSearch, setContactSearch] = useState('');
-  const [contactSearchResults, setContactSearchResults] = useState<KommoContact[]>([]);
+  const [contactSearchResults, setContactSearchResults] = useState<Contact[]>([]);
   const [contactSearchLoading, setContactSearchLoading] = useState(false);
-  const [selectedContact, setSelectedContact] = useState<KommoContact | null>(null);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [showContactDropdown, setShowContactDropdown] = useState(false);
   const contactSearchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const contactSearchRef = useRef<HTMLDivElement>(null);
@@ -106,7 +106,7 @@ export function AdminContractCreate() {
     };
   }, []);
 
-  const handleSelectContact = (contact: KommoContact) => {
+  const handleSelectContact = (contact: Contact) => {
     setSelectedContact(contact);
     setContactSearch(contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim());
     setShowContactDropdown(false);
@@ -133,7 +133,7 @@ export function AdminContractCreate() {
     if (contact.postal_code) {
       setUserPostalCode(contact.postal_code);
     }
-    // Nota: Pasaporte y NIE no están en KommoContact por defecto, pero si están en custom_fields, se pueden obtener
+    // Nota: Pasaporte y NIE no están en Contact por defecto, pero si están en custom_fields, se pueden obtener
     // Por ahora, dejamos esos campos vacíos ya que no son campos estándar del contacto
   };
 

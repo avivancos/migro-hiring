@@ -3,9 +3,9 @@
 import { api } from './api';
 import { apiCache, APICache } from './apiCache';
 import type {
-  KommoLead,
-  KommoContact,
-  KommoCompany,
+  Lead,
+  Contact,
+  Company,
   Pipeline,
   PipelineStatus,
   Task,
@@ -84,8 +84,8 @@ export const crmService = {
   /**
    * Obtener TODOS los leads mediante múltiples peticiones (paginación automática)
    */
-  async getAllLeads(filters?: Omit<LeadFilters, 'limit' | 'skip' | 'page'>): Promise<KommoLead[]> {
-    const allLeads: KommoLead[] = [];
+  async getAllLeads(filters?: Omit<LeadFilters, 'limit' | 'skip' | 'page'>): Promise<Lead[]> {
+    const allLeads: Lead[] = [];
     let page = 1;
     const limit = 100; // Máximo permitido
     let hasMore = true;
@@ -119,19 +119,19 @@ export const crmService = {
    * Obtener un lead por ID
    * Con caché para evitar llamadas duplicadas
    */
-  async getLead(id: string, useCache: boolean = true): Promise<KommoLead> {
+  async getLead(id: string, useCache: boolean = true): Promise<Lead> {
     const cacheKey = APICache.generateKey(`${CRM_BASE_PATH}/leads/${id}`);
     
     // Intentar obtener del caché primero
     if (useCache) {
-      const cached = apiCache.get<KommoLead>(cacheKey);
+      const cached = apiCache.get<Lead>(cacheKey);
       if (cached) {
         console.log(`💾 [crmService] Lead ${id} obtenido del caché`);
         return cached;
       }
     }
     
-    const { data } = await api.get<KommoLead>(`${CRM_BASE_PATH}/leads/${id}`);
+    const { data } = await api.get<Lead>(`${CRM_BASE_PATH}/leads/${id}`);
     
     // Guardar en caché (5 minutos TTL)
     if (useCache) {
@@ -144,9 +144,9 @@ export const crmService = {
   /**
    * Obtener defaults para un nuevo lead (prefilling)
    */
-  async getLeadDefaults(): Promise<Partial<KommoLead>> {
+  async getLeadDefaults(): Promise<Partial<Lead>> {
     try {
-      const { data } = await api.get<Partial<KommoLead>>(`${CRM_BASE_PATH}/leads/new`);
+      const { data } = await api.get<Partial<Lead>>(`${CRM_BASE_PATH}/leads/new`);
       return data;
     } catch (err) {
       console.error('Error loading lead defaults:', err);
@@ -157,11 +157,11 @@ export const crmService = {
   /**
    * Crear un nuevo lead
    */
-  async createLead(lead: LeadCreateRequest): Promise<KommoLead> {
+  async createLead(lead: LeadCreateRequest): Promise<Lead> {
     // Log del payload antes de enviarlo para diagnosticar errores 422
     console.log('POST /crm/leads - Payload:', JSON.stringify(lead, null, 2));
     try {
-    const { data } = await api.post<KommoLead>(`${CRM_BASE_PATH}/leads`, lead);
+    const { data } = await api.post<Lead>(`${CRM_BASE_PATH}/leads`, lead);
     return data;
     } catch (err: any) {
       // Log detallado del error 422
@@ -176,8 +176,8 @@ export const crmService = {
   /**
    * Actualizar un lead
    */
-  async updateLead(id: string, updates: LeadUpdateRequest): Promise<KommoLead> {
-    const { data } = await api.put<KommoLead>(`${CRM_BASE_PATH}/leads/${id}`, updates);
+  async updateLead(id: string, updates: LeadUpdateRequest): Promise<Lead> {
+    const { data } = await api.put<Lead>(`${CRM_BASE_PATH}/leads/${id}`, updates);
     return data;
   },
 
@@ -191,8 +191,8 @@ export const crmService = {
   /**
    * Convertir un lead a contacto
    */
-  async convertLeadToContact(leadId: string): Promise<KommoContact> {
-    const { data } = await api.post<KommoContact>(`${CRM_BASE_PATH}/leads/${leadId}/convert`);
+  async convertLeadToContact(leadId: string): Promise<Contact> {
+    const { data } = await api.post<Contact>(`${CRM_BASE_PATH}/leads/${leadId}/convert`);
     return data;
   },
 
@@ -280,8 +280,8 @@ export const crmService = {
   /**
    * Obtener TODOS los contactos mediante múltiples peticiones (paginación automática)
    */
-  async getAllContacts(filters?: Omit<ContactFilters, 'limit' | 'skip' | 'page'>): Promise<KommoContact[]> {
-    const allContacts: KommoContact[] = [];
+  async getAllContacts(filters?: Omit<ContactFilters, 'limit' | 'skip' | 'page'>): Promise<Contact[]> {
+    const allContacts: Contact[] = [];
     let page = 1;
     const limit = 100; // Máximo permitido
     let hasMore = true;
@@ -302,19 +302,19 @@ export const crmService = {
    * Obtener un contacto por ID
    * Con caché para evitar llamadas duplicadas
    */
-  async getContact(id: string, useCache: boolean = true): Promise<KommoContact> {
+  async getContact(id: string, useCache: boolean = true): Promise<Contact> {
     const cacheKey = APICache.generateKey(`${CRM_BASE_PATH}/contacts/${id}`);
     
     // Intentar obtener del caché primero
     if (useCache) {
-      const cached = apiCache.get<KommoContact>(cacheKey);
+      const cached = apiCache.get<Contact>(cacheKey);
       if (cached) {
         console.log(`💾 [crmService] Contacto ${id} obtenido del caché`);
         return cached;
       }
     }
     
-    const { data } = await api.get<KommoContact>(`${CRM_BASE_PATH}/contacts/${id}`);
+    const { data } = await api.get<Contact>(`${CRM_BASE_PATH}/contacts/${id}`);
     
     // Guardar en caché (5 minutos TTL)
     if (useCache) {
@@ -327,16 +327,16 @@ export const crmService = {
   /**
    * Crear un nuevo contacto
    */
-  async createContact(contact: ContactCreateRequest): Promise<KommoContact> {
-    const { data } = await api.post<KommoContact>(`${CRM_BASE_PATH}/contacts`, contact);
+  async createContact(contact: ContactCreateRequest): Promise<Contact> {
+    const { data } = await api.post<Contact>(`${CRM_BASE_PATH}/contacts`, contact);
     return data;
   },
 
   /**
    * Actualizar un contacto
    */
-  async updateContact(id: string, updates: Partial<ContactCreateRequest>): Promise<KommoContact> {
-    const { data } = await api.put<KommoContact>(`${CRM_BASE_PATH}/contacts/${id}`, updates);
+  async updateContact(id: string, updates: Partial<ContactCreateRequest>): Promise<Contact> {
+    const { data } = await api.put<Contact>(`${CRM_BASE_PATH}/contacts/${id}`, updates);
     return data;
   },
 
@@ -362,8 +362,8 @@ export const crmService = {
   /**
    * Obtener una empresa por ID
    */
-  async getCompany(id: string): Promise<KommoCompany> {
-    const { data } = await api.get<KommoCompany>(`${CRM_BASE_PATH}/companies/${id}`);
+  async getCompany(id: string): Promise<Company> {
+    const { data } = await api.get<Company>(`${CRM_BASE_PATH}/companies/${id}`);
     return data;
   },
 
@@ -1051,7 +1051,7 @@ export const crmService = {
   async createContactWithLead(
     contactData: ContactCreateRequest,
     leadData: Omit<LeadCreateRequest, 'contact_id'>
-  ): Promise<{ contact: KommoContact; lead: KommoLead }> {
+  ): Promise<{ contact: Contact; lead: Lead }> {
     // 1. Crear contacto
     const contact = await this.createContact(contactData);
 
@@ -1196,13 +1196,13 @@ export const crmService = {
    * Obtiene todos los leads y los agrupa por estado para visualización en pipeline
    */
   async getLeadsPipeline(filters?: LeadFilters): Promise<{
-    new: KommoLead[];
-    contacted: KommoLead[];
-    proposal: KommoLead[];
-    negotiation: KommoLead[];
-    won: KommoLead[];
-    lost: KommoLead[];
-    all: KommoLead[];
+    new: Lead[];
+    contacted: Lead[];
+    proposal: Lead[];
+    negotiation: Lead[];
+    won: Lead[];
+    lost: Lead[];
+    all: Lead[];
   }> {
     const response = await this.getLeads({ ...filters, limit: 100 });
     const leads = response.items || [];
@@ -1232,8 +1232,8 @@ export const crmService = {
       grading_situacion?: 'A' | 'B+' | 'B-' | 'C';
     };
   }): Promise<{
-    contact: KommoContact;
-    lead: KommoLead;
+    contact: Contact;
+    lead: Lead;
     tasks: Task[];
     call?: Call;
     followUpTask?: Task;

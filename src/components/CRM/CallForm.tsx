@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Phone, Edit2, Check, X } from 'lucide-react';
-import type { Call, CRMUser, KommoContact, KommoLead } from '@/types/crm';
+import type { Call, CRMUser, Contact, Lead } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { adminService } from '@/services/adminService';
 
@@ -33,8 +33,8 @@ export const CallForm = memo(function CallForm({
   const [loading, setLoading] = useState(false);
   const [loadingEntities, setLoadingEntities] = useState(false);
   const [users, setUsers] = useState<CRMUser[]>([]);
-  const [contacts, setContacts] = useState<KommoContact[]>([]);
-  const [leads, setLeads] = useState<KommoLead[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [callTypes, setCallTypes] = useState<Array<{ id: string; name: string; code: string; description?: string }>>([]);
   const [isFirstCall, setIsFirstCall] = useState(false);
   

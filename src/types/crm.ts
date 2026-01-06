@@ -1,6 +1,6 @@
 // CRM Types - Compatible con API real de Migro
 
-export interface KommoLead {
+export interface Lead {
   id: string; // UUID
   name: string;
   price: number;
@@ -39,18 +39,18 @@ export interface KommoLead {
   custom_fields?: Record<string, any>;
   
   // Embedded relations
-  contact?: KommoContact;
-  company?: KommoCompany;
+  contact?: Contact;
+  company?: Company;
   pipeline_status?: PipelineStatus; // Renombrado para evitar conflicto con status: string
   responsible_user?: CRMUser;
   _embedded?: {
     tags?: Tag[];
-    companies?: KommoCompany[];
-    contacts?: KommoContact[];
+    companies?: Company[];
+    contacts?: Contact[];
   };
 }
 
-export interface KommoContact {
+export interface Contact {
   id: string; // UUID
   name: string; // Nombre completo (requerido por API)
   first_name: string;
@@ -63,7 +63,7 @@ export interface KommoContact {
   state?: string;
   postal_code?: string;
   country?: string;
-  company_name?: string; // Renombrado para evitar conflicto con company?: KommoCompany
+  company_name?: string; // Renombrado para evitar conflicto con company?: Company
   position?: string;
   
   company_id?: string; // UUID
@@ -93,11 +93,11 @@ export interface KommoContact {
   avatar_url?: string;
   
   // Embedded
-  company?: KommoCompany;
+  company?: Company;
   _embedded?: {
     tags?: Tag[];
-    companies?: KommoCompany[];
-    leads?: KommoLead[];
+    companies?: Company[];
+    leads?: Lead[];
   };
   
   // Campos calculados (no vienen del backend, se calculan en el frontend)
@@ -105,7 +105,7 @@ export interface KommoContact {
   proxima_llamada_fecha?: string; // Fecha de la próxima llamada programada (de calls.proxima_llamada_fecha o tasks.complete_till)
 }
 
-export interface KommoCompany {
+export interface Company {
   id: string; // UUID
   name: string;
   description?: string;
@@ -130,13 +130,10 @@ export interface KommoCompany {
   
   _embedded?: {
     tags?: Tag[];
-    contacts?: KommoContact[];
-    leads?: KommoLead[];
+    contacts?: Contact[];
+    leads?: Lead[];
   };
 }
-
-// Alias para compatibilidad
-export type Company = KommoCompany;
 
 export interface Pipeline {
   id: string; // UUID
@@ -494,21 +491,21 @@ export interface CallCreateRequest {
 // ===== API Response Wrappers (API Real) =====
 
 export interface LeadsListResponse {
-  items: KommoLead[];
+  items: Lead[];
   total: number;
   skip: number;
   limit: number;
 }
 
 export interface ContactsListResponse {
-  items: KommoContact[];
+  items: Contact[];
   total: number;
   skip: number;
   limit: number;
 }
 
 export interface CompaniesListResponse {
-  items: KommoCompany[];
+  items: Company[];
   total: number;
   skip: number;
   limit: number;

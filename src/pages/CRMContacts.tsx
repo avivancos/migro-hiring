@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { adminService } from '@/services/adminService';
 import { crmService } from '@/services/crmService';
-import type { KommoContact, ContactFilters } from '@/types/crm';
+import type { Contact, ContactFilters } from '@/types/crm';
 import {
   Search,
   Filter,
@@ -23,7 +23,7 @@ import {
 export function CRMContacts() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [contacts, setContacts] = useState<KommoContact[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filters, setFilters] = useState<ContactFilters>({

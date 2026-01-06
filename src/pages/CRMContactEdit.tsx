@@ -5,7 +5,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
-import type { KommoContact, ContactCreateRequest, NoteCreateRequest } from '@/types/crm';
+import type { Contact, ContactCreateRequest, NoteCreateRequest } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { ContactForm } from '@/components/CRM/ContactForm';
 export function CRMContactEdit() {
@@ -13,7 +13,7 @@ export function CRMContactEdit() {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
-  const [contact, setContact] = useState<KommoContact | null>(null);
+  const [contact, setContact] = useState<Contact | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 

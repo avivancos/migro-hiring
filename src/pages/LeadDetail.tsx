@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { adminService } from '@/services/adminService';
 import { crmService } from '@/services/crmService';
 import { cloudtalkService } from '@/services/cloudtalkService';
-import type { KommoLead } from '@/types/crm';
+import type { Lead } from '@/types/crm';
 import { CallHistory } from '@/components/CRM/CallHistory';
 import { ActivityTimeline } from '@/components/CRM/ActivityTimeline';
 import { LeadForm } from '@/components/CRM/LeadForm';
@@ -26,7 +26,7 @@ import {
 export function LeadDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [lead, setLead] = useState<KommoLead | null>(null);
+  const [lead, setLead] = useState<Lead | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
 

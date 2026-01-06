@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { adminService } from '@/services/adminService';
-import type { KommoLead } from '@/types/crm';
+import type { Lead } from '@/types/crm';
 import {
   Search,
   ArrowLeft,
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 
 // Datos mock de leads (temporal - sin API)
-const mockLeads: KommoLead[] = [
+const mockLeads: Lead[] = [
   {
     id: '1',
     name: 'Residencia Legal - Juan Pérez',
@@ -76,7 +76,7 @@ const mockLeads: KommoLead[] = [
 export function CRMLeads() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [leads] = useState<KommoLead[]>(mockLeads);
+  const [leads] = useState<Lead[]>(mockLeads);
 
   // Verificar autenticación
   if (!adminService.isAuthenticated()) {

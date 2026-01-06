@@ -5,7 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Plus, ExternalLink, Phone, User, MessageSquare } from 'lucide-react';
-import type { Task, Call, Note, KommoContact, CRMUser } from '@/types/crm';
+import type { Task, Call, Note, Contact, CRMUser } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { formatCallStatus } from '@/utils/statusTranslations';
 import { useAuth } from '@/hooks/useAuth';
@@ -255,7 +255,7 @@ export function CRMTaskCalendar() {
       const contactId = call.contact_id || call.entity_id;
       
       const promise = crmService.getContact(contactId)
-        .then((entity: KommoContact) => {
+        .then((entity: Contact) => {
           const name = entity.name || 
             (('first_name' in entity) ? `${entity.first_name || ''} ${entity.last_name || ''}`.trim() : '') ||
             'Sin nombre';

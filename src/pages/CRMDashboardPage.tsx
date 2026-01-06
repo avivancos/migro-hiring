@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { crmService } from '@/services/crmService';
 import { contractsService } from '@/services/contractsService';
-import type { KommoLead, PipelineStatus, Call, Task, Note } from '@/types/crm';
+import type { Lead, PipelineStatus, Call, Task, Note } from '@/types/crm';
 import type { Contract } from '@/types/contracts';
 import {
   Users,
@@ -46,7 +46,7 @@ export function CRMDashboardPage() {
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [leads, setLeads] = useState<KommoLead[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [stages, setStages] = useState<PipelineStatus[]>([]);
   const [totalContactsCount, setTotalContactsCount] = useState<number>(0);
   const [totalContractsCount, setTotalContractsCount] = useState<number>(0);
@@ -274,7 +274,7 @@ export function CRMDashboardPage() {
       String(lead.status_id) === String(stage.id)
     );
     return acc;
-  }, {} as Record<string | number, KommoLead[]>);
+  }, {} as Record<string | number, Lead[]>);
 
   const formatCurrency = (amount: number, currency: string = 'EUR', inCents: boolean = true): string => {
     // Si inCents es true (contratos), dividir entre 100. Si es false (leads), usar directamente

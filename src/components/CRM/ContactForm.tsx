@@ -8,11 +8,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { KommoContact, Company } from '@/types/crm';
+import type { Contact, Company } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 
 interface ContactFormProps {
-  contact?: KommoContact;
+  contact?: Contact;
   onSubmit: (data: any) => Promise<void>;
   onCancel: () => void;
 }
@@ -94,11 +94,11 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
       if (formData.state?.trim()) cleanedData.state = formData.state.trim();
       if (formData.postal_code?.trim()) cleanedData.postal_code = formData.postal_code.trim();
       if (formData.country?.trim()) cleanedData.country = formData.country.trim();
-      // company puede ser string o KommoCompany
+      // company puede ser string o Company
       if (typeof formData.company === 'string' && formData.company.trim()) {
         cleanedData.company = formData.company.trim();
       } else if (formData.company && typeof formData.company === 'object') {
-        // Si es un objeto KommoCompany, usar el ID
+        // Si es un objeto Company, usar el ID
         cleanedData.company_id = formData.company.id;
       }
       if (formData.position?.trim()) cleanedData.position = formData.position.trim();

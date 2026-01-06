@@ -12,6 +12,7 @@ import {
   Briefcase,
   Search,
   UserCheck,
+  UserX,
   Filter,
   X,
   ArrowUpDown,
@@ -37,6 +38,7 @@ export function AdminOpportunities() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkAgentId, setBulkAgentId] = useState<string>('');
   const [assigning, setAssigning] = useState(false);
+  const [unassigning, setUnassigning] = useState(false);
   
   // Búsqueda y filtros
   const [searchQuery, setSearchQuery] = useState('');
@@ -397,6 +399,44 @@ export function AdminOpportunities() {
       setAssigning(false);
     }
   };
+
+  // Desasignación bulk
+  const handleBulkUnassign = async () => {
+    if (selectedIds.size === 0) {
+      alert('Por favor selecciona al menos una oportunidad');
+      return;
+    }
+    
+    const selectedCount = selectedIds.size;
+    if (!confirm(`¿Estás seguro de desasignar ${selectedCount} oportunidad(es)? Esto removerá el agente asignado.`)) {
+      return;
+    }
+    
+    setUnassigning(true);
+    try {
+      const result = await opportunityApi.bulkUnassign({
+        opportunity_ids: Array.from(selectedIds),
+      });
+      
+      // Guardar el contador antes de limpiar
+      const successCount = result.unassigned_count;
+      
+      // Limpiar selección y recargar
+      setSelectedIds(new Set());
+      await loadOpportunities();
+      
+      if (result.failed_count > 0) {
+        alert(`${successCount} oportunidad(es) desasignada(s) correctamente. ${result.failed_count} fallaron.`);
+      } else {
+        alert(`${successCount} oportunidad(es) desasignada(s) correctamente`);
+      }
+    } catch (error) {
+      console.error('Error desasignando oportunidades:', error);
+      alert('Error al desasignar oportunidades. Por favor intenta de nuevo.');
+    } finally {
+      setUnassigning(false);
+    }
+  };
   
   // Limpiar filtros
   const clearFilters = () => {
@@ -539,7 +579,7 @@ export function AdminOpportunities() {
                   value={bulkAgentId}
                   onChange={(e) => setBulkAgentId(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                  disabled={assigning}
+                  disabled={assigning || unassigning}
                 >
                   <option value="">Seleccionar agente...</option>
                   {agents.map(agent => (
@@ -552,23 +592,43 @@ export function AdminOpportunities() {
                   Selecciona las oportunidades usando los checkboxes y asígnalas al agente seleccionado
                 </p>
               </div>
-              <Button
-                onClick={handleBulkAssign}
-                disabled={!bulkAgentId || assigning}
-                className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 whitespace-nowrap"
-              >
-                {assigning ? (
-                  <>
-                    <LoadingSpinner size="sm" />
-                    <span>Asignando...</span>
-                  </>
-                ) : (
-                  <>
-                    <UserCheck className="w-4 h-4" />
-                    <span>Asignar Seleccionadas</span>
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleBulkAssign}
+                  disabled={!bulkAgentId || assigning || unassigning}
+                  className="bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 whitespace-nowrap"
+                >
+                  {assigning ? (
+                    <>
+                      <LoadingSpinner size="sm" />
+                      <span>Asignando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="w-4 h-4" />
+                      <span>Asignar Seleccionadas</span>
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={handleBulkUnassign}
+                  disabled={assigning || unassigning}
+                  variant="outline"
+                  className="bg-red-50 hover:bg-red-100 text-red-700 border-red-300 flex items-center gap-2 whitespace-nowrap"
+                >
+                  {unassigning ? (
+                    <>
+                      <LoadingSpinner size="sm" />
+                      <span>Desasignando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserX className="w-4 h-4" />
+                      <span>Desasignar</span>
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

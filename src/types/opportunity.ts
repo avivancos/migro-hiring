@@ -1,6 +1,6 @@
 // Opportunity Types - Para el módulo de Leads/Oportunidades
 
-import type { KommoContact, CRMUser } from './crm';
+import type { Contact, CRMUser } from './crm';
 import type { PipelineStageRead } from './pipeline';
 
 /**
@@ -26,7 +26,7 @@ export type FirstCallAttempts = {
 export interface LeadOpportunity {
   id: string; // UUID
   contact_id: string; // UUID
-  contact?: KommoContact; // Relación expandida
+  contact?: Contact; // Relación expandida
   detected_at: string; // ISO 8601
   opportunity_score: number; // 0-100
   priority?: 'high' | 'medium' | 'low'; // Opcional porque el backend puede no enviarlo
@@ -70,9 +70,10 @@ export interface OpportunityListResponse {
 
 /**
  * OpportunityAssignRequest - Request para asignar oportunidad
+ * assigned_to_id puede ser null o "" para desasignar
  */
 export interface OpportunityAssignRequest {
-  assigned_to_id: string; // UUID
+  assigned_to_id: string | null; // UUID o null para desasignar
 }
 
 /**
@@ -93,5 +94,16 @@ export interface FirstCallAttemptRequest {
   status: 'orange' | 'red' | 'green'; // No incluye 'pending'
   call_id?: string;
   notes?: string;
+}
+
+/**
+ * OpportunityCreateRequest - Request para crear una nueva oportunidad
+ */
+export interface OpportunityCreateRequest {
+  contact_id: string; // UUID del contacto (requerido)
+  opportunity_score?: number; // 0-100 (opcional, default: 50)
+  detection_reason?: string | Record<string, any>; // Razón de detección (opcional)
+  priority?: 'high' | 'medium' | 'low'; // Prioridad (opcional, default: 'medium')
+  assigned_to_id?: string; // UUID del usuario asignado (opcional)
 }
 

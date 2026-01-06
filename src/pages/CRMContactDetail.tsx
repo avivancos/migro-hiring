@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { crmService } from '@/services/crmService';
-import type { KommoContact, Task, Call, Note, CallCreateRequest, TaskCreateRequest, NoteCreateRequest } from '@/types/crm';
+import type { Contact, Task, Call, Note, CallCreateRequest, TaskCreateRequest, NoteCreateRequest } from '@/types/crm';
 import {
   ArrowLeft,
   Edit,
@@ -27,6 +27,7 @@ import {
   User,
   Activity,
   ExternalLink,
+  Briefcase,
 } from 'lucide-react';
 import { CallForm } from '@/components/CRM/CallForm';
 import { TaskForm } from '@/components/CRM/TaskForm';
@@ -40,7 +41,6 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { PipelineWizardModal } from '@/components/pipelines/Wizards/PipelineWizardModal';
 import { opportunityApi } from '@/services/opportunityApi';
 import type { LeadOpportunity } from '@/types/opportunity';
-import { Briefcase } from 'lucide-react';
 import { OpportunityPriorityBadge } from '@/components/opportunities/OpportunityPriorityBadge';
 import { OpportunityScore } from '@/components/opportunities/OpportunityScore';
 import { getDetectionReasonBadges } from '@/utils/opportunity';
@@ -51,7 +51,7 @@ export function CRMContactDetail() {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [contact, setContact] = useState<KommoContact | null>(null);
+  const [contact, setContact] = useState<Contact | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [calls, setCalls] = useState<Call[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -70,6 +70,7 @@ export function CRMContactDetail() {
   const [showPipelineWizard, setShowPipelineWizard] = useState(false);
   const [relatedOpportunities, setRelatedOpportunities] = useState<LeadOpportunity[]>([]);
   const [loadingOpportunities, setLoadingOpportunities] = useState(false);
+  const [creatingOpportunity, setCreatingOpportunity] = useState(false);
   const { isAdmin } = useAuth();
   
   // Ref para evitar recargas innecesarias
@@ -1065,9 +1066,58 @@ export function CRMContactDetail() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-gray-600 text-center py-4">
-                No hay oportunidad enlazada a este contacto
-              </p>
+              <div className="flex flex-col items-center gap-4 py-4">
+                <p className="text-sm text-gray-600 text-center">
+                  No hay oportunidad enlazada a este contacto
+                </p>
+                {contact && (
+                  <Button
+                    onClick={async () => {
+                      if (!contact?.id) return;
+                      
+                      setCreatingOpportunity(true);
+                      try {
+                        // Crear la oportunidad con el agente asignado al contacto si existe
+                        const newOpportunity = await opportunityApi.create({
+                          contact_id: contact.id,
+                          opportunity_score: 50, // Score por defecto
+                          detection_reason: 'Oportunidad creada manualmente desde contacto',
+                          priority: 'medium',
+                          assigned_to_id: contact.responsible_user_id, // Asignar al agente del contacto
+                        });
+                        
+                        // Recargar los datos del contacto para mostrar la nueva oportunidad
+                        await loadContactData();
+                        
+                        // Navegar a la página de detalle de la oportunidad
+                        navigate(`/crm/opportunities/${newOpportunity.id}`);
+                      } catch (error: any) {
+                        console.error('Error creando oportunidad:', error);
+                        const errorMessage = error?.response?.data?.detail || 
+                                            error?.message || 
+                                            'Error al crear la oportunidad';
+                        alert(`Error al crear la oportunidad: ${errorMessage}`);
+                      } finally {
+                        setCreatingOpportunity(false);
+                      }
+                    }}
+                    disabled={creatingOpportunity || !contact?.id}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    {creatingOpportunity ? (
+                      <>
+                        <Clock className="w-4 h-4 mr-2 animate-spin" />
+                        Creando...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Crear Oportunidad
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
             </CardContent>
           </Card>
         )}

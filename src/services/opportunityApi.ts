@@ -7,6 +7,7 @@ import type {
   OpportunityListResponse,
   OpportunityAssignRequest,
   OpportunityUpdateRequest,
+  OpportunityCreateRequest,
   FirstCallAttemptRequest,
 } from '@/types/opportunity';
 import type { PipelineStageRead, PipelineStageCreate } from '@/types/pipeline';
@@ -249,6 +250,102 @@ export const opportunityApi = {
       opportunities: successes,
       errors,
     };
+  },
+
+  /**
+   * Desasignar una oportunidad (remover asignación de agente)
+   * Usa el endpoint /assign con null para desasignar
+   * 
+   * El backend acepta assigned_to_id: null o "" y desasigna la oportunidad,
+   * cambiando el estado a 'pending' y removiendo el assigned_to_id.
+   */
+  async unassign(id: string): Promise<LeadOpportunity> {
+    const { data } = await api.post<LeadOpportunity>(
+      `${CRM_BASE_PATH}/opportunities/${id}/assign`,
+      { assigned_to_id: null } as OpportunityAssignRequest
+    );
+    return data;
+  },
+
+  /**
+   * Desasignar múltiples oportunidades (remover asignación de agentes)
+   * Usa múltiples llamadas individuales a unassign()
+   */
+  async bulkUnassign(request: {
+    opportunity_ids: string[];
+  }): Promise<{
+    success: boolean;
+    unassigned_count: number;
+    failed_count: number;
+    opportunities: LeadOpportunity[];
+    errors: Array<{ opportunity_id: string; error: string }>;
+  }> {
+    // Usar desasignaciones individuales en paralelo
+    // Limitar el número de peticiones simultáneas para evitar sobrecarga
+    const BATCH_SIZE = 10; // Procesar en lotes de 10
+    const allResults: Array<LeadOpportunity | { error: string; opportunity_id: string }> = [];
+    
+    for (let i = 0; i < request.opportunity_ids.length; i += BATCH_SIZE) {
+      const batch = request.opportunity_ids.slice(i, i + BATCH_SIZE);
+      const batchPromises = batch.map(id =>
+        this.unassign(id).catch(error => {
+          const errorMessage = error?.response?.data?.detail || error?.message || 'Error desconocido';
+          console.error(`❌ [opportunityApi.bulkUnassign] Error desasignando oportunidad ${id}:`, errorMessage);
+          return {
+            error: errorMessage,
+            opportunity_id: id,
+          };
+        })
+      );
+      
+      const batchResults = await Promise.all(batchPromises);
+      allResults.push(...batchResults);
+      
+      // Pequeña pausa entre lotes para no sobrecargar el servidor
+      if (i + BATCH_SIZE < request.opportunity_ids.length) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+    
+    const successes: LeadOpportunity[] = [];
+    const errors: Array<{ opportunity_id: string; error: string }> = [];
+    
+    allResults.forEach((result) => {
+      if ('error' in result) {
+        errors.push({
+          opportunity_id: result.opportunity_id,
+          error: result.error,
+        });
+      } else {
+        successes.push(result as LeadOpportunity);
+      }
+    });
+    
+    return {
+      success: errors.length === 0,
+      unassigned_count: successes.length,
+      failed_count: errors.length,
+      opportunities: successes,
+      errors,
+    };
+  },
+
+  /**
+   * Crear nueva oportunidad
+   * Endpoint: POST /api/crm/opportunities
+   */
+  async create(request: OpportunityCreateRequest): Promise<LeadOpportunity> {
+    const { data } = await api.post<LeadOpportunity>(
+      `${CRM_BASE_PATH}/opportunities`,
+      {
+        contact_id: request.contact_id,
+        opportunity_score: request.opportunity_score ?? 50,
+        detection_reason: request.detection_reason ?? 'Oportunidad creada manualmente',
+        priority: request.priority ?? 'medium',
+        assigned_to_id: request.assigned_to_id,
+      }
+    );
+    return data;
   },
 
   /**

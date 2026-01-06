@@ -18,8 +18,8 @@ import {
   TrendingUp
 } from 'lucide-react';
 import type { 
-  KommoLead, 
-  KommoContact, 
+  Lead, 
+  Contact, 
   CallCreateRequest, 
   ContactCreateRequest,
   Pipeline,
@@ -41,13 +41,13 @@ export function CRMCallHandler() {
   const navigate = useNavigate();
   // Estados principales
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<{ leads: KommoLead[]; contacts: KommoContact[] }>({
+  const [searchResults, setSearchResults] = useState<{ leads: Lead[]; contacts: Contact[] }>({
     leads: [],
     contacts: [],
   });
   const [selectedEntity, setSelectedEntity] = useState<{
     type: 'lead' | 'contact' | null;
-    data: KommoLead | KommoContact | null;
+    data: Lead | Contact | null;
   }>({ type: null, data: null });
   const [searching, setSearching] = useState(false);
   const [recentCalls, setRecentCalls] = useState<Call[]>([]);
@@ -75,7 +75,7 @@ export function CRMCallHandler() {
   
   // Edición de datos del cliente
   const [editingContact, setEditingContact] = useState(false);
-  const [contactData, setContactData] = useState<KommoContact | null>(null);
+  const [contactData, setContactData] = useState<Contact | null>(null);
   
   // Estado de guardado
   const [saving, setSaving] = useState(false);
@@ -96,7 +96,7 @@ export function CRMCallHandler() {
 
   useEffect(() => {
     if (selectedEntity.data && selectedEntity.type === 'lead') {
-      loadLeadPipelineData(selectedEntity.data as KommoLead);
+      loadLeadPipelineData(selectedEntity.data as Lead);
     }
   }, [selectedEntity]);
 
@@ -217,7 +217,7 @@ export function CRMCallHandler() {
       if (idToLoad && !call.contact_name) {
         // Verificar caché primero
         const cacheKey = APICache.generateKey(`${CRM_BASE_PATH}/contacts/${idToLoad}`);
-        const cachedContact = apiCache.get<KommoContact>(cacheKey);
+        const cachedContact = apiCache.get<Contact>(cacheKey);
         if (cachedContact) {
           const name = cachedContact.name || 
             `${cachedContact.first_name || ''} ${cachedContact.last_name || ''}`.trim() ||
@@ -227,7 +227,7 @@ export function CRMCallHandler() {
         }
 
         const cacheKeyLead = APICache.generateKey(`${CRM_BASE_PATH}/leads/${idToLoad}`);
-        const cachedLead = apiCache.get<KommoLead>(cacheKeyLead);
+        const cachedLead = apiCache.get<Lead>(cacheKeyLead);
         if (cachedLead) {
           names[idToLoad] = cachedLead.name || 'Sin nombre';
           return; // Ya tenemos el nombre del caché
@@ -270,7 +270,7 @@ export function CRMCallHandler() {
     contactIds.forEach(entityId => {
       const cacheKey = APICache.generateKey(`${CRM_BASE_PATH}/contacts/${entityId}`);
       const promise = crmService.getContact(entityId)
-        .then((entity: KommoContact) => {
+        .then((entity: Contact) => {
           // Guardar en caché
           apiCache.set(cacheKey, entity, 5 * 60 * 1000); // 5 minutos TTL
           
@@ -297,7 +297,7 @@ export function CRMCallHandler() {
     leadIds.forEach(entityId => {
       const cacheKey = APICache.generateKey(`${CRM_BASE_PATH}/leads/${entityId}`);
       const promise = crmService.getLead(entityId)
-        .then((entity: KommoLead) => {
+        .then((entity: Lead) => {
           // Guardar en caché
           apiCache.set(cacheKey, entity, 5 * 60 * 1000); // 5 minutos TTL
           
@@ -421,7 +421,7 @@ export function CRMCallHandler() {
     return userId.substring(0, 8) + '...';
   };
 
-  const loadLeadPipelineData = async (lead: KommoLead) => {
+  const loadLeadPipelineData = async (lead: Lead) => {
     try {
       const pipelineId = lead.pipeline_id || currentPipeline?.id;
       if (!pipelineId) return;
@@ -468,7 +468,7 @@ export function CRMCallHandler() {
       }).catch(() => ({ items: [] }));
 
       // Filtrar leads por nombre, contacto asociado o teléfono
-      const filteredLeads = (leadsResponse.items || []).filter((lead: KommoLead) => {
+      const filteredLeads = (leadsResponse.items || []).filter((lead: Lead) => {
         const matchesName = lead.name?.toLowerCase().includes(searchLower);
         const matchesContactName = lead.contact?.name?.toLowerCase().includes(searchLower);
         const matchesPhone = lead.contact?.phone?.includes(searchQuery) || 
@@ -491,14 +491,14 @@ export function CRMCallHandler() {
     }
   };
 
-  const handleSelectEntity = async (type: 'lead' | 'contact', entity: KommoLead | KommoContact) => {
+  const handleSelectEntity = async (type: 'lead' | 'contact', entity: Lead | Contact) => {
     setSelectedEntity({ type, data: entity });
     setEditingContact(false);
     
     // Cargar datos del contacto si es un lead con contacto asociado
-    if (type === 'lead' && (entity as KommoLead).contact_id) {
+    if (type === 'lead' && (entity as Lead).contact_id) {
       try {
-        const contact = await crmService.getContact(String((entity as KommoLead).contact_id));
+        const contact = await crmService.getContact(String((entity as Lead).contact_id));
         setContactData(contact);
       } catch (err) {
         console.error('Error loading contact:', err);
@@ -506,7 +506,7 @@ export function CRMCallHandler() {
         setContactData(null);
       }
     } else if (type === 'contact') {
-      setContactData(entity as KommoContact);
+      setContactData(entity as Contact);
     } else {
       setContactData(null);
     }
@@ -514,9 +514,9 @@ export function CRMCallHandler() {
     // Prellenar datos de la llamada
     let phone = '';
     if (type === 'lead') {
-      phone = (entity as KommoLead).contact?.phone || (entity as KommoLead).contact?.mobile || '';
+      phone = (entity as Lead).contact?.phone || (entity as Lead).contact?.mobile || '';
     } else {
-      phone = (entity as KommoContact).phone || (entity as KommoContact).mobile || '';
+      phone = (entity as Contact).phone || (entity as Contact).mobile || '';
     }
     
     setCallData(prev => ({
@@ -964,25 +964,25 @@ export function CRMCallHandler() {
                       <div>
                         <Label className="text-xs text-gray-500">Teléfono</Label>
                         <div className="text-sm font-medium">
-                          {(selectedEntity.data as KommoContact).phone || (selectedEntity.data as KommoContact).mobile || 'N/A'}
+                          {(selectedEntity.data as Contact).phone || (selectedEntity.data as Contact).mobile || 'N/A'}
                         </div>
                       </div>
                       <div>
                         <Label className="text-xs text-gray-500">Email</Label>
                         <div className="text-sm font-medium">
-                          {(selectedEntity.data as KommoContact).email || 'N/A'}
+                          {(selectedEntity.data as Contact).email || 'N/A'}
                         </div>
                       </div>
                       <div>
                         <Label className="text-xs text-gray-500">Nacionalidad</Label>
                         <div className="text-sm font-medium">
-                          {(selectedEntity.data as KommoContact).nacionalidad || 'N/A'}
+                          {(selectedEntity.data as Contact).nacionalidad || 'N/A'}
                         </div>
                       </div>
                       <div>
                         <Label className="text-xs text-gray-500">Grading</Label>
                         <div className="text-sm font-medium">
-                          {(selectedEntity.data as KommoContact).grading_llamada || 'N/A'}
+                          {(selectedEntity.data as Contact).grading_llamada || 'N/A'}
                         </div>
                       </div>
                     </>
@@ -991,29 +991,29 @@ export function CRMCallHandler() {
                       <div>
                         <Label className="text-xs text-gray-500">Estado</Label>
                         <div className="text-sm font-medium">
-                          {formatLeadStatus((selectedEntity.data as KommoLead).status) || 'N/A'}
+                          {formatLeadStatus((selectedEntity.data as Lead).status) || 'N/A'}
                         </div>
                       </div>
                       <div>
                         <Label className="text-xs text-gray-500">Precio</Label>
                         <div className="text-sm font-medium">
-                          {(selectedEntity.data as KommoLead).price
-                            ? `${(selectedEntity.data as KommoLead).price} ${(selectedEntity.data as KommoLead).currency || 'EUR'}`
+                          {(selectedEntity.data as Lead).price
+                            ? `${(selectedEntity.data as Lead).price} ${(selectedEntity.data as Lead).currency || 'EUR'}`
                             : 'N/A'}
                         </div>
                       </div>
-                      {(selectedEntity.data as KommoLead).contact && (
+                      {(selectedEntity.data as Lead).contact && (
                         <>
                           <div>
                             <Label className="text-xs text-gray-500">Teléfono</Label>
                             <div className="text-sm font-medium">
-                              {(selectedEntity.data as KommoLead).contact?.phone || (selectedEntity.data as KommoLead).contact?.mobile || 'N/A'}
+                              {(selectedEntity.data as Lead).contact?.phone || (selectedEntity.data as Lead).contact?.mobile || 'N/A'}
                             </div>
                           </div>
                           <div>
                             <Label className="text-xs text-gray-500">Email</Label>
                             <div className="text-sm font-medium">
-                              {(selectedEntity.data as KommoLead).contact?.email || 'N/A'}
+                              {(selectedEntity.data as Lead).contact?.email || 'N/A'}
                             </div>
                           </div>
                         </>

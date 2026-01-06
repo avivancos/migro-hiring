@@ -8,7 +8,7 @@ import { adminService } from '@/services/adminService';
 import { crmService } from '@/services/crmService';
 import { ActivityTimeline } from '@/components/CRM/ActivityTimeline';
 import { CallHistory } from '@/components/CRM/CallHistory';
-import type { KommoContact, KommoLead } from '@/types/crm';
+import type { Contact, Lead } from '@/types/crm';
 import {
   ArrowLeft,
   Phone,
@@ -23,8 +23,8 @@ export function ContactDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [contact, setContact] = useState<KommoContact | null>(null);
-  const [relatedLeads, setRelatedLeads] = useState<KommoLead[]>([]);
+  const [contact, setContact] = useState<Contact | null>(null);
+  const [relatedLeads, setRelatedLeads] = useState<Lead[]>([]);
 
   useEffect(() => {
     if (!adminService.isAuthenticated()) {

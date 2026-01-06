@@ -16,7 +16,7 @@ import {
   User,
   ArrowRight
 } from 'lucide-react';
-import type { Task, KommoLead, KommoContact } from '@/types/crm';
+import type { Task, Lead, Contact } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { formatLeadStatus } from '@/utils/statusTranslations';
 
@@ -31,8 +31,8 @@ interface ActionItem {
   entityType: 'contacts' | 'leads';
   entityName: string;
   status: string;
-  relatedLead?: KommoLead;
-  relatedContact?: KommoContact;
+  relatedLead?: Lead;
+  relatedContact?: Contact;
 }
 
 export function CRMActions() {
@@ -92,7 +92,7 @@ export function CRMActions() {
       });
 
       // Procesar leads que necesitan acción
-      allLeads.forEach((lead: KommoLead) => {
+      allLeads.forEach((lead: Lead) => {
         if (lead.status === 'won' || lead.status === 'lost') return;
 
         const needsAction = 

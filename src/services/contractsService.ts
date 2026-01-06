@@ -275,30 +275,46 @@ export const contractsService = {
     const body: any = {};
     
     // Solo incluir campos que están presentes en el request
-    if (request.service_name !== undefined) body.service_name = request.service_name;
-    if (request.service_description !== undefined) body.service_description = request.service_description;
-    if (request.amount !== undefined) body.amount = Math.round(request.amount * 100); // Convert to cents
-    if (request.currency !== undefined) body.currency = request.currency;
-    if (request.grade !== undefined) body.grade = request.grade;
+    // Estado y configuración
+    if (request.status !== undefined) body.status = request.status;
     if (request.payment_type !== undefined) body.payment_type = request.payment_type;
-    if (request.expires_in_days !== undefined) body.expires_in_days = request.expires_in_days;
-    if (request.notes !== undefined) body.notes = request.notes;
+    if (request.grade !== undefined) body.grade = request.grade;
+    if (request.currency !== undefined) body.currency = request.currency;
+    if (request.amount !== undefined) body.amount = Math.round(request.amount * 100); // Convert to cents
+    if (request.kyc_status !== undefined) body.kyc_status = request.kyc_status;
+    
+    // Cliente
     if (request.client_name !== undefined) body.client_name = request.client_name;
     if (request.client_email !== undefined) body.client_email = request.client_email;
     if (request.client_passport !== undefined) body.client_passport = request.client_passport;
     if (request.client_nie !== undefined) body.client_nie = request.client_nie;
+    if (request.client_nationality !== undefined) body.client_nationality = request.client_nationality;
     if (request.client_address !== undefined) body.client_address = request.client_address;
     if (request.client_city !== undefined) body.client_city = request.client_city;
     if (request.client_province !== undefined) body.client_province = request.client_province;
     if (request.client_postal_code !== undefined) body.client_postal_code = request.client_postal_code;
-    if (request.status !== undefined) body.status = request.status;
+    
+    // Servicio
+    if (request.service_name !== undefined) body.service_name = request.service_name;
+    if (request.service_description !== undefined) body.service_description = request.service_description;
+    
+    // Pago manual
     if (request.manual_payment_confirmed !== undefined) body.manual_payment_confirmed = request.manual_payment_confirmed;
-    if (request.manual_payment_note !== undefined) body.manual_payment_note = request.manual_payment_note;
     if (request.manual_payment_method !== undefined) body.manual_payment_method = request.manual_payment_method;
+    if (request.manual_payment_note !== undefined) body.manual_payment_note = request.manual_payment_note;
+    
+    // Suscripción
     if (request.subscription_id !== undefined) body.subscription_id = request.subscription_id;
     if (request.subscription_status !== undefined) body.subscription_status = request.subscription_status;
+    
+    // Pago parcial
     if (request.first_payment_amount !== undefined) body.first_payment_amount = Math.round(request.first_payment_amount * 100); // Convert to cents
-    if (request.payment_type !== undefined) body.payment_type = request.payment_type;
+    
+    // Expiración
+    if (request.expires_in_days !== undefined) body.expires_in_days = request.expires_in_days;
+    
+    // Notas
+    if (request.notes !== undefined) body.notes = request.notes;
     
     // Intentar primero con PATCH, si falla con 405, intentar con PUT
     try {

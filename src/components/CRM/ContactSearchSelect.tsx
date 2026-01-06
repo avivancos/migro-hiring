@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, Search, X } from 'lucide-react';
 import { crmService } from '@/services/crmService';
-import type { KommoContact } from '@/types/crm';
+import type { Contact } from '@/types/crm';
 import { cn } from '@/lib/utils';
 
 interface ContactSearchSelectProps {
@@ -28,10 +28,10 @@ export function ContactSearchSelect({
   placeholder = 'Buscar contacto...',
 }: ContactSearchSelectProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<KommoContact[]>([]);
+  const [searchResults, setSearchResults] = useState<Contact[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedContact, setSelectedContact] = useState<KommoContact | null>(null);
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -105,7 +105,7 @@ export function ContactSearchSelect({
     }
   };
 
-  const handleSelectContact = (contact: KommoContact) => {
+  const handleSelectContact = (contact: Contact) => {
     setSelectedContact(contact);
     const displayName = contact.name || 
       `${contact.first_name || ''} ${contact.last_name || ''}`.trim() || 

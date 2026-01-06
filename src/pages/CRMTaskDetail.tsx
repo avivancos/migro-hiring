@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { crmService } from '@/services/crmService';
-import type { Task, CRMUser, KommoContact } from '@/types/crm';
+import type { Task, CRMUser, Contact } from '@/types/crm';
 import {
   ArrowLeft,
   Edit,
@@ -28,7 +28,7 @@ export function CRMTaskDetail() {
   const [task, setTask] = useState<Task | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [users, setUsers] = useState<CRMUser[]>([]);
-  const [entity, setEntity] = useState<KommoContact | null>(null);
+  const [entity, setEntity] = useState<Contact | null>(null);
   const [entityNotFound, setEntityNotFound] = useState(false);
   const [editing, setEditing] = useState(false);
 

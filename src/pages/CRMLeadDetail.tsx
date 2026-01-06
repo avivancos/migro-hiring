@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Edit, User, Phone, Plus, PhoneCall, RefreshCw, DollarSign, ChevronDown, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
-import type { KommoLead, Task, Call, Note, TaskCreateRequest, KommoContact, LeadCreateRequest, LeadUpdateRequest } from '@/types/crm';
+import type { Lead, Task, Call, Note, TaskCreateRequest, Contact, LeadCreateRequest, LeadUpdateRequest } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { LeadForm } from '@/components/CRM/LeadForm';
 import { TaskForm } from '@/components/CRM/TaskForm';
@@ -17,14 +17,14 @@ export function CRMLeadDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [lead, setLead] = useState<KommoLead | null>(null);
+  const [lead, setLead] = useState<Lead | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [calls, setCalls] = useState<Call[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [editing, setEditing] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
-  const [createdContact, setCreatedContact] = useState<KommoContact | null>(null);
+  const [createdContact, setCreatedContact] = useState<Contact | null>(null);
   const [activeTab, setActiveTab] = useState('info');
   const [showNewTaskMenu, setShowNewTaskMenu] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
@@ -54,7 +54,7 @@ export function CRMLeadDetail() {
     try {
       // Si es "new", usar defaults y no cargar datos relacionados
       if (id === 'new') {
-        let leadDefaults: Partial<KommoLead> = {};
+        let leadDefaults: Partial<Lead> = {};
         try {
           leadDefaults = await crmService.getLeadDefaults();
         } catch (err) {
@@ -63,7 +63,7 @@ export function CRMLeadDetail() {
         }
         
         // Crear lead con defaults o valores por defecto
-        const newLead: KommoLead = {
+        const newLead: Lead = {
           id: 'new',
           name: '',
           price: 0,
@@ -81,7 +81,7 @@ export function CRMLeadDetail() {
           service_description: leadDefaults?.service_description || '',
           source: leadDefaults?.source || '',
           description: leadDefaults?.description || '',
-        } as KommoLead;
+        } as Lead;
         
         setLead(newLead);
         // Para "new", no hay tareas, llamadas ni notas - mostrar arrays vacíos
@@ -139,13 +139,13 @@ export function CRMLeadDetail() {
           normalizedCalls = [];
         }
         
-        // leadData puede ser KommoLead o KommoContact, pero setLead espera KommoLead | null
-        // Si es KommoContact, no podemos asignarlo directamente
+        // leadData puede ser Lead o Contact, pero setLead espera Lead | null
+        // Si es Contact, no podemos asignarlo directamente
         if (leadData && 'price' in leadData && 'pipeline_id' in leadData) {
-          setLead(leadData as KommoLead);
+          setLead(leadData as Lead);
         } else {
           // Si es un contacto, no podemos usarlo como lead
-          console.warn('⚠️ [CRMLeadDetail] leadData es un KommoContact, no se puede usar como lead');
+          console.warn('⚠️ [CRMLeadDetail] leadData es un Contact, no se puede usar como lead');
           setLead(null);
         }
         setTasks(tasksData?.items || []);
@@ -182,7 +182,7 @@ export function CRMLeadDetail() {
   };
 
   // Función para construir payload sin valores inválidos
-  const buildLeadPayload = (lead: KommoLead, isCreate: boolean = false): LeadCreateRequest | LeadUpdateRequest => {
+  const buildLeadPayload = (lead: Lead, isCreate: boolean = false): LeadCreateRequest | LeadUpdateRequest => {
     const basePayload: any = {
       name: (lead.name ?? '').trim() || 'Nuevo lead',
       pipeline_id: isUUID(lead.pipeline_id) ? lead.pipeline_id : undefined,
@@ -212,7 +212,7 @@ export function CRMLeadDetail() {
     }
   };
 
-  const handleSave = async (updatedLead: KommoLead) => {
+  const handleSave = async (updatedLead: Lead) => {
     if (!id) return;
     try {
       setSaveSuccess(false);
@@ -597,7 +597,7 @@ export function CRMLeadDetail() {
   }
 
   // TypeScript assertion: después de la verificación anterior, lead no puede ser null
-  const currentLead: KommoLead = lead!;
+  const currentLead: Lead = lead!;
 
   // Actualizar título de la página con el nombre del lead
   const leadName = currentLead?.name || 'Lead';

@@ -90,31 +90,46 @@ export interface ContractCreateRequest {
 }
 
 export interface ContractUpdateRequest {
-  service_name?: string;
-  service_description?: string;
-  amount?: number;
-  currency?: string;
-  grade?: ClientGrade;
+  // Estado y configuración
+  status?: ContractStatus;
   payment_type?: PaymentType;
-  expires_in_days?: number;
-  notes?: string;
+  grade?: ClientGrade;
+  currency?: string;
+  amount?: number; // En centavos
+  kyc_status?: KYCStatus;
+  
+  // Cliente
   client_name?: string;
   client_email?: string;
   client_passport?: string;
   client_nie?: string;
+  client_nationality?: string;
   client_address?: string;
   client_city?: string;
   client_province?: string;
   client_postal_code?: string;
-  status?: ContractStatus;
+  
+  // Servicio
+  service_name?: string;
+  service_description?: string;
+  
+  // Pago manual
   manual_payment_confirmed?: boolean;
-  manual_payment_note?: string;
   manual_payment_method?: string;
+  manual_payment_note?: string;
+  
   // Suscripción
   subscription_id?: string;
   subscription_status?: string;
+  
   // Pago parcial
   first_payment_amount?: number;
+  
+  // Expiración
+  expires_in_days?: number;
+  
+  // Notas
+  notes?: string;
 }
 
 export const CONTRACT_STATUS_COLORS = {
