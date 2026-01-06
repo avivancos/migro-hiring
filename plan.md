@@ -33,6 +33,9 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 
 ## 📋 Tareas Pendientes
 
+### ✅ Hotfixes recientes (Enero 2026)
+- [x] Corrección TS en `RequestContractModal` (uso de `current_stage` en vez de `name`) y callback de hiring code sin usar; build en Docker verificado.
+
 ### ✅ Sistema de Gestión de Zonas Horarias (Enero 2025)
 - [x] Implementación completa del sistema de zonas horarias ✅
   - [x] Módulo de utilidades timezone (`app/utils/timezone.py`) ✅

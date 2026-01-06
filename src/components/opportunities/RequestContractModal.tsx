@@ -55,7 +55,7 @@ export function RequestContractModal({
   const [formData, setFormData] = useState<RequestContractForm>({
     agent_signature: '',
     contract_template: 'standard',
-    service_name: opportunity?.pipeline_stage?.name || '',
+    service_name: opportunity?.pipeline_stage?.current_stage || '',
     grade: 'B',
     payment_type: 'two_payments',
     expires_in_days: 30,
@@ -169,7 +169,7 @@ export function RequestContractModal({
       setFormData({
         agent_signature: '',
         contract_template: 'standard',
-        service_name: opportunity?.pipeline_stage?.name || '',
+        service_name: opportunity?.pipeline_stage?.current_stage || '',
         grade: 'B',
         payment_type: 'two_payments',
         expires_in_days: 30,

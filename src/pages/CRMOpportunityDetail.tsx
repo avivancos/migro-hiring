@@ -607,7 +607,7 @@ export function CRMOpportunityDetail() {
         entityId={opportunity.id}
         opportunity={opportunity}
         contact={contact}
-        onSuccess={(hiringCode) => {
+        onSuccess={(_hiringCode) => {
           // Recargar datos de la oportunidad
           // hiringCode está disponible pero no se usa en este callback
           queryClient.invalidateQueries({ queryKey: ['opportunity', id] });
