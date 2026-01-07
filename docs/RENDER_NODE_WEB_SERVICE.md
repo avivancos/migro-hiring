@@ -79,3 +79,16 @@ Si quieres validar el build/serve en contenedor:
 - El health check es `/healthz` (simple y rápido).
 - El fallback SPA hace que rutas tipo `/admin/opportunities/123` funcionen sin 404 al refrescar.
 
+---
+
+## Troubleshooting
+
+### Error: "Rollup failed to resolve import react-is"
+
+**Causa**: `recharts` requiere `react-is` como peer dependency pero no siempre se instala automáticamente.
+
+**Solución**: Ya está agregado `react-is` en `dependencies` de `package.json`. Si el error persiste:
+```bash
+npm install react-is --save
+npm install --package-lock-only --legacy-peer-deps
+```
