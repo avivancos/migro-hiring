@@ -105,7 +105,13 @@ export default defineConfig({
             }
             
             // Librerías que dependen de React deben ir en react-vendor para evitar circular dependency
-            if (id.includes('lucide-react') || id.includes('zustand') || id.includes('recharts')) {
+            // lucide-react debe ir en react-vendor porque usa React internamente
+            if (id.includes('lucide-react')) {
+              return 'react-vendor';
+            }
+            
+            // Zustand y recharts también dependen de React
+            if (id.includes('zustand') || id.includes('recharts')) {
               return 'react-vendor';
             }
             
