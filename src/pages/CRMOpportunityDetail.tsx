@@ -10,7 +10,10 @@ import { OpportunityScore } from '@/components/opportunities/OpportunityScore';
 import { FirstCallAttemptsRow } from '@/components/opportunities/FirstCallAttemptsRow';
 import { FirstCallAttemptDetail } from '@/components/opportunities/FirstCallAttemptDetail';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { ArrowLeft, Phone, Mail, MapPin, User, Activity, Edit } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, User, Edit } from 'lucide-react';
+// Importación segura de Activity para evitar error en producción
+import * as LucideIcons from 'lucide-react';
+const { Activity } = LucideIcons;
 import { Badge } from '@/components/ui/badge';
 import { getDetectionReasonBadges } from '@/utils/opportunity';
 import { opportunityApi } from '@/services/opportunityApi';

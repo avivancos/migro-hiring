@@ -1,28 +1,23 @@
-# Dockerfile para Migro Hiring Frontend
-# Multi-stage build para optimizar tamaño y performance
+# Dockerfile estándar para aplicación Vite + React
+# Multi-stage build: builder + nginx
 
 # ==========================================
-# Stage 1: Builder (compilación)
+# Stage 1: Build
 # ==========================================
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copiar archivos de dependencias primero (para mejor cache)
+# Copiar archivos de dependencias
 COPY package.json package-lock.json* ./
 
-# Instalar dependencias desde package-lock.json
-# npm ci instala exactamente lo que está en package-lock.json, ideal para CI/CD
-RUN npm cache clean --force && \
-    npm ci --legacy-peer-deps --no-audit --no-fund && \
-    echo "Verificando instalación de TypeScript..." && \
-    (test -f node_modules/.bin/tsc && echo "✅ TypeScript encontrado" || echo "⚠️ TypeScript no encontrado") && \
-    (test -f node_modules/.bin/vite && echo "✅ Vite encontrado" || echo "⚠️ Vite no encontrado")
+# Instalar dependencias
+RUN npm ci --legacy-peer-deps
 
 # Copiar código fuente
 COPY . .
 
-# Variables de entorno para build (pueden ser sobrescritas)
+# Variables de entorno para build
 ARG VITE_API_BASE_URL=https://api.migro.es/api
 ARG VITE_STRIPE_PUBLISHABLE_KEY
 ARG VITE_APP_URL=https://contratacion.migro.es
@@ -35,18 +30,15 @@ ENV VITE_APP_URL=$VITE_APP_URL
 ENV VITE_DEBUG_MODE=$VITE_DEBUG_MODE
 ENV VITE_API_TIMEOUT=$VITE_API_TIMEOUT
 
-# Build de producción con limpieza
-# npm run build automáticamente resuelve los binarios desde node_modules/.bin
-RUN rm -rf dist node_modules/.cache && \
-    npm run build && \
-    echo "✅ Build completado: $(ls -lh dist/index.html)"
+# Build de producción
+RUN npm run build
 
 # ==========================================
-# Stage 2: Runner (producción con nginx)
+# Stage 2: Production
 # ==========================================
-FROM nginx:alpine AS runner
+FROM nginx:alpine
 
-# Copiar configuración custom de nginx
+# Copiar configuración de nginx
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copiar archivos compilados
@@ -55,14 +47,5 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Exponer puerto
 EXPOSE 80
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
-
 # Iniciar nginx
 CMD ["nginx", "-g", "daemon off;"]
-
-# NOTA: Stage "development" eliminado
-# Para desarrollo local, usar: npm run dev directamente
-# Docker se usa solo para producción con Nginx
-

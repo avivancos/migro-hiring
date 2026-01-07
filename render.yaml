@@ -1,19 +1,21 @@
-# Render Blueprint - Docker Build con Nginx
-# Configura Migro Hiring usando Docker multi-stage con Nginx
+# Render Blueprint - Static Site (SIN Docker, solo Node + Vite)
+# Configura Migro Hiring como Static Site puro usando Vite build
 
 services:
   - type: web
     name: migro-hiring
-    runtime: docker
+    runtime: static
     plan: free
     region: oregon
     
-    # Dockerfile con solo producción (Nginx)
-    dockerfilePath: ./Dockerfile
-    dockerContext: ./
+    # Build command estándar de Vite
+    buildCommand: npm ci --legacy-peer-deps && npm run build
+    staticPublishPath: dist
     
     # Variables de entorno para build
     envVars:
+      - key: NODE_VERSION
+        value: "20"
       - key: VITE_API_BASE_URL
         value: https://api.migro.es/api
       - key: VITE_APP_URL
@@ -24,6 +26,30 @@ services:
         value: "false"
       - key: VITE_API_TIMEOUT
         value: "30000"
+    
+    # Rewrites para SPA routing (todas las rutas -> index.html)
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    
+    # Headers de seguridad
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-XSS-Protection
+        value: "1; mode=block"
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com; frame-src https://js.stripe.com https://verify.stripe.com; connect-src 'self' https://api.migro.es https://api.stripe.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:;"
     
     # Configuración de auto-deploy
     autoDeploy: true

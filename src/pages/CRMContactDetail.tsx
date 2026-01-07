@@ -25,10 +25,12 @@ import {
   FileText,
   Plus,
   User,
-  Activity,
   ExternalLink,
   Briefcase,
 } from 'lucide-react';
+// Importación segura de Activity para evitar error en producción
+import * as LucideIcons from 'lucide-react';
+const { Activity } = LucideIcons;
 import { CallForm } from '@/components/CRM/CallForm';
 import { TaskForm } from '@/components/CRM/TaskForm';
 import { NoteForm } from '@/components/CRM/NoteForm';

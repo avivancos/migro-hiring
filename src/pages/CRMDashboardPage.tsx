@@ -20,7 +20,6 @@ import {
   Search,
   Filter,
   Plus,
-  Activity,
   CheckCircle2,
   AlertCircle,
   FileText,
@@ -29,6 +28,9 @@ import {
   PhoneOutgoing,
   PhoneMissed,
 } from 'lucide-react';
+// Importación segura de Activity para evitar error en producción
+import * as LucideIcons from 'lucide-react';
+const { Activity } = LucideIcons;
 import { useAuth } from '@/providers/AuthProvider';
 import { formatContractStatus, formatCallStatus, formatLeadStatus, formatPriority } from '@/utils/statusTranslations';
 import { opportunityApi } from '@/services/opportunityApi';
