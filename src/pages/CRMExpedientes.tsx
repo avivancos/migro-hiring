@@ -7,8 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import type { Lead, Contact, Task, Call, Note } from '@/types/crm';
 // Importar iconos de lucide-react (se usan en JSX pero TypeScript no los detecta)
-import * as LucideIcons from 'lucide-react';
-const { FileText, Search, Calendar, User, DollarSign, Clock } = LucideIcons;
+import { FileText, Search, Calendar, User, DollarSign, Clock } from 'lucide-react';
 import { crmService } from '@/services/crmService';
 
 interface ExpedienteData {
