@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { FileCheck, Shield, CreditCard, Download, Search } from 'lucide-react';
 import { fadeIn, slideUp, staggerContainer, staggerItem } from '@/utils/animations';
 
 export function Home() {
@@ -22,22 +21,18 @@ export function Home() {
 
   const features = [
     {
-      icon: FileCheck,
       title: 'Verifica Datos',
       description: 'Confirma tu información personal de forma segura',
     },
     {
-      icon: Shield,
       title: 'KYC Identity',
       description: 'Verificación de identidad con Stripe Identity',
     },
     {
-      icon: CreditCard,
       title: 'Pago Seguro',
       description: 'Procesa tu pago de forma segura con Stripe',
     },
     {
-      icon: Download,
       title: 'Contrato Digital',
       description: 'Descarga tu contrato firmado instantáneamente',
     },
@@ -75,7 +70,6 @@ export function Home() {
             <motion.div key={index} variants={staggerItem}>
               <Card className="h-full">
                 <CardHeader>
-                  <feature.icon className="w-12 h-12 text-primary mb-2" />
                   <CardTitle className="text-lg">{feature.title}</CardTitle>
                 </CardHeader>
                 <CardContent>

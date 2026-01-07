@@ -9,7 +9,6 @@ import { performanceTracingService } from '@/services/performanceTracingService'
 import type { PerformanceMetric } from '@/services/performanceTracingService';
 import { usePerformanceReport } from '@/components/common/PerformanceMonitor';
 import { 
-  Activity, 
   AlertTriangle,
   RefreshCw,
   Download,
@@ -19,8 +18,11 @@ import {
   Code,
   Server,
 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 
 export function AdminTracingDashboard() {
+  const { Activity } = LucideIcons;
+
   const report = usePerformanceReport();
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [slowThreshold] = useState(1000); // 1 segundo

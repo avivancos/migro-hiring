@@ -27,14 +27,16 @@ import {
   PhoneIncoming,
   PhoneOutgoing,
   PhoneMissed,
-  Activity,
 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
 import { formatContractStatus, formatCallStatus, formatLeadStatus, formatPriority } from '@/utils/statusTranslations';
 import { opportunityApi } from '@/services/opportunityApi';
 import { isAgent } from '@/utils/searchValidation';
 import { AgentJournalWidget } from '@/components/agentJournal/AgentJournalWidget';
 import { PerformanceDashboardView } from '@/components/agentJournal/PerformanceDashboardView';
+
+const { Activity } = LucideIcons;
 
 export function CRMDashboardPage() {
   // Medir rendimiento de la página

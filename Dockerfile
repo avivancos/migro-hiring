@@ -38,14 +38,21 @@ RUN npm run build
 # ==========================================
 FROM nginx:alpine
 
-# Copiar configuración de nginx
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
+# Puerto por defecto para Render (se puede sobreescribir con PORT)
+ENV PORT=10000
+
+# Copiar configuración de nginx (plantilla) y entrypoint
+RUN mkdir -p /etc/nginx/templates
+COPY docker/nginx.conf.template /etc/nginx/templates/default.conf.template
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Copiar archivos compilados
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Exponer puerto
-EXPOSE 80
+EXPOSE 10000
 
-# Iniciar nginx
+# Entrypoint genera la conf con el puerto actual y lanza nginx
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]

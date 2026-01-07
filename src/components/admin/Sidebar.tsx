@@ -7,10 +7,12 @@ import {
   Shield, 
   MessageSquare, 
   Phone,
-  Activity,
   Lock,
   Briefcase
 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
+
+const { Activity } = LucideIcons;
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },

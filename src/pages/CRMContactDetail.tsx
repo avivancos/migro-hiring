@@ -27,8 +27,8 @@ import {
   User,
   ExternalLink,
   Briefcase,
-  Activity,
 } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { CallForm } from '@/components/CRM/CallForm';
 import { TaskForm } from '@/components/CRM/TaskForm';
 import { NoteForm } from '@/components/CRM/NoteForm';
@@ -44,6 +44,8 @@ import type { LeadOpportunity } from '@/types/opportunity';
 import { OpportunityPriorityBadge } from '@/components/opportunities/OpportunityPriorityBadge';
 import { OpportunityScore } from '@/components/opportunities/OpportunityScore';
 import { getDetectionReasonBadges } from '@/utils/opportunity';
+
+const { Activity } = LucideIcons;
 
 export function CRMContactDetail() {
   const { id } = useParams<{ id: string }>();

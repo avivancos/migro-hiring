@@ -41,6 +41,11 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 - [x] Configuración Render como **Node Web Service** (Vite + Express) + blueprint `render-node.yaml`.
   - [x] Documentación: `docs/RENDER_NODE_WEB_SERVICE.md` ✅
 - [x] Modelo de convenio freelance para agentes de ventas documentado en `docs/CONVENIO_COLABORACION_FREELANCE_AGENTES_VENTAS.md`.
+- [x] Web Service Docker en Render (Nginx con puerto dinámico + healthz).
+  - [x] Dockerfile actualizado con `PORT` dinámico y entrypoint para templating Nginx.
+  - [x] Plantilla `docker/nginx.conf.template` (SPA fallback, `/healthz`).
+  - [x] Script `docker/entrypoint.sh` genera config y lanza nginx.
+  - [x] Documentación: `docs/RENDER_DOCKER_WEB_SERVICE.md` ✅
 
 ### ✅ Sistema de Gestión de Zonas Horarias (Enero 2025)
 - [x] Implementación completa del sistema de zonas horarias ✅

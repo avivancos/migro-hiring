@@ -47,100 +47,14 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
-    // Optimizaciones de chunks
     rollupOptions: {
       output: {
-        // Estrategia de code splitting optimizada
-        manualChunks: (id) => {
-          // Separar node_modules en chunks específicos
-          if (id.includes('node_modules')) {
-            // React core (más usado, cargar primero)
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'react-vendor';
-            }
-            
-            // PDF generation (pesado, cargar bajo demanda)
-            if (id.includes('jspdf') || id.includes('html2canvas')) {
-              return 'pdf-vendor';
-            }
-            
-            // Stripe (cargar solo cuando se necesita)
-            if (id.includes('@stripe')) {
-              return 'stripe-vendor';
-            }
-            
-            // Markdown (pesado, cargar bajo demanda)
-            if (id.includes('react-markdown') || id.includes('remark') || id.includes('rehype')) {
-              return 'markdown-vendor';
-            }
-            
-            // Framer Motion (animaciones, cargar bajo demanda)
-            if (id.includes('framer-motion')) {
-              return 'animation-vendor';
-            }
-            
-            // TanStack Query (cargar separado)
-            if (id.includes('@tanstack/react-query')) {
-              return 'query-vendor';
-            }
-            
-            // Form libraries
-            if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) {
-              return 'form-vendor';
-            }
-            
-            // UI libraries (Radix UI)
-            if (id.includes('@radix-ui')) {
-              return 'ui-vendor';
-            }
-            
-            // Date libraries
-            if (id.includes('date-fns')) {
-              return 'date-vendor';
-            }
-            
-            // Axios
-            if (id.includes('axios')) {
-              return 'http-vendor';
-            }
-            
-            // Librerías que dependen de React deben ir en react-vendor para evitar circular dependency
-            // lucide-react debe ir en react-vendor porque usa React internamente
-            if (id.includes('lucide-react')) {
-              return 'react-vendor';
-            }
-            
-            // Zustand y recharts también dependen de React
-            if (id.includes('zustand') || id.includes('recharts')) {
-              return 'react-vendor';
-            }
-            
-            // Otros vendors (tailwind, etc.)
-            return 'vendor-misc';
-          }
-          
-          // Separar páginas grandes en chunks propios
-          if (id.includes('/pages/admin/')) {
-            return 'admin-pages';
-          }
-          
-          if (id.includes('/pages/CRM') || id.includes('/pages/CRMDashboard')) {
-            return 'crm-pages';
-          }
-          
-          // PDF generators en chunk separado
-          if (id.includes('/utils/') && (id.includes('Pdf') || id.includes('pdf'))) {
-            return 'pdf-utils';
-          }
-        },
-        // Optimizar nombres de chunks
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]',
       },
     },
-    // Reducir límite de warnings para forzar optimización
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 2000,
     // Minificar con esbuild (más rápido que terser)
     minify: 'esbuild',
     // Eliminar console.log en producción (esbuild lo hace automáticamente)

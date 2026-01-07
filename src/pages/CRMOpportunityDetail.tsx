@@ -10,7 +10,8 @@ import { OpportunityScore } from '@/components/opportunities/OpportunityScore';
 import { FirstCallAttemptsRow } from '@/components/opportunities/FirstCallAttemptsRow';
 import { FirstCallAttemptDetail } from '@/components/opportunities/FirstCallAttemptDetail';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { ArrowLeft, Phone, Mail, MapPin, User, Edit, Activity } from 'lucide-react';
+import { ArrowLeft, Phone, Mail, MapPin, User, Edit } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getDetectionReasonBadges } from '@/utils/opportunity';
 import { opportunityApi } from '@/services/opportunityApi';
@@ -28,6 +29,8 @@ import { ContractDataRequestModal } from '@/components/opportunities/ContractDat
 import { RequestContractModal } from '@/components/opportunities/RequestContractModal';
 import { useContractRequest } from '@/hooks/useContractRequest';
 import { FileText, AlertCircle } from 'lucide-react';
+
+const { Activity } = LucideIcons;
 
 export function CRMOpportunityDetail() {
   const { id } = useParams<{ id: string }>();
