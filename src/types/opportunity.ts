@@ -39,6 +39,7 @@ export interface LeadOpportunity {
   first_call_attempts?: FirstCallAttempts; // Mapa de intentos 1-5
   first_call_completed?: boolean; // Indica si se completó la primera llamada
   first_call_successful_attempt?: number | null; // Número del intento exitoso (1-5)
+  notes?: string; // Notas adicionales sobre la oportunidad
   created_at: string; // ISO 8601
   updated_at: string; // ISO 8601
 }

@@ -104,7 +104,12 @@ export default defineConfig({
               return 'http-vendor';
             }
             
-            // Otros vendors (lucide-react, tailwind, etc.)
+            // Librerías que dependen de React deben ir en react-vendor para evitar circular dependency
+            if (id.includes('lucide-react') || id.includes('zustand') || id.includes('recharts')) {
+              return 'react-vendor';
+            }
+            
+            // Otros vendors (tailwind, etc.)
             return 'vendor-misc';
           }
           

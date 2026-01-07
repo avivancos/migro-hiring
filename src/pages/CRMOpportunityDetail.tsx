@@ -40,6 +40,10 @@ export function CRMOpportunityDetail() {
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [showRequestContractModal, setShowRequestContractModal] = useState(false);
+  const [showDiscardModal, setShowDiscardModal] = useState(false);
+  const [discardReason, setDiscardReason] = useState('trabaja con otro abogado');
+  const [customDiscardReason, setCustomDiscardReason] = useState('');
+  const [isDiscarding, setIsDiscarding] = useState(false);
   
   // Cargar usuarios responsables usando el hook optimizado
   const { users: filteredUsers, loading: loadingUsers } = useCRMUsers({ isActive: true, onlyResponsibles: true });
@@ -234,6 +238,48 @@ export function CRMOpportunityDetail() {
     } catch (error) {
       console.error('Error asignando agente:', error);
       alert('Error al asignar agente. Por favor intenta de nuevo.');
+    }
+  };
+
+  const discardReasons = [
+    'trabaja con otro abogado',
+    'ya regularizado',
+    'no le interesa',
+    'otros',
+  ];
+
+  const handleDiscardOpportunity = async () => {
+    if (!opportunity) return;
+
+    const reason =
+      discardReason === 'otros'
+        ? customDiscardReason.trim()
+        : discardReason;
+
+    if (!reason) {
+      alert('Selecciona o escribe un motivo para descartar.');
+      return;
+    }
+
+    setIsDiscarding(true);
+    try {
+      const notes = opportunity.notes
+        ? `${opportunity.notes}\n\n[Descarte] ${reason}`
+        : `[Descarte] ${reason}`;
+
+      await opportunityApi.update(opportunity.id, {
+        status: 'lost',
+        notes,
+      });
+
+      queryClient.invalidateQueries({ queryKey: ['opportunity', opportunity.id] });
+      queryClient.invalidateQueries({ queryKey: ['opportunities'] });
+      setShowDiscardModal(false);
+    } catch (error) {
+      console.error('Error descartando oportunidad:', error);
+      alert('No se pudo descartar la oportunidad. Intenta nuevamente.');
+    } finally {
+      setIsDiscarding(false);
     }
   };
 
@@ -443,6 +489,13 @@ export function CRMOpportunityDetail() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={() => setShowDiscardModal(true)}
+                  >
+                    Descartar oportunidad
+                  </Button>
+                  <Button
                     variant="default"
                     className="w-full bg-purple-600 hover:bg-purple-700"
                     onClick={() => navigate(`/crm/opportunities/${opportunity.id}/analyze`)}
@@ -598,6 +651,75 @@ export function CRMOpportunityDetail() {
           }}
         />
       )}
+
+      {/* Modal para descartar oportunidad */}
+      <Modal
+        open={showDiscardModal}
+        onClose={() => {
+          if (isDiscarding) return;
+          setShowDiscardModal(false);
+        }}
+        title="Descartar oportunidad"
+        size="md"
+        footer={
+          <>
+            <Button
+              variant="outline"
+              onClick={() => setShowDiscardModal(false)}
+              disabled={isDiscarding}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDiscardOpportunity}
+              disabled={isDiscarding}
+            >
+              {isDiscarding ? 'Guardando...' : 'Descartar'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-700">
+            Marca la oportunidad como perdida e indica el motivo.
+          </p>
+          <div className="space-y-3">
+            {discardReasons.map((reason) => (
+              <label
+                key={reason}
+                className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 hover:border-primary/50 cursor-pointer"
+              >
+                <input
+                  type="radio"
+                  name="discard-reason"
+                  value={reason}
+                  checked={discardReason === reason}
+                  onChange={() => setDiscardReason(reason)}
+                />
+                <span className="text-sm text-gray-800 capitalize">
+                  {reason}
+                </span>
+              </label>
+            ))}
+          </div>
+          {discardReason === 'otros' && (
+            <div className="space-y-1">
+              <Label htmlFor="discard-other" className="text-sm font-medium text-gray-700">
+                Detalla el motivo
+              </Label>
+              <textarea
+                id="discard-other"
+                value={customDiscardReason}
+                onChange={(e) => setCustomDiscardReason(e.target.value)}
+                className="w-full rounded-md border border-gray-300 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary min-h-[90px]"
+                placeholder="Escribe el motivo"
+                disabled={isDiscarding}
+              />
+            </div>
+          )}
+        </div>
+      </Modal>
 
       {/* Modal para solicitar contrato */}
       <RequestContractModal
