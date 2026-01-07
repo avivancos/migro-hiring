@@ -5,7 +5,8 @@ const express = require('express')
 
 const app = express()
 
-const PORT = Number(process.env.PORT || 3000)
+// Puerto por defecto 5000 para evitar conflictos locales; Render inyecta PORT.
+const PORT = Number(process.env.PORT || 5000)
 const DIST_DIR = path.join(__dirname, 'dist')
 
 // Health check (Render)
