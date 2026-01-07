@@ -38,6 +38,8 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 - [x] Botón para descartar oportunidad con motivo (marca `lost` y agrega motivo en notas).
   - [x] Documentación backend: `docs/BACKEND_OPPORTUNITY_DISCARD_ENDPOINT.md` ✅
   - [x] Documentación frontend: `docs/FRONTEND_OPPORTUNITY_DISCARD_BUTTON.md` ✅
+- [x] Configuración Render como **Node Web Service** (Vite + Express) + blueprint `render-node.yaml`.
+  - [x] Documentación: `docs/RENDER_NODE_WEB_SERVICE.md` ✅
 - [x] Modelo de convenio freelance para agentes de ventas documentado en `docs/CONVENIO_COLABORACION_FREELANCE_AGENTES_VENTAS.md`.
 
 ### ✅ Sistema de Gestión de Zonas Horarias (Enero 2025)

@@ -2,6 +2,9 @@
   "name": "migro-hiring",
   "version": "1.0.0",
   "description": "Sistema de Contratación Migro - Frontend React",
+  "engines": {
+    "node": "20.x"
+  },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-checkbox": "^1.3.3",
@@ -31,7 +34,8 @@
     "sql.js": "^1.13.0",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.1.12",
-    "zustand": "^5.0.8"
+    "zustand": "^5.0.8",
+    "express": "^4.19.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
@@ -62,6 +66,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "start": "node server.js",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",

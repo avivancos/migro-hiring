@@ -1,0 +1,38 @@
+# Render Blueprint - Node Web Service (sirviendo Vite dist con Express)
+# Útil si quieres un "Web Service" (Node) en vez de "Static Site".
+#
+# En Render Dashboard:
+# - Build Command: npm ci --legacy-peer-deps && npm run build
+# - Start Command: npm start
+# - Health Check Path: /healthz
+#
+# Nota: Para SPA routing, el server hace fallback a dist/index.html.
+
+services:
+  - type: web
+    name: migro-hiring-node
+    runtime: node
+    plan: free
+    region: ohio
+
+    buildCommand: npm ci --legacy-peer-deps && npm run build
+    startCommand: npm start
+
+    healthCheckPath: /healthz
+
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: VITE_API_BASE_URL
+        value: https://api.migro.es/api
+      - key: VITE_APP_URL
+        value: https://contratacion.migro.es
+      - key: VITE_STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: VITE_DEBUG_MODE
+        value: "false"
+      - key: VITE_API_TIMEOUT
+        value: "30000"
+
+    autoDeploy: true
+
