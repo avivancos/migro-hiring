@@ -222,6 +222,27 @@ Chunks generados:
 
 ---
 
+### 7. ✅ Scripts de Auto-Repair Corrompen iconMapping.ts
+
+**Problema:**
+- Los scripts de auto-repair (`fix-icon-references.js`, `fix-icon-names.js`, `fix-imports-and-references.js`) procesaban todos los archivos `.ts` y `.tsx` en `src/`
+- Esto incluía `src/utils/iconMapping.ts`, que es un archivo de configuración/mapping
+- Los scripts hacían reemplazos incorrectos en este archivo, corrompiendo su sintaxis
+- Error durante build de Docker: `src/utils/iconMapping.ts(110,1): error TS1005: '=' expected.`
+
+**Solución:**
+- Excluido `iconMapping.ts` de los scripts de auto-repair
+- Agregada validación en `findFiles()` para saltar archivos que contengan `iconMapping.ts`
+
+**Archivos modificados:**
+- `scripts/fix-icon-references.js` - Excluye `iconMapping.ts`
+- `scripts/fix-icon-names.js` - Excluye `iconMapping.ts`
+- `scripts/fix-imports-and-references.js` - Excluye `iconMapping.ts`
+
+**Nota:** `iconMapping.ts` es un archivo de configuración que mapea iconos de lucide-react a @heroicons/react, y no debe ser modificado por scripts de auto-repair.
+
+---
+
 ## Próximos Pasos Recomendados
 
 1. ⏳ Optimizar tamaño de chunks (code-splitting adicional)

@@ -117,7 +117,10 @@ function findFiles(dir, fileList = []) {
     if (stat.isDirectory() && !filePath.includes('node_modules')) {
       findFiles(filePath, fileList);
     } else if ((file.endsWith('.tsx') || file.endsWith('.ts')) && filePath.includes('src')) {
-      fileList.push(filePath);
+      // Excluir iconMapping.ts ya que es un archivo de configuración
+      if (!filePath.includes('iconMapping.ts')) {
+        fileList.push(filePath);
+      }
     }
   });
   

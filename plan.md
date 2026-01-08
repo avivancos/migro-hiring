@@ -46,6 +46,19 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [x] Plantilla `docker/nginx.conf.template` (SPA fallback, `/healthz`).
   - [x] Script `docker/entrypoint.sh` genera config y lanza nginx.
   - [x] Documentación: `docs/RENDER_DOCKER_WEB_SERVICE.md` ✅
+- [x] Fix: Error de validación UUID para `responsible_user_id` en CallForm (error 422 con cadena vacía).
+  - [x] Validador Pydantic implementado para convertir cadenas vacías a `None` antes de validación.
+  - [x] Documentación: `docs/BACKEND_CALL_FORM_UUID_VALIDATION_FIX.md` ✅
+- [x] Guía: Manejo de errores de validación en el frontend (formato 422 con `field_errors`).
+  - [x] Documentación completa con ejemplos de código y mejores prácticas.
+  - [x] Hook personalizado opcional para reutilizar lógica de errores.
+  - [x] Documentación: `docs/FRONTEND_VALIDATION_ERROR_HANDLING.md` ✅
+- [x] Especificación: Formato de errores de validación para el backend.
+  - [x] Formato JSON exacto que debe devolver el backend (422).
+  - [x] Implementación de exception handlers en FastAPI.
+  - [x] Traducción de mensajes de error al español.
+  - [x] Ejemplos completos de código y respuestas.
+  - [x] Documentación: `docs/BACKEND_VALIDATION_ERROR_FORMAT.md` ✅
 
 ### ✅ Sistema de Gestión de Zonas Horarias (Enero 2025)
 - [x] Implementación completa del sistema de zonas horarias ✅
