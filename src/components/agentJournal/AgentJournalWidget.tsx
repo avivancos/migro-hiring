@@ -1,3 +1,4 @@
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 // AgentJournalWidget - Widget para mostrar métricas del Agent Daily Journal en el dashboard
 
 import { useState } from 'react';

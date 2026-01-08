@@ -243,6 +243,38 @@ Chunks generados:
 
 ---
 
+### 8. ✅ Imports de Iconos Faltantes en Build de Docker
+
+**Problema:**
+- Durante el build de Docker, varios archivos mostraban errores de TypeScript: `Cannot find name 'XIcon'`
+- Los iconos se estaban usando en JSX pero no estaban importados correctamente
+- Error durante build de Docker: Múltiples archivos con errores como `error TS2304: Cannot find name 'ArrowPathIcon'`, `XCircleIcon`, `EyeIcon`, etc.
+
+**Archivos afectados:**
+- `src/components/ContractSuccess.tsx` - ArrowPathIcon, ArrowDownTrayIcon, HomeIcon
+- `src/components/expedientes/ExpedienteFiles.tsx` - XCircleIcon, EyeIcon
+- `src/components/pipelines/PipelineActionsList.tsx` - XCircleIcon, PlusIcon
+- `src/components/pipelines/Wizards/Steps/ReviewChangesStep.tsx` - UserIcon, FlagIcon, ExclamationCircleIcon
+- `src/pages/CRMActions.tsx` - ExclamationCircleIcon, UserIcon, ArrowRightIcon
+
+**Causa:**
+- Los scripts de auto-repair estaban procesando los archivos y eliminando o modificando incorrectamente los imports de iconos
+- El script `fix-imports-and-references.js` tenía un bug al combinar imports duplicados que podía eliminar líneas de import válidas
+
+**Solución:**
+1. Creado nuevo script `fix-missing-icon-imports.js` que detecta automáticamente iconos usados y verifica que estén importados
+2. Mejorado `fix-imports-and-references.js` para que combine imports correctamente sin eliminar líneas válidas
+3. Agregado `fix-missing-icon-imports.js` al Dockerfile para que se ejecute después de los otros scripts de auto-repair
+
+**Archivos modificados:**
+- `scripts/fix-missing-icon-imports.js` - Nuevo script creado
+- `scripts/fix-imports-and-references.js` - Corregido bug de combinación de imports
+- `Dockerfile` - Agregado script antes del build
+
+**Nota:** El script `fix-missing-icon-imports.js` detecta automáticamente todos los iconos Heroicons usados en el código (como componentes JSX) y verifica que estén correctamente importados, agregando los imports faltantes si es necesario.
+
+---
+
 ## Próximos Pasos Recomendados
 
 1. ⏳ Optimizar tamaño de chunks (code-splitting adicional)

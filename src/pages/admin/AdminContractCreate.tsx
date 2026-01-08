@@ -1,3 +1,4 @@
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 // Admin Contract Create - Crear nuevo contrato (hiring code)
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';

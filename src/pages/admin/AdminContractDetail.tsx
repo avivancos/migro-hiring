@@ -1,3 +1,4 @@
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 // Admin Contract Detail - Detalle de contrato con UI mobile-first
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';

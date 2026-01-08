@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { formatCallStatus } from '@/utils/statusTranslations';
 import type { Call, CRMUser } from '@/types/crm';
 import { crmService } from '@/services/crmService';
-import { CalendarIcon, ClockIcon, PhoneIcon, PhoneXMarkIcon, UserIcon, PlayIcon, PauseIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon, ClockIcon, PauseIcon, PhoneIcon, PhoneXMarkIcon, PlayIcon, UserIcon } from '@heroicons/react/24/outline';
 
 interface CallHistoryProps {
   entityType: 'lead' | 'contact';

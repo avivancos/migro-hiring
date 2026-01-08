@@ -1,3 +1,4 @@
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 // Approve Hiring Code Page - Aprobación de código de contratación con token hash
 // Ruta pública: /admin/approve-hiring-code?token={token_hash}
 import { useEffect, useState } from 'react';

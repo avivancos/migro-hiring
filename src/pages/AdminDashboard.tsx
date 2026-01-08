@@ -1,3 +1,4 @@
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 // Admin Dashboard - Create Hiring Codes
 
 import { useState, useEffect } from 'react';

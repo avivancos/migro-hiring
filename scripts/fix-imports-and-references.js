@@ -10,7 +10,7 @@ function fixFile(filePath) {
   const fixedLines = [];
   const seenImports = new Map(); // Para rastrear imports por módulo
 
-  lines.forEach(line => {
+  lines.forEach((line, lineIndex) => {
     if (line.trim().startsWith('import ') && line.includes('@heroicons')) {
       // Extraer el módulo
       const moduleMatch = line.match(/from\s+['"](@heroicons\/react\/[^'"]+)['"]/);
@@ -31,11 +31,22 @@ function fixFile(filePath) {
             const existing = seenImports.get(module);
             const combined = [...new Set([...existing, ...uniqueItems])];
             seenImports.set(module, combined);
-            // No agregar esta línea, ya la tenemos
+            // Actualizar la línea anterior con todos los iconos combinados
+            // Buscar la línea anterior del mismo módulo
+            for (let i = fixedLines.length - 1; i >= 0; i--) {
+              if (fixedLines[i].includes(module)) {
+                const moduleMatch2 = fixedLines[i].match(/from\s+['"](@heroicons\/react\/[^'"]+)['"]/);
+                if (moduleMatch2 && moduleMatch2[1] === module) {
+                  fixedLines[i] = fixedLines[i].replace(/{[^}]+}/, `{ ${combined.sort().join(', ')} }`);
+                  break;
+                }
+              }
+            }
+            // No agregar esta línea duplicada
             return;
           } else {
             seenImports.set(module, uniqueItems);
-            const newLine = line.replace(/{[^}]+}/, `{ ${uniqueItems.join(', ')} }`);
+            const newLine = line.replace(/{[^}]+}/, `{ ${uniqueItems.sort().join(', ')} }`);
             fixedLines.push(newLine);
             return;
           }
