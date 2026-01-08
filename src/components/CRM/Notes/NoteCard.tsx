@@ -6,17 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { Note } from '@/types/crm';
 import { formatDateTime } from '@/utils/formatters';
-import {
-  MessageSquare,
-  Phone,
-  Mail,
-  Settings,
-  User,
-  ChevronRight,
-  Eye,
-  Trash2,
-  Edit,
-} from 'lucide-react';
+import { ChatBubbleLeftIcon, ChevronRightIcon, Cog6ToothIcon, EnvelopeIcon, EyeIcon, PencilIcon, PhoneIcon, TrashIcon, UserIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/hooks/useAuth';
 
 interface NoteCardProps {
@@ -41,13 +31,13 @@ export default function NoteCard({
   const getNoteTypeIcon = (type?: string | null) => {
     switch (type) {
       case 'call':
-        return Phone;
+        return PhoneIcon;
       case 'email':
-        return Mail;
+        return EnvelopeIcon;
       case 'system':
-        return Settings;
+        return Cog6ToothIcon;
       default:
-        return MessageSquare;
+        return ChatBubbleLeftIcon;
     }
   };
 
@@ -78,7 +68,7 @@ export default function NoteCard({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className="p-2 rounded-lg bg-gray-100">
-              <Icon size={18} className="text-gray-600" />
+              <Icon width={18} height={18} className="text-gray-600" />
             </div>
             <span className="text-sm font-medium text-gray-900">
               {getNoteTypeLabel(note.note_type)}
@@ -102,10 +92,10 @@ export default function NoteCard({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-2">
-              <User size={16} className="text-gray-600" />
+              <UserIcon width={16} height={16} className="text-gray-600" />
               <span className="text-sm font-medium text-gray-900">Ver contacto</span>
             </div>
-            <ChevronRight size={16} className="text-gray-400" />
+            <ChevronRightIcon width={16} height={16} className="text-gray-400" />
           </Link>
         )}
 
@@ -122,7 +112,7 @@ export default function NoteCard({
                 variant="outline"
                 className="w-full"
               >
-                <Eye size={16} className="mr-1" />
+                <EyeIcon width={16} height={16} className="mr-1" />
                 Detalles
               </Button>
             </Link>
@@ -135,7 +125,7 @@ export default function NoteCard({
                   onEdit(note);
                 }}
               >
-                <Edit size={16} />
+                <PencilIcon width={16} height={16} />
               </Button>
             )}
             {canEdit && onDelete && (
@@ -149,7 +139,7 @@ export default function NoteCard({
                   }
                 }}
               >
-                <Trash2 size={16} />
+                <TrashIcon width={16} height={16} />
               </Button>
             )}
           </div>

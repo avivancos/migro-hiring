@@ -117,10 +117,3 @@ export function usePagePerformanceTrace({
   }, [pageName, location.pathname, enabled, metadata]);
 }
 
-
-
-
-
-
-
-

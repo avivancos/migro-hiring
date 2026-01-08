@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { OpportunityFilters as OpportunityFiltersType } from '@/types/opportunity';
 import type { LeadOpportunity } from '@/types/opportunity';
-import { X, Filter, Search } from 'lucide-react';
+import { FunnelIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { getValidAttemptsCount } from '@/utils/opportunity';
 
 interface OpportunityFiltersProps {
@@ -149,7 +149,7 @@ export function OpportunityFilters({
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             {/* Search */}
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Buscar por contacto, email, teléfono..."
                 value={filters.search || ''}
@@ -165,7 +165,7 @@ export function OpportunityFilters({
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-2"
               >
-                <Filter className="w-4 h-4" />
+                <FunnelIcon className="w-4 h-4" />
                 <span>Filtros</span>
                 {hasActiveFilters && (
                   <span className="ml-1 bg-green-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
@@ -179,7 +179,7 @@ export function OpportunityFilters({
                   onClick={clearAllFilters}
                   className="text-red-600 hover:text-red-700"
                 >
-                  <X className="w-4 h-4 mr-2" />
+                  <XMarkIcon className="w-4 h-4 mr-2" />
                   Limpiar
                 </Button>
               )}
@@ -362,5 +362,4 @@ export function OpportunityFilters({
     </Card>
   );
 }
-
 

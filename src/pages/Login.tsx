@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
-import { LogIn, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeftOnRectangleIcon, ArrowPathIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 
 export function Login() {
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ export function Login() {
       <Card className="max-w-md w-full shadow-xl">
         <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10">
           <CardTitle className="text-3xl text-center text-emphasis-900 flex items-center justify-center gap-2">
-            <LogIn size={32} className="text-primary" />
+            <ArrowLeftOnRectangleIcon width={32} height={32} className="text-primary" />
             Iniciar Sesión
           </CardTitle>
         </CardHeader>
@@ -71,7 +71,7 @@ export function Login() {
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg flex items-center gap-2">
-                <AlertCircle size={18} />
+                <ExclamationCircleIcon width={18} height={18} />
                 <p className="text-sm">{error}</p>
               </div>
             )}
@@ -83,7 +83,7 @@ export function Login() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 animate-spin" size={18} />
+                  <ArrowPathIcon className="mr-2 animate-spin" width={18} height={18} />
                   Iniciando sesión...
                 </>
               ) : (

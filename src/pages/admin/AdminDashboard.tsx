@@ -3,14 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Users,
-  UserPlus,
-  FileText,
-  DollarSign,
-  Clock,
-  ArrowRight,
-} from 'lucide-react';
+import { ArrowRightIcon, ClockIcon, CurrencyDollarIcon, DocumentTextIcon, UserPlusIcon, UsersIcon } from '@heroicons/react/24/outline';
 
 interface DashboardStats {
   totalUsers: number;
@@ -40,8 +33,7 @@ export function AdminDashboard() {
   const loadDashboardStats = async () => {
     setLoading(true);
     try {
-      // TODO: Implementar llamadas reales a la API cuando estén disponibles
-      // Por ahora usamos datos mock
+            // Por ahora usamos datos mock
       const mockStats: DashboardStats = {
         totalUsers: 0,
         activeUsers: 0,
@@ -92,7 +84,7 @@ export function AdminDashboard() {
             onClick={() => navigate('/admin/users/create')}
             className="flex items-center gap-2"
           >
-            <UserPlus size={18} />
+            <UserPlusIcon width={18} height={18} />
             <span className="hidden sm:inline">Nuevo Usuario</span>
             <span className="sm:hidden">Nuevo</span>
           </Button>
@@ -104,7 +96,7 @@ export function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Usuarios</CardTitle>
-              <Users className="h-4 w-4 text-gray-500" />
+              <UsersIcon className="h-4 w-4 text-gray-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalUsers}</div>
@@ -118,7 +110,7 @@ export function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Contratos</CardTitle>
-              <FileText className="h-4 w-4 text-gray-500" />
+              <DocumentTextIcon className="h-4 w-4 text-gray-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalContracts}</div>
@@ -132,7 +124,7 @@ export function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
-              <Clock className="h-4 w-4 text-warning" />
+              <ClockIcon className="h-4 w-4 text-warning" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-warning-dark">{stats.pendingContracts}</div>
@@ -146,7 +138,7 @@ export function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Ingresos</CardTitle>
-              <DollarSign className="h-4 w-4 text-success" />
+              <CurrencyDollarIcon className="h-4 w-4 text-success" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-success-dark">
@@ -167,7 +159,7 @@ export function AdminDashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
+                <UsersIcon className="h-5 w-5" />
                 Gestión de Usuarios
               </CardTitle>
             </CardHeader>
@@ -181,7 +173,7 @@ export function AdminDashboard() {
                 className="w-full flex items-center justify-between"
               >
                 <span>Ver todos los usuarios</span>
-                <ArrowRight size={16} />
+                <ArrowRightIcon width={16} height={16} />
               </Button>
             </CardContent>
           </Card>
@@ -189,7 +181,7 @@ export function AdminDashboard() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+                <DocumentTextIcon className="h-5 w-5" />
                 Gestión de Contratos
               </CardTitle>
             </CardHeader>
@@ -203,7 +195,7 @@ export function AdminDashboard() {
                 className="w-full flex items-center justify-between"
               >
                 <span>Ir a contratos</span>
-                <ArrowRight size={16} />
+                <ArrowRightIcon width={16} height={16} />
               </Button>
             </CardContent>
           </Card>

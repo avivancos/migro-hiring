@@ -12,17 +12,7 @@ const formatTime = (dateString: string): string => {
   const date = new Date(dateString);
   return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 };
-import {
-  Phone,
-  Mail,
-  Users,
-  Bell,
-  CheckSquare,
-  Calendar,
-  User,
-  ChevronRight,
-  Eye,
-} from 'lucide-react';
+import { BellIcon, CalendarIcon, CheckIcon, ChevronRightIcon, EnvelopeIcon, EyeIcon, PhoneIcon, UserIcon, UsersIcon } from '@heroicons/react/24/outline';
 
 interface TaskCardProps {
   task: Task;
@@ -44,15 +34,15 @@ export default function TaskCard({
   const getTaskTypeIcon = (type?: string | null) => {
     switch (type) {
       case 'call':
-        return Phone;
+        return PhoneIcon;
       case 'meeting':
-        return Users;
+        return UsersIcon;
       case 'email':
-        return Mail;
+        return EnvelopeIcon;
       case 'reminder':
-        return Bell;
+        return BellIcon;
       default:
-        return CheckSquare;
+        return CheckIcon;
     }
   };
 
@@ -82,7 +72,7 @@ export default function TaskCard({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <div className={`p-2 rounded-lg ${task.is_completed ? 'bg-gray-100' : isOverdue ? 'bg-red-100' : 'bg-blue-100'}`}>
-              <Icon size={18} className={task.is_completed ? 'text-gray-600' : isOverdue ? 'text-red-600' : 'text-blue-600'} />
+              <Icon width={18} height={18} className={task.is_completed ? 'text-gray-600' : isOverdue ? 'text-red-600' : 'text-blue-600'} />
             </div>
             <span className={`text-sm font-medium ${task.is_completed ? 'text-gray-600' : isOverdue ? 'text-red-600' : 'text-gray-900'}`}>
               {getTaskTypeLabel(task.task_type)}
@@ -109,7 +99,7 @@ export default function TaskCard({
           {/* Fecha límite destacada */}
           {task.complete_till && (
             <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-              <Calendar size={14} />
+              <CalendarIcon width={14} height={14} />
               <span>
                 {formatDate(task.complete_till)} a las {formatTime(task.complete_till)}
               </span>
@@ -124,13 +114,13 @@ export default function TaskCard({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center gap-2">
-                <User size={16} className="text-gray-600" />
+                <UserIcon width={16} height={16} className="text-gray-600" />
                 <div className="text-sm">
                   <div className="text-gray-500">Contacto</div>
                   <div className="font-medium text-gray-900">{task.contact_name}</div>
                 </div>
               </div>
-              <ChevronRight size={16} className="text-gray-400" />
+              <ChevronRightIcon width={16} height={16} className="text-gray-400" />
             </Link>
           )}
 
@@ -142,7 +132,7 @@ export default function TaskCard({
               onClick={(e) => e.stopPropagation()}
             >
               Ver {task.entity_type === 'contacts' ? 'contacto' : task.entity_type === 'leads' ? 'lead' : 'entidad'}
-              <ChevronRight size={14} />
+              <ChevronRightIcon width={14} height={14} />
             </Link>
           )}
         </div>
@@ -159,7 +149,7 @@ export default function TaskCard({
                   onComplete(task.id);
                 }}
               >
-                <CheckSquare size={16} className="mr-1" />
+                <CheckIcon width={16} height={16} className="mr-1" />
                 Completar
               </Button>
             )}
@@ -173,7 +163,7 @@ export default function TaskCard({
                 variant="outline"
                 className="w-full"
               >
-                <Eye size={16} className="mr-1" />
+                <EyeIcon width={16} height={16} className="mr-1" />
                 Detalles
               </Button>
             </Link>

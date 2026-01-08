@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/24/outline';
 import { Skeleton } from '@/components/common/Skeleton';
 import type { ComponentType } from 'react';
 
@@ -68,9 +68,9 @@ export function MetricCard({
             change.isPositive ? 'text-green-600' : 'text-red-600'
           )}>
             {change.isPositive ? (
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUpIcon className="h-4 w-4" />
             ) : (
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDownIcon className="h-4 w-4" />
             )}
             <span>
               {change.value >= 0 ? '+' : ''}{change.value.toFixed(1)}%

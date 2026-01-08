@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { WizardField } from './WizardField';
 import { WizardGuidance } from './WizardGuidance';
 import type { WizardStepResponse, WizardGuidance as WizardGuidanceType } from '@/types/wizard';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
 interface WizardStepProps {
   step: WizardStepResponse;
@@ -89,7 +89,7 @@ export function WizardStep({
             onClick={onPrevious}
             disabled={!onPrevious}
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
+            <ChevronLeftIcon className="h-4 w-4 mr-1" />
             Anterior
           </Button>
           <Button
@@ -97,7 +97,7 @@ export function WizardStep({
             disabled={!canAdvance || !step.can_advance}
           >
             Siguiente
-            <ChevronRight className="h-4 w-4 ml-1" />
+            <ChevronRightIcon className="h-4 w-4 ml-1" />
           </Button>
         </div>
       </CardContent>

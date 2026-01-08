@@ -57,8 +57,3 @@ export function isAdminOrSuperuser(userRole: string | undefined, isSuperuser?: b
   return userRole === 'admin' || userRole === 'superuser' || isSuperuser === true;
 }
 
-
-
-
-
-

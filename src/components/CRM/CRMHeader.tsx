@@ -6,24 +6,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/providers/AuthProvider';
 import { crmService } from '@/services/crmService';
 import type { Contact } from '@/types/crm';
-import {
-  LayoutDashboard,
-  Users,
-  Calendar,
-  Phone,
-  FileText,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-  Search,
-  Mail,
-  MapPin,
-  Flag,
-  Loader2,
-  CheckSquare,
-  TrendingUp,
-} from 'lucide-react';
+import { ArrowPathIcon, ArrowRightOnRectangleIcon, ArrowTrendingUpIcon, Bars3Icon, CalendarIcon, CheckIcon, Cog6ToothIcon, DocumentTextIcon, EnvelopeIcon, FlagIcon, MagnifyingGlassIcon, MapPinIcon, PhoneIcon, Squares2X2Icon, UsersIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { MigroLogo } from '@/components/common/MigroLogo';
 import { useState, useEffect, useRef } from 'react';
 import { Switch } from '@/components/ui/switch';
@@ -127,13 +110,13 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
   };
 
   const navItems = [
-    { path: '/crm', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/crm/contacts', label: 'Contactos', icon: Users },
-    { path: '/crm/opportunities', label: 'Oportunidades', icon: TrendingUp },
-    { path: '/crm/tasks', label: 'Tareas', icon: CheckSquare },
-    { path: '/crm/calendar', label: 'Calendario', icon: Calendar },
-    { path: '/crm/expedientes', label: 'Expedientes', icon: FileText },
-    { path: '/crm/settings', label: 'Configuración', icon: Settings },
+    { path: '/crm', label: 'Dashboard', icon: Squares2X2Icon },
+    { path: '/crm/contacts', label: 'Contactos', icon: UsersIcon },
+    { path: '/crm/opportunities', label: 'Oportunidades', icon: ArrowTrendingUpIcon },
+    { path: '/crm/tasks', label: 'Tareas', icon: CheckIcon },
+    { path: '/crm/calendar', label: 'Calendario', icon: CalendarIcon },
+    { path: '/crm/expedientes', label: 'Expedientes', icon: DocumentTextIcon },
+    { path: '/crm/settings', label: 'Configuración', icon: Cog6ToothIcon },
   ];
 
   return (
@@ -153,7 +136,7 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
           {location.pathname !== '/' && (
             <div ref={searchRef} className="hidden md:block relative mx-2 md:mx-4 flex-1 max-w-md">
             <div className="relative">
-              <Search className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 md:w-4 md:h-4" />
+              <MagnifyingGlassIcon className="absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 md:w-4 md:h-4" />
               <Input
                 type="text"
                 placeholder="Buscar contactos..."
@@ -168,7 +151,7 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
                 className="pl-8 md:pl-10 pr-3 md:pr-4 w-full text-sm md:text-base h-9 md:h-10"
               />
               {isSearching && (
-                <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 animate-spin" />
+                <ArrowPathIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 animate-spin" />
               )}
             </div>
 
@@ -177,7 +160,7 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
               <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
                 {isSearching && searchQuery.length >= 2 ? (
                   <div className="p-4 text-center text-gray-500">
-                    <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+                    <ArrowPathIcon className="w-5 h-5 animate-spin mx-auto mb-2" />
                     <p className="text-sm">Buscando...</p>
                   </div>
                 ) : searchResults.length > 0 ? (
@@ -204,25 +187,25 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
                             <div className="mt-1 space-y-1">
                               {contact.email && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <Mail className="w-3 h-3 flex-shrink-0" />
+                                  <EnvelopeIcon className="w-3 h-3 flex-shrink-0" />
                                   <span className="truncate">{contact.email}</span>
                                 </div>
                               )}
                               {(contact.phone || contact.mobile) && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <Phone className="w-3 h-3 flex-shrink-0" />
+                                  <PhoneIcon className="w-3 h-3 flex-shrink-0" />
                                   <span className="truncate">{contact.phone || contact.mobile}</span>
                                 </div>
                               )}
                               {contact.city && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <MapPin className="w-3 h-3 flex-shrink-0" />
+                                  <MapPinIcon className="w-3 h-3 flex-shrink-0" />
                                   <span className="truncate">{contact.city}{contact.state ? `, ${contact.state}` : ''}</span>
                                 </div>
                               )}
                               {contact.nacionalidad && (
                                 <div className="flex items-center gap-2 text-sm text-gray-600">
-                                  <Flag className="w-3 h-3 flex-shrink-0" />
+                                  <FlagIcon className="w-3 h-3 flex-shrink-0" />
                                   <span className="truncate">{contact.nacionalidad}</span>
                                 </div>
                               )}
@@ -259,7 +242,7 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
           {location.pathname !== '/' && (
             <div ref={searchRef} className="md:hidden relative flex-1 mx-1 sm:mx-2 min-w-0">
               <div className="relative">
-                <Search className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
+                <MagnifyingGlassIcon className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
                 <Input
                   type="text"
                   placeholder="Buscar..."
@@ -274,7 +257,7 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
                   className="pl-8 sm:pl-10 pr-3 sm:pr-4 w-full text-xs sm:text-sm h-8 sm:h-9"
                 />
                 {isSearching && (
-                  <Loader2 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 animate-spin" />
+                  <ArrowPathIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 animate-spin" />
                 )}
               </div>
               {/* Dropdown de resultados móvil */}
@@ -282,7 +265,7 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
                   {isSearching && searchQuery.length >= 2 ? (
                     <div className="p-4 text-center text-gray-500">
-                      <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+                      <ArrowPathIcon className="w-5 h-5 animate-spin mx-auto mb-2" />
                       <p className="text-sm">Buscando...</p>
                     </div>
                   ) : searchResults.length > 0 ? (
@@ -357,7 +340,7 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
               className="flex items-center justify-center p-1.5 sm:p-2 h-8 sm:h-9 md:h-10"
               aria-label="Menú de navegación"
             >
-              {mobileMenuOpen ? <X size={18} className="sm:w-5 sm:h-5" /> : <Menu size={18} className="sm:w-5 sm:h-5" />}
+              {mobileMenuOpen ? <XMarkIcon width={18} height={18} className="sm:w-5 sm:h-5" /> : <Bars3Icon width={18} height={18} className="sm:w-5 sm:h-5" />}
             </Button>
           </div>
         </div>
@@ -405,7 +388,7 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                     >
-                      <Icon size={16} className="md:w-[18px] md:h-[18px]" />
+                      <Icon width={16} height={16} className="md:w-[18px] md:h-[18px]" />
                       {item.label}
                     </Link>
                   );
@@ -419,7 +402,7 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
                 size="sm"
                 className="flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-red-600 hover:text-red-700 hover:bg-red-50"
               >
-                <LogOut size={16} className="md:w-[18px] md:h-[18px]" />
+                <ArrowRightOnRectangleIcon width={16} height={16} className="md:w-[18px] md:h-[18px]" />
                 <span>Cerrar Sesión</span>
               </Button>
             </div>
@@ -476,7 +459,7 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                         }`}
                       >
-                        <Icon size={20} />
+                        <Icon width={20} height={20} />
                         {item.label}
                       </Link>
                     );
@@ -494,7 +477,7 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
                   variant="ghost"
                   className="w-full flex items-center gap-3 justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
                 >
-                  <LogOut size={20} />
+                  <ArrowRightOnRectangleIcon width={20} height={20} />
                   <span className="text-sm font-medium">Cerrar Sesión</span>
                 </Button>
               </div>

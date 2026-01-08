@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, FileText } from 'lucide-react';
+import { ArrowDownTrayIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
 interface ContractViewerProps {
   contractBlob: Blob | null;
@@ -42,7 +42,7 @@ export function ContractViewer({ contractBlob, onDownload }: ContractViewerProps
   if (!contractBlob || !pdfUrl) {
     return (
       <div className="bg-gray-100 rounded-lg p-8 text-center">
-        <FileText className="mx-auto mb-4 text-gray-400" size={48} />
+        <DocumentTextIcon className="mx-auto mb-4 text-gray-400" width={48} height={48} />
         <p className="text-gray-600">Generando contrato...</p>
       </div>
     );
@@ -53,7 +53,7 @@ export function ContractViewer({ contractBlob, onDownload }: ContractViewerProps
       <div className="bg-white border-2 border-gray-300 rounded-lg overflow-hidden shadow-md">
         <div className="bg-primary px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2 text-white">
-            <FileText size={20} />
+            <DocumentTextIcon width={20} height={20} />
             <span className="font-semibold">Contrato de Prestación de Servicios</span>
           </div>
           <Button
@@ -62,7 +62,7 @@ export function ContractViewer({ contractBlob, onDownload }: ContractViewerProps
             variant="secondary"
             className="flex items-center gap-2"
           >
-            <Download size={16} />
+            <ArrowDownTrayIcon width={16} height={16} />
             Descargar PDF
           </Button>
         </div>

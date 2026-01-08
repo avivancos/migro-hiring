@@ -5,15 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { adminService } from '@/services/adminService';
-import {
-  Phone,
-  Plus,
-  Edit,
-  Trash2,
-  Save,
-  X,
-  AlertCircle,
-} from 'lucide-react';
+import { ArrowDownTrayIcon, ExclamationCircleIcon, PencilIcon, PhoneIcon, PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Badge } from '@/components/ui/badge';
 
 export interface CallType {
@@ -184,7 +176,7 @@ export function AdminCallTypes() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Phone className="text-green-600" size={32} />
+            <PhoneIcon className="text-green-600" width={32} height={32} />
             Tipos de Llamadas
           </h1>
           <p className="text-gray-600 mt-1">
@@ -195,14 +187,14 @@ export function AdminCallTypes() {
         {/* Mensajes */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2 text-red-800">
-            <AlertCircle size={20} />
+            <ExclamationCircleIcon width={20} height={20} />
             <span>{error}</span>
           </div>
         )}
 
         {success && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2 text-green-800">
-            <AlertCircle size={20} />
+            <ExclamationCircleIcon width={20} height={20} />
             <span>{success}</span>
           </div>
         )}
@@ -214,7 +206,7 @@ export function AdminCallTypes() {
             className="bg-green-600 hover:bg-green-700"
             disabled={isCreating || editingId !== null}
           >
-            <Plus size={18} className="mr-2" />
+            <PlusIcon width={18} height={18} className="mr-2" />
             Nuevo Tipo de Llamada
           </Button>
         </div>
@@ -302,14 +294,14 @@ export function AdminCallTypes() {
                     variant="outline"
                     onClick={handleCancel}
                   >
-                    <X size={18} className="mr-2" />
+                    <XMarkIcon width={18} height={18} className="mr-2" />
                     Cancelar
                   </Button>
                   <Button
                     onClick={handleSave}
                     className="bg-green-600 hover:bg-green-700"
                   >
-                    <Save size={18} className="mr-2" />
+                    <ArrowDownTrayIcon width={18} height={18} className="mr-2" />
                     Guardar
                   </Button>
                 </div>
@@ -331,7 +323,7 @@ export function AdminCallTypes() {
               </div>
             ) : sortedCallTypes.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
-                <Phone size={48} className="mx-auto mb-4 text-gray-300" />
+                <PhoneIcon width={48} height={48} className="mx-auto mb-4 text-gray-300" />
                 <p>No hay tipos de llamadas configurados</p>
                 <p className="text-sm mt-2">Crea el primer tipo de llamada usando el botón "Nuevo Tipo de Llamada"</p>
               </div>
@@ -375,7 +367,7 @@ export function AdminCallTypes() {
                         onClick={() => handleEdit(callType)}
                         disabled={editingId === callType.id || isCreating}
                       >
-                        <Edit size={16} />
+                        <PencilIcon width={16} height={16} />
                       </Button>
                       <Button
                         variant="outline"
@@ -383,7 +375,7 @@ export function AdminCallTypes() {
                         onClick={() => handleDelete(callType.id)}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
-                        <Trash2 size={16} />
+                        <TrashIcon width={16} height={16} />
                       </Button>
                     </div>
                   </div>
@@ -396,20 +388,4 @@ export function AdminCallTypes() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

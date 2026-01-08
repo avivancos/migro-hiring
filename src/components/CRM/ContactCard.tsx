@@ -5,7 +5,7 @@ import React, { memo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, Flag, Calendar, ChevronRight } from 'lucide-react';
+import { CalendarIcon, ChevronRightIcon, EnvelopeIcon, FlagIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import type { Contact } from '@/types/crm';
 import { useNavigate } from 'react-router-dom';
 
@@ -80,13 +80,13 @@ export const ContactCard = memo<ContactCardProps>(({ contact, onNavigate }) => {
             </h3>
             {contact.email && (
               <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                <Mail className="w-4 h-4 flex-shrink-0" />
+                <EnvelopeIcon className="w-4 h-4 flex-shrink-0" />
                 <span className="truncate">{contact.email}</span>
               </div>
             )}
             {contact.phone && (
               <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                <Phone className="w-4 h-4 flex-shrink-0" />
+                <PhoneIcon className="w-4 h-4 flex-shrink-0" />
                 <span>{contact.phone}</span>
               </div>
             )}
@@ -95,7 +95,7 @@ export const ContactCard = memo<ContactCardProps>(({ contact, onNavigate }) => {
         <div className="flex flex-wrap gap-2 mb-3">
           {contact.nacionalidad && (
             <div className="flex items-center gap-1 text-xs text-gray-600">
-              <Flag className="w-3 h-3" />
+              <FlagIcon className="w-3 h-3" />
               <span>{contact.nacionalidad}</span>
             </div>
           )}
@@ -113,7 +113,7 @@ export const ContactCard = memo<ContactCardProps>(({ contact, onNavigate }) => {
         <div className="space-y-2 pt-3 border-t">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1 text-xs text-gray-500">
-              <Calendar className="w-3 h-3" />
+              <CalendarIcon className="w-3 h-3" />
               <span>Creación: {formatDate(contact.created_at)}</span>
             </div>
             <Button
@@ -122,18 +122,18 @@ export const ContactCard = memo<ContactCardProps>(({ contact, onNavigate }) => {
               onClick={handleButtonClick}
             >
               Ver
-              <ChevronRight className="w-4 h-4 ml-1" />
+              <ChevronRightIcon className="w-4 h-4 ml-1" />
             </Button>
           </div>
           {contact.ultima_llamada_fecha && (
             <div className="flex items-center gap-1 text-xs text-gray-600">
-              <Phone className="w-3 h-3" />
+              <PhoneIcon className="w-3 h-3" />
               <span>Última llamada: {formatDate(contact.ultima_llamada_fecha)}</span>
             </div>
           )}
           {proximaLlamadaFecha && (
             <div className="flex items-center gap-1 text-xs text-gray-600">
-              <Calendar className={`w-3 h-3 ${isProximaLlamadaVencida ? 'text-red-600' : 'text-blue-600'}`} />
+              <CalendarIcon className={`w-3 h-3 ${isProximaLlamadaVencida ? 'text-red-600' : 'text-blue-600'}`} />
               <span className={isProximaLlamadaVencida ? 'text-red-600 font-semibold' : ''}>
                 Próxima llamada: {formatDate(proximaLlamadaFecha)}
               </span>

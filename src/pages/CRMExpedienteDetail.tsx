@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Save, X } from 'lucide-react';
+import { ArrowDownTrayIcon, ArrowLeftIcon, PencilIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -171,7 +171,7 @@ export function CRMExpedienteDetail() {
           size="sm"
           onClick={() => navigate('/crm/expedientes')}
         >
-          <ArrowLeft className="h-5 w-5 mr-2" />
+          <ArrowLeftIcon className="h-5 w-5 mr-2" />
           Volver
         </Button>
       </div>
@@ -203,17 +203,17 @@ export function CRMExpedienteDetail() {
                 {editing ? (
                   <>
                     <Button size="sm" onClick={handleSave} disabled={updating}>
-                      <Save className="h-4 w-4 mr-2" />
+                      <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
                       Guardar
                     </Button>
                     <Button size="sm" variant="outline" onClick={handleCancel}>
-                      <X className="h-4 w-4 mr-2" />
+                      <XMarkIcon className="h-4 w-4 mr-2" />
                       Cancelar
                     </Button>
                   </>
                 ) : (
                   <Button size="sm" variant="outline" onClick={handleEdit}>
-                    <Edit className="h-4 w-4 mr-2" />
+                    <PencilIcon className="h-4 w-4 mr-2" />
                     Editar
                   </Button>
                 )}

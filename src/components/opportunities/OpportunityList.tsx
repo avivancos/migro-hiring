@@ -10,7 +10,7 @@ import { useOpportunities } from '@/hooks/useOpportunities';
 import type { OpportunityFilters as OpportunityFiltersType } from '@/types/opportunity';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronLeft, ChevronRight, Grid3x3, List } from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon, ListBulletIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 
 type ViewMode = 'cards' | 'table';
 const VIEW_MODE_STORAGE_KEY = 'crm_opportunities_view_mode';
@@ -184,13 +184,13 @@ export function OpportunityList({
           >
             {viewMode === 'table' ? (
               <>
-                <Grid3x3 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <Squares2X2Icon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="ml-1 sm:ml-2 sm:hidden">Vista</span>
                 <span className="hidden sm:inline">Tarjetas</span>
               </>
             ) : (
               <>
-                <List className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <ListBulletIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="ml-1 sm:ml-2 sm:hidden">Vista</span>
                 <span className="hidden sm:inline">Tabla</span>
               </>
@@ -273,7 +273,7 @@ export function OpportunityList({
               onClick={() => handlePageChange(page - 1)}
               disabled={page <= 1}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeftIcon className="h-4 w-4" />
               Anterior
             </Button>
             <div className="text-sm text-gray-600">
@@ -286,7 +286,7 @@ export function OpportunityList({
               disabled={page >= totalPages}
             >
               Siguiente
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRightIcon className="h-4 w-4" />
             </Button>
           </div>
         </div>

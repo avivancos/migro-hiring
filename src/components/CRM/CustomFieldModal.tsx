@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { X, Plus, Trash2 } from 'lucide-react';
+import { PlusIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import type { CustomField, CustomFieldType, EntityType, FieldSettings } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 
@@ -162,7 +162,7 @@ export function CustomFieldModal({ field, onClose, onSave }: CustomFieldModalPro
               onClick={onClose}
               className="h-8 w-8 p-0"
             >
-              <X size={20} />
+              <XMarkIcon width={20} height={20} />
             </Button>
           </div>
         </CardHeader>
@@ -268,7 +268,7 @@ export function CustomFieldModal({ field, onClose, onSave }: CustomFieldModalPro
                         onClick={() => handleRemoveOption(idx)}
                         disabled={options.length === 1}
                       >
-                        <Trash2 size={16} />
+                        <TrashIcon width={16} height={16} />
                       </Button>
                     </div>
                   ))}
@@ -278,7 +278,7 @@ export function CustomFieldModal({ field, onClose, onSave }: CustomFieldModalPro
                     onClick={handleAddOption}
                     className="w-full"
                   >
-                    <Plus size={16} className="mr-2" />
+                    <PlusIcon width={16} height={16} className="mr-2" />
                     Añadir Opción
                   </Button>
                 </div>
@@ -437,21 +437,4 @@ export function CustomFieldModal({ field, onClose, onSave }: CustomFieldModalPro
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

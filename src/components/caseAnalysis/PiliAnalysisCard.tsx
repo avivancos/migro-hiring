@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { ChevronDownIcon, ChevronUpIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
@@ -38,7 +38,7 @@ export function PiliAnalysisCard({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-purple-500" />
+            <SparklesIcon className="h-5 w-5 text-purple-500" />
             <CardTitle className="text-lg">Análisis IA Avanzado</CardTitle>
           </div>
           {onToggle && (
@@ -49,9 +49,9 @@ export function PiliAnalysisCard({
               className="h-8 w-8 p-0 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
             >
               {expanded ? (
-                <ChevronUp className="h-4 w-4" />
+                <ChevronUpIcon className="h-4 w-4" />
               ) : (
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDownIcon className="h-4 w-4" />
               )}
             </Button>
           )}
@@ -152,10 +152,4 @@ export function PiliAnalysisCard({
     </Card>
   );
 }
-
-
-
-
-
-
 

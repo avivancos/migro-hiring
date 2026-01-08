@@ -7,16 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  Phone, 
-  Search, 
-  User, 
-  Save, 
-  Calendar, 
-  RefreshCw,
-  CheckCircle2,
-  TrendingUp
-} from 'lucide-react';
+import { ArrowDownTrayIcon, ArrowPathIcon, ArrowTopRightOnSquareIcon, ArrowTrendingUpIcon, CalendarIcon, ClockIcon, MagnifyingGlassIcon, PhoneIcon, UserIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import type { 
   Lead, 
   Contact, 
@@ -30,7 +22,6 @@ import type {
 import { crmService } from '@/services/crmService';
 import { ContactForm } from '@/components/CRM/ContactForm';
 import { useNavigate } from 'react-router-dom';
-import { Clock, ExternalLink } from 'lucide-react';
 import { formatCallStatus, formatLeadStatus } from '@/utils/statusTranslations';
 import { apiCache, APICache } from '@/services/apiCache';
 import { useCallback } from 'react';
@@ -683,7 +674,7 @@ export function CRMCallHandler() {
           {/* Page Header */}
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <Phone className="text-green-600" size={32} />
+              <PhoneIcon className="text-green-600" width={32} height={32} />
               Gestión de Llamadas
             </h1>
             <p className="text-gray-600 mt-1">
@@ -695,7 +686,7 @@ export function CRMCallHandler() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Search size={20} />
+            <MagnifyingGlassIcon width={20} height={20} />
             Buscar Cliente
           </CardTitle>
         </CardHeader>
@@ -714,9 +705,9 @@ export function CRMCallHandler() {
               className="bg-green-600 hover:bg-green-700"
             >
               {searching ? (
-                <RefreshCw size={18} className="animate-spin" />
+                <ArrowPathIcon width={18} height={18} className="animate-spin" />
               ) : (
-                <Search size={18} />
+                <MagnifyingGlassIcon width={18} height={18} />
               )}
             </Button>
           </div>
@@ -745,7 +736,7 @@ export function CRMCallHandler() {
                             Estado: {formatLeadStatus(lead.status) || 'N/A'}
                           </div>
                         </div>
-                        <TrendingUp size={16} className="text-green-600 mt-1" />
+                        <ArrowTrendingUpIcon width={16} height={16} className="text-green-600 mt-1" />
                       </div>
                     </button>
                   ))}
@@ -771,7 +762,7 @@ export function CRMCallHandler() {
                             <div className="text-xs text-gray-400 mt-1">{contact.email}</div>
                           )}
                         </div>
-                        <User size={16} className="text-blue-600 mt-1" />
+                        <UserIcon width={16} height={16} className="text-blue-600 mt-1" />
                       </div>
                     </button>
                   ))}
@@ -787,7 +778,7 @@ export function CRMCallHandler() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="flex items-center gap-2">
-                  <Phone size={20} />
+                  <PhoneIcon width={20} height={20} />
                   Llamadas Recientes
                 </CardTitle>
                 <Button
@@ -796,7 +787,7 @@ export function CRMCallHandler() {
                   onClick={loadRecentCallsMemo}
                   disabled={loadingCalls}
                 >
-                  <RefreshCw size={16} className={`mr-2 ${loadingCalls ? 'animate-spin' : ''}`} />
+                  <ArrowPathIcon width={16} height={16} className={`mr-2 ${loadingCalls ? 'animate-spin' : ''}`} />
                   Actualizar
                 </Button>
               </div>
@@ -840,7 +831,7 @@ export function CRMCallHandler() {
                               ? 'bg-green-100 text-green-600' 
                               : 'bg-blue-100 text-blue-600'
                           }`}>
-                            <Phone size={16} />
+                            <PhoneIcon width={16} height={16} />
                           </div>
                           <div>
                             <div className="font-medium text-gray-900">
@@ -849,7 +840,7 @@ export function CRMCallHandler() {
                             <div className="flex flex-col gap-2 mt-1">
                               <div className="flex items-center gap-4 text-sm text-gray-600">
                                 <span className="flex items-center gap-1">
-                                  <Calendar size={14} />
+                                  <CalendarIcon width={14} height={14} />
                                   {new Date(call.started_at || call.created_at).toLocaleString('es-ES', {
                                     day: '2-digit',
                                     month: 'short',
@@ -860,7 +851,7 @@ export function CRMCallHandler() {
                                 </span>
                                 {call.duration > 0 && (
                                   <span className="flex items-center gap-1">
-                                    <Clock size={14} />
+                                    <ClockIcon width={14} height={14} />
                                     {Math.floor(call.duration / 60)}:{(call.duration % 60).toString().padStart(2, '0')}
                                   </span>
                                 )}
@@ -878,7 +869,7 @@ export function CRMCallHandler() {
                                 {getCallTypeBadge(call.call_type)}
                                 {call.responsible_user_id && (
                                   <span className="text-xs px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5 font-medium">
-                                    <User size={12} className="flex-shrink-0" />
+                                    <UserIcon width={12} height={12} className="flex-shrink-0" />
                                     <span className="truncate max-w-[150px]">{getResponsibleName(call.responsible_user_id)}</span>
                                   </span>
                                 )}
@@ -909,7 +900,7 @@ export function CRMCallHandler() {
                           }}
                           className="ml-4"
                         >
-                          <ExternalLink className="w-3 h-3 mr-1" />
+                          <ArrowTopRightOnSquareIcon className="w-3 h-3 mr-1" />
                           Ver contacto
                         </Button>
                       )}
@@ -928,7 +919,7 @@ export function CRMCallHandler() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="flex items-center gap-2">
-                  <User size={20} />
+                  <UserIcon width={20} height={20} />
                   {selectedEntity.type === 'lead' ? 'Lead' : 'Contacto'}: {selectedEntity.data.name || 'Sin nombre'}
                 </CardTitle>
                 <div className="flex gap-2">
@@ -1030,7 +1021,7 @@ export function CRMCallHandler() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp size={20} />
+                  <ArrowTrendingUpIcon width={20} height={20} />
                   Gestión del Embudo
                 </CardTitle>
               </CardHeader>
@@ -1067,7 +1058,7 @@ export function CRMCallHandler() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Phone size={20} />
+                <PhoneIcon width={20} height={20} />
                 Registrar Llamada
               </CardTitle>
             </CardHeader>
@@ -1166,7 +1157,7 @@ export function CRMCallHandler() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar size={20} />
+                <CalendarIcon width={20} height={20} />
                 Próxima Llamada
               </CardTitle>
             </CardHeader>
@@ -1201,7 +1192,7 @@ export function CRMCallHandler() {
               <CardContent className="p-4">
                 {saveSuccess ? (
                   <div className="flex items-center gap-2 text-green-600">
-                    <CheckCircle2 size={20} />
+                    <CheckCircleIcon width={20} height={20} />
                     <span className="font-medium">¡Guardado exitosamente!</span>
                   </div>
                 ) : (
@@ -1213,12 +1204,12 @@ export function CRMCallHandler() {
                   >
                     {saving ? (
                       <>
-                        <RefreshCw size={20} className="mr-2 animate-spin" />
+                        <ArrowPathIcon width={20} height={20} className="mr-2 animate-spin" />
                         Guardando...
                       </>
                     ) : (
                       <>
-                        <Save size={20} className="mr-2" />
+                        <ArrowDownTrayIcon width={20} height={20} className="mr-2" />
                         Guardar Llamada y Próxima Acción
                       </>
                     )}

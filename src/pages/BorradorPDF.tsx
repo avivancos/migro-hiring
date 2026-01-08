@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 // Dynamic import para PDF generator (pesado, cargar bajo demanda)
 import type { HiringDetails } from '@/types/hiring';
 import { Button } from '@/components/ui/button';
-import { Download } from 'lucide-react';
+import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 
 export function BorradorPDF() {
   const [contractBlob, setContractBlob] = useState<Blob | null>(null);
@@ -122,7 +122,7 @@ export function BorradorPDF() {
               onClick={handleDownload}
               className="flex items-center gap-2"
             >
-              <Download className="w-4 h-4" />
+              <ArrowDownTrayIcon className="w-4 h-4" />
               Descargar PDF
             </Button>
           </div>

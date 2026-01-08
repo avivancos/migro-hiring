@@ -1,7 +1,7 @@
 // Privacy Policy Page Component
 
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Shield, Mail, MapPin } from 'lucide-react';
+import { EnvelopeIcon, MapPinIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
 
 export function PrivacyPolicy() {
   return (
@@ -10,7 +10,7 @@ export function PrivacyPolicy() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
-            <Shield className="text-primary" size={36} />
+            <ShieldCheckIcon className="text-primary" width={36} height={36} />
             Política de Privacidad
           </h1>
           <p className="text-gray-600 text-lg">
@@ -34,11 +34,11 @@ export function PrivacyPolicy() {
                 <p><strong>Domicilio social:</strong> Calle Libreros 54, 1º A, 37008, Salamanca</p>
                 <p><strong>Registro Público:</strong> inscrita en el Registro Mercantil de Salamanca, al Hoja SA-20228 IRUS: 1000455152568, Inscripción 1ª.</p>
                 <div className="flex items-center gap-2 mt-4">
-                  <Mail className="text-gray-500" size={18} />
+                  <EnvelopeIcon className="text-gray-500" width={18} height={18} />
                   <p><strong>Correo electrónico:</strong> hola@MIGRO.es</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Mail className="text-gray-500" size={18} />
+                  <EnvelopeIcon className="text-gray-500" width={18} height={18} />
                   <p><strong>DPO:</strong> dpo@MIGRO.es</p>
                 </div>
               </div>
@@ -329,24 +329,24 @@ export function PrivacyPolicy() {
           <Card className="bg-gray-50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-2xl">
-                <Mail className="text-primary" size={24} />
+                <EnvelopeIcon className="text-primary" width={24} height={24} />
                 Información de Contacto
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3 text-gray-700">
                 <div className="flex items-start gap-3">
-                  <MapPin className="text-gray-500 mt-1" size={18} />
+                  <MapPinIcon className="text-gray-500 mt-1" width={18} height={18} />
                   <div>
                     <p><strong>Dirección:</strong> Calle Libreros 54, 1º A, 37008, Salamanca</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Mail className="text-gray-500" size={18} />
+                  <EnvelopeIcon className="text-gray-500" width={18} height={18} />
                   <p><strong>Correo electrónico:</strong> hola@MIGRO.es</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Mail className="text-gray-500" size={18} />
+                  <EnvelopeIcon className="text-gray-500" width={18} height={18} />
                   <p><strong>DPO:</strong> dpo@MIGRO.es</p>
                 </div>
               </div>

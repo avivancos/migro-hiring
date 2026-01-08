@@ -6,13 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { piliService } from '@/services/piliService';
 import { StatusBadge } from '@/components/common/StatusBadge';
-import { Send, Bot, User, Lightbulb, AlertTriangle } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
+import { ChartBarIcon, CommandLineIcon, ExclamationTriangleIcon, LightBulbIcon, PaperAirplaneIcon, UserIcon } from '@heroicons/react/24/outline';
+// import * as LucideIcons from 'lucide-react';
 import type { Message, HealthResponse } from '@/types/pili';
 import { format } from 'date-fns';
 import { parsePiliResponse } from '@/hooks/usePiliChat';
-
-const { Activity } = LucideIcons;
 
 // Función helper para obtener/generar un user_id único persistente
 const getUserId = (): string => {
@@ -205,7 +203,7 @@ export function AdminPili() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <Activity className="h-5 w-5 text-gray-400" />
+              <ChartBarIcon className="h-5 w-5 text-gray-400" />
               <div>
                 <p className="text-sm font-medium text-gray-900">
                   Estado: {health.status === 'healthy' ? 'Operativo' : 'No disponible'}
@@ -224,7 +222,7 @@ export function AdminPili() {
       <Card className="flex flex-col" style={{ height: '600px' }}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Bot className="h-5 w-5" />
+            <CommandLineIcon className="h-5 w-5" />
             Conversación
           </CardTitle>
         </CardHeader>
@@ -233,7 +231,7 @@ export function AdminPili() {
           <div className="flex-1 overflow-y-auto space-y-4 mb-4">
             {messages.length === 0 ? (
               <div className="text-center text-gray-500 py-12">
-                <Bot className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                <CommandLineIcon className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                 <p>Inicia una conversación con Pili</p>
                 <p className="text-sm mt-2">Pregunta sobre trámites de migración y extranjería</p>
               </div>
@@ -283,7 +281,7 @@ export function AdminPili() {
                       className="flex gap-3 justify-start animate-slideIn"
                     >
                       <div className="h-8 w-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                        <AlertTriangle className="h-4 w-4 text-red-600" />
+                        <ExclamationTriangleIcon className="h-4 w-4 text-red-600" />
                       </div>
                       <div className="max-w-[80%] rounded-lg p-3 bg-red-50 border-l-4 border-red-400 text-red-800">
                         <p className="text-sm">{message.content}</p>
@@ -302,7 +300,7 @@ export function AdminPili() {
                   >
                     {message.role === 'assistant' && (
                       <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                        <Bot className="h-4 w-4 text-green-600" />
+                        <CommandLineIcon className="h-4 w-4 text-green-600" />
                       </div>
                     )}
                     <div
@@ -345,7 +343,7 @@ export function AdminPili() {
                     {/* Nota de truncado */}
                     {message.isTruncated && (
                       <div className="mt-2 p-2 bg-amber-50 border-l-3 border-amber-400 rounded text-xs text-amber-800 flex items-start gap-2">
-                        <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                        <ExclamationTriangleIcon className="w-3 h-3 mt-0.5 flex-shrink-0" />
                         <span>Respuesta truncada. Puedes pedir que continúe.</span>
                       </div>
                     )}
@@ -354,7 +352,7 @@ export function AdminPili() {
                     {message.followUpQuestion && (
                       <div className="mt-3 p-3 bg-blue-50 border-l-3 border-blue-400 rounded">
                         <div className="flex items-center gap-2 mb-2">
-                          <Lightbulb className="w-3 h-3 text-blue-600" />
+                          <LightBulbIcon className="w-3 h-3 text-blue-600" />
                           <span className="text-xs font-semibold text-blue-700">
                             ¿Te gustaría que profundice?
                           </span>
@@ -381,7 +379,7 @@ export function AdminPili() {
                     </div>
                     {message.role === 'user' && (
                       <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                        <User className="h-4 w-4 text-gray-600" />
+                        <UserIcon className="h-4 w-4 text-gray-600" />
                       </div>
                     )}
                   </div>
@@ -391,7 +389,7 @@ export function AdminPili() {
             {isTyping && (
               <div className="flex gap-3 justify-start">
                 <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                  <Bot className="h-4 w-4 text-green-600" />
+                  <CommandLineIcon className="h-4 w-4 text-green-600" />
                 </div>
                 <div className="bg-gray-100 rounded-lg p-3">
                   <div className="flex gap-1">
@@ -443,7 +441,7 @@ export function AdminPili() {
               disabled={isLoading || !input.trim() || !health || health.status !== 'healthy'}
               className="flex items-center gap-2"
             >
-              {isLoading ? 'Enviando...' : <Send size={18} />}
+              {isLoading ? 'Enviando...' : <PaperAirplaneIcon width={18} height={18} />}
             </Button>
           </div>
           

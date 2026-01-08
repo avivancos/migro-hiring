@@ -2,7 +2,8 @@
 // Mobile-first con swipe actions y información esencial visible
 
 import { useNavigate } from 'react-router-dom';
-import { FileText, Calendar, CheckCircle2 } from 'lucide-react';
+import { CalendarIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { Card, CardContent } from '@/components/ui/card';
 import { ExpedienteStatusBadge } from './ExpedienteStatusBadge';
 import { Progress } from '@/components/ui/progress';
@@ -51,7 +52,7 @@ export function ExpedienteCard({
           {/* Header con título y estado */}
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-3 flex-1 min-w-0">
-              <FileText className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
+              <DocumentTextIcon className="h-6 w-6 text-green-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-lg text-gray-900 mb-1 truncate">
                   {expediente.title}
@@ -70,14 +71,14 @@ export function ExpedienteCard({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
             {expediente.numero_expediente_oficial && (
               <div className="flex items-center gap-2 text-gray-600">
-                <FileText className="h-4 w-4 text-gray-400" />
+                <DocumentTextIcon className="h-4 w-4 text-gray-400" />
                 <span className="truncate">
                   Exp: {expediente.numero_expediente_oficial}
                 </span>
               </div>
             )}
             <div className="flex items-center gap-2 text-gray-600">
-              <Calendar className="h-4 w-4 text-gray-400" />
+              <CalendarIcon className="h-4 w-4 text-gray-400" />
               <span>
                 {format(new Date(expediente.updated_at), 'dd MMM yyyy', { locale: es })}
               </span>
@@ -98,7 +99,7 @@ export function ExpedienteCard({
           {/* Formulario oficial asignado */}
           {expediente.formulario_oficial_id && (
             <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg">
-              <CheckCircle2 className="h-4 w-4" />
+              <CheckCircleIcon className="h-4 w-4" />
               <span>Formulario oficial asignado</span>
             </div>
           )}
@@ -125,8 +126,4 @@ export function ExpedienteCard({
     </Card>
   );
 }
-
-
-
-
 

@@ -1,7 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
+import { ArrowPathIcon, ExclamationTriangleIcon, HomeIcon } from '@heroicons/react/24/outline';
 
 interface Props {
   children: ReactNode;
@@ -61,7 +61,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <div className="text-center">
                 <div className="mb-4 flex justify-center">
                   <div className="bg-red-100 p-6 rounded-full">
-                    <AlertTriangle className="text-red-600" size={64} />
+                    <ExclamationTriangleIcon className="text-red-600" width={64} height={64} />
                   </div>
                 </div>
                 <CardTitle className="text-3xl text-emphasis-900">
@@ -105,14 +105,14 @@ export class ErrorBoundary extends Component<Props, State> {
                   variant="outline"
                   className="flex-1"
                 >
-                  <RefreshCw className="mr-2" size={18} />
+                  <ArrowPathIcon className="mr-2" width={18} height={18} />
                   Recargar Página
                 </Button>
                 <Button
                   onClick={this.handleReset}
                   className="flex-1 bg-primary hover:bg-primary-700 text-white"
                 >
-                  <Home className="mr-2" size={18} />
+                  <HomeIcon className="mr-2" width={18} height={18} />
                   Volver al Inicio
                 </Button>
               </div>

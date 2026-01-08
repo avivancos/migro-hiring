@@ -219,15 +219,3 @@ export interface ExpedienteFilters {
   order_desc?: boolean;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-

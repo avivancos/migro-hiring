@@ -2,7 +2,7 @@
 // Mobile-first con soporte para cámara y galería
 
 import { useState, useRef, useCallback } from 'react';
-import { Upload, X, File, Image as ImageIcon } from 'lucide-react';
+import { ArrowUpTrayIcon, DocumentIcon, PhotoIcon as ImageIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -103,7 +103,7 @@ export function FileUpload({
     if (file.type.startsWith('image/')) {
       return <ImageIcon className="h-5 w-5 text-blue-500" />;
     }
-    return <File className="h-5 w-5 text-gray-500" />;
+    return <DocumentIcon className="h-5 w-5 text-gray-500" />;
   };
 
   return (
@@ -129,7 +129,7 @@ export function FileUpload({
           className="hidden"
           disabled={disabled}
         />
-        <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+        <ArrowUpTrayIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
         <p className="text-sm font-medium text-gray-700 mb-1">
           Arrastra archivos aquí o haz clic para seleccionar
         </p>
@@ -164,7 +164,7 @@ export function FileUpload({
                 disabled={uploading}
                 className="h-8 w-8 p-0"
               >
-                <X className="h-4 w-4" />
+                <XMarkIcon className="h-4 w-4" />
               </Button>
             </div>
           ))}
@@ -191,16 +191,4 @@ export function FileUpload({
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
 

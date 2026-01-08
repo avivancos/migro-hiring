@@ -8,17 +8,7 @@ import { Label } from '@/components/ui/label';
 import { opportunityApi } from '@/services/opportunityApi';
 import { adminService } from '@/services/adminService';
 import { getValidAttemptsCount } from '@/utils/opportunity';
-import {
-  Briefcase,
-  Search,
-  UserCheck,
-  UserX,
-  Filter,
-  X,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-} from 'lucide-react';
+import { ArrowDownIcon, ArrowUpIcon, ArrowsUpDownIcon, BriefcaseIcon, FunnelIcon, MagnifyingGlassIcon, UserIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Badge } from '@/components/ui/badge';
 import type { LeadOpportunity, OpportunityFilters } from '@/types/opportunity';
 import type { User } from '@/types/user';
@@ -325,11 +315,11 @@ export function AdminOpportunities() {
   
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
-      return <ArrowUpDown className="w-4 h-4 text-gray-400" />;
+      return <ArrowsUpDownIcon className="w-4 h-4 text-gray-400" />;
     }
     return sortOrder === 'asc' 
-      ? <ArrowUp className="w-4 h-4 text-green-600" />
-      : <ArrowDown className="w-4 h-4 text-green-600" />;
+      ? <ArrowUpIcon className="w-4 h-4 text-green-600" />
+      : <ArrowDownIcon className="w-4 h-4 text-green-600" />;
   };
   
   // Selección de oportunidades
@@ -565,7 +555,7 @@ export function AdminOpportunities() {
         <Card className="bg-green-50 border-green-300">
           <CardHeader>
             <CardTitle className="text-green-900 flex items-center gap-2">
-              <UserCheck className="w-5 h-5" />
+              <UserIcon className="w-5 h-5" />
               Asignar Oportunidades Seleccionadas Manualmente
             </CardTitle>
           </CardHeader>
@@ -605,7 +595,7 @@ export function AdminOpportunities() {
                     </>
                   ) : (
                     <>
-                      <UserCheck className="w-4 h-4" />
+                      <UserIcon className="w-4 h-4" />
                       <span>Asignar Seleccionadas</span>
                     </>
                   )}
@@ -623,7 +613,7 @@ export function AdminOpportunities() {
                     </>
                   ) : (
                     <>
-                      <UserX className="w-4 h-4" />
+                      <UserIcon className="w-4 h-4" />
                       <span>Desasignar</span>
                     </>
                   )}
@@ -641,7 +631,7 @@ export function AdminOpportunities() {
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               {/* Search */}
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="Buscar por contacto, email, teléfono..."
                   value={searchQuery}
@@ -660,7 +650,7 @@ export function AdminOpportunities() {
                   onClick={() => setShowFilters(!showFilters)}
                   className="flex items-center gap-2"
                 >
-                  <Filter className="w-4 h-4" />
+                  <FunnelIcon className="w-4 h-4" />
                   <span>Filtros</span>
                   {hasActiveFilters && (
                     <span className="ml-1 bg-green-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
@@ -674,7 +664,7 @@ export function AdminOpportunities() {
                     onClick={clearFilters}
                     className="text-red-600 hover:text-red-700"
                   >
-                    <X className="w-4 h-4 mr-2" />
+                    <XMarkIcon className="w-4 h-4 mr-2" />
                     Limpiar
                   </Button>
                 )}
@@ -879,7 +869,7 @@ export function AdminOpportunities() {
         <CardContent>
           {opportunities.length === 0 && !loading ? (
             <div className="text-center py-12">
-              <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <BriefcaseIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600 mb-2">No se encontraron oportunidades</p>
             </div>
           ) : (
@@ -982,7 +972,7 @@ export function AdminOpportunities() {
                               const assignedName = getAssignedToDisplayName(opportunity);
                               return assignedName ? (
                                 <Badge className="bg-green-100 text-green-700 border-green-300 flex items-center gap-1.5 w-fit">
-                                  <UserCheck size={12} />
+                                  <UserIcon width={12} height={12} />
                                   <span>{assignedName}</span>
                                 </Badge>
                               ) : (
@@ -1053,7 +1043,7 @@ export function AdminOpportunities() {
                                 const assignedName = getAssignedToDisplayName(opportunity);
                                 return assignedName ? (
                                   <Badge className="bg-green-100 text-green-700 border-green-300 inline-flex items-center gap-1.5 ml-1">
-                                    <UserCheck size={12} />
+                                    <UserIcon width={12} height={12} />
                                     <span>{assignedName}</span>
                                   </Badge>
                                 ) : (

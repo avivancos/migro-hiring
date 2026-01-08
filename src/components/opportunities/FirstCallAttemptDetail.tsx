@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { FirstCallAttemptBadge } from './FirstCallAttemptBadge';
-import { AlertTriangle, X, Check, Calendar, Phone } from 'lucide-react';
+import { CalendarIcon, CheckIcon, ExclamationTriangleIcon, PhoneIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
 import type { FirstCallAttempt, FirstCallAttemptRequest } from '@/types/opportunity';
 import type { FirstCallAttemptStatus } from './FirstCallAttemptBadge';
@@ -32,21 +32,21 @@ const statusOptions: Array<{
     value: 'orange',
     label: 'Sin contacto / Llamada fallida',
     description: 'No hubo comunicación o la llamada falló',
-    icon: <AlertTriangle className="h-5 w-5" />,
+    icon: <ExclamationTriangleIcon className="h-5 w-5" />,
     colorClasses: 'bg-orange-50 border-orange-300 text-orange-700 hover:bg-orange-100',
   },
   {
     value: 'red',
     label: 'Cliente descartó interés',
     description: 'El cliente indicó que no tiene interés en contratar',
-    icon: <X className="h-5 w-5" />,
+    icon: <XMarkIcon className="h-5 w-5" />,
     colorClasses: 'bg-red-50 border-red-300 text-red-700 hover:bg-red-100',
   },
   {
     value: 'green',
     label: 'Llamada exitosa',
     description: 'Primera llamada exitosa, información completa obtenida',
-    icon: <Check className="h-5 w-5" />,
+    icon: <CheckIcon className="h-5 w-5" />,
     colorClasses: 'bg-green-50 border-green-300 text-green-700 hover:bg-green-100',
   },
 ];
@@ -175,7 +175,7 @@ export function FirstCallAttemptDetail({
 
             {attemptData.attempted_at && (
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-gray-400" />
+                <CalendarIcon className="h-4 w-4 text-gray-400" />
                 <div>
                   <Label className="text-xs text-gray-500 uppercase tracking-wide">Fecha</Label>
                   <p className="mt-0.5 text-sm text-gray-700">{formatDate(attemptData.attempted_at)}</p>
@@ -192,7 +192,7 @@ export function FirstCallAttemptDetail({
 
             {attemptData.call_id && (
               <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 text-gray-400" />
+                <PhoneIcon className="h-4 w-4 text-gray-400" />
                 <div>
                   <Label className="text-xs text-gray-500 uppercase tracking-wide">ID de Llamada</Label>
                   <p className="mt-0.5 text-sm text-gray-600 font-mono">{attemptData.call_id}</p>
@@ -248,7 +248,7 @@ export function FirstCallAttemptDetail({
                     <p className="text-xs mt-0.5 opacity-75">{option.description}</p>
                   </div>
                   {selectedStatus === option.value && (
-                    <Check className="h-5 w-5 flex-shrink-0" />
+                    <CheckIcon className="h-5 w-5 flex-shrink-0" />
                   )}
                 </button>
               ))}

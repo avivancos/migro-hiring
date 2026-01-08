@@ -10,32 +10,15 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { crmService } from '@/services/crmService';
 import type { Contact, Task, Call, Note, CallCreateRequest, TaskCreateRequest, NoteCreateRequest } from '@/types/crm';
-import {
-  ArrowLeft,
-  Edit,
-  Phone,
-  Mail,
-  MapPin,
-  Flag,
-  Star,
-  Calendar,
-  Users,
-  CheckCircle2,
-  Clock,
-  FileText,
-  Plus,
-  User,
-  ExternalLink,
-  Briefcase,
-} from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
+import { ArrowLeftIcon, ArrowTopRightOnSquareIcon, BriefcaseIcon, CalendarIcon, ChartBarIcon, ClockIcon, DocumentTextIcon, EnvelopeIcon, FlagIcon, MapPinIcon, PencilIcon, PhoneIcon, PlusIcon, StarIcon, TrashIcon, UserIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+// import * as LucideIcons from 'lucide-react';
 import { CallForm } from '@/components/CRM/CallForm';
 import { TaskForm } from '@/components/CRM/TaskForm';
 import { NoteForm } from '@/components/CRM/NoteForm';
 import { ContactCustomFields } from '@/components/CRM/ContactCustomFields';
 import type { CRMUser } from '@/types/crm';
 import { useAuth } from '@/providers/AuthProvider';
-import { Trash2 } from 'lucide-react';
 import { formatCallStatus } from '@/utils/statusTranslations';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { PipelineWizardModal } from '@/components/pipelines/Wizards/PipelineWizardModal';
@@ -44,8 +27,6 @@ import type { LeadOpportunity } from '@/types/opportunity';
 import { OpportunityPriorityBadge } from '@/components/opportunities/OpportunityPriorityBadge';
 import { OpportunityScore } from '@/components/opportunities/OpportunityScore';
 import { getDetectionReasonBadges } from '@/utils/opportunity';
-
-const { Activity } = LucideIcons;
 
 export function CRMContactDetail() {
   const { id } = useParams<{ id: string }>();
@@ -683,7 +664,7 @@ export function CRMContactDetail() {
                   El contacto con ID {id} no existe en el sistema.
                 </p>
                 <Button onClick={() => navigate('/crm/contacts')} variant="outline">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  <ArrowLeftIcon className="w-4 h-4 mr-2" />
                   Volver a Contactos
                 </Button>
               </div>
@@ -705,7 +686,7 @@ export function CRMContactDetail() {
                 onClick={() => navigate('/crm/contacts')}
                 className="flex-shrink-0"
               >
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+              <ArrowLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
               <span className="hidden sm:inline">Volver</span>
               </Button>
               <div className="min-w-0 flex-1">
@@ -721,7 +702,7 @@ export function CRMContactDetail() {
                 onClick={() => navigate(`/crm/contacts/${id}/edit`)}
                 className="flex-1 sm:flex-initial"
               >
-                <Edit className="w-4 h-4 sm:mr-2" />
+                <PencilIcon className="w-4 h-4 sm:mr-2" />
                 <span className="sm:inline">Editar</span>
               </Button>
               {isAdmin && (
@@ -731,7 +712,7 @@ export function CRMContactDetail() {
                   disabled={deleting}
                   className="flex-1 sm:flex-initial border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400"
                 >
-                  <Trash2 className="w-4 h-4 sm:mr-2" />
+                  <TrashIcon className="w-4 h-4 sm:mr-2" />
                   <span className="sm:inline">{deleting ? 'Eliminando...' : 'Eliminar'}</span>
                 </Button>
               )}
@@ -758,44 +739,44 @@ export function CRMContactDetail() {
                 <div className="space-y-2">
                   {contact.email && (
                     <div className="flex items-center gap-2 text-gray-700">
-                      <Mail className="w-4 h-4 text-gray-500" />
+                      <EnvelopeIcon className="w-4 h-4 text-gray-500" />
                       <span className="text-sm">{contact.email}</span>
                     </div>
                   )}
                   {contact.phone && (
                     <div className="flex items-center gap-2 text-gray-700">
-                      <Phone className="w-4 h-4 text-gray-500" />
+                      <PhoneIcon className="w-4 h-4 text-gray-500" />
                       <span className="text-sm">{contact.phone}</span>
                     </div>
                   )}
                   {contact.mobile && (
                     <div className="flex items-center gap-2 text-gray-700">
-                      <Phone className="w-4 h-4 text-gray-500" />
+                      <PhoneIcon className="w-4 h-4 text-gray-500" />
                       <span className="text-sm">{contact.mobile}</span>
                     </div>
                   )}
                   {contact.nacionalidad && (
                     <div className="flex items-center gap-2 text-gray-700">
-                      <Flag className="w-4 h-4 text-gray-500" />
+                      <FlagIcon className="w-4 h-4 text-gray-500" />
                       <span className="text-sm">{contact.nacionalidad}</span>
                     </div>
                   )}
                   {contact.city && (
                     <div className="flex items-center gap-2 text-gray-700">
-                      <MapPin className="w-4 h-4 text-gray-500" />
+                      <MapPinIcon className="w-4 h-4 text-gray-500" />
                       <span className="text-sm">{contact.city}{contact.state ? `, ${contact.state}` : ''}</span>
                     </div>
                   )}
                   {contact.state && !contact.city && (
                     <div className="flex items-center gap-2 text-gray-700">
-                      <MapPin className="w-4 h-4 text-gray-500" />
+                      <MapPinIcon className="w-4 h-4 text-gray-500" />
                       <span className="text-sm">Provincia: {contact.state}</span>
                     </div>
                   )}
                   {/* Responsable/Agente asignado a través de la oportunidad */}
                   {relatedOpportunities.length > 0 && relatedOpportunities[0]?.assigned_to && (
                     <div className="flex items-center gap-2 text-gray-700 mt-3 pt-3 border-t border-gray-200">
-                      <Users className="w-4 h-4 text-gray-500" />
+                      <UsersIcon className="w-4 h-4 text-gray-500" />
                       <div className="flex flex-col">
                         <span className="text-xs text-gray-500">Responsable</span>
                         <span className="text-sm font-medium text-gray-900">
@@ -865,7 +846,7 @@ export function CRMContactDetail() {
                               contact.grading_llamada
                             )}`}
                           >
-                            <Star className="w-3 h-3 inline mr-1" />
+                            <StarIcon className="w-3 h-3 inline mr-1" />
                             {contact.grading_llamada}
                           </span>
                         </div>
@@ -878,7 +859,7 @@ export function CRMContactDetail() {
                               contact.grading_situacion
                             )}`}
                           >
-                            <Star className="w-3 h-3 inline mr-1" />
+                            <StarIcon className="w-3 h-3 inline mr-1" />
                             {contact.grading_situacion}
                           </span>
                         </div>
@@ -891,7 +872,7 @@ export function CRMContactDetail() {
                     <div>
                       <span className="text-xs text-gray-600 mb-1 block">Trámite Sugerido</span>
                       <div className="flex items-center gap-2 text-sm text-gray-900 bg-blue-50 border border-blue-200 rounded-md px-3 py-2">
-                        <FileText className="w-4 h-4 text-blue-600" />
+                        <DocumentTextIcon className="w-4 h-4 text-blue-600" />
                         <span>{getTramiteSugerido()}</span>
                       </div>
                     </div>
@@ -907,7 +888,7 @@ export function CRMContactDetail() {
                           : 'bg-green-50 border border-green-200 text-green-700'
                       }`}>
                         <div className="flex items-center gap-2 flex-1">
-                          <Calendar className={`w-4 h-4 ${
+                          <CalendarIcon className={`w-4 h-4 ${
                             new Date(getProximaAccionFecha()!).getTime() < new Date().getTime()
                               ? 'text-red-600'
                               : 'text-green-600'
@@ -921,7 +902,7 @@ export function CRMContactDetail() {
                           onClick={handleEditProximaAccion}
                           className="h-7 px-2 text-xs hover:bg-white/50"
                         >
-                          <Edit className="w-3 h-3" />
+                          <PencilIcon className="w-3 h-3" />
                         </Button>
                       </div>
                     </div>
@@ -943,7 +924,7 @@ export function CRMContactDetail() {
                 onClick={() => setShowCallForm(true)}
                 className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
               >
-                <Phone className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="sm:inline">Nueva Llamada</span>
               </Button>
               <Button
@@ -951,7 +932,7 @@ export function CRMContactDetail() {
                 onClick={() => setShowTaskForm(true)}
                 className="bg-white hover:bg-green-50 flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
               >
-                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="sm:inline">Nueva Tarea</span>
               </Button>
               <Button
@@ -959,7 +940,7 @@ export function CRMContactDetail() {
                 onClick={() => setShowNoteForm(true)}
                 className="bg-white hover:bg-green-50 flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
               >
-                <FileText className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <DocumentTextIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="sm:inline">Nueva Nota</span>
               </Button>
               <Button
@@ -967,7 +948,7 @@ export function CRMContactDetail() {
                 onClick={() => setShowPipelineWizard(true)}
                 className="bg-white hover:bg-blue-50 border-blue-300 text-blue-700 flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
               >
-                <Activity className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <ChartBarIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="sm:inline">Pipeline</span>
               </Button>
             </div>
@@ -980,7 +961,7 @@ export function CRMContactDetail() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <Briefcase className="w-5 h-5 text-blue-600" />
+                  <BriefcaseIcon className="w-5 h-5 text-blue-600" />
                   Oportunidad Enlazada
                 </CardTitle>
                 <Button
@@ -989,7 +970,7 @@ export function CRMContactDetail() {
                   onClick={() => navigate(`/crm/opportunities/${relatedOpportunities[0].id}`)}
                   className="flex items-center gap-2"
                 >
-                  <ExternalLink className="w-4 h-4" />
+                  <ArrowTopRightOnSquareIcon className="w-4 h-4" />
                   Ver Detalle Completo
                 </Button>
               </div>
@@ -1063,7 +1044,7 @@ export function CRMContactDetail() {
           <Card className="mb-4 sm:mb-6 border-2 border-gray-200 bg-gray-50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Briefcase className="w-5 h-5 text-gray-400" />
+                <BriefcaseIcon className="w-5 h-5 text-gray-400" />
                 Oportunidad Enlazada
               </CardTitle>
             </CardHeader>
@@ -1108,12 +1089,12 @@ export function CRMContactDetail() {
                   >
                     {creatingOpportunity ? (
                       <>
-                        <Clock className="w-4 h-4 mr-2 animate-spin" />
+                        <ClockIcon className="w-4 h-4 mr-2 animate-spin" />
                         Creando...
                       </>
                     ) : (
                       <>
-                        <Plus className="w-4 h-4 mr-2" />
+                        <PlusIcon className="w-4 h-4 mr-2" />
                         Crear Oportunidad
                       </>
                     )}
@@ -1167,28 +1148,28 @@ export function CRMContactDetail() {
                     <div className="space-y-3">
                       {contact.nacionalidad && (
                         <div className="flex items-center gap-2">
-                          <Flag className="w-4 h-4 text-gray-400" />
+                          <FlagIcon className="w-4 h-4 text-gray-400" />
                           <span className="text-sm text-gray-600">Nacionalidad:</span>
                           <span className="text-sm font-medium">{contact.nacionalidad}</span>
                         </div>
                       )}
                       {contact.edad && (
                         <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 text-gray-400" />
+                          <UsersIcon className="w-4 h-4 text-gray-400" />
                           <span className="text-sm text-gray-600">Edad:</span>
                           <span className="text-sm font-medium">{contact.edad} años</span>
                         </div>
                       )}
                       {contact.tiempo_espana && (
                         <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-gray-400" />
+                          <CalendarIcon className="w-4 h-4 text-gray-400" />
                           <span className="text-sm text-gray-600">Tiempo en España:</span>
                           <span className="text-sm font-medium">{contact.tiempo_espana}</span>
                         </div>
                       )}
                       {contact.custom_fields?.fecha_llegada_espana && (
                         <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-gray-400" />
+                          <CalendarIcon className="w-4 h-4 text-gray-400" />
                           <span className="text-sm text-gray-600">Fecha de Llegada:</span>
                           <span className="text-sm font-medium">
                             {new Date(contact.custom_fields.fecha_llegada_espana).toLocaleDateString('es-ES', {
@@ -1201,14 +1182,14 @@ export function CRMContactDetail() {
                       )}
                       {contact.city && (
                         <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <MapPinIcon className="w-4 h-4 text-gray-400" />
                           <span className="text-sm text-gray-600">Ciudad:</span>
                           <span className="text-sm font-medium">{contact.city}</span>
                         </div>
                       )}
                       {contact.state && (
                         <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <MapPinIcon className="w-4 h-4 text-gray-400" />
                           <span className="text-sm text-gray-600">Provincia:</span>
                           <span className="text-sm font-medium">{contact.state}</span>
                         </div>
@@ -1227,7 +1208,7 @@ export function CRMContactDetail() {
                       </div>
                       {contact.lugar_residencia && (
                         <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-gray-400" />
+                          <MapPinIcon className="w-4 h-4 text-gray-400" />
                           <span className="text-sm text-gray-600">Residencia:</span>
                           <span className="text-sm font-medium">{contact.lugar_residencia}</span>
                         </div>
@@ -1266,7 +1247,7 @@ export function CRMContactDetail() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Briefcase className="w-5 h-5" />
+                  <BriefcaseIcon className="w-5 h-5" />
                   Oportunidades Relacionadas
                 </CardTitle>
               </CardHeader>
@@ -1286,7 +1267,7 @@ export function CRMContactDetail() {
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <Briefcase className="w-4 h-4 text-gray-400" />
+                              <BriefcaseIcon className="w-4 h-4 text-gray-400" />
                               <h4 className="font-semibold text-gray-900">
                                 Oportunidad #{opportunity.id.slice(0, 8)}
                               </h4>
@@ -1340,7 +1321,7 @@ export function CRMContactDetail() {
                             }}
                             className="flex-shrink-0"
                           >
-                            <ExternalLink className="w-3 h-3 mr-1" />
+                            <ArrowTopRightOnSquareIcon className="w-3 h-3 mr-1" />
                             Ver Detalle
                           </Button>
                         </div>
@@ -1361,7 +1342,7 @@ export function CRMContactDetail() {
                 <div className="flex items-center justify-between">
                   <CardTitle>Tareas</CardTitle>
                   <Button size="sm" onClick={() => setShowTaskForm(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
+                    <PlusIcon className="w-4 h-4 mr-2" />
                     Nueva Tarea
                   </Button>
                 </div>
@@ -1381,9 +1362,9 @@ export function CRMContactDetail() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             {task.is_completed ? (
-                              <CheckCircle2 className="w-5 h-5 text-green-600" />
+                              <CheckCircleIcon className="w-5 h-5 text-green-600" />
                             ) : (
-                              <Clock className="w-5 h-5 text-yellow-600" />
+                              <ClockIcon className="w-5 h-5 text-yellow-600" />
                             )}
                             <h4
                               className={`font-semibold ${
@@ -1407,7 +1388,7 @@ export function CRMContactDetail() {
                             }}
                             className="ml-4"
                           >
-                            <ExternalLink className="w-3 h-3 mr-1" />
+                            <ArrowTopRightOnSquareIcon className="w-3 h-3 mr-1" />
                             Ver contacto
                           </Button>
                         )}
@@ -1432,7 +1413,7 @@ export function CRMContactDetail() {
                     onClick={() => setShowCallForm(true)}
                     className="bg-green-600 hover:bg-green-700 text-white"
                   >
-                    <Plus className="w-4 h-4 mr-2" />
+                    <PlusIcon className="w-4 h-4 mr-2" />
                     Nueva Llamada
                   </Button>
                 </div>
@@ -1444,7 +1425,7 @@ export function CRMContactDetail() {
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <Phone className="w-4 h-4 text-gray-400" />
+                            <PhoneIcon className="w-4 h-4 text-gray-400" />
                             <span className="text-sm font-medium">
                               {call.direction === 'inbound' ? 'Entrante' : 'Saliente'}
                             </span>
@@ -1452,12 +1433,12 @@ export function CRMContactDetail() {
                           </div>
                           <div className="flex items-center gap-3 text-sm">
                             <div className="flex items-center gap-1 text-gray-700">
-                              <Calendar className="w-4 h-4 text-gray-400" />
+                              <CalendarIcon className="w-4 h-4 text-gray-400" />
                               <span className="font-medium">{formatDate(call.started_at || call.created_at)}</span>
                             </div>
                             {call.duration > 0 && (
                               <div className="flex items-center gap-1 text-gray-600">
-                                <Clock className="w-4 h-4 text-gray-400" />
+                                <ClockIcon className="w-4 h-4 text-gray-400" />
                                 <span>Duración: {formatDuration(call.duration)}</span>
                               </div>
                             )}
@@ -1486,7 +1467,7 @@ export function CRMContactDetail() {
                                 navigate(`/crm/contacts/${call.entity_id}`);
                               }}
                             >
-                              <ExternalLink className="w-3 h-3 mr-1" />
+                              <ArrowTopRightOnSquareIcon className="w-3 h-3 mr-1" />
                               Ver contacto
                             </Button>
                           )}
@@ -1524,7 +1505,7 @@ export function CRMContactDetail() {
                 <div className="flex items-center justify-between">
                   <CardTitle>Notas</CardTitle>
                   <Button size="sm" onClick={() => setShowNoteForm(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
+                    <PlusIcon className="w-4 h-4 mr-2" />
                     Nueva Nota
                   </Button>
                 </div>
@@ -1545,7 +1526,7 @@ export function CRMContactDetail() {
                             }}
                             className="ml-4"
                           >
-                            <ExternalLink className="w-3 h-3 mr-1" />
+                            <ArrowTopRightOnSquareIcon className="w-3 h-3 mr-1" />
                             Ver contacto
                           </Button>
                         )}
@@ -1565,7 +1546,7 @@ export function CRMContactDetail() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Activity className="w-5 h-5" />
+                  <ChartBarIcon className="w-5 h-5" />
                   Historial de Actividades
                 </CardTitle>
               </CardHeader>
@@ -1586,20 +1567,20 @@ export function CRMContactDetail() {
                         const note = isNote ? (item.data as Note) : null;
 
                         // Determinar el icono y color según el tipo
-                        let IconComponent = FileText;
+                        let IconComponent = DocumentTextIcon;
                         let iconBgColor = 'bg-gray-100 text-gray-600';
                         let borderColor = 'border-gray-200';
                         
                         if (isCall) {
-                          IconComponent = Phone;
+                          IconComponent = PhoneIcon;
                           iconBgColor = 'bg-blue-100 text-blue-600';
                           borderColor = 'border-blue-200';
                         } else if (isTask) {
-                          IconComponent = task?.is_completed ? CheckCircle2 : Clock;
+                          IconComponent = task?.is_completed ? CheckCircleIcon : ClockIcon;
                           iconBgColor = task?.is_completed ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600';
                           borderColor = task?.is_completed ? 'border-green-200' : 'border-yellow-200';
                         } else if (isNote) {
-                          IconComponent = FileText;
+                          IconComponent = DocumentTextIcon;
                           iconBgColor = 'bg-purple-100 text-purple-600';
                           borderColor = 'border-purple-200';
                         }
@@ -1617,11 +1598,11 @@ export function CRMContactDetail() {
                                 {/* Header con fecha y usuario */}
                                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-2">
                                   <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-                                    <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                                    <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                                     <span>{formatDate(item.date)}</span>
                                   </div>
                                   <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-                                    <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                                    <UserIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                                     <span className="truncate">
                                       {isCall && call?.responsible_user_id
                                         ? getUserName(call.responsible_user_id)
@@ -1642,7 +1623,7 @@ export function CRMContactDetail() {
                                         </span>
                                         {call.phone && (
                                           <span className="text-sm text-gray-600">
-                                            <Phone className="w-3 h-3 inline mr-1" />
+                                            <PhoneIcon className="w-3 h-3 inline mr-1" />
                                             {call.phone}
                                           </span>
                                         )}
@@ -1657,19 +1638,19 @@ export function CRMContactDetail() {
                               }}
                               className="text-xs"
                             >
-                              <ExternalLink className="w-3 h-3 mr-1" />
+                              <ArrowTopRightOnSquareIcon className="w-3 h-3 mr-1" />
                               Ver contacto
                             </Button>
                           )}
                                     </div>
                                     <div className="flex items-center gap-4 text-sm mb-2">
                                       <div className="flex items-center gap-1 text-gray-700">
-                                        <Calendar className="w-4 h-4 text-gray-400" />
+                                        <CalendarIcon className="w-4 h-4 text-gray-400" />
                                         <span className="font-medium">{formatDate(call.started_at || call.created_at)}</span>
                                       </div>
                                       {call.duration > 0 && (
                                         <div className="flex items-center gap-1 text-gray-600">
-                                          <Clock className="w-4 h-4 text-gray-400" />
+                                          <ClockIcon className="w-4 h-4 text-gray-400" />
                                           <span>Duración: {formatDuration(call.duration || 0)}</span>
                                         </div>
                                       )}
@@ -1701,7 +1682,7 @@ export function CRMContactDetail() {
                                           {task.text}
                                         </span>
                                         {task.is_completed && (
-                                          <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                          <CheckCircleIcon className="w-4 h-4 text-green-600" />
                                         )}
                                       </div>
                                       {task.entity_id && task.entity_type && (
@@ -1714,7 +1695,7 @@ export function CRMContactDetail() {
                                           }}
                                           className="text-xs"
                                         >
-                                          <ExternalLink className="w-3 h-3 mr-1" />
+                                          <ArrowTopRightOnSquareIcon className="w-3 h-3 mr-1" />
                                           Ver contacto
                                         </Button>
                                       )}
@@ -1746,7 +1727,7 @@ export function CRMContactDetail() {
                                           }}
                                           className="text-xs"
                                         >
-                                          <ExternalLink className="w-3 h-3 mr-1" />
+                                          <ArrowTopRightOnSquareIcon className="w-3 h-3 mr-1" />
                                           Ver contacto
                                         </Button>
                                       )}
@@ -1764,7 +1745,7 @@ export function CRMContactDetail() {
                     </div>
                   ) : (
                     <div className="text-center py-12 text-gray-500">
-                      <Activity className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <ChartBarIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                       <p>No hay actividades registradas aún</p>
                     </div>
                   )}

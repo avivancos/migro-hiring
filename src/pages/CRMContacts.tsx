@@ -9,16 +9,7 @@ import { Label } from '@/components/ui/label';
 import { adminService } from '@/services/adminService';
 import { crmService } from '@/services/crmService';
 import type { Contact, ContactFilters } from '@/types/crm';
-import {
-  Search,
-  Filter,
-  Plus,
-  ArrowLeft,
-  Phone,
-  Mail,
-  Building2,
-  User,
-} from 'lucide-react';
+import { ArrowLeftIcon, BuildingOffice2Icon, EnvelopeIcon, FunnelIcon, MagnifyingGlassIcon, PhoneIcon, PlusIcon, UserIcon } from '@heroicons/react/24/outline';
 
 export function CRMContacts() {
   const navigate = useNavigate();
@@ -72,7 +63,7 @@ export function CRMContacts() {
               size="icon"
               className="flex-shrink-0"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeftIcon width={20} height={20} />
             </Button>
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Contactos</h1>
@@ -87,14 +78,14 @@ export function CRMContacts() {
               variant="outline"
               className="flex items-center gap-2 flex-1 sm:flex-initial"
             >
-              <Filter size={18} />
+              <FunnelIcon width={18} height={18} />
               <span className="sm:inline">Filtros</span>
             </Button>
             <Button
               onClick={() => navigate('/admin/crm/contacts/new')}
               className="bg-green-600 hover:bg-green-700 flex items-center gap-2 flex-1 sm:flex-initial"
             >
-              <Plus size={18} />
+              <PlusIcon width={18} height={18} />
               <span className="sm:inline">Nuevo Contacto</span>
             </Button>
           </div>
@@ -105,7 +96,7 @@ export function CRMContacts() {
           <CardContent className="pt-4 sm:pt-6">
             <div className="flex gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width={20} height={20} />
                 <Input
                   placeholder="Buscar contactos por nombre o email..."
                   className="pl-10 text-sm sm:text-base"
@@ -149,7 +140,7 @@ export function CRMContacts() {
                   <CardContent className="pt-4 sm:pt-6">
                     <div className="flex items-start gap-3 sm:gap-4">
                       <div className="bg-blue-100 p-2 sm:p-3 rounded-full text-blue-600 flex-shrink-0">
-                        <User size={20} className="sm:w-6 sm:h-6" />
+                        <UserIcon width={20} height={20} className="sm:w-6 sm:h-6" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
@@ -164,21 +155,21 @@ export function CRMContacts() {
                         <div className="mt-2 sm:mt-3 space-y-1.5 sm:space-y-2">
                           {contact.email && (
                             <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-                              <Mail size={12} className="sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+                              <EnvelopeIcon width={12} height={12} className="sm:w-3.5 sm:h-3.5 flex-shrink-0" />
                               <span className="truncate">{contact.email}</span>
                             </div>
                           )}
                           
                           {contact.phone && (
                             <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-                              <Phone size={12} className="sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+                              <PhoneIcon width={12} height={12} className="sm:w-3.5 sm:h-3.5 flex-shrink-0" />
                               <span>{contact.phone}</span>
                             </div>
                           )}
                           
                           {contact.company && (
                             <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-                              <Building2 size={12} className="sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+                              <BuildingOffice2Icon width={12} height={12} className="sm:w-3.5 sm:h-3.5 flex-shrink-0" />
                               <span className="truncate">{contact.company.name}</span>
                             </div>
                           )}

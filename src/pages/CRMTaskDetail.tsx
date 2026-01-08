@@ -6,19 +6,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { crmService } from '@/services/crmService';
 import type { Task, CRMUser, Contact } from '@/types/crm';
-import {
-  ArrowLeft,
-  Edit,
-  Calendar,
-  User,
-  CheckCircle2,
-  Clock,
-  Phone,
-  Mail,
-  Users,
-  FileText,
-  ExternalLink,
-} from 'lucide-react';
+import { ArrowLeftIcon, ArrowTopRightOnSquareIcon, CalendarIcon, ClockIcon, DocumentTextIcon, EnvelopeIcon, PencilIcon, PhoneIcon, UserIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { TaskForm } from '@/components/CRM/TaskForm';
 import { usePageTitle } from '@/hooks/usePageTitle';
 export function CRMTaskDetail() {
@@ -158,17 +147,17 @@ export function CRMTaskDetail() {
   };
 
   const getTaskTypeIcon = (type: string | null | undefined) => {
-    if (!type) return FileText;
+    if (!type) return DocumentTextIcon;
     switch (type) {
       case 'call':
       case 'first_call':
-        return Phone;
+        return PhoneIcon;
       case 'email':
-        return Mail;
+        return EnvelopeIcon;
       case 'meeting':
-        return Users;
+        return UsersIcon;
       default:
-        return FileText;
+        return DocumentTextIcon;
     }
   };
 
@@ -205,7 +194,7 @@ export function CRMTaskDetail() {
               <div className="text-center">
                 <p className="text-red-900 font-semibold mb-4">{error || 'Tarea no encontrada'}</p>
                 <Button onClick={() => navigate('/crm/calendar')} variant="outline">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  <ArrowLeftIcon className="w-4 h-4 mr-2" />
                   Volver al calendario
                 </Button>
               </div>
@@ -223,7 +212,7 @@ export function CRMTaskDetail() {
       <div className="space-y-6">
           {/* Botón volver */}
           <Button variant="outline" onClick={() => navigate('/crm/calendar')}>
-            <ArrowLeft size={18} className="mr-2" />
+            <ArrowLeftIcon width={18} height={18} className="mr-2" />
             Volver al calendario
           </Button>
 
@@ -260,12 +249,12 @@ export function CRMTaskDetail() {
                           </span>
                           {task.is_completed ? (
                             <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-sm flex items-center gap-1">
-                              <CheckCircle2 className="w-3 h-3" />
+                              <CheckCircleIcon className="w-3 h-3" />
                               Completada
                             </span>
                           ) : (
                             <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
+                              <ClockIcon className="w-3 h-3" />
                               Pendiente
                             </span>
                           )}
@@ -281,12 +270,12 @@ export function CRMTaskDetail() {
                             navigate(`/crm/contacts/${task.entity_id}`);
                           }}
                         >
-                          <ExternalLink className="w-4 h-4 mr-2" />
+                          <ArrowTopRightOnSquareIcon className="w-4 h-4 mr-2" />
                           Ver contacto
                         </Button>
                       )}
                       <Button variant="outline" onClick={() => setEditing(true)}>
-                        <Edit className="w-4 h-4 mr-2" />
+                        <PencilIcon className="w-4 h-4 mr-2" />
                         Editar
                       </Button>
                     </div>
@@ -296,7 +285,7 @@ export function CRMTaskDetail() {
                   {/* Fecha límite */}
                   {task.complete_till && (
                     <div className="flex items-center gap-2 text-gray-700">
-                      <Calendar className="w-5 h-5 text-gray-400" />
+                      <CalendarIcon className="w-5 h-5 text-gray-400" />
                       <div>
                         <p className="text-sm text-gray-600">Fecha límite</p>
                         <p className="font-medium">{formatDate(task.complete_till)}</p>
@@ -306,7 +295,7 @@ export function CRMTaskDetail() {
 
                   {/* Responsable */}
                   <div className="flex items-center gap-2 text-gray-700">
-                    <User className="w-5 h-5 text-gray-400" />
+                    <UserIcon className="w-5 h-5 text-gray-400" />
                     <div>
                       <p className="text-sm text-gray-600">Responsable</p>
                       <p className="font-medium">{getUserName(task.responsible_user_id)}</p>
@@ -339,7 +328,7 @@ export function CRMTaskDetail() {
                   <div className="flex gap-2 pt-4 border-t">
                     {!task.is_completed && (
                       <Button onClick={handleComplete} className="bg-green-600 hover:bg-green-700">
-                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        <CheckCircleIcon className="w-4 h-4 mr-2" />
                         Marcar como completada
                       </Button>
                     )}
@@ -378,7 +367,7 @@ export function CRMTaskDetail() {
                           }}
                         >
                           Ver detalles
-                          <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+                          <ArrowLeftIcon className="w-4 h-4 ml-2 rotate-180" />
                         </Button>
                       </div>
                     ) : entity ? (
@@ -391,13 +380,13 @@ export function CRMTaskDetail() {
                           </p>
                           {entity.email && (
                             <p className="text-sm text-gray-600 mt-1">
-                              <Mail className="w-4 h-4 inline mr-1" />
+                              <EnvelopeIcon className="w-4 h-4 inline mr-1" />
                               {entity.email}
                             </p>
                           )}
                           {entity.phone && (
                             <p className="text-sm text-gray-600 mt-1">
-                              <Phone className="w-4 h-4 inline mr-1" />
+                              <PhoneIcon className="w-4 h-4 inline mr-1" />
                               {entity.phone}
                             </p>
                           )}
@@ -409,7 +398,7 @@ export function CRMTaskDetail() {
                           }}
                         >
                           Ver detalles
-                          <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
+                          <ArrowLeftIcon className="w-4 h-4 ml-2 rotate-180" />
                         </Button>
                       </div>
                     ) : (

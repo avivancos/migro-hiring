@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { SalesFeasibility } from '@/types/caseAnalysis';
@@ -33,9 +33,9 @@ export function SalesFeasibilityCard({
               className="h-8 w-8 p-0 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
             >
               {expanded ? (
-                <ChevronUp className="h-4 w-4" />
+                <ChevronUpIcon className="h-4 w-4" />
               ) : (
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDownIcon className="h-4 w-4" />
               )}
             </Button>
           )}

@@ -6,7 +6,8 @@ import { useSignAndSendReport } from '@/hooks/useAgentJournal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PenTool, CheckCircle2, AlertCircle, X } from 'lucide-react';
+import { ExclamationCircleIcon, PencilIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { cn } from '@/lib/utils';
 
 interface SignReportDialogProps {
@@ -106,7 +107,7 @@ export function SignReportDialog({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <PenTool className="h-5 w-5 text-green-600" />
+            <PencilIcon className="h-5 w-5 text-green-600" />
             <h2 className="text-xl font-bold text-gray-900">Firmar Reporte Diario</h2>
           </div>
           <button
@@ -114,7 +115,7 @@ export function SignReportDialog({
             disabled={signAndSend.isPending}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <X className="h-5 w-5" />
+            <XMarkIcon className="h-5 w-5" />
           </button>
         </div>
 
@@ -159,21 +160,21 @@ export function SignReportDialog({
               />
               {isValid && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                  <CheckCircleIcon className="h-5 w-5 text-green-500" />
                 </div>
               )}
             </div>
 
             {error && (
               <div className="flex items-center gap-2 text-sm text-red-600">
-                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                <ExclamationCircleIcon className="h-4 w-4 flex-shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
             {isValid && (
               <div className="flex items-center gap-2 text-sm text-green-600">
-                <CheckCircle2 className="h-4 w-4 flex-shrink-0" />
+                <CheckCircleIcon className="h-4 w-4 flex-shrink-0" />
                 <span>Nombre válido. Puede continuar con la firma.</span>
               </div>
             )}

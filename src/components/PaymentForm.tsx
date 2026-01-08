@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CreditCard, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ArrowPathIcon, CreditCardIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { hiringService } from '@/services/hiringService';
 // Dynamic import para PDF generator (pesado, cargar bajo demanda)
 import type { HiringDetails } from '@/types/hiring';
@@ -286,7 +287,6 @@ export function PaymentForm(props: PaymentFormProps) {
     }
   };
 
-
   const handleManualPaymentContinue = async () => {
     if (!props.hiringDetails) return;
     
@@ -353,7 +353,7 @@ export function PaymentForm(props: PaymentFormProps) {
         <Card className="shadow-lg border-2 border-green-300 bg-green-50">
           <CardContent className="space-y-6 pt-6">
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="text-green-600 mt-1 flex-shrink-0" size={28} />
+              <CheckCircleIcon className="text-green-600 mt-1 flex-shrink-0" width={28} height={28} />
               <div className="flex-1">
                 <p className="text-xl font-semibold text-green-900 mb-2">Pago ya registrado</p>
                 <p className="text-sm text-green-700">
@@ -379,7 +379,7 @@ export function PaymentForm(props: PaymentFormProps) {
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center gap-2">
-                <AlertCircle size={20} />
+                <ExclamationCircleIcon width={20} height={20} />
                 <p className="text-sm">{error}</p>
               </div>
             )}
@@ -400,12 +400,12 @@ export function PaymentForm(props: PaymentFormProps) {
               >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 animate-spin" size={18} />
+                    <ArrowPathIcon className="mr-2 animate-spin" width={18} height={18} />
                     Procesando...
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="mr-2" size={18} />
+                    <CheckCircleIcon className="mr-2" width={18} height={18} />
                     Continuar con la firma
                   </>
                 )}
@@ -430,7 +430,7 @@ export function PaymentForm(props: PaymentFormProps) {
       <Card className="shadow-lg">
         <CardContent className="pt-6">
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="animate-spin text-primary" size={32} />
+            <ArrowPathIcon className="animate-spin text-primary" width={32} height={32} />
             <span className="ml-3 text-lg">Inicializando pago seguro...</span>
           </div>
         </CardContent>
@@ -441,7 +441,7 @@ export function PaymentForm(props: PaymentFormProps) {
       <Card className="shadow-lg">
         <CardContent className="pt-6">
           <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center gap-2">
-            <AlertCircle size={20} />
+            <ExclamationCircleIcon width={20} height={20} />
             <p className="text-sm">{error}</p>
           </div>
           
@@ -511,7 +511,7 @@ export function PaymentForm(props: PaymentFormProps) {
       <Card className="shadow-lg">
         <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10">
           <CardTitle className="text-2xl text-emphasis-900 flex items-center gap-2">
-            <CreditCard className="text-primary" size={28} />
+            <CreditCardIcon className="text-primary" width={28} height={28} />
             Pago de Prueba (TEST)
           </CardTitle>
         </CardHeader>
@@ -529,7 +529,7 @@ export function PaymentForm(props: PaymentFormProps) {
           <div className="text-center py-8">
             <div className="mb-6 flex justify-center">
               <div className="bg-primary/10 p-6 rounded-full">
-                <CreditCard className="text-primary" size={64} />
+                <CreditCardIcon className="text-primary" width={64} height={64} />
               </div>
             </div>
 
@@ -565,7 +565,7 @@ export function PaymentForm(props: PaymentFormProps) {
               onClick={handleTestPayment}
               className="flex-1 bg-primary hover:bg-primary-700 text-white"
             >
-              <CheckCircle2 className="mr-2" size={18} />
+              <CheckCircleIcon className="mr-2" width={18} height={18} />
               Simular Pago Exitoso
             </Button>
           </div>
@@ -577,7 +577,7 @@ export function PaymentForm(props: PaymentFormProps) {
       <Card className="shadow-lg">
         <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10">
           <CardTitle className="text-2xl text-emphasis-900 flex items-center gap-2">
-            <CreditCard className="text-primary" size={28} />
+            <CreditCardIcon className="text-primary" width={28} height={28} />
             Pago Seguro con Stripe
           </CardTitle>
         </CardHeader>
@@ -586,7 +586,7 @@ export function PaymentForm(props: PaymentFormProps) {
           <div className="text-center py-8">
             <div className="mb-6 flex justify-center">
               <div className="bg-primary/10 p-6 rounded-full">
-                <CreditCard className="text-primary" size={64} />
+                <CreditCardIcon className="text-primary" width={64} height={64} />
               </div>
             </div>
 
@@ -612,7 +612,7 @@ export function PaymentForm(props: PaymentFormProps) {
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="text-blue-600" size={20} />
+                <CheckCircleIcon className="text-blue-600" width={20} height={20} />
                 <p className="text-sm text-blue-800">
                   <strong>Seguro:</strong> Tus datos de pago están protegidos por Stripe
                 </p>
@@ -633,7 +633,7 @@ export function PaymentForm(props: PaymentFormProps) {
               className="flex-1 bg-primary hover:bg-primary-700 text-white"
               disabled={!checkoutUrl}
             >
-              <CreditCard className="mr-2" size={18} />
+              <CreditCardIcon className="mr-2" width={18} height={18} />
               Proceder al Pago
             </Button>
           </div>

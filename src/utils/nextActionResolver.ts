@@ -307,5 +307,3 @@ export function getOpportunityStatusMessage(opportunity: LeadOpportunity): strin
   return 'En proceso';
 }
 
-
-

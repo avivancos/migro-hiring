@@ -5,14 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { Note } from '@/types/crm';
 import { crmService } from '@/services/crmService';
-import {
-  MessageSquare,
-  Phone,
-  Mail,
-  Calendar,
-  Settings,
-  Plus,
-} from 'lucide-react';
+import { CalendarIcon, ChatBubbleLeftIcon, Cog6ToothIcon, EnvelopeIcon, PhoneIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 interface ActivityTimelineProps {
   entityType: 'contact';
@@ -77,15 +70,15 @@ export function ActivityTimeline({ entityType, entityId }: ActivityTimelineProps
     switch (noteType) {
       case 'call_in':
       case 'call_out':
-        return Phone;
+        return PhoneIcon;
       case 'email':
-        return Mail;
+        return EnvelopeIcon;
       case 'meeting':
-        return Calendar;
+        return CalendarIcon;
       case 'system':
-        return Settings;
+        return Cog6ToothIcon;
       default:
-        return MessageSquare;
+        return ChatBubbleLeftIcon;
     }
   };
 
@@ -120,7 +113,7 @@ export function ActivityTimeline({ entityType, entityId }: ActivityTimelineProps
             variant="ghost"
             onClick={() => setNewNote(prev => prev === '' ? ' ' : '')}
           >
-            <Plus size={16} className="mr-1" />
+            <PlusIcon width={16} height={16} className="mr-1" />
             Nueva Nota
           </Button>
         </CardTitle>
@@ -164,7 +157,7 @@ export function ActivityTimeline({ entityType, entityId }: ActivityTimelineProps
                   {/* Timeline Line */}
                   <div className="flex flex-col items-center">
                     <div className="p-2 rounded-full bg-blue-100 text-blue-600">
-                      <Icon size={16} />
+                      <Icon width={16} height={16} />
                     </div>
                     {index < notes.length - 1 && (
                       <div className="w-0.5 flex-1 bg-gray-200 my-1"></div>

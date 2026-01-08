@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus } from 'lucide-react';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { SearchBar } from '@/components/shared/SearchBar';
@@ -51,7 +51,6 @@ export function CRMExpedientesList() {
 
   const isLoading = searchQuery ? searchLoading : loading;
 
-
   return (
     <div className="w-full space-y-6 p-4 md:p-6">
       {/* Header */}
@@ -67,7 +66,7 @@ export function CRMExpedientesList() {
             onClick={() => navigate('/crm/expedientes/new')}
             className="w-full md:w-auto"
           >
-            <Plus className="h-5 w-5 mr-2" />
+            <PlusIcon className="h-5 w-5 mr-2" />
             Nuevo Expediente
           </Button>
         )}
@@ -149,7 +148,7 @@ export function CRMExpedientesList() {
           action={
             canCreateExpediente() ? (
               <Button onClick={() => navigate('/crm/expedientes/new')}>
-                <Plus className="h-5 w-5 mr-2" />
+                <PlusIcon className="h-5 w-5 mr-2" />
                 Crear Expediente
               </Button>
             ) : undefined

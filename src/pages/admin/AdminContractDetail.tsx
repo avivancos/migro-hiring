@@ -5,27 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { contractsService } from '@/services/contractsService';
-import {
-  ArrowLeft,
-  Download,
-  Mail,
-  FileText,
-  User,
-  Calendar,
-  DollarSign,
-  CheckCircle,
-  XCircle,
-  Clock,
-  ExternalLink,
-  Copy,
-  Check,
-  History,
-  File,
-  CreditCard,
-  Users,
-  Link as LinkIcon,
-  Pencil,
-} from 'lucide-react';
+import { ArrowDownTrayIcon, ArrowLeftIcon, ArrowTopRightOnSquareIcon, CalendarIcon, CheckCircleIcon, CheckIcon, ClockIcon, CreditCardIcon, CurrencyDollarIcon, DocumentDuplicateIcon, DocumentIcon, DocumentTextIcon, EnvelopeIcon, LinkIcon, PencilIcon, UserIcon, UsersIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Modal } from '@/components/common/Modal';
@@ -335,7 +315,7 @@ export function AdminContractDetail() {
   if (!contract) {
     return (
       <EmptyState
-        icon={<FileText size={48} className="text-gray-400" />}
+        icon={<DocumentTextIcon width={48} height={48} className="text-gray-400" />}
         title="Contrato no encontrado"
         description="El contrato que buscas no existe o ha sido eliminado."
         action={
@@ -401,7 +381,7 @@ export function AdminContractDetail() {
             variant="outline"
             size="sm"
           >
-            <ArrowLeft size={16} className="mr-2" />
+            <ArrowLeftIcon width={16} height={16} className="mr-2" />
             Volver
           </Button>
           <div>
@@ -421,7 +401,7 @@ export function AdminContractDetail() {
             size="sm"
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white border-2 border-green-700"
           >
-            <Pencil size={16} />
+            <PencilIcon width={16} height={16} />
             Editar Contrato
           </Button>
           <Button
@@ -430,7 +410,7 @@ export function AdminContractDetail() {
             size="sm"
             className="flex items-center gap-2"
           >
-            {copied ? <Check size={16} /> : <Copy size={16} />}
+            {copied ? <CheckIcon width={16} height={16} /> : <DocumentDuplicateIcon width={16} height={16} />}
             {copied ? 'Copiado' : 'Copiar Link'}
           </Button>
           <Button
@@ -439,7 +419,7 @@ export function AdminContractDetail() {
             size="sm"
             className="flex items-center gap-2"
           >
-            <ExternalLink size={16} />
+            <ArrowTopRightOnSquareIcon width={16} height={16} />
             Abrir
           </Button>
           <Button
@@ -449,7 +429,7 @@ export function AdminContractDetail() {
             size="sm"
             className="flex items-center gap-2"
           >
-            <Download size={16} />
+            <ArrowDownTrayIcon width={16} height={16} />
             {downloading ? 'Descargando...' : 'Descargar'}
           </Button>
           {contract.status === 'completed' && (
@@ -460,7 +440,7 @@ export function AdminContractDetail() {
               size="sm"
               className="flex items-center gap-2"
             >
-              <Download size={16} />
+              <ArrowDownTrayIcon width={16} height={16} />
               Final
             </Button>
           )}
@@ -480,7 +460,7 @@ export function AdminContractDetail() {
                     className="text-green-600 hover:text-green-700 p-1 hover:bg-green-50 rounded transition-colors"
                     title="Modificar estado y pago"
                   >
-                    <Pencil size={14} />
+                    <PencilIcon width={14} height={14} />
                   </button>
                 </div>
                 <button
@@ -492,11 +472,11 @@ export function AdminContractDetail() {
                 </button>
               </div>
               {contract.status === 'completed' ? (
-                <CheckCircle className="text-green-500" size={24} />
+                <CheckCircleIcon className="text-green-500" width={24} height={24} />
               ) : contract.status === 'expired' || contract.status === 'cancelled' ? (
-                <XCircle className="text-red-500" size={24} />
+                <XCircleIcon className="text-red-500" width={24} height={24} />
               ) : (
-                <Clock className="text-yellow-500" size={24} />
+                <ClockIcon className="text-yellow-500" width={24} height={24} />
               )}
             </div>
           </CardContent>
@@ -509,11 +489,11 @@ export function AdminContractDetail() {
                 <div className="mt-2">{getKYCStatusBadge(contract.kyc_status)}</div>
               </div>
               {contract.kyc_status === 'verified' ? (
-                <CheckCircle className="text-green-500" size={24} />
+                <CheckCircleIcon className="text-green-500" width={24} height={24} />
               ) : contract.kyc_status === 'failed' ? (
-                <XCircle className="text-red-500" size={24} />
+                <XCircleIcon className="text-red-500" width={24} height={24} />
               ) : (
-                <Clock className="text-yellow-500" size={24} />
+                <ClockIcon className="text-yellow-500" width={24} height={24} />
               )}
             </div>
           </CardContent>
@@ -527,7 +507,7 @@ export function AdminContractDetail() {
                   {formatCurrency(contract.amount, contract.currency)}
                 </div>
               </div>
-              <DollarSign className="text-gray-400" size={24} />
+              <CurrencyDollarIcon className="text-gray-400" width={24} height={24} />
             </div>
           </CardContent>
         </Card>
@@ -541,7 +521,7 @@ export function AdminContractDetail() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User size={20} />
+                <UserIcon width={20} height={20} />
                 Información del Cliente
               </CardTitle>
             </CardHeader>
@@ -550,7 +530,7 @@ export function AdminContractDetail() {
                 <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-blue-600" />
+                      <UsersIcon className="w-4 h-4 text-blue-600" />
                       <span className="text-sm font-medium text-blue-900">Vinculado con Contacto del CRM</span>
                     </div>
                     <Button
@@ -559,7 +539,7 @@ export function AdminContractDetail() {
                       size="sm"
                       className="flex items-center gap-2 border-blue-300 text-blue-700 hover:bg-blue-100"
                     >
-                      <LinkIcon size={14} />
+                      <LinkIcon width={14} height={14} />
                       Ver Contacto
                     </Button>
                   </div>
@@ -578,7 +558,7 @@ export function AdminContractDetail() {
                       href={`mailto:${contract.client_email}`}
                       className="text-green-600 hover:text-green-700"
                     >
-                      <Mail size={16} />
+                      <EnvelopeIcon width={16} height={16} />
                     </a>
                   </div>
                 </div>
@@ -619,7 +599,7 @@ export function AdminContractDetail() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <FileText size={20} />
+                <DocumentTextIcon width={20} height={20} />
                 Información del Servicio
               </CardTitle>
             </CardHeader>
@@ -652,7 +632,7 @@ export function AdminContractDetail() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <DollarSign size={20} />
+                  <CurrencyDollarIcon width={20} height={20} />
                   Información de Pago
                 </CardTitle>
               </CardHeader>
@@ -667,7 +647,7 @@ export function AdminContractDetail() {
                       rel="noopener noreferrer"
                       className="text-sm text-green-600 hover:text-green-700 mt-1 inline-flex items-center gap-1"
                     >
-                      Ver en Stripe <ExternalLink size={14} />
+                      Ver en Stripe <ArrowTopRightOnSquareIcon width={14} height={14} />
                     </a>
                   </div>
                 )}
@@ -686,7 +666,7 @@ export function AdminContractDetail() {
                       rel="noopener noreferrer"
                       className="text-sm text-green-600 hover:text-green-700 mt-1 inline-flex items-center gap-1"
                     >
-                      Ver en Stripe <ExternalLink size={14} />
+                      Ver en Stripe <ArrowTopRightOnSquareIcon width={14} height={14} />
                     </a>
                   </div>
                 )}
@@ -718,7 +698,7 @@ export function AdminContractDetail() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <History size={20} />
+                <ClockIcon width={20} height={20} />
                 Historial del Contrato
               </CardTitle>
             </CardHeader>
@@ -730,7 +710,7 @@ export function AdminContractDetail() {
                   <div className="flex gap-4 pb-6">
                     <div className="flex flex-col items-center">
                       <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <FileText className="text-blue-600" size={20} />
+                        <DocumentTextIcon className="text-blue-600" width={20} height={20} />
                       </div>
                       <div className="w-0.5 h-full bg-gray-200 mt-2" />
                     </div>
@@ -752,9 +732,9 @@ export function AdminContractDetail() {
                             rel="noopener noreferrer"
                             className="text-sm text-green-600 hover:text-green-700 inline-flex items-center gap-1"
                           >
-                            <File size={14} />
+                            <DocumentIcon width={14} height={14} />
                             Ver PDF del borrador
-                            <ExternalLink size={12} />
+                            <ArrowTopRightOnSquareIcon width={12} height={12} />
                           </a>
                         </div>
                       )}
@@ -766,7 +746,7 @@ export function AdminContractDetail() {
                     <div className="flex gap-4 pb-6">
                       <div className="flex flex-col items-center">
                         <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                          <CheckCircle className="text-green-600" size={20} />
+                          <CheckCircleIcon className="text-green-600" width={20} height={20} />
                         </div>
                         {(contract.payment_intent_id || contract.subscription_id || contract.manual_payment_confirmed) && (
                           <div className="w-0.5 h-full bg-gray-200 mt-2" />
@@ -791,7 +771,7 @@ export function AdminContractDetail() {
                     <div className="flex gap-4">
                       <div className="flex flex-col items-center">
                         <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                          <CreditCard className="text-purple-600" size={20} />
+                          <CreditCardIcon className="text-purple-600" width={20} height={20} />
                         </div>
                       </div>
                       <div className="flex-1">
@@ -821,7 +801,7 @@ export function AdminContractDetail() {
                                 rel="noopener noreferrer"
                                 className="text-xs text-green-600 hover:text-green-700 mt-1 inline-flex items-center gap-1"
                               >
-                                Ver en Stripe <ExternalLink size={12} />
+                                Ver en Stripe <ArrowTopRightOnSquareIcon width={12} height={12} />
                               </a>
                             </div>
                           )}
@@ -842,7 +822,7 @@ export function AdminContractDetail() {
                                 rel="noopener noreferrer"
                                 className="text-xs text-green-600 hover:text-green-700 mt-1 inline-flex items-center gap-1"
                               >
-                                Ver en Stripe <ExternalLink size={12} />
+                                Ver en Stripe <ArrowTopRightOnSquareIcon width={12} height={12} />
                               </a>
                             </div>
                           )}
@@ -873,7 +853,7 @@ export function AdminContractDetail() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar size={20} />
+                <CalendarIcon width={20} height={20} />
                 Fechas
               </CardTitle>
             </CardHeader>
@@ -917,7 +897,7 @@ export function AdminContractDetail() {
                 className="w-full justify-start bg-green-600 hover:bg-green-700 text-white border-2 border-green-700"
                 size="sm"
               >
-                <Pencil size={16} className="mr-2" />
+                <PencilIcon width={16} height={16} className="mr-2" />
                 Editar Contrato Completo
               </Button>
               <Button
@@ -926,7 +906,7 @@ export function AdminContractDetail() {
                 className="w-full justify-start bg-blue-600 hover:bg-blue-700 text-white"
                 size="sm"
               >
-                <DollarSign size={16} className="mr-2" />
+                <CurrencyDollarIcon width={16} height={16} className="mr-2" />
                 Modificar Estado y Pago
               </Button>
               <Button
@@ -935,7 +915,7 @@ export function AdminContractDetail() {
                 className="w-full justify-start"
                 size="sm"
               >
-                <ExternalLink size={16} className="mr-2" />
+                <ArrowTopRightOnSquareIcon width={16} height={16} className="mr-2" />
                 Ver en Frontend
               </Button>
               <Button
@@ -945,7 +925,7 @@ export function AdminContractDetail() {
                 className="w-full justify-start"
                 size="sm"
               >
-                <Download size={16} className="mr-2" />
+                <ArrowDownTrayIcon width={16} height={16} className="mr-2" />
                 Descargar PDF
               </Button>
             </CardContent>

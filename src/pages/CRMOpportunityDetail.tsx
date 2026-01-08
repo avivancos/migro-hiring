@@ -10,8 +10,8 @@ import { OpportunityScore } from '@/components/opportunities/OpportunityScore';
 import { FirstCallAttemptsRow } from '@/components/opportunities/FirstCallAttemptsRow';
 import { FirstCallAttemptDetail } from '@/components/opportunities/FirstCallAttemptDetail';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { ArrowLeft, Phone, Mail, MapPin, User, Edit } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
+import { ArrowLeftIcon, ChartBarIcon, DocumentTextIcon, EnvelopeIcon, ExclamationCircleIcon, MapPinIcon, PencilIcon, PhoneIcon, UserIcon } from '@heroicons/react/24/outline';
+// import * as LucideIcons from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getDetectionReasonBadges } from '@/utils/opportunity';
 import { opportunityApi } from '@/services/opportunityApi';
@@ -28,9 +28,6 @@ import { useCRMUsers } from '@/hooks/useCRMUsers';
 import { ContractDataRequestModal } from '@/components/opportunities/ContractDataRequestModal';
 import { RequestContractModal } from '@/components/opportunities/RequestContractModal';
 import { useContractRequest } from '@/hooks/useContractRequest';
-import { FileText, AlertCircle } from 'lucide-react';
-
-const { Activity } = LucideIcons;
 
 export function CRMOpportunityDetail() {
   const { id } = useParams<{ id: string }>();
@@ -295,7 +292,7 @@ export function CRMOpportunityDetail() {
           size="sm"
           onClick={() => navigate('/crm/opportunities')}
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <ArrowLeftIcon className="h-4 w-4 mr-2" />
           Volver
         </Button>
         <h1 className="text-2xl font-bold text-gray-900">
@@ -331,7 +328,7 @@ export function CRMOpportunityDetail() {
                     onClick={() => navigate(`/crm/contacts/${opportunity.contact_id}`)}
                     className="flex items-center gap-2"
                   >
-                    <User className="h-4 w-4" />
+                    <UserIcon className="h-4 w-4" />
                     Ver Contacto Completo
                   </Button>
                 </div>
@@ -350,19 +347,19 @@ export function CRMOpportunityDetail() {
                 <div className="space-y-2">
                   {contact.email && (
                     <div className="flex items-center gap-2 text-gray-600">
-                      <Mail className="h-4 w-4 text-gray-400" />
+                      <EnvelopeIcon className="h-4 w-4 text-gray-400" />
                       <span>{contact.email}</span>
                     </div>
                   )}
                   {contact.mobile && (
                     <div className="flex items-center gap-2 text-gray-600">
-                      <Phone className="h-4 w-4 text-gray-400" />
+                      <PhoneIcon className="h-4 w-4 text-gray-400" />
                       <span>{contact.mobile}</span>
                     </div>
                   )}
                   {contact.city && (
                     <div className="flex items-center gap-2 text-gray-600">
-                      <MapPin className="h-4 w-4 text-gray-400" />
+                      <MapPinIcon className="h-4 w-4 text-gray-400" />
                       <span>{contact.city}</span>
                     </div>
                   )}
@@ -428,7 +425,7 @@ export function CRMOpportunityDetail() {
                 <Card className="border-l-4 border-l-green-500">
                   <CardHeader>
                     <div className="flex items-center gap-2">
-                      <FileText className="h-5 w-5 text-green-600" />
+                      <DocumentTextIcon className="h-5 w-5 text-green-600" />
                       <CardTitle className="text-green-900">Solicitar Contrato</CardTitle>
                     </div>
                   </CardHeader>
@@ -441,7 +438,7 @@ export function CRMOpportunityDetail() {
                         onClick={() => setShowRequestContractModal(true)}
                         className="w-full bg-green-600 hover:bg-green-700 text-white"
                       >
-                        <FileText className="h-4 w-4 mr-2" />
+                        <DocumentTextIcon className="h-4 w-4 mr-2" />
                         Solicitar Código de Contratación
                       </Button>
                     </div>
@@ -454,7 +451,7 @@ export function CRMOpportunityDetail() {
                 <Card className="border-l-4 border-l-yellow-500">
                   <CardHeader>
                     <div className="flex items-center gap-2">
-                      <AlertCircle className="h-5 w-5 text-yellow-600" />
+                      <ExclamationCircleIcon className="h-5 w-5 text-yellow-600" />
                       <CardTitle className="text-yellow-900">Solicitud de Contrato Pendiente</CardTitle>
                     </div>
                   </CardHeader>
@@ -479,7 +476,7 @@ export function CRMOpportunityDetail() {
                         onClick={contractRequest.openModal}
                         className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
                       >
-                        <FileText className="h-4 w-4 mr-2" />
+                        <DocumentTextIcon className="h-4 w-4 mr-2" />
                         Completar Datos del Contrato
                       </Button>
                     </div>
@@ -510,7 +507,7 @@ export function CRMOpportunityDetail() {
                     className="w-full"
                     onClick={() => setShowPipelineWizard(true)}
                   >
-                    <Activity className="h-4 w-4 mr-2" />
+                    <ChartBarIcon className="h-4 w-4 mr-2" />
                     Modificar Pipeline
                   </Button>
                   <Button
@@ -579,7 +576,7 @@ export function CRMOpportunityDetail() {
                     onClick={handleOpenAssignModal}
                     className="h-8 px-2"
                   >
-                    <Edit className="h-4 w-4 mr-1" />
+                    <PencilIcon className="h-4 w-4 mr-1" />
                     Editar
                   </Button>
                 )}
@@ -590,7 +587,7 @@ export function CRMOpportunityDetail() {
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100">
-                      <User className="h-5 w-5 text-blue-600" />
+                      <UserIcon className="h-5 w-5 text-blue-600" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-blue-600 font-medium mb-1">Asignado a</p>
@@ -604,7 +601,7 @@ export function CRMOpportunityDetail() {
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                   <div className="flex items-center gap-3">
                     <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100">
-                      <User className="h-5 w-5 text-gray-400" />
+                      <UserIcon className="h-5 w-5 text-gray-400" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-gray-500 font-medium mb-1">Sin asignar</p>

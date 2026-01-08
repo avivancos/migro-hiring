@@ -1,7 +1,7 @@
 // ComparisonCard - Card para mostrar comparación con período anterior
 
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowDownIcon, ArrowUpIcon } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
 import { formatChangePercentage } from '@/utils/agentJournal';
 
@@ -55,9 +55,9 @@ export function ComparisonCard({
             isPositive ? 'text-green-600' : 'text-red-600'
           )}>
             {isPositive ? (
-              <ArrowUp className="h-4 w-4" />
+              <ArrowUpIcon className="h-4 w-4" />
             ) : (
-              <ArrowDown className="h-4 w-4" />
+              <ArrowDownIcon className="h-4 w-4" />
             )}
             <span>{formatChangePercentage(changePercentage)}</span>
           </div>

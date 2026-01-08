@@ -6,18 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { contractsService } from '@/services/contractsService';
-import {
-  FileText,
-  Search,
-  Filter,
-  Download,
-  Eye,
-  Plus,
-  Calendar,
-  DollarSign,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react';
+import { ArrowDownTrayIcon, CalendarIcon, ChevronLeftIcon, ChevronRightIcon, CurrencyDollarIcon, DocumentTextIcon, EyeIcon, FunnelIcon, MagnifyingGlassIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
 import type {
@@ -172,7 +161,7 @@ export function AdminContracts() {
             size="sm"
             className="w-full sm:w-auto"
           >
-            <Download size={16} className="mr-2" />
+            <ArrowDownTrayIcon width={16} height={16} className="mr-2" />
             {exporting ? 'Exportando...' : 'Exportar CSV'}
           </Button>
           <Button
@@ -180,7 +169,7 @@ export function AdminContracts() {
             size="sm"
             className="w-full sm:w-auto"
           >
-            <Plus size={16} className="mr-2" />
+            <PlusIcon width={16} height={16} className="mr-2" />
             Nuevo Contrato
           </Button>
         </div>
@@ -192,7 +181,7 @@ export function AdminContracts() {
           <div className="space-y-4">
             {/* Search Bar */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" width={20} height={20} />
               <Input
                 placeholder="Buscar por código, nombre, email..."
                 value={filters.search || ''}
@@ -208,7 +197,7 @@ export function AdminContracts() {
               size="sm"
               className="w-full sm:w-auto"
             >
-              <Filter size={16} className="mr-2" />
+              <FunnelIcon width={16} height={16} className="mr-2" />
               {showFilters ? 'Ocultar filtros' : 'Mostrar filtros'}
             </Button>
 
@@ -332,7 +321,7 @@ export function AdminContracts() {
         </div>
       ) : contracts.length === 0 ? (
         <EmptyState
-          icon={<FileText size={48} className="text-gray-400" />}
+          icon={<DocumentTextIcon width={48} height={48} className="text-gray-400" />}
           title="No hay contratos"
           description={
             filters.search || filters.status !== 'all'
@@ -342,7 +331,7 @@ export function AdminContracts() {
           action={
             !filters.search && filters.status === 'all' ? (
               <Button onClick={() => navigate('/admin/contracts/create')}>
-                <Plus size={16} className="mr-2" />
+                <PlusIcon width={16} height={16} className="mr-2" />
                 Crear Contrato
               </Button>
             ) : (
@@ -372,16 +361,16 @@ export function AdminContracts() {
                       {getStatusBadge(contract.status)}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <FileText size={14} />
+                      <DocumentTextIcon width={14} height={14} />
                       <span className="font-mono">{contract.hiring_code}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-1 text-gray-600">
-                        <DollarSign size={14} />
+                        <CurrencyDollarIcon width={14} height={14} />
                         <span>{formatCurrency(contract.amount, contract.currency)}</span>
                       </div>
                       <div className="flex items-center gap-1 text-gray-600">
-                        <Calendar size={14} />
+                        <CalendarIcon width={14} height={14} />
                         <span>{formatDate(contract.created_at)}</span>
                       </div>
                     </div>
@@ -476,7 +465,7 @@ export function AdminContracts() {
                               navigate(`/admin/contracts/${contract.hiring_code}`);
                             }}
                           >
-                            <Eye size={16} />
+                            <EyeIcon width={16} height={16} />
                           </Button>
                         </td>
                       </tr>
@@ -500,7 +489,7 @@ export function AdminContracts() {
                   variant="outline"
                   size="sm"
                 >
-                  <ChevronLeft size={16} className="mr-1" />
+                  <ChevronLeftIcon width={16} height={16} className="mr-1" />
                   Anterior
                 </Button>
                 <div className="text-sm text-gray-600 px-4">
@@ -513,7 +502,7 @@ export function AdminContracts() {
                   size="sm"
                 >
                   Siguiente
-                  <ChevronRight size={16} className="ml-1" />
+                  <ChevronRightIcon width={16} height={16} className="ml-1" />
                 </Button>
               </div>
             </div>
@@ -523,6 +512,4 @@ export function AdminContracts() {
     </div>
   );
 }
-
-
 

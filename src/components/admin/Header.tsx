@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/providers/AuthProvider';
-import { LogOut, Menu } from 'lucide-react';
+import { ArrowRightOnRectangleIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import { MigroLogo } from '@/components/common/MigroLogo';
 
@@ -29,7 +29,7 @@ export function AdminHeader({ isAdminMode, onModeSwitch, onMenuClick }: AdminHea
             className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-gray-500"
             onClick={onMenuClick}
           >
-            <Menu className="h-6 w-6" />
+            <Bars3Icon className="h-6 w-6" />
           </button>
           
           <MigroLogo variant="header" />
@@ -64,7 +64,7 @@ export function AdminHeader({ isAdminMode, onModeSwitch, onMenuClick }: AdminHea
                   </span>
                </div>
                <Button variant="ghost" size="icon" onClick={handleLogout} className="text-gray-500 hover:text-red-600">
-                 <LogOut className="h-5 w-5" />
+                 <ArrowRightOnRectangleIcon className="h-5 w-5" />
                </Button>
             </div>
         </div>
@@ -72,6 +72,4 @@ export function AdminHeader({ isAdminMode, onModeSwitch, onMenuClick }: AdminHea
     </header>
   );
 }
-
-
 

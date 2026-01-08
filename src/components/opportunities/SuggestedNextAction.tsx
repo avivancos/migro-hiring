@@ -4,7 +4,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Phone, TrendingUp, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { ArrowTrendingUpIcon, ClockIcon, ExclamationCircleIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { getSuggestedNextAction } from '@/utils/nextActionResolver';
 import type { LeadOpportunity } from '@/types/opportunity';
 import type { PipelineActionRead, PipelineStage } from '@/types/pipeline';
@@ -41,18 +42,18 @@ export function SuggestedNextAction({
 
   const getActionIcon = (actionCode: string) => {
     if (actionCode.includes('call') || actionCode.includes('llamada')) {
-      return <Phone className="h-5 w-5" />;
+      return <PhoneIcon className="h-5 w-5" />;
     }
     if (actionCode.includes('follow_up') || actionCode.includes('seguimiento')) {
-      return <TrendingUp className="h-5 w-5" />;
+      return <ArrowTrendingUpIcon className="h-5 w-5" />;
     }
     if (actionCode.includes('wait') || actionCode.includes('esperar')) {
-      return <Clock className="h-5 w-5" />;
+      return <ClockIcon className="h-5 w-5" />;
     }
     if (actionCode.includes('validate') || actionCode.includes('validar')) {
-      return <CheckCircle2 className="h-5 w-5" />;
+      return <CheckCircleIcon className="h-5 w-5" />;
     }
-    return <AlertCircle className="h-5 w-5" />;
+    return <ExclamationCircleIcon className="h-5 w-5" />;
   };
 
   const getButtonText = (actionCode: string): string => {
@@ -124,7 +125,7 @@ export function SuggestedNextAction({
 
         {suggestedAction.required && (
           <div className="flex items-center gap-2 text-sm text-orange-600 bg-orange-50 p-2 rounded">
-            <AlertCircle className="h-4 w-4" />
+            <ExclamationCircleIcon className="h-4 w-4" />
             <span>Acción requerida para continuar</span>
           </div>
         )}

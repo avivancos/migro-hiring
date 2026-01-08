@@ -7,7 +7,7 @@ import type { TaskFilters, Task } from '@/types/crm';
 import TaskCard from './TaskCard';
 import TaskFiltersComponent from './TaskFilters';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface TaskListProps {
   initialFilters?: TaskFilters;
@@ -64,7 +64,7 @@ export default function TaskList({
 
       {loading && (
         <div className="flex justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+          <ArrowPathIcon className="h-6 w-6 animate-spin text-gray-400" />
         </div>
       )}
 

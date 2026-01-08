@@ -20,7 +20,6 @@ export function useOpportunities(filters?: OpportunityFilters) {
     retryOnMount: false, // No reintentar al montar si ya hay un error
   });
 
-
   const assignMutation = useMutation({
     mutationFn: ({ id, userId }: { id: string; userId: string }) =>
       opportunityApi.assign(id, userId),

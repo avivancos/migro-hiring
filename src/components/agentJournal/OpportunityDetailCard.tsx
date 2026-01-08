@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, ExternalLink } from 'lucide-react';
+import { ArrowTopRightOnSquareIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 import type { OpportunityDetail } from '@/types/agentJournal';
 import { formatCallTime } from '@/utils/agentJournal';
 import { useQuery } from '@tanstack/react-query';
@@ -62,14 +62,14 @@ export function OpportunityDetailCard({
                 }}
                 className="text-xs"
               >
-                <ExternalLink className="h-4 w-4 mr-1" />
+                <ArrowTopRightOnSquareIcon className="h-4 w-4 mr-1" />
                 Ver
               </Button>
             )}
             {isExpanded ? (
-              <ChevronUp className="h-5 w-5 text-gray-400" />
+              <ChevronUpIcon className="h-5 w-5 text-gray-400" />
             ) : (
-              <ChevronDown className="h-5 w-5 text-gray-400" />
+              <ChevronDownIcon className="h-5 w-5 text-gray-400" />
             )}
           </div>
         </div>

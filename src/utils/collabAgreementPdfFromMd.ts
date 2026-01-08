@@ -99,4 +99,3 @@ export function generatePdfWithTitle(rawText: string, title: string, footerUrl?:
   return renderPdf(rawText, title, footerUrl ?? 'contratacion.migro.es');
 }
 
-

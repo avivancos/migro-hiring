@@ -6,17 +6,7 @@ import { Button } from '@/components/ui/button';
 import { formatCallStatus } from '@/utils/statusTranslations';
 import type { Call, CRMUser } from '@/types/crm';
 import { crmService } from '@/services/crmService';
-import {
-  Phone,
-  PhoneIncoming,
-  PhoneOutgoing,
-  PhoneMissed,
-  Play,
-  Pause,
-  Clock,
-  Calendar,
-  User,
-} from 'lucide-react';
+import { CalendarIcon, ClockIcon, PhoneIcon, PhoneXMarkIcon, UserIcon, PlayIcon, PauseIcon } from '@heroicons/react/24/outline';
 
 interface CallHistoryProps {
   entityType: 'lead' | 'contact';
@@ -105,9 +95,9 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
 
   const getCallIcon = (call: Call) => {
     if (call.direction === 'inbound') {
-      return call.status === 'missed' ? PhoneMissed : PhoneIncoming;
+      return call.status === 'missed' ? PhoneXMarkIcon : PhoneIcon;
     }
-    return PhoneOutgoing;
+    return PhoneIcon;
   };
 
   const getCallIconColor = (call: Call): string => {
@@ -193,7 +183,7 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Phone size={20} />
+          <PhoneIcon width={20} height={20} />
           Historial de Llamadas ({calls.length})
         </CardTitle>
       </CardHeader>
@@ -215,7 +205,7 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
                 >
                   {/* Icon */}
                   <div className={`p-2 rounded-full bg-white ${iconColor}`}>
-                    <Icon size={20} />
+                    <Icon width={20} height={20} />
                   </div>
 
                   {/* Call Info */}
@@ -238,18 +228,18 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
                     
                     <div className="flex items-center gap-4 mt-1 text-sm text-gray-600 flex-wrap">
                       <span className="flex items-center gap-1">
-                        <Calendar size={14} />
+                        <CalendarIcon width={14} height={14} />
                         {formatDateTime(call.started_at)}
                       </span>
                       {call.duration > 0 && (
                         <span className="flex items-center gap-1">
-                          <Clock size={14} />
+                          <ClockIcon width={14} height={14} />
                           {formatDuration(call.duration)}
                         </span>
                       )}
                       {call.responsible_user_id && (
                         <span className="text-xs px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5 font-medium">
-                          <User size={12} className="flex-shrink-0" />
+                          <UserIcon width={12} height={12} className="flex-shrink-0" />
                           <span className="truncate max-w-[150px]">{getResponsibleName(call.responsible_user_id)}</span>
                         </span>
                       )}
@@ -270,12 +260,12 @@ export function CallHistory({ entityType, entityId }: CallHistoryProps) {
                     >
                       {playingCallId === call.id ? (
                         <>
-                          <Pause size={16} />
+                          <PauseIcon width={16} height={16} />
                           Pausar
                         </>
                       ) : (
                         <>
-                          <Play size={16} />
+                          <PlayIcon width={16} height={16} />
                           Escuchar
                         </>
                       )}

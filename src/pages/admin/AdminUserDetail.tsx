@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { adminService } from '@/services/adminService';
-import { ArrowLeft, Save, Trash2, Shield, UserCheck, UserX, Key, UserCog, History, Eye, Lock } from 'lucide-react';
+import { ArrowDownTrayIcon, ArrowLeftIcon, ClockIcon, EyeIcon, KeyIcon, LockClosedIcon, ShieldCheckIcon, TrashIcon, UserIcon } from '@heroicons/react/24/outline';
 import { Badge } from '@/components/ui/badge';
 import { Modal } from '@/components/common/Modal';
 import type { User, UserRole } from '@/types/user';
@@ -331,7 +331,7 @@ export function AdminUserDetail() {
             onClick={() => navigate('/admin/users')}
             className="flex items-center gap-2"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeftIcon width={16} height={16} />
             <span className="hidden sm:inline">Volver</span>
           </Button>
           <div>
@@ -457,7 +457,7 @@ export function AdminUserDetail() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <UserCog size={20} />
+                    <UserIcon width={20} height={20} />
                     Acciones Administrativas
                   </CardTitle>
                 </CardHeader>
@@ -469,7 +469,7 @@ export function AdminUserDetail() {
                       disabled={formData.role === 'lawyer'}
                       className="flex items-center gap-2"
                     >
-                      <Shield size={16} />
+                      <ShieldCheckIcon width={16} height={16} />
                       Cambiar a Abogado
                     </Button>
                     <Button
@@ -478,7 +478,7 @@ export function AdminUserDetail() {
                       disabled={formData.role === 'agent'}
                       className="flex items-center gap-2"
                     >
-                      <UserCheck size={16} />
+                      <UserIcon width={16} height={16} />
                       Cambiar a Agente
                     </Button>
                     <Button
@@ -488,12 +488,12 @@ export function AdminUserDetail() {
                     >
                       {formData.is_active ? (
                         <>
-                          <UserX size={16} />
+                          <UserIcon width={16} height={16} />
                           Desactivar
                         </>
                       ) : (
                         <>
-                          <UserCheck size={16} />
+                          <UserIcon width={16} height={16} />
                           Activar
                         </>
                       )}
@@ -503,7 +503,7 @@ export function AdminUserDetail() {
                       variant="outline"
                       className="flex items-center gap-2"
                     >
-                      <Key size={16} />
+                      <KeyIcon width={16} height={16} />
                       Reset Password
                     </Button>
                     <Button
@@ -511,7 +511,7 @@ export function AdminUserDetail() {
                       variant="outline"
                       className="flex items-center gap-2"
                     >
-                      <Lock size={16} />
+                      <LockClosedIcon width={16} height={16} />
                       Cambiar Contraseña
                     </Button>
                   </div>
@@ -521,7 +521,7 @@ export function AdminUserDetail() {
                       variant="outline"
                       className="w-full flex items-center gap-2"
                     >
-                      <Eye size={16} />
+                      <EyeIcon width={16} height={16} />
                       Impersonar Usuario
                     </Button>
                   )}
@@ -532,7 +532,7 @@ export function AdminUserDetail() {
                     variant="outline"
                     className="w-full flex items-center gap-2"
                   >
-                    <History size={16} />
+                    <ClockIcon width={16} height={16} />
                     {showAuditLogs ? 'Ocultar' : 'Ver'} Logs de Auditoría
                   </Button>
                 </CardContent>
@@ -544,7 +544,7 @@ export function AdminUserDetail() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <History size={20} />
+                    <ClockIcon width={20} height={20} />
                     Logs de Auditoría
                   </CardTitle>
                 </CardHeader>
@@ -584,7 +584,7 @@ export function AdminUserDetail() {
                 disabled={saving}
                 className="flex-1 flex items-center justify-center gap-2"
               >
-                <Save size={18} />
+                <ArrowDownTrayIcon width={18} height={18} />
                 {saving ? 'Guardando...' : 'Guardar Cambios'}
               </Button>
               <Button
@@ -592,7 +592,7 @@ export function AdminUserDetail() {
                 variant="destructive"
                 className="flex items-center justify-center gap-2"
               >
-                <Trash2 size={18} />
+                <TrashIcon width={18} height={18} />
                 <span className="hidden sm:inline">Eliminar</span>
               </Button>
             </div>
@@ -616,7 +616,7 @@ export function AdminUserDetail() {
                   <Badge variant={user.role === 'admin' || user.is_superuser ? 'default' : 'neutral'}>
                     {user.is_superuser ? (
                       <>
-                        <Shield size={12} className="mr-1" />
+                        <ShieldCheckIcon width={12} height={12} className="mr-1" />
                         Superusuario
                       </>
                     ) : (

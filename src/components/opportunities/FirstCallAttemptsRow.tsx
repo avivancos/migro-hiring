@@ -1,7 +1,7 @@
 // FirstCallAttemptsRow - Fila horizontal con 5 badges de intentos
 
 import { FirstCallAttemptBadge, type FirstCallAttemptStatus } from './FirstCallAttemptBadge';
-import { Check } from 'lucide-react';
+import { CheckIcon } from '@heroicons/react/24/outline';
 import type { FirstCallAttempt } from '@/types/opportunity';
 import { getValidAttemptsCount } from '@/utils/opportunity';
 
@@ -46,7 +46,7 @@ export function FirstCallAttemptsRow({
         </div>
         {firstCallCompleted && successfulAttempt && (
           <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700 bg-green-50 px-2.5 py-1 rounded-md border border-green-200">
-            <Check className="h-4 w-4" />
+            <CheckIcon className="h-4 w-4" />
             Completada en intento #{successfulAttempt}
           </span>
         )}

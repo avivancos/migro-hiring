@@ -7,7 +7,7 @@ import { auditService } from '@/services/auditService';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
 import { StatusBadge } from '@/components/common/StatusBadge';
-import { Search, Download } from 'lucide-react';
+import { ArrowDownTrayIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import type { AuditLogEntry, AuditLogFilters } from '@/types/audit';
 import { format } from 'date-fns';
 
@@ -47,8 +47,7 @@ export function AdminAuditLogs() {
 
   const handleExport = async (format: 'json' | 'csv') => {
     try {
-      // TODO: Implementar exportación
-      alert(`Exportación ${format} en desarrollo`);
+            alert(`Exportación ${format} en desarrollo`);
     } catch (error) {
       console.error('Error exportando:', error);
     }
@@ -74,7 +73,7 @@ export function AdminAuditLogs() {
             variant="outline"
             className="flex items-center gap-2"
           >
-            <Download size={18} />
+            <ArrowDownTrayIcon width={18} height={18} />
             <span className="hidden sm:inline">Exportar CSV</span>
           </Button>
         </div>
@@ -86,7 +85,7 @@ export function AdminAuditLogs() {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   placeholder="Buscar en logs..."
                   value={searchQuery}
@@ -97,7 +96,7 @@ export function AdminAuditLogs() {
               </div>
             </div>
             <Button onClick={handleSearch} className="flex items-center gap-2">
-              <Search size={18} />
+              <MagnifyingGlassIcon width={18} height={18} />
               Buscar
             </Button>
           </div>

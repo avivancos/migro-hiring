@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import type { Lead, LeadCreateRequest, CRMUser, Contact } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { adminService } from '@/services/adminService';
-import { Save, X } from 'lucide-react';
+import { ArrowDownTrayIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 interface LeadFormProps {
   lead?: Lead;
@@ -396,11 +396,11 @@ export function LeadForm({ lead, onSave, onCancel }: LeadFormProps) {
 
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
-              <X size={16} className="mr-2" />
+              <XMarkIcon width={16} height={16} className="mr-2" />
               Cancelar
             </Button>
             <Button type="submit" disabled={loading} variant="default">
-              <Save size={16} className="mr-2" />
+              <ArrowDownTrayIcon width={16} height={16} className="mr-2" />
               {loading ? 'Guardando...' : 'Guardar Lead'}
             </Button>
           </div>

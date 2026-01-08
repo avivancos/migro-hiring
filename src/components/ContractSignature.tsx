@@ -5,7 +5,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { PenTool, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ExclamationCircleIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 
 interface ContractSignatureProps {
   hiringCode: string;
@@ -69,7 +70,7 @@ export function ContractSignature({ userName, isAlreadySigned = false, onComplet
         <Card className="shadow-lg border-2 border-green-300 bg-green-50">
           <CardHeader className="bg-gradient-to-r from-green-100 to-green-50">
             <CardTitle className="text-2xl text-green-900 flex items-center gap-2">
-              <CheckCircle2 className="text-green-600" size={28} />
+              <CheckCircleIcon className="text-green-600" width={28} height={28} />
               Contrato Ya Firmado
             </CardTitle>
           </CardHeader>
@@ -110,7 +111,7 @@ export function ContractSignature({ userName, isAlreadySigned = false, onComplet
       <Card className="shadow-lg">
         <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10">
           <CardTitle className="text-2xl text-emphasis-900 flex items-center gap-2">
-            <PenTool className="text-primary" size={28} />
+            <PencilIcon className="text-primary" width={28} height={28} />
             Firma del Contrato
           </CardTitle>
         </CardHeader>
@@ -164,9 +165,9 @@ export function ContractSignature({ userName, isAlreadySigned = false, onComplet
                   autoFocus
                 />
                 {isValid && (
-                  <CheckCircle2
+                  <CheckCircleIcon
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-green-600"
-                    size={24}
+                    width={24} height={24}
                   />
                 )}
               </div>
@@ -179,7 +180,7 @@ export function ContractSignature({ userName, isAlreadySigned = false, onComplet
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-start gap-2">
-                <AlertCircle size={20} className="mt-0.5 flex-shrink-0" />
+                <ExclamationCircleIcon width={20} height={20} className="mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-semibold">Error de validación</p>
                   <p className="text-sm">{error}</p>
@@ -189,7 +190,7 @@ export function ContractSignature({ userName, isAlreadySigned = false, onComplet
 
             {isValid && (
               <div className="bg-green-50 border border-green-200 text-green-800 p-4 rounded-lg flex items-start gap-2">
-                <CheckCircle2 size={20} className="mt-0.5 flex-shrink-0" />
+                <CheckCircleIcon width={20} height={20} className="mt-0.5 flex-shrink-0" />
                 <div>
                   <p className="font-semibold">✅ Firma válida</p>
                   <p className="text-sm">Su nombre ha sido verificado correctamente</p>
@@ -221,7 +222,7 @@ export function ContractSignature({ userName, isAlreadySigned = false, onComplet
               >
                 {isValid ? (
                   <>
-                    <CheckCircle2 className="mr-2" size={18} />
+                    <CheckCircleIcon className="mr-2" width={18} height={18} />
                     Confirmar Firma
                   </>
                 ) : (

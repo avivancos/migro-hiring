@@ -2,7 +2,8 @@
 // Mobile-first con galería y subida optimizada
 
 import { useState } from 'react';
-import { CheckCircle2, XCircle, Clock, Eye, FileText } from 'lucide-react';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ClockIcon, DocumentTextIcon, EyeIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -63,11 +64,11 @@ export function ExpedienteFiles({
   const getStatusIcon = (estado: string) => {
     switch (estado) {
       case 'aprobado':
-        return <CheckCircle2 className="h-5 w-5 text-green-600" />;
+        return <CheckCircleIcon className="h-5 w-5 text-green-600" />;
       case 'rechazado':
-        return <XCircle className="h-5 w-5 text-red-600" />;
+        return <XCircleIcon className="h-5 w-5 text-red-600" />;
       default:
-        return <Clock className="h-5 w-5 text-yellow-600" />;
+        return <ClockIcon className="h-5 w-5 text-yellow-600" />;
     }
   };
 
@@ -165,7 +166,7 @@ export function ExpedienteFiles({
         <Card>
           <CardContent className="pt-6">
             <div className="text-center py-12 text-gray-500">
-              <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <p>No hay archivos subidos</p>
             </div>
           </CardContent>
@@ -222,7 +223,7 @@ export function ExpedienteFiles({
                       onClick={() => window.open(file.url, '_blank')}
                       className="flex-1"
                     >
-                      <Eye className="h-4 w-4 mr-1" />
+                      <EyeIcon className="h-4 w-4 mr-1" />
                       Ver
                     </Button>
                     {editable && file.estado === 'pendiente' && (
@@ -233,7 +234,7 @@ export function ExpedienteFiles({
                           onClick={() => handleStatusChange(file.id, 'aprobado')}
                           className="text-green-600 hover:text-green-700"
                         >
-                          <CheckCircle2 className="h-4 w-4" />
+                          <CheckCircleIcon className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -241,7 +242,7 @@ export function ExpedienteFiles({
                           onClick={() => handleStatusChange(file.id, 'rechazado')}
                           className="text-red-600 hover:text-red-700"
                         >
-                          <XCircle className="h-4 w-4" />
+                          <XCircleIcon className="h-4 w-4" />
                         </Button>
                       </>
                     )}

@@ -291,6 +291,3 @@ export function isActionRequired(
   return false;
 }
 
-
-
-

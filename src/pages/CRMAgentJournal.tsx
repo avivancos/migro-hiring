@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { DailyReportView } from '@/components/agentJournal/DailyReportView';
 import { PerformanceDashboardView } from '@/components/agentJournal/PerformanceDashboardView';
-import { FileText, BarChart3 } from 'lucide-react';
+import { ChartBarIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
 export function CRMAgentJournal() {
   const [activeTab, setActiveTab] = useState<'report' | 'dashboard'>('report');
@@ -21,11 +21,11 @@ export function CRMAgentJournal() {
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'report' | 'dashboard')}>
         <TabsList className="w-full sm:w-auto">
           <TabsTrigger value="report" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
+            <DocumentTextIcon className="h-4 w-4" />
             Reporte Diario
           </TabsTrigger>
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
+            <ChartBarIcon className="h-4 w-4" />
             Dashboard
           </TabsTrigger>
         </TabsList>

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { opportunityApi } from '@/services/opportunityApi';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { UserPlus, AlertCircle, Info } from 'lucide-react';
+import { ExclamationCircleIcon, InformationCircleIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import type { User } from '@/types/user';
 
 interface AssignRandomOpportunitiesProps {
@@ -173,7 +173,7 @@ export function AssignRandomOpportunities({ agents, onAssignComplete }: AssignRa
     <Card className="border-blue-200 bg-blue-50">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-blue-900">
-          <UserPlus className="w-5 h-5" />
+          <UserPlusIcon className="w-5 h-5" />
           Asignación Rápida: 50 Oportunidades Aleatorias
         </CardTitle>
         <p className="text-sm text-blue-700 mt-2">
@@ -212,7 +212,7 @@ export function AssignRandomOpportunities({ agents, onAssignComplete }: AssignRa
         {/* ⚠️ Error: Solo para errores HTTP (400, 403, 422, 500, etc.) */}
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <ExclamationCircleIcon className="w-4 h-4 flex-shrink-0" />
             <p className="text-sm">{error}</p>
           </div>
         )}
@@ -227,7 +227,7 @@ export function AssignRandomOpportunities({ agents, onAssignComplete }: AssignRa
         {/* ℹ️ Información: Cuando success=false (no es error, es información) */}
         {info && (
           <div className="bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded-lg flex items-center gap-2">
-            <Info className="w-4 h-4 flex-shrink-0" />
+            <InformationCircleIcon className="w-4 h-4 flex-shrink-0" />
             <p className="text-sm">{info}</p>
           </div>
         )}
@@ -244,7 +244,7 @@ export function AssignRandomOpportunities({ agents, onAssignComplete }: AssignRa
             </>
           ) : (
             <>
-              <UserPlus className="w-4 h-4 mr-2" />
+              <UserPlusIcon className="w-4 h-4 mr-2" />
               Asignar 50 Oportunidades Aleatorias
             </>
           )}

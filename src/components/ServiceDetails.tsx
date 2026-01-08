@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { formatCurrency, formatDate } from '@/utils/formatters';
 import type { HiringDetails } from '@/types/hiring';
-import { Clock, User, Mail, FileText, Euro } from 'lucide-react';
+import { ClockIcon, CurrencyEuroIcon, DocumentTextIcon, EnvelopeIcon, UserIcon } from '@heroicons/react/24/outline';
 
 interface ServiceDetailsProps {
   details: HiringDetails;
@@ -86,7 +86,7 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
           {/* Descripción del servicio */}
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <FileText className="text-primary" size={20} />
+              <DocumentTextIcon className="text-primary" width={20} height={20} />
               <h3 className="font-semibold text-lg text-emphasis-900">
                 Descripción del Servicio
               </h3>
@@ -122,7 +122,7 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
           {/* Precio */}
           <div className="bg-primary/5 border-2 border-primary/20 p-6 rounded-xl">
             <div className="flex items-center gap-2 mb-2">
-              <Euro className="text-primary" size={20} />
+              <CurrencyEuroIcon className="text-primary" width={20} height={20} />
               <p className="text-sm text-gray-600 font-medium">Precio total del servicio</p>
             </div>
             <p className="text-4xl font-bold text-primary">
@@ -165,14 +165,14 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
             </h3>
             <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
               <div className="flex items-center gap-3">
-                <User className="text-gray-500" size={18} />
+                <UserIcon className="text-gray-500" width={18} height={18} />
                 <div>
                   <p className="text-xs text-gray-500">Nombre completo</p>
                   <p className="font-medium text-gray-900">{details.client_name}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <Mail className="text-gray-500" size={18} />
+                <EnvelopeIcon className="text-gray-500" width={18} height={18} />
                 <div>
                   <p className="text-xs text-gray-500">Email</p>
                   <p className="font-medium text-gray-900">{details.client_email}</p>
@@ -183,7 +183,7 @@ export function ServiceDetails({ details, onNext, loading = false }: ServiceDeta
 
           {/* Información de expiración */}
           <div className="flex items-center gap-2 text-sm text-gray-500 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-            <Clock size={16} className="text-yellow-600" />
+            <ClockIcon width={16} height={16} className="text-yellow-600" />
             <p>
               Código válido hasta:{' '}
               <span className="font-semibold text-yellow-700">

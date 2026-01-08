@@ -5,10 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { adminService } from '@/services/adminService';
-import {
-  Users,
-  LogOut,
-} from 'lucide-react';
+import { ArrowRightOnRectangleIcon, UsersIcon } from '@heroicons/react/24/outline';
 
 export function CRMDashboard() {
   const navigate = useNavigate();
@@ -40,7 +37,7 @@ export function CRMDashboard() {
             variant="outline"
             className="flex items-center gap-2"
           >
-            <LogOut size={18} />
+            <ArrowRightOnRectangleIcon width={18} height={18} />
             Cerrar Sesión
           </Button>
         </div>
@@ -53,7 +50,7 @@ export function CRMDashboard() {
           >
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
-                <Users className="text-blue-600" size={28} />
+                <UsersIcon className="text-blue-600" width={28} height={28} />
                 <span>Leads</span>
               </CardTitle>
             </CardHeader>

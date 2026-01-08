@@ -9,16 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { routePermissionService } from '@/services/routePermissionService';
 import { localDatabase } from '@/services/localDatabase';
 import { useAuth } from '@/providers/AuthProvider';
-import {
-  Shield,
-  Search,
-  RefreshCw,
-  Lock,
-  Unlock,
-  AlertCircle,
-  CheckCircle2,
-  Info,
-} from 'lucide-react';
+import { ArrowPathIcon, ExclamationCircleIcon, InformationCircleIcon, LockClosedIcon, LockOpenIcon, MagnifyingGlassIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import type { RoutePermission } from '@/services/localDatabase';
 
 export function AdminRoutePermissions() {
@@ -200,7 +192,7 @@ export function AdminRoutePermissions() {
         <Card>
           <CardContent className="pt-6">
             <div className="text-center">
-              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+              <ExclamationCircleIcon className="h-12 w-12 text-red-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Acceso Denegado</h2>
               <p className="text-gray-600">
                 Solo los administradores pueden gestionar los permisos de rutas.
@@ -217,7 +209,7 @@ export function AdminRoutePermissions() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Shield className="h-8 w-8" />
+            <ShieldCheckIcon className="h-8 w-8" />
             Permisos de Rutas
           </h1>
           <p className="text-gray-600 mt-2">
@@ -226,7 +218,7 @@ export function AdminRoutePermissions() {
           </p>
         </div>
         <Button onClick={loadRoutes} disabled={loading || saving} variant="outline">
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <ArrowPathIcon className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Recargar
         </Button>
       </div>
@@ -236,7 +228,7 @@ export function AdminRoutePermissions() {
         <Card className="border-green-200 bg-green-50">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-green-800">
-              <CheckCircle2 className="h-5 w-5" />
+              <CheckCircleIcon className="h-5 w-5" />
               <p>{successMessage}</p>
             </div>
           </CardContent>
@@ -247,7 +239,7 @@ export function AdminRoutePermissions() {
         <Card className="border-red-200 bg-red-50">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2 text-red-800">
-              <AlertCircle className="h-5 w-5" />
+              <ExclamationCircleIcon className="h-5 w-5" />
               <p>{errorMessage}</p>
             </div>
           </CardContent>
@@ -258,7 +250,7 @@ export function AdminRoutePermissions() {
       <Card className="border-blue-200 bg-blue-50">
         <CardContent className="pt-6">
           <div className="flex items-start gap-2 text-blue-800">
-            <Info className="h-5 w-5 mt-0.5" />
+            <InformationCircleIcon className="h-5 w-5 mt-0.5" />
             <div className="text-sm">
               <p className="font-semibold mb-1">Nota importante:</p>
               <ul className="list-disc list-inside space-y-1">
@@ -282,7 +274,7 @@ export function AdminRoutePermissions() {
             <div>
               <Label htmlFor="search">Buscar ruta</Label>
               <div className="relative mt-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   id="search"
                   placeholder="Buscar por ruta, descripción o módulo..."
@@ -330,7 +322,7 @@ export function AdminRoutePermissions() {
                   onClick={() => handleBulkUpdate('agent', true)}
                   disabled={saving}
                 >
-                  <Unlock className="h-4 w-4 mr-2" />
+                  <LockOpenIcon className="h-4 w-4 mr-2" />
                   Permitir todo (Agentes)
                 </Button>
                 <Button
@@ -339,7 +331,7 @@ export function AdminRoutePermissions() {
                   onClick={() => handleBulkUpdate('agent', false)}
                   disabled={saving}
                 >
-                  <Lock className="h-4 w-4 mr-2" />
+                  <LockClosedIcon className="h-4 w-4 mr-2" />
                   Bloquear todo (Agentes)
                 </Button>
                 <Button
@@ -348,7 +340,7 @@ export function AdminRoutePermissions() {
                   onClick={() => handleBulkUpdate('lawyer', true)}
                   disabled={saving}
                 >
-                  <Unlock className="h-4 w-4 mr-2" />
+                  <LockOpenIcon className="h-4 w-4 mr-2" />
                   Permitir todo (Abogados)
                 </Button>
                 <Button
@@ -357,7 +349,7 @@ export function AdminRoutePermissions() {
                   onClick={() => handleBulkUpdate('lawyer', false)}
                   disabled={saving}
                 >
-                  <Lock className="h-4 w-4 mr-2" />
+                  <LockClosedIcon className="h-4 w-4 mr-2" />
                   Bloquear todo (Abogados)
                 </Button>
               </div>
@@ -367,7 +359,7 @@ export function AdminRoutePermissions() {
         <CardContent>
           {loading ? (
             <div className="text-center py-12">
-              <RefreshCw className="h-8 w-8 animate-spin text-gray-400 mx-auto mb-4" />
+              <ArrowPathIcon className="h-8 w-8 animate-spin text-gray-400 mx-auto mb-4" />
               <p className="text-gray-600">Cargando rutas...</p>
             </div>
           ) : filteredRoutes.length === 0 ? (
@@ -454,7 +446,4 @@ export function AdminRoutePermissions() {
     </div>
   );
 }
-
-
-
 

@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { adminService } from '@/services/adminService';
-import { ArrowLeft, Save, UserPlus } from 'lucide-react';
+import { ArrowDownTrayIcon, ArrowLeftIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import type { UserRole } from '@/types/user';
 
 export function AdminUserCreate() {
@@ -76,7 +76,7 @@ export function AdminUserCreate() {
             onClick={() => navigate('/admin/users')}
             className="flex items-center gap-2"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeftIcon width={16} height={16} />
             <span className="hidden sm:inline">Volver</span>
           </Button>
           <div>
@@ -89,7 +89,7 @@ export function AdminUserCreate() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <UserPlus size={20} />
+                <UserPlusIcon width={20} height={20} />
                 Información del Usuario
               </CardTitle>
             </CardHeader>
@@ -208,7 +208,7 @@ export function AdminUserCreate() {
                   disabled={saving}
                   className="flex-1 flex items-center justify-center gap-2"
                 >
-                  <Save size={18} />
+                  <ArrowDownTrayIcon width={18} height={18} />
                   {saving ? 'Creando...' : 'Crear Usuario'}
                 </Button>
               </div>

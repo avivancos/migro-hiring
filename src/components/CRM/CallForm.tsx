@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Phone, Edit2, Check, X } from 'lucide-react';
+import { CheckIcon, PencilSquareIcon, PhoneIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import type { Call, CRMUser, Contact, Lead } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { adminService } from '@/services/adminService';
@@ -719,7 +719,7 @@ export const CallForm = memo(function CallForm({
                     className="flex-shrink-0"
                     title="Cambiar teléfono"
                   >
-                    <Edit2 className="w-4 h-4" />
+                    <PencilSquareIcon className="w-4 h-4" />
                   </Button>
                 </div>
               ) : (
@@ -740,7 +740,7 @@ export const CallForm = memo(function CallForm({
                     onClick={handleConfirmPhone}
                     className="bg-green-600 hover:bg-green-700 text-white flex-shrink-0"
                   >
-                    <Check className="w-4 h-4" />
+                    <CheckIcon className="w-4 h-4" />
                   </Button>
                   <Button
                     type="button"
@@ -749,7 +749,7 @@ export const CallForm = memo(function CallForm({
                     onClick={handleCancelPhone}
                     className="bg-gray-200 hover:bg-gray-300 flex-shrink-0"
                   >
-                    <X className="w-4 h-4" />
+                    <XMarkIcon className="w-4 h-4" />
                   </Button>
                 </div>
               )}
@@ -859,7 +859,7 @@ export const CallForm = memo(function CallForm({
                     className="flex-shrink-0"
                     title="Cambiar responsable"
                   >
-                    <Edit2 className="w-4 h-4" />
+                    <PencilSquareIcon className="w-4 h-4" />
                   </Button>
                 </div>
               ) : (
@@ -888,7 +888,7 @@ export const CallForm = memo(function CallForm({
                     onClick={handleConfirmResponsible}
                     className="bg-green-600 hover:bg-green-700 text-white flex-shrink-0"
                   >
-                    <Check className="w-4 h-4" />
+                    <CheckIcon className="w-4 h-4" />
                   </Button>
                   <Button
                     type="button"
@@ -897,7 +897,7 @@ export const CallForm = memo(function CallForm({
                     onClick={handleCancelResponsible}
                     className="bg-gray-200 hover:bg-gray-300 flex-shrink-0"
                   >
-                    <X className="w-4 h-4" />
+                    <XMarkIcon className="w-4 h-4" />
                   </Button>
                 </div>
               )}
@@ -964,7 +964,7 @@ export const CallForm = memo(function CallForm({
           {formData.call_status === 'completed' && isFirstCall && (formData.entity_type === 'contacts' || formData.entity_type === 'leads') && (
             <div className="border-2 border-blue-200 bg-blue-50 rounded-lg p-4 space-y-4">
               <div className="flex items-center gap-2 mb-4">
-                <Phone className="w-5 h-5 text-blue-600" />
+                <PhoneIcon className="w-5 h-5 text-blue-600" />
                 <h3 className="text-lg font-semibold text-blue-900">
                   Información de Primera Llamada
                 </h3>

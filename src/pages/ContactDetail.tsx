@@ -9,15 +9,7 @@ import { crmService } from '@/services/crmService';
 import { ActivityTimeline } from '@/components/CRM/ActivityTimeline';
 import { CallHistory } from '@/components/CRM/CallHistory';
 import type { Contact, Lead } from '@/types/crm';
-import {
-  ArrowLeft,
-  Phone,
-  Mail,
-  MapPin,
-  Building2,
-  Edit,
-  Briefcase,
-} from 'lucide-react';
+import { ArrowLeftIcon, BriefcaseIcon, BuildingOffice2Icon, EnvelopeIcon, MapPinIcon, PencilIcon, PhoneIcon } from '@heroicons/react/24/outline';
 
 export function ContactDetail() {
   const { id } = useParams<{ id: string }>();
@@ -106,7 +98,7 @@ export function ContactDetail() {
               variant="ghost"
               size="icon"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeftIcon width={20} height={20} />
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
@@ -121,7 +113,7 @@ export function ContactDetail() {
             onClick={() => navigate(`/admin/crm/contacts/${id}/edit`)}
             className="flex items-center gap-2"
           >
-            <Edit size={18} />
+            <PencilIcon width={18} height={18} />
             Editar
           </Button>
         </div>
@@ -136,7 +128,7 @@ export function ContactDetail() {
               <CardContent className="space-y-4">
                 {contact.email && (
                   <div className="flex items-start gap-3">
-                    <Mail className="text-gray-400 mt-1" size={18} />
+                    <EnvelopeIcon className="text-gray-400 mt-1" width={18} height={18} />
                     <div>
                       <p className="text-sm text-gray-500">Email</p>
                       <a
@@ -151,7 +143,7 @@ export function ContactDetail() {
 
                 {contact.phone && (
                   <div className="flex items-start gap-3">
-                    <Phone className="text-gray-400 mt-1" size={18} />
+                    <PhoneIcon className="text-gray-400 mt-1" width={18} height={18} />
                     <div>
                       <p className="text-sm text-gray-500">Teléfono</p>
                       <a
@@ -166,7 +158,7 @@ export function ContactDetail() {
 
                 {contact.mobile && contact.mobile !== contact.phone && (
                   <div className="flex items-start gap-3">
-                    <Phone className="text-gray-400 mt-1" size={18} />
+                    <PhoneIcon className="text-gray-400 mt-1" width={18} height={18} />
                     <div>
                       <p className="text-sm text-gray-500">Móvil</p>
                       <a
@@ -181,7 +173,7 @@ export function ContactDetail() {
 
                 {contact.company && (
                   <div className="flex items-start gap-3">
-                    <Building2 className="text-gray-400 mt-1" size={18} />
+                    <BuildingOffice2Icon className="text-gray-400 mt-1" width={18} height={18} />
                     <div>
                       <p className="text-sm text-gray-500">Empresa</p>
                       <p className="text-gray-900">
@@ -195,7 +187,7 @@ export function ContactDetail() {
 
                 {contact.position && (
                   <div className="flex items-start gap-3">
-                    <Briefcase className="text-gray-400 mt-1" size={18} />
+                    <BriefcaseIcon className="text-gray-400 mt-1" width={18} height={18} />
                     <div>
                       <p className="text-sm text-gray-500">Cargo</p>
                       <p className="text-gray-900">{contact.position}</p>
@@ -205,7 +197,7 @@ export function ContactDetail() {
 
                 {(contact.address || contact.city || contact.country) && (
                   <div className="flex items-start gap-3">
-                    <MapPin className="text-gray-400 mt-1" size={18} />
+                    <MapPinIcon className="text-gray-400 mt-1" width={18} height={18} />
                     <div>
                       <p className="text-sm text-gray-500">Dirección</p>
                       <p className="text-gray-900">

@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import type { Contact, ContactCreateRequest, NoteCreateRequest } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { ContactForm } from '@/components/CRM/ContactForm';
@@ -199,7 +200,7 @@ export function CRMContactEdit() {
             variant="outline"
             onClick={handleCancel}
           >
-            <ArrowLeft size={18} className="mr-2" />
+            <ArrowLeftIcon width={18} height={18} className="mr-2" />
             {isNewContact ? 'Cancelar' : 'Volver'}
           </Button>
 
@@ -208,7 +209,7 @@ export function CRMContactEdit() {
             <Card className="border-green-300 bg-green-50 shadow-md">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
-                  <CheckCircle2 className="text-green-600 flex-shrink-0" size={24} />
+                  <CheckCircleIcon className="text-green-600 flex-shrink-0" width={24} height={24} />
                   <div className="flex-1">
                     <p className="font-semibold text-green-900">
                       {isNewContact ? '¡Contacto creado exitosamente!' : '¡Contacto actualizado exitosamente!'}

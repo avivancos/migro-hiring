@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import type { Lead, Contact, Task, Call, Note } from '@/types/crm';
 // Importar iconos de lucide-react (se usan en JSX pero TypeScript no los detecta)
-import { FileText, Search, Calendar, User, DollarSign, Clock } from 'lucide-react';
+import { CalendarIcon, ClockIcon, CurrencyDollarIcon, DocumentTextIcon, MagnifyingGlassIcon, UserIcon } from '@heroicons/react/24/outline';
 import { crmService } from '@/services/crmService';
 
 interface ExpedienteData {
@@ -172,7 +172,7 @@ export function CRMExpedientes() {
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" width={20} height={20} />
               <Input
                 placeholder="Buscar por nombre, contacto o tipo de servicio..."
                 value={searchTerm}
@@ -228,7 +228,7 @@ export function CRMExpedientes() {
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
-                    <FileText className="text-purple-600" size={24} />
+                    <DocumentTextIcon className="text-purple-600" width={24} height={24} />
                     <div>
                       <h3 className="font-semibold text-lg">{expediente.lead.name}</h3>
                       <p className="text-sm text-gray-600">{expediente.lead.service_type}</p>
@@ -241,18 +241,18 @@ export function CRMExpedientes() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                     {expediente.contact && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <User size={16} />
+                        <UserIcon width={16} height={16} />
                         <span>{expediente.contact.name}</span>
                       </div>
                     )}
                     {expediente.lead.price > 0 && (
                       <div className="flex items-center gap-2 text-sm font-semibold text-green-600">
-                        <DollarSign size={16} />
+                        <CurrencyDollarIcon width={16} height={16} />
                         <span>{formatPrice(expediente.lead.price, expediente.lead.currency)}</span>
                       </div>
                     )}
                     <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Calendar size={16} />
+                      <CalendarIcon width={16} height={16} />
                       <span>
                         {new Date(expediente.lastUpdate).toLocaleDateString('es-ES')}
                       </span>
@@ -262,7 +262,7 @@ export function CRMExpedientes() {
                   {expediente.nextAction && (
                     <div className="mt-4 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
                       <div className="flex items-center gap-2 text-sm">
-                        <Clock size={16} className="text-yellow-600" />
+                        <ClockIcon width={16} height={16} className="text-yellow-600" />
                         <span className="font-semibold">Próxima acción:</span>
                         <span>{expediente.nextAction.text}</span>
                         {expediente.nextAction.complete_till && (

@@ -6,7 +6,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Clock, ArrowLeft, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { ArrowLeftIcon, ClockIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { timezoneService, type TimezoneOption, type TimezoneResponse } from '@/services/timezoneService';
 import { getErrorMessage } from '@/services/api';
 
@@ -151,11 +152,11 @@ export function CRMTimezoneSettings() {
             onClick={() => navigate('/crm/settings')}
             className="p-2"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeftIcon width={20} height={20} />
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <Clock size={28} />
+              <ClockIcon width={28} height={28} />
               Configuración de Zona Horaria
             </h1>
             <p className="text-gray-600 mt-1">Configura tu zona horaria preferida para visualizar fechas y horas</p>
@@ -244,13 +245,13 @@ export function CRMTimezoneSettings() {
             {/* Mensajes de error/éxito */}
             {error && (
               <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                <AlertCircle size={16} />
+                <ExclamationCircleIcon width={16} height={16} />
                 <span>{error}</span>
               </div>
             )}
             {success && (
               <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
-                <CheckCircle2 size={16} />
+                <CheckCircleIcon width={16} height={16} />
                 <span>¡Zona horaria actualizada correctamente!</span>
               </div>
             )}

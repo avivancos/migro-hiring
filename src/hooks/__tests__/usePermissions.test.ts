@@ -80,15 +80,3 @@ describe('usePermissions', () => {
   });
 });
 
-
-
-
-
-
-
-
-
-
-
-
-

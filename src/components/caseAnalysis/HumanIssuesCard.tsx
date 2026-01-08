@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
+import { ChevronDownIcon, ChevronUpIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { HumanAnalysisIssues } from '@/types/caseAnalysis';
@@ -41,7 +41,7 @@ export function HumanIssuesCard({
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" />
+            <ExclamationTriangleIcon className="h-5 w-5" />
             <CardTitle className="text-lg">Fallos Humanos Detectados</CardTitle>
           </div>
           {onToggle && (
@@ -52,9 +52,9 @@ export function HumanIssuesCard({
               className="h-8 w-8 p-0 min-h-[44px] min-w-[44px] sm:min-h-0 sm:min-w-0"
             >
               {expanded ? (
-                <ChevronUp className="h-4 w-4" />
+                <ChevronUpIcon className="h-4 w-4" />
               ) : (
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDownIcon className="h-4 w-4" />
               )}
             </Button>
           )}

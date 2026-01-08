@@ -454,4 +454,3 @@ if (typeof window !== 'undefined') {
   (window as any).__perfClear = () => performanceTracingService.clear();
 }
 
-
