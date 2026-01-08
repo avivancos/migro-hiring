@@ -270,8 +270,13 @@ Chunks generados:
 - `scripts/fix-missing-icon-imports.js` - Nuevo script creado
 - `scripts/fix-imports-and-references.js` - Corregido bug de combinación de imports
 - `Dockerfile` - Agregado script antes del build
+- `src/pages/admin/AdminContractDetail.tsx` - Eliminado import duplicado de CheckCircleIcon
+- `src/pages/admin/ApproveHiringCode.tsx` - Eliminado import duplicado de CheckCircleIcon
+- `src/pages/AdminDashboard.tsx` - Eliminado import duplicado de CheckCircleIcon
+- `src/components/agentJournal/AgentJournalWidget.tsx` - Eliminado import duplicado de CheckCircleIcon
+- `src/pages/admin/AdminContractCreate.tsx` - Eliminado import duplicado de CheckCircleIcon
 
-**Nota:** El script `fix-missing-icon-imports.js` detecta automáticamente todos los iconos Heroicons usados en el código (como componentes JSX) y verifica que estén correctamente importados, agregando los imports faltantes si es necesario.
+**Nota:** El script `fix-missing-icon-imports.js` detecta automáticamente todos los iconos Heroicons usados en el código (como componentes JSX) y verifica que estén correctamente importados, agregando los imports faltantes si es necesario. Sin embargo, se encontró que algunos archivos tenían imports duplicados de `CheckCircleIcon` (tanto de `solid` como de `outline`), que fueron corregidos manualmente para usar solo `solid`.
 
 ---
 

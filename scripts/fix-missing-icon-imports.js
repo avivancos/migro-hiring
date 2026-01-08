@@ -77,10 +77,9 @@ function fixFile(filePath) {
     return false; // No hay iconos para agregar
   }
 
-  // Encontrar todos los imports existentes de heroicons
+  // Encontrar todos los imports existentes de heroicons (usando el mismo array lines)
   const heroIconImports = new Map();
   const importLineIndices = new Map(); // module -> lineIndex
-  const lines = content.split('\n');
   
   lines.forEach((line, index) => {
     if (line.trim().startsWith('import ') && line.includes('@heroicons')) {
@@ -104,16 +103,31 @@ function fixFile(filePath) {
     }
   });
 
-  // Verificar qué iconos faltan
+  // Verificar qué iconos faltan (solo si no están ya importados en otro módulo)
   const missingIcons = new Map();
   usedIcons.forEach((module, iconName) => {
-    const existing = heroIconImports.get(module);
-    
-    if (!existing || !existing.has(iconName)) {
-      if (!missingIcons.has(module)) {
-        missingIcons.set(module, []);
+    // Verificar si el icono ya está importado (en cualquier módulo)
+    let alreadyImported = false;
+    heroIconImports.forEach((iconSet) => {
+      if (iconSet.has(iconName)) {
+        alreadyImported = true;
       }
-      missingIcons.get(module).push(iconName);
+    });
+    
+    // También verificar en existingImports (por si acaso)
+    if (existingImports.has(iconName)) {
+      alreadyImported = true;
+    }
+    
+    if (!alreadyImported) {
+      const existing = heroIconImports.get(module);
+      
+      if (!existing || !existing.has(iconName)) {
+        if (!missingIcons.has(module)) {
+          missingIcons.set(module, []);
+        }
+        missingIcons.get(module).push(iconName);
+      }
     }
   });
 

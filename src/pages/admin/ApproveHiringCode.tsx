@@ -1,4 +1,3 @@
-import { CheckCircleIcon } from '@heroicons/react/24/solid';
 // Approve Hiring Code Page - Aprobación de código de contratación con token hash
 // Ruta pública: /admin/approve-hiring-code?token={token_hash}
 import { useEffect, useState } from 'react';
@@ -8,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { pipelineApi } from '@/services/pipelineApi';
-import { ArrowLeftIcon, CheckCircleIcon, ClockIcon, CurrencyDollarIcon, DocumentTextIcon, EnvelopeIcon, ExclamationCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ArrowLeftIcon, ClockIcon, CurrencyDollarIcon, DocumentTextIcon, EnvelopeIcon, ExclamationCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { formatCurrency, formatDateTime } from '@/utils/formatters';
 import { usePageTitle } from '@/hooks/usePageTitle';
 

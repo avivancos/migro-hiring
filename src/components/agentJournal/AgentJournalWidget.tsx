@@ -1,4 +1,3 @@
-import { CheckCircleIcon } from '@heroicons/react/24/solid';
 // AgentJournalWidget - Widget para mostrar métricas del Agent Daily Journal en el dashboard
 
 import { useState } from 'react';
@@ -7,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProductivityScoreBadge } from './ProductivityScoreBadge';
 import { SignReportDialog } from './SignReportDialog';
-import { ArrowPathIcon, ArrowRightIcon, BookOpenIcon, BriefcaseIcon, CheckCircleIcon, ClockIcon, DocumentTextIcon, PencilIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ArrowPathIcon, ArrowRightIcon, BookOpenIcon, BriefcaseIcon, ClockIcon, DocumentTextIcon, PencilIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import { formatCallTime } from '@/utils/agentJournal';
 import { startOfToday } from 'date-fns';
 import { useNavigate } from 'react-router-dom';

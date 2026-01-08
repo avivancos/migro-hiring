@@ -1,4 +1,3 @@
-import { CheckCircleIcon } from '@heroicons/react/24/solid';
 // Admin Contract Create - Crear nuevo contrato (hiring code)
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +11,8 @@ import { adminService } from '@/services/adminService';
 import { crmService } from '@/services/crmService';
 import { GRADE_PRICING, GRADE_PRICING_SUBSCRIPTION, GRADE_DESCRIPTIONS, type ClientGrade, type PaymentType } from '@/types/admin';
 import type { Contact } from '@/types/crm';
-import { ArrowLeftIcon, CheckCircleIcon, DocumentDuplicateIcon, ExclamationCircleIcon, MagnifyingGlassIcon, UserPlusIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ArrowLeftIcon, DocumentDuplicateIcon, ExclamationCircleIcon, MagnifyingGlassIcon, UserPlusIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 
 export function AdminContractCreate() {

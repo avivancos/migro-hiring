@@ -1,4 +1,3 @@
-import { CheckCircleIcon } from '@heroicons/react/24/solid';
 // Admin Contract Detail - Detalle de contrato con UI mobile-first
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -6,7 +5,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { contractsService } from '@/services/contractsService';
-import { ArrowDownTrayIcon, ArrowLeftIcon, ArrowTopRightOnSquareIcon, CalendarIcon, CheckCircleIcon, CheckIcon, ClockIcon, CreditCardIcon, CurrencyDollarIcon, DocumentDuplicateIcon, DocumentIcon, DocumentTextIcon, EnvelopeIcon, LinkIcon, PencilIcon, UserIcon, UsersIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ArrowDownTrayIcon, ArrowLeftIcon, ArrowTopRightOnSquareIcon, CalendarIcon, CheckIcon, ClockIcon, CreditCardIcon, CurrencyDollarIcon, DocumentDuplicateIcon, DocumentIcon, DocumentTextIcon, EnvelopeIcon, LinkIcon, PencilIcon, UserIcon, UsersIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Modal } from '@/components/common/Modal';

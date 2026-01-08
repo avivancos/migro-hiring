@@ -1,4 +1,3 @@
-import { CheckCircleIcon } from '@heroicons/react/24/solid';
 // Admin Dashboard - Create Hiring Codes
 
 import { useState, useEffect } from 'react';
@@ -9,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { adminService } from '@/services/adminService';
 import { GRADE_PRICING, GRADE_PRICING_SUBSCRIPTION, GRADE_DESCRIPTIONS, type ClientGrade, type PaymentType } from '@/types/admin';
-import { ArrowRightOnRectangleIcon, CheckCircleIcon, DocumentDuplicateIcon, ExclamationCircleIcon, UserPlusIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ArrowRightOnRectangleIcon, DocumentDuplicateIcon, ExclamationCircleIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 
