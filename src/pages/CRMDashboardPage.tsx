@@ -10,33 +10,15 @@ import { crmService } from '@/services/crmService';
 import { contractsService } from '@/services/contractsService';
 import type { Lead, PipelineStatus, Call, Task, Note } from '@/types/crm';
 import type { Contract } from '@/types/contracts';
-import {
-  Users,
-  DollarSign,
-  Calendar,
-  Phone,
-  Mail,
-  Building2,
-  Search,
-  Filter,
-  Plus,
-  CheckCircle2,
-  AlertCircle,
-  FileText,
-  ArrowRight,
-  PhoneIncoming,
-  PhoneOutgoing,
-  PhoneMissed,
-} from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
+import { ArrowRightIcon, BuildingOffice2Icon, CalendarIcon, ChartBarIcon, CurrencyDollarIcon, DocumentTextIcon, EnvelopeIcon, ExclamationCircleIcon, FunnelIcon, MagnifyingGlassIcon, PhoneIcon, PhoneXMarkIcon, PlusIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+// import * as LucideIcons from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
 import { formatContractStatus, formatCallStatus, formatLeadStatus, formatPriority } from '@/utils/statusTranslations';
 import { opportunityApi } from '@/services/opportunityApi';
 import { isAgent } from '@/utils/searchValidation';
 import { AgentJournalWidget } from '@/components/agentJournal/AgentJournalWidget';
 import { PerformanceDashboardView } from '@/components/agentJournal/PerformanceDashboardView';
-
-const { Activity } = LucideIcons;
 
 export function CRMDashboardPage() {
   // Medir rendimiento de la página
@@ -321,9 +303,9 @@ export function CRMDashboardPage() {
   const getPriorityIcon = (priority?: string) => {
     switch (priority) {
       case 'urgent':
-        return <AlertCircle className="w-3 h-3" />;
+        return <ExclamationCircleIcon className="w-3 h-3" />;
       case 'high':
-        return <Activity className="w-3 h-3" />;
+        return <ChartBarIcon className="w-3 h-3" />;
       default:
         return null;
     }
@@ -384,9 +366,9 @@ export function CRMDashboardPage() {
 
   const getCallIcon = (call: Call) => {
     if (call.direction === 'inbound') {
-      return call.call_status === 'missed' || call.status === 'missed' ? PhoneMissed : PhoneIncoming;
+      return call.call_status === 'missed' || call.status === 'missed' ? PhoneXMarkIcon : PhoneIcon;
     }
-    return PhoneOutgoing;
+    return PhoneIcon;
   };
 
   const getCallStatusColor = (call: Call): string => {
@@ -422,7 +404,7 @@ export function CRMDashboardPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg border border-red-200">
           <div className="flex items-center gap-3 mb-4">
-            <AlertCircle className="w-8 h-8 text-red-600" />
+            <ExclamationCircleIcon className="w-8 h-8 text-red-600" />
             <h2 className="text-xl font-bold text-gray-900">Error al cargar datos</h2>
           </div>
           <p className="text-gray-600 mb-4">{error}</p>
@@ -454,7 +436,7 @@ export function CRMDashboardPage() {
                     <p className="text-2xl sm:text-3xl font-bold text-gray-900">{totalContactsCount}</p>
                   </div>
                   <div className="p-3 bg-blue-100 rounded-full">
-                    <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                    <UsersIcon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                   </div>
                 </div>
               </CardContent>
@@ -471,7 +453,7 @@ export function CRMDashboardPage() {
                     <p className="text-2xl sm:text-3xl font-bold text-gray-900">{myOpportunitiesCount}</p>
                   </div>
                   <div className="p-3 bg-purple-100 rounded-full">
-                    <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+                    <ChartBarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
                   </div>
                 </div>
               </CardContent>
@@ -489,7 +471,7 @@ export function CRMDashboardPage() {
                       <p className="text-2xl sm:text-3xl font-bold text-gray-900">{totalContractsCount}</p>
                     </div>
                     <div className="p-3 bg-green-100 rounded-full">
-                      <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                      <DocumentTextIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                     </div>
                   </div>
                 </CardContent>
@@ -503,7 +485,7 @@ export function CRMDashboardPage() {
                       <p className="text-2xl sm:text-3xl font-bold text-gray-900">{lastContracts.length}</p>
                     </div>
                     <div className="p-3 bg-purple-100 rounded-full">
-                      <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+                      <DocumentTextIcon className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
                     </div>
                   </div>
                 </CardContent>
@@ -521,7 +503,7 @@ export function CRMDashboardPage() {
                   </p>
                 </div>
                 <div className="p-3 bg-orange-100 rounded-full">
-                  <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
+                  <ChartBarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
                 </div>
               </div>
             </CardContent>
@@ -555,7 +537,7 @@ export function CRMDashboardPage() {
                     className="h-7 w-7 sm:h-8 sm:w-8"
                     onClick={() => navigateWeek('prev')}
                   >
-                    <ArrowRight className="w-4 h-4 rotate-180" />
+                    <ArrowRightIcon className="w-4 h-4 rotate-180" />
                   </Button>
                   <Button
                     variant="ghost"
@@ -563,7 +545,7 @@ export function CRMDashboardPage() {
                     className="h-7 w-7 sm:h-8 sm:w-8"
                     onClick={() => navigateWeek('next')}
                   >
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRightIcon className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
@@ -657,9 +639,9 @@ export function CRMDashboardPage() {
                           })}
                           {/* Tareas */}
                           {dayTasks.slice(0, 3 - dayCalls.length).map((task) => {
-                            const taskIcon = task.task_type === 'call' ? Phone : 
-                                            task.task_type === 'meeting' ? Calendar :
-                                            task.task_type === 'email' ? Mail : FileText;
+                            const taskIcon = task.task_type === 'call' ? PhoneIcon : 
+                                            task.task_type === 'meeting' ? CalendarIcon :
+                                            task.task_type === 'email' ? EnvelopeIcon : DocumentTextIcon;
                             const taskTime = task.complete_till 
                               ? new Date(task.complete_till).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
                               : '';
@@ -676,10 +658,10 @@ export function CRMDashboardPage() {
                                 }}
                               >
                                 <div className="flex items-start gap-2">
-                                  {taskIcon === Phone && <Phone className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0 mt-0.5" />}
-                                  {taskIcon === Calendar && <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0 mt-0.5" />}
-                                  {taskIcon === Mail && <Mail className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0 mt-0.5" />}
-                                  {taskIcon === FileText && <FileText className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0 mt-0.5" />}
+                                  {taskIcon === PhoneIcon && <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0 mt-0.5" />}
+                                  {taskIcon === CalendarIcon && <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0 mt-0.5" />}
+                                  {taskIcon === EnvelopeIcon && <EnvelopeIcon className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0 mt-0.5" />}
+                                  {taskIcon === DocumentTextIcon && <DocumentTextIcon className="w-3 h-3 sm:w-4 sm:h-4 text-purple-600 flex-shrink-0 mt-0.5" />}
                                   <div className="flex-1 min-w-0">
                                     <p className="font-medium text-gray-900 truncate">
                                       {task.text}
@@ -741,7 +723,7 @@ export function CRMDashboardPage() {
                       className="h-7 w-7 sm:h-8 sm:w-8"
                       onClick={() => navigateWeek('prev')}
                     >
-                      <ArrowRight className="w-4 h-4 rotate-180" />
+                      <ArrowRightIcon className="w-4 h-4 rotate-180" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -749,7 +731,7 @@ export function CRMDashboardPage() {
                       className="h-7 w-7 sm:h-8 sm:w-8"
                       onClick={() => navigateWeek('next')}
                     >
-                      <ArrowRight className="w-4 h-4" />
+                      <ArrowRightIcon className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
@@ -859,7 +841,7 @@ export function CRMDashboardPage() {
               <CardHeader className="p-3 sm:p-4 md:p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-purple-600" />
+                    <DocumentTextIcon className="w-5 h-5 text-purple-600" />
                     <CardTitle className="text-base sm:text-lg md:text-xl font-bold">Últimos Contratos</CardTitle>
                   </div>
                   <Button 
@@ -869,7 +851,7 @@ export function CRMDashboardPage() {
                     className="text-xs sm:text-sm"
                   >
                     Ver todos
-                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                    <ArrowRightIcon className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                   </Button>
                 </div>
               </CardHeader>
@@ -891,7 +873,7 @@ export function CRMDashboardPage() {
                           onClick={() => navigate(`/admin/contracts/${contract.hiring_code}`)}
                         >
                           <div className="p-2 rounded-full bg-white text-purple-600 flex-shrink-0">
-                            <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <DocumentTextIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -910,7 +892,7 @@ export function CRMDashboardPage() {
                               </span>
                             </div>
                             <div className="flex items-center gap-2 text-xs text-gray-500">
-                              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                              <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                               <span>Creado: {formatDate(contract.created_at)}</span>
                             </div>
                           </div>
@@ -920,7 +902,7 @@ export function CRMDashboardPage() {
                   </div>
                 ) : (
                   <div className="py-8 text-center text-gray-500">
-                    <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <DocumentTextIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                     <p className="text-sm">No hay contratos recientes</p>
                   </div>
                 )}
@@ -935,7 +917,7 @@ export function CRMDashboardPage() {
               <CardHeader className="p-3 sm:p-4 md:p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-blue-600" />
+                    <ChartBarIcon className="w-5 h-5 text-blue-600" />
                     <CardTitle className="text-base sm:text-lg md:text-xl font-bold">Oportunidades Recientes</CardTitle>
                   </div>
                   <Button 
@@ -945,7 +927,7 @@ export function CRMDashboardPage() {
                     className="text-xs sm:text-sm"
                   >
                     Ver todas
-                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                    <ArrowRightIcon className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                   </Button>
                 </div>
               </CardHeader>
@@ -963,7 +945,7 @@ export function CRMDashboardPage() {
                         onClick={() => navigate(`/crm/opportunities/${opp.id}`)}
                       >
                         <div className="p-2 rounded-full bg-white text-blue-600 flex-shrink-0">
-                          <Activity className="w-4 h-4 sm:w-5 sm:h-5" />
+                          <ChartBarIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -986,19 +968,19 @@ export function CRMDashboardPage() {
                           <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-1">
                             {opp.contact?.email && (
                               <>
-                                <Mail className="w-3 h-3 sm:w-4 sm:h-4" />
+                                <EnvelopeIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                                 <span className="truncate">{opp.contact.email}</span>
                               </>
                             )}
                             {opp.contact?.mobile && (
                               <>
-                                <Phone className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                                <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                                 <span>{opp.contact.mobile}</span>
                               </>
                             )}
                           </div>
                           <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                            <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                             <span>Detectada: {formatDate(opp.detected_at || opp.created_at)}</span>
                           </div>
                         </div>
@@ -1017,7 +999,7 @@ export function CRMDashboardPage() {
             <CardHeader className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-purple-600" />
+                  <CheckCircleIcon className="w-5 h-5 text-purple-600" />
                   <CardTitle className="text-base sm:text-lg md:text-xl font-bold">Tareas Recientes</CardTitle>
                 </div>
                 <Button 
@@ -1027,7 +1009,7 @@ export function CRMDashboardPage() {
                   className="text-xs sm:text-sm"
                 >
                   Ver todas
-                  <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                  <ArrowRightIcon className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                 </Button>
               </div>
             </CardHeader>
@@ -1035,9 +1017,9 @@ export function CRMDashboardPage() {
               {recentTasks.length > 0 ? (
                 <div className="space-y-3">
                   {recentTasks.map((task) => {
-                    const taskIcon = task.task_type === 'call' ? Phone : 
-                                    task.task_type === 'meeting' ? Calendar :
-                                    task.task_type === 'email' ? Mail : FileText;
+                    const taskIcon = task.task_type === 'call' ? PhoneIcon : 
+                                    task.task_type === 'meeting' ? CalendarIcon :
+                                    task.task_type === 'email' ? EnvelopeIcon : DocumentTextIcon;
                     return (
                       <div
                         key={task.id}
@@ -1051,10 +1033,10 @@ export function CRMDashboardPage() {
                         }}
                       >
                         <div className="p-2 rounded-full bg-white text-purple-600 flex-shrink-0">
-                          {taskIcon === Phone && <Phone className="w-4 h-4 sm:w-5 sm:h-5" />}
-                          {taskIcon === Calendar && <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />}
-                          {taskIcon === Mail && <Mail className="w-4 h-4 sm:w-5 sm:h-5" />}
-                          {taskIcon === FileText && <FileText className="w-4 h-4 sm:w-5 sm:h-5" />}
+                          {taskIcon === PhoneIcon && <PhoneIcon className="w-4 h-4 sm:w-5 sm:h-5" />}
+                          {taskIcon === CalendarIcon && <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5" />}
+                          {taskIcon === EnvelopeIcon && <EnvelopeIcon className="w-4 h-4 sm:w-5 sm:h-5" />}
+                          {taskIcon === DocumentTextIcon && <DocumentTextIcon className="w-4 h-4 sm:w-5 sm:h-5" />}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -1062,7 +1044,7 @@ export function CRMDashboardPage() {
                               {task.text}
                             </p>
                             {task.is_completed ? (
-                              <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+                              <CheckCircleIcon className="w-4 h-4 text-green-600 flex-shrink-0" />
                             ) : (
                               <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
                                 Pendiente
@@ -1071,7 +1053,7 @@ export function CRMDashboardPage() {
                           </div>
                           {task.complete_till && (
                             <div className="flex items-center gap-2 text-xs text-gray-500">
-                              <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                              <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                               <span>Vence: {formatDate(task.complete_till)}</span>
                             </div>
                           )}
@@ -1082,7 +1064,7 @@ export function CRMDashboardPage() {
                 </div>
               ) : (
                 <div className="py-8 text-center text-gray-500">
-                  <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <CheckCircleIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                   <p className="text-sm">No hay tareas recientes</p>
                 </div>
               )}
@@ -1094,7 +1076,7 @@ export function CRMDashboardPage() {
             <CardHeader className="p-3 sm:p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-blue-600" />
+                  <DocumentTextIcon className="w-5 h-5 text-blue-600" />
                   <CardTitle className="text-base sm:text-lg md:text-xl font-bold">Notas Recientes</CardTitle>
                 </div>
                 <Button 
@@ -1104,7 +1086,7 @@ export function CRMDashboardPage() {
                   className="text-xs sm:text-sm"
                 >
                   Ver todas
-                  <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
+                  <ArrowRightIcon className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
                 </Button>
               </div>
             </CardHeader>
@@ -1122,14 +1104,14 @@ export function CRMDashboardPage() {
                       }}
                     >
                       <div className="p-2 rounded-full bg-white text-blue-600 flex-shrink-0">
-                        <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <DocumentTextIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-sm sm:text-base text-gray-900 mb-1 line-clamp-2">
                           {note.content || 'Sin contenido'}
                         </p>
                         <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                           <span>Creada: {formatDate(note.created_at)}</span>
                         </div>
                       </div>
@@ -1138,7 +1120,7 @@ export function CRMDashboardPage() {
                 </div>
               ) : (
                 <div className="py-8 text-center text-gray-500">
-                  <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <DocumentTextIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                   <p className="text-sm">No hay notas recientes</p>
                 </div>
               )}
@@ -1151,7 +1133,7 @@ export function CRMDashboardPage() {
           <CardHeader className="p-3 sm:p-4 md:p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 md:gap-0">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+                <PhoneIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-2">
                   <CardTitle className="text-base sm:text-lg md:text-xl font-bold text-blue-900">
                     Mis Contactos para Llamadas
@@ -1168,7 +1150,7 @@ export function CRMDashboardPage() {
                 className="border-blue-300 text-blue-700 hover:bg-blue-100 w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9 md:h-10"
               >
                 <span className="sm:inline">Ver todos mis contactos</span>
-                <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 sm:ml-2" />
+                <ArrowRightIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:ml-2" />
               </Button>
             </div>
           </CardHeader>
@@ -1205,7 +1187,7 @@ export function CRMDashboardPage() {
                       <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-4 text-[10px] xs:text-xs sm:text-sm text-gray-600">
                         {lead.contact && (
                           <div className="flex items-center gap-1">
-                            <Users className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <UsersIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                             <span className="truncate">
                               {lead.contact.first_name} {lead.contact.last_name}
                             </span>
@@ -1213,18 +1195,18 @@ export function CRMDashboardPage() {
                         )}
                         {lead.contact?.phone && (
                           <div className="flex items-center gap-1">
-                            <Phone className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                             <span>{lead.contact.phone}</span>
                           </div>
                         )}
                         {lead.service_type && (
                           <div className="flex items-center gap-1">
-                            <Building2 className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <BuildingOffice2Icon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                             <span className="truncate">{lead.service_type}</span>
                           </div>
                         )}
                         <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span>{formatDate(lead.created_at)}</span>
                         </div>
                       </div>
@@ -1245,7 +1227,7 @@ export function CRMDashboardPage() {
                           navigate(`/crm/contacts/${lead.id}?action=call`);
                         }}
                       >
-                        <Phone className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                        <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                         <span className="sm:inline">Llamar</span>
                       </Button>
                     </div>
@@ -1267,7 +1249,7 @@ export function CRMDashboardPage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3 sm:mb-4">
             <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">Pipeline de Ventas</h2>
             <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] xs:text-xs sm:text-sm text-gray-600">
-              <Activity className="w-3 h-3 sm:w-4 sm:h-4" />
+              <ChartBarIcon className="w-3 h-3 sm:w-4 sm:h-4" />
               <span>{totalContactsCount > 0 ? totalContactsCount : filteredLeads.length} contactos</span>
             </div>
           </div>
@@ -1321,7 +1303,7 @@ export function CRMDashboardPage() {
 
                           {lead.contact && (
                             <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
-                              <Users className="w-3 h-3" />
+                              <UsersIcon className="w-3 h-3" />
                               <span>
                                 {lead.contact.first_name} {lead.contact.last_name}
                               </span>
@@ -1331,7 +1313,7 @@ export function CRMDashboardPage() {
                           <div className="space-y-1.5 text-xs text-gray-600">
                             {lead.price && (
                               <div className="flex items-center gap-2">
-                                <DollarSign className="w-3 h-3 text-green-600" />
+                                <CurrencyDollarIcon className="w-3 h-3 text-green-600" />
                                 <span className="font-semibold text-green-600">
                                   {formatCurrency(lead.price, lead.currency || 'EUR', false)}
                                 </span>
@@ -1340,20 +1322,20 @@ export function CRMDashboardPage() {
 
                             {lead.service_type && (
                               <div className="flex items-center gap-2">
-                                <Building2 className="w-3 h-3" />
+                                <BuildingOffice2Icon className="w-3 h-3" />
                                 <span>{lead.service_type}</span>
                               </div>
                             )}
 
                             {lead.contact?.phone && (
                               <div className="flex items-center gap-2">
-                                <Phone className="w-3 h-3" />
+                                <PhoneIcon className="w-3 h-3" />
                                 <span>{lead.contact.phone}</span>
                               </div>
                             )}
 
                             <div className="flex items-center gap-2">
-                              <Calendar className="w-3 h-3" />
+                              <CalendarIcon className="w-3 h-3" />
                               <span>{formatDate(lead.created_at)}</span>
                             </div>
                           </div>
@@ -1370,7 +1352,7 @@ export function CRMDashboardPage() {
                         <div className="py-8 text-center text-gray-400 text-sm">
                           <div className="flex flex-col items-center gap-2">
                             <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-                              <Plus className="w-6 h-6 text-gray-400" />
+                              <PlusIcon className="w-6 h-6 text-gray-400" />
                             </div>
                             <p>No hay contactos en esta etapa</p>
                           </div>
@@ -1389,7 +1371,7 @@ export function CRMDashboardPage() {
           <CardContent className="pt-3 sm:pt-4 md:pt-6">
             <div className="flex flex-col gap-2 sm:gap-3 md:gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                <MagnifyingGlassIcon className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                 <Input
                   placeholder="Buscar contactos por nombre, servicio..."
                   className="pl-8 sm:pl-10 pr-3 sm:pr-4 text-xs sm:text-sm md:text-base h-9 sm:h-10"
@@ -1405,7 +1387,7 @@ export function CRMDashboardPage() {
                     onClick={() => setSelectedStage(null)}
                     className="flex-shrink-0 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                   >
-                    <Filter className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                    <FunnelIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                     <span className="sm:inline">Todos</span>
                   </Button>
                   {stages.slice(0, 3).map((stage) => (
@@ -1434,7 +1416,7 @@ export function CRMDashboardPage() {
                     navigate('/crm/contacts/new');
                   }}
                 >
-                  <Plus className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                  <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                   <span className="sm:inline">Nuevo Contacto</span>
                 </Button>
               </div>
@@ -1472,13 +1454,13 @@ export function CRMDashboardPage() {
                         </span>
                       )}
                       {(lead.status_id === '5' || lead.status === 'won') && (
-                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                        <CheckCircleIcon className="w-4 h-4 text-green-600" />
                       )}
                     </div>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
                       {lead.contact && (
                         <div className="flex items-center gap-1">
-                          <Users className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <UsersIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span className="truncate">
                             {lead.contact.first_name} {lead.contact.last_name}
                           </span>
@@ -1486,24 +1468,24 @@ export function CRMDashboardPage() {
                       )}
                       {lead.service_type && (
                         <div className="flex items-center gap-1">
-                          <Building2 className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <BuildingOffice2Icon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span className="truncate">{lead.service_type}</span>
                         </div>
                       )}
                       {lead.contact?.phone && (
                         <div className="flex items-center gap-1">
-                          <Phone className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span>{lead.contact.phone}</span>
                         </div>
                       )}
                       {lead.contact?.email && (
                         <div className="flex items-center gap-1">
-                          <Mail className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <EnvelopeIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                           <span className="truncate max-w-[150px] sm:max-w-[200px]">{lead.contact.email}</span>
                         </div>
                       )}
                       <div className="flex items-center gap-1 text-gray-500">
-                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                        <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                         <span>{formatDate(lead.created_at)}</span>
                       </div>
                     </div>
@@ -1512,7 +1494,7 @@ export function CRMDashboardPage() {
               ))}
               {filteredLeads.length === 0 && (
                 <div className="py-12 text-center text-gray-500">
-                  <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                  <UsersIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
                   <p>No se encontraron contactos</p>
                 </div>
               )}
@@ -1526,7 +1508,7 @@ export function CRMDashboardPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
+                  <ExclamationCircleIcon className="w-5 h-5 text-red-600" />
                   <CardTitle className="text-xl font-bold text-red-900">Acciones Urgentes</CardTitle>
                 </div>
                 <Button 
@@ -1536,7 +1518,7 @@ export function CRMDashboardPage() {
                   className="border-red-300 text-red-700 hover:bg-red-100"
                 >
                   Ver todas
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  <ArrowRightIcon className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             </CardHeader>
@@ -1548,7 +1530,7 @@ export function CRMDashboardPage() {
                 className="w-full bg-red-600 hover:bg-red-700"
                 onClick={() => navigate('/crm/actions?filter=urgent')}
               >
-                <AlertCircle className="w-4 h-4 mr-2" />
+                <ExclamationCircleIcon className="w-4 h-4 mr-2" />
                 Ver Acciones Urgentes
               </Button>
             </CardContent>
@@ -1558,7 +1540,7 @@ export function CRMDashboardPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-purple-600" />
+                  <DocumentTextIcon className="w-5 h-5 text-purple-600" />
                   <CardTitle className="text-xl font-bold text-purple-900">Expedientes Legales</CardTitle>
                 </div>
                 <Button 
@@ -1568,7 +1550,7 @@ export function CRMDashboardPage() {
                   className="border-purple-300 text-purple-700 hover:bg-purple-100"
                 >
                   Ver todos
-                  <ArrowRight className="w-4 h-4 ml-2" />
+                  <ArrowRightIcon className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             </CardHeader>
@@ -1580,7 +1562,7 @@ export function CRMDashboardPage() {
                 className="w-full bg-purple-600 hover:bg-purple-700"
                 onClick={() => navigate('/crm/expedientes')}
               >
-                <FileText className="w-4 h-4 mr-2" />
+                <DocumentTextIcon className="w-4 h-4 mr-2" />
                 Ver Expedientes
               </Button>
             </CardContent>

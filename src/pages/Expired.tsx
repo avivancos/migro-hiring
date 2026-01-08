@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Home, Clock, Mail } from 'lucide-react';
+import { ClockIcon, EnvelopeIcon, HomeIcon } from '@heroicons/react/24/outline';
 
 export function Expired() {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ export function Expired() {
           <div className="text-center">
             <div className="mb-6 flex justify-center">
               <div className="bg-yellow-100 p-8 rounded-full">
-                <Clock className="text-yellow-600" size={80} />
+                <ClockIcon className="text-yellow-600" width={80} height={80} />
               </div>
             </div>
 
@@ -28,7 +28,7 @@ export function Expired() {
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8 max-w-lg mx-auto">
               <div className="flex items-start gap-3">
-                <Mail className="text-blue-600 mt-1 flex-shrink-0" size={24} />
+                <EnvelopeIcon className="text-blue-600 mt-1 flex-shrink-0" width={24} height={24} />
                 <div className="text-left">
                   <h3 className="font-semibold text-blue-900 mb-2">
                     ¿Qué puedes hacer?
@@ -48,7 +48,7 @@ export function Expired() {
                 variant="outline"
                 size="lg"
               >
-                <Home className="mr-2" size={20} />
+                <HomeIcon className="mr-2" width={20} height={20} />
                 Volver al Inicio
               </Button>
               
@@ -57,7 +57,7 @@ export function Expired() {
                 className="bg-primary hover:bg-primary-700 text-white"
                 size="lg"
               >
-                <Mail className="mr-2" size={20} />
+                <EnvelopeIcon className="mr-2" width={20} height={20} />
                 Contactar Soporte
               </Button>
             </div>

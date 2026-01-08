@@ -2,7 +2,8 @@
 // Mobile-first con acciones rápidas
 
 import { useState } from 'react';
-import { CheckCircle2, XCircle, Clock, Plus } from 'lucide-react';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ClockIcon, PlusIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,13 +45,13 @@ export function PipelineActionsList({
   const getStatusIcon = (status: ActionStatus) => {
     switch (status) {
       case 'validated':
-        return <CheckCircle2 className="h-5 w-5 text-green-600" />;
+        return <CheckCircleIcon className="h-5 w-5 text-green-600" />;
       case 'rejected':
-        return <XCircle className="h-5 w-5 text-red-600" />;
+        return <XCircleIcon className="h-5 w-5 text-red-600" />;
       case 'completed':
-        return <CheckCircle2 className="h-5 w-5 text-blue-600" />;
+        return <CheckCircleIcon className="h-5 w-5 text-blue-600" />;
       default:
-        return <Clock className="h-5 w-5 text-yellow-600" />;
+        return <ClockIcon className="h-5 w-5 text-yellow-600" />;
     }
   };
 
@@ -103,7 +104,7 @@ export function PipelineActionsList({
         </div>
         {showCreateButton && canCreatePipelineAction() && onCreateAction && (
           <Button onClick={onCreateAction} size="sm" className="w-full md:w-auto">
-            <Plus className="h-4 w-4 mr-2" />
+            <PlusIcon className="h-4 w-4 mr-2" />
             Nueva Acción
           </Button>
         )}
@@ -228,7 +229,7 @@ export function PipelineActionsList({
                           }}
                           disabled={validating === action.id}
                         >
-                          <CheckCircle2 className="h-4 w-4 mr-2" />
+                          <CheckCircleIcon className="h-4 w-4 mr-2" />
                           Validar
                         </Button>
                         <Button
@@ -241,7 +242,7 @@ export function PipelineActionsList({
                           }}
                           disabled={validating === action.id}
                         >
-                          <XCircle className="h-4 w-4 mr-2" />
+                          <XCircleIcon className="h-4 w-4 mr-2" />
                           Rechazar
                         </Button>
                       </div>
@@ -256,5 +257,4 @@ export function PipelineActionsList({
     </div>
   );
 }
-
 

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Share2, Download } from 'lucide-react';
+import { ArrowDownTrayIcon, ArrowLeftIcon, ShareIcon } from '@heroicons/react/24/outline';
 import { useOpportunityAnalysis } from '@/hooks/useCaseAnalysis';
 import { AnalysisQuickCard } from '@/components/caseAnalysis/AnalysisQuickCard';
 import { SalesFeasibilityCard } from '@/components/caseAnalysis/SalesFeasibilityCard';
@@ -85,7 +85,7 @@ export function CRMCaseAnalysis() {
             onClick={() => navigate(-1)}
             className="min-h-[44px]"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeftIcon className="h-4 w-4 mr-2" />
             Volver
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">Análisis de Caso</h1>
@@ -106,7 +106,7 @@ export function CRMCaseAnalysis() {
             onClick={() => navigate(-1)}
             className="min-h-[44px]"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeftIcon className="h-4 w-4 mr-2" />
             Volver
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">Análisis de Caso</h1>
@@ -131,7 +131,7 @@ export function CRMCaseAnalysis() {
             onClick={() => navigate(-1)}
             className="min-h-[44px]"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeftIcon className="h-4 w-4 mr-2" />
             Volver
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">Análisis de Caso</h1>
@@ -145,7 +145,7 @@ export function CRMCaseAnalysis() {
             onClick={handleShare}
             className="flex-1 sm:flex-none min-h-[44px]"
           >
-            <Share2 className="h-4 w-4 mr-2" />
+            <ShareIcon className="h-4 w-4 mr-2" />
             Compartir
           </Button>
           <Button
@@ -154,7 +154,7 @@ export function CRMCaseAnalysis() {
             onClick={handleExport}
             className="flex-1 sm:flex-none min-h-[44px]"
           >
-            <Download className="h-4 w-4 mr-2" />
+            <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
             Exportar
           </Button>
         </div>

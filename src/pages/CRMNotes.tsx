@@ -8,7 +8,7 @@ import NoteList from '@/components/CRM/Notes/NoteList';
 import { NoteForm } from '@/components/CRM/NoteForm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, ArrowLeft } from 'lucide-react';
+import { ArrowLeftIcon, PlusIcon } from '@heroicons/react/24/outline';
 import type { NoteCreateRequest } from '@/types/crm';
 
 export function CRMNotes() {
@@ -52,7 +52,7 @@ export function CRMNotes() {
               size="icon"
               className="md:hidden"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeftIcon width={20} height={20} />
             </Button>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Notas</h1>
@@ -65,7 +65,7 @@ export function CRMNotes() {
             onClick={() => setShowForm(!showForm)}
             className="bg-green-600 hover:bg-green-700 flex items-center gap-2 w-full md:w-auto"
           >
-            <Plus size={18} />
+            <PlusIcon width={18} height={18} />
             Nueva Nota
           </Button>
         </div>

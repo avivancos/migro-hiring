@@ -108,7 +108,3 @@ export function Timeline({ items, className, groupByDate = true }: TimelineProps
   );
 }
 
-
-
-
-

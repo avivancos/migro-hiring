@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Plus, ExternalLink, Phone, User, MessageSquare } from 'lucide-react';
+import { ArrowTopRightOnSquareIcon, ChatBubbleLeftIcon, ChevronLeftIcon, ChevronRightIcon, PhoneIcon, PlusIcon, UserIcon } from '@heroicons/react/24/outline';
 import type { Task, Call, Note, Contact, CRMUser } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { formatCallStatus } from '@/utils/statusTranslations';
@@ -677,7 +677,7 @@ export function CRMTaskCalendar() {
                           }}
                           title={call.contact_name ? `Llamada con ${call.contact_name}` : (call.phone || call.phone_number || 'Llamada')}
                         >
-                          <Phone className="w-3 h-3 flex-shrink-0" />
+                          <PhoneIcon className="w-3 h-3 flex-shrink-0" />
                           <span className="truncate">{displayText}</span>
                         </div>
                       );
@@ -761,7 +761,7 @@ export function CRMTaskCalendar() {
                           }}
                           className="ml-2 h-6 text-xs px-2"
                         >
-                          <ExternalLink className="w-3 h-3" />
+                          <ArrowTopRightOnSquareIcon className="w-3 h-3" />
                         </Button>
                       )}
                     </div>
@@ -795,7 +795,7 @@ export function CRMTaskCalendar() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 flex-1">
-                          <Phone className="w-3 h-3 flex-shrink-0" />
+                          <PhoneIcon className="w-3 h-3 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="font-semibold truncate">
                               {displayTitle}
@@ -867,7 +867,7 @@ export function CRMTaskCalendar() {
                           </span>
                           {task.responsible_user_id && (
                             <span className="text-xs px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5 font-medium">
-                              <User size={12} className="flex-shrink-0" />
+                              <UserIcon width={12} height={12} className="flex-shrink-0" />
                               <span className="truncate max-w-[150px]">{getResponsibleName(task.responsible_user_id)}</span>
                             </span>
                           )}
@@ -885,7 +885,7 @@ export function CRMTaskCalendar() {
                           }}
                           className="text-xs"
                         >
-                          <ExternalLink className="w-3 h-3 mr-1" />
+                          <ArrowTopRightOnSquareIcon className="w-3 h-3 mr-1" />
                           Contacto
                         </Button>
                       )}
@@ -924,7 +924,7 @@ export function CRMTaskCalendar() {
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-3 flex-1">
-                        <Phone className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                        <PhoneIcon className="w-5 h-5 text-blue-600 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <h3 className="font-semibold truncate">
                             {displayTitle}
@@ -954,7 +954,7 @@ export function CRMTaskCalendar() {
                               {getCallTypeBadge(call.call_type)}
                               {call.responsible_user_id && (
                                 <span className="text-xs px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5 font-medium">
-                                  <User size={12} className="flex-shrink-0" />
+                                  <UserIcon width={12} height={12} className="flex-shrink-0" />
                                   <span className="truncate max-w-[150px]">{getResponsibleName(call.responsible_user_id)}</span>
                                 </span>
                               )}
@@ -983,7 +983,7 @@ export function CRMTaskCalendar() {
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start">
                       <div className="flex items-center gap-3 flex-1">
-                        <MessageSquare className="w-5 h-5 text-gray-600 flex-shrink-0" />
+                        <ChatBubbleLeftIcon className="w-5 h-5 text-gray-600 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-gray-700 line-clamp-3">
                             {note.content}
@@ -996,7 +996,7 @@ export function CRMTaskCalendar() {
                               {getNoteTypeBadge(note.note_type ?? undefined)}
                               {note.created_by && (
                                 <span className="text-xs px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200 flex items-center gap-1.5 font-medium">
-                                  <User size={12} className="flex-shrink-0" />
+                                  <UserIcon width={12} height={12} className="flex-shrink-0" />
                                   <span className="truncate max-w-[150px]">{getResponsibleName(note.created_by)}</span>
                                 </span>
                               )}
@@ -1049,7 +1049,7 @@ export function CRMTaskCalendar() {
           onClick={() => navigate('/crm/tasks/new')}
           className="bg-green-600 hover:bg-green-700"
         >
-          <Plus size={20} className="mr-2" />
+          <PlusIcon width={20} height={20} className="mr-2" />
           Nueva Tarea
         </Button>
       </div>
@@ -1060,13 +1060,13 @@ export function CRMTaskCalendar() {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <Button variant="outline" onClick={() => navigateDate('prev')}>
-                <ChevronLeft size={18} />
+                <ChevronLeftIcon width={18} height={18} />
               </Button>
               <Button variant="outline" onClick={goToToday}>
                 Hoy
               </Button>
               <Button variant="outline" onClick={() => navigateDate('next')}>
-                <ChevronRight size={18} />
+                <ChevronRightIcon width={18} height={18} />
               </Button>
               <div className="text-lg font-semibold">{getViewTitle()}</div>
             </div>

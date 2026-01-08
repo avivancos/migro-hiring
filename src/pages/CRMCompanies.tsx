@@ -8,15 +8,7 @@ import { Input } from '@/components/ui/input';
 import { adminService } from '@/services/adminService';
 import { crmService } from '@/services/crmService';
 import type { Company } from '@/types/crm';
-import {
-  ArrowLeft,
-  Search,
-  Building2,
-  Phone,
-  Mail,
-  MapPin,
-  Plus,
-} from 'lucide-react';
+import { ArrowLeftIcon, BuildingOffice2Icon, EnvelopeIcon, MagnifyingGlassIcon, MapPinIcon, PhoneIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 export function CRMCompanies() {
   const navigate = useNavigate();
@@ -61,7 +53,7 @@ export function CRMCompanies() {
               variant="ghost"
               size="icon"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeftIcon width={20} height={20} />
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Empresas</h1>
@@ -74,7 +66,7 @@ export function CRMCompanies() {
             onClick={() => navigate('/admin/crm/companies/new')}
             className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
           >
-            <Plus size={18} />
+            <PlusIcon width={18} height={18} />
             Nueva Empresa
           </Button>
         </div>
@@ -83,7 +75,7 @@ export function CRMCompanies() {
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width={20} height={20} />
               <Input
                 placeholder="Buscar empresas por nombre o email..."
                 className="pl-10"
@@ -114,7 +106,7 @@ export function CRMCompanies() {
                   <CardContent className="pt-6">
                     <div className="flex items-start gap-4">
                       <div className="bg-purple-100 p-3 rounded-full text-purple-600">
-                        <Building2 size={24} />
+                        <BuildingOffice2Icon width={24} height={24} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-lg font-semibold text-gray-900 truncate">
@@ -124,21 +116,21 @@ export function CRMCompanies() {
                         <div className="mt-3 space-y-2">
                           {company.email && (
                             <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Mail size={14} />
+                              <EnvelopeIcon width={14} height={14} />
                               <span className="truncate">{company.email}</span>
                             </div>
                           )}
                           
                           {company.phone && (
                             <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Phone size={14} />
+                              <PhoneIcon width={14} height={14} />
                               <span>{company.phone}</span>
                             </div>
                           )}
                           
                           {(company.city || company.country) && (
                             <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <MapPin size={14} />
+                              <MapPinIcon width={14} height={14} />
                               <span className="truncate">
                                 {[company.city, company.country].filter(Boolean).join(', ')}
                               </span>

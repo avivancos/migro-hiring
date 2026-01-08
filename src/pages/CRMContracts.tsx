@@ -6,18 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { contractsService } from '@/services/contractsService';
-import {
-  FileText,
-  Search,
-  Filter,
-  Download,
-  Eye,
-  Calendar,
-  DollarSign,
-  ChevronLeft,
-  ChevronRight,
-  Users,
-} from 'lucide-react';
+import { ArrowDownTrayIcon, CalendarIcon, ChevronLeftIcon, ChevronRightIcon, CurrencyDollarIcon, DocumentTextIcon, EyeIcon, FunnelIcon, MagnifyingGlassIcon, UsersIcon } from '@heroicons/react/24/outline';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { EmptyState } from '@/components/common/EmptyState';
 import type {
@@ -143,7 +132,7 @@ export function CRMContracts() {
           size="sm"
           className="w-full sm:w-auto"
         >
-          <Download className="w-4 h-4 mr-2" />
+          <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
           {exporting ? 'Exportando...' : 'Exportar CSV'}
         </Button>
       </div>
@@ -161,7 +150,7 @@ export function CRMContracts() {
                   <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.total}</p>
                 )}
               </div>
-              <FileText className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
+              <DocumentTextIcon className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
             </div>
           </CardContent>
         </Card>
@@ -172,7 +161,7 @@ export function CRMContracts() {
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Pendientes</p>
                 <p className="text-xl sm:text-2xl font-bold text-yellow-600">{stats.pending}</p>
               </div>
-              <Calendar className="w-8 h-8 sm:w-10 sm:h-10 text-yellow-400" />
+              <CalendarIcon className="w-8 h-8 sm:w-10 sm:h-10 text-yellow-400" />
             </div>
           </CardContent>
         </Card>
@@ -183,7 +172,7 @@ export function CRMContracts() {
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Pagados</p>
                 <p className="text-xl sm:text-2xl font-bold text-green-600">{stats.paid}</p>
               </div>
-              <DollarSign className="w-8 h-8 sm:w-10 sm:h-10 text-green-400" />
+              <CurrencyDollarIcon className="w-8 h-8 sm:w-10 sm:h-10 text-green-400" />
             </div>
           </CardContent>
         </Card>
@@ -194,7 +183,7 @@ export function CRMContracts() {
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Completados</p>
                 <p className="text-xl sm:text-2xl font-bold text-blue-600">{stats.completed}</p>
               </div>
-              <Users className="w-8 h-8 sm:w-10 sm:h-10 text-blue-400" />
+              <UsersIcon className="w-8 h-8 sm:w-10 sm:h-10 text-blue-400" />
             </div>
           </CardContent>
         </Card>
@@ -205,7 +194,7 @@ export function CRMContracts() {
         <CardContent className="p-4 sm:p-6">
           <div className="flex flex-col gap-3 sm:gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
               <Input
                 placeholder="Buscar por código, nombre, email..."
                 className="pl-9 sm:pl-10 text-sm sm:text-base"
@@ -220,7 +209,7 @@ export function CRMContracts() {
                 onClick={() => setShowFilters(!showFilters)}
                 className="w-full sm:w-auto"
               >
-                <Filter className="w-4 h-4 mr-2" />
+                <FunnelIcon className="w-4 h-4 mr-2" />
                 Filtros
               </Button>
               {showFilters && (
@@ -275,7 +264,7 @@ export function CRMContracts() {
         <Card>
           <CardContent className="p-12">
             <EmptyState
-              icon={FileText}
+              icon={DocumentTextIcon}
               title="No se encontraron contratos"
               description="No hay contratos que coincidan con los filtros seleccionados."
             />
@@ -317,15 +306,15 @@ export function CRMContracts() {
                       </div>
                       <div className="space-y-1 text-sm text-gray-600">
                         <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4" />
+                          <UsersIcon className="w-4 h-4" />
                           <span className="truncate">{contract.client_name}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4" />
+                          <DocumentTextIcon className="w-4 h-4" />
                           <span className="truncate">{contract.service_name}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4" />
+                          <CalendarIcon className="w-4 h-4" />
                           <span>{formatDate(contract.created_at)}</span>
                         </div>
                       </div>
@@ -345,7 +334,7 @@ export function CRMContracts() {
                         }}
                         className="w-full sm:w-auto"
                       >
-                        <Eye className="w-4 h-4 mr-2" />
+                        <EyeIcon className="w-4 h-4 mr-2" />
                         Ver Detalle
                       </Button>
                     </div>
@@ -374,7 +363,7 @@ export function CRMContracts() {
                       onClick={() => handlePageChange('prev')}
                       disabled={currentSkip === 0}
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <ChevronLeftIcon className="w-4 h-4" />
                       Anterior
                     </Button>
                     <span className="text-sm text-gray-600 px-2">
@@ -387,7 +376,7 @@ export function CRMContracts() {
                       disabled={currentSkip + currentLimit >= total}
                     >
                       Siguiente
-                      <ChevronRight className="w-4 h-4" />
+                      <ChevronRightIcon className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>

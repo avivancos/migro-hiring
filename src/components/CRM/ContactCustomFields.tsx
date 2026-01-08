@@ -1,7 +1,8 @@
 // Componente para mostrar campos personalizados de un contacto
 
 import { useContactCustomFields } from '@/hooks/useContactCustomFields';
-import { CheckCircle2, X } from 'lucide-react';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Badge } from '@/components/ui/badge';
 
 interface ContactCustomFieldsProps {
@@ -75,12 +76,12 @@ function renderCustomFieldValue(
         <span className="flex items-center gap-1">
           {value.boolean ? (
             <>
-              <CheckCircle2 className="w-4 h-4 text-green-600" />
+              <CheckCircleIcon className="w-4 h-4 text-green-600" />
               <span className="text-gray-900">Sí</span>
             </>
           ) : (
             <>
-              <X className="w-4 h-4 text-gray-400" />
+              <XMarkIcon className="w-4 h-4 text-gray-400" />
               <span className="text-gray-500">No</span>
             </>
           )}
@@ -138,10 +139,4 @@ export function ContactCustomFields({ contactId }: ContactCustomFieldsProps) {
     </div>
   );
 }
-
-
-
-
-
-
 

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ChevronRight, Calendar, User, AlertCircle } from 'lucide-react';
+import { CalendarIcon, ChevronRightIcon, ExclamationCircleIcon, UserIcon } from '@heroicons/react/24/outline';
 import { format, addDays } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useCRMUsers } from '@/hooks/useCRMUsers';
@@ -100,7 +100,7 @@ export function ModifyResponsiblesStep({
     return (
       <div className="space-y-6">
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <ExclamationCircleIcon className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
           <div>
             <h3 className="font-semibold text-yellow-900 mb-1">
               No hay acciones seleccionadas
@@ -166,7 +166,7 @@ export function ModifyResponsiblesStep({
           {/* Responsable */}
           <div className="space-y-2">
             <Label htmlFor="responsible" className="flex items-center gap-2">
-              <User className="h-4 w-4 text-gray-500" />
+              <UserIcon className="h-4 w-4 text-gray-500" />
               Responsable de Validación
             </Label>
             {loadingUsers ? (
@@ -195,7 +195,7 @@ export function ModifyResponsiblesStep({
           {/* Fecha límite */}
           <div className="space-y-2">
             <Label htmlFor="dueDate" className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-gray-500" />
+              <CalendarIcon className="h-4 w-4 text-gray-500" />
               Fecha Límite
             </Label>
             <Input
@@ -271,7 +271,7 @@ export function ModifyResponsiblesStep({
           className="flex-1 h-12"
         >
           {selectedActionIndex < changes.actions.length - 1 ? 'Siguiente Acción' : 'Continuar'}
-          <ChevronRight className="h-4 w-4 ml-2" />
+          <ChevronRightIcon className="h-4 w-4 ml-2" />
         </Button>
       </div>
     </div>

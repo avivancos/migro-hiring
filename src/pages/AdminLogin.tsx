@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/providers/AuthProvider';
-import { Lock, AlertCircle } from 'lucide-react';
+import { ExclamationCircleIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 
 export function AdminLogin() {
   const navigate = useNavigate();
@@ -102,7 +102,7 @@ export function AdminLogin() {
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader>
           <CardTitle className="text-2xl text-center flex items-center justify-center gap-2">
-            <Lock className="text-primary" size={28} />
+            <LockClosedIcon className="text-primary" width={28} height={28} />
             Panel de Administración
           </CardTitle>
           <p className="text-center text-sm text-gray-500 mt-2">
@@ -145,7 +145,7 @@ export function AdminLogin() {
 
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg flex items-center gap-2">
-                <AlertCircle size={18} />
+                <ExclamationCircleIcon width={18} height={18} />
                 <p className="text-sm">{error}</p>
               </div>
             )}

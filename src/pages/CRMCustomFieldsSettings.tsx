@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Edit, Trash2, Eye, EyeOff, Lock } from 'lucide-react';
+import { EyeIcon, EyeSlashIcon, LockClosedIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import type { CustomField, EntityType } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { CustomFieldModal } from '@/components/CRM/CustomFieldModal';
@@ -142,7 +142,7 @@ export function CRMCustomFieldsSettings() {
               }}
               className="bg-green-600 hover:bg-green-700"
             >
-              <Plus size={20} className="mr-2" />
+              <PlusIcon width={20} height={20} className="mr-2" />
               Crear Campo
             </Button>
           </div>
@@ -199,7 +199,7 @@ export function CRMCustomFieldsSettings() {
                             <div className="flex items-center gap-2">
                               {!field.is_deletable && (
                                 <span title="Campo del sistema">
-                                  <Lock size={16} className="text-gray-400" />
+                                  <LockClosedIcon width={16} height={16} className="text-gray-400" />
                                 </span>
                               )}
                               <span className="font-medium">{field.name}</span>
@@ -225,9 +225,9 @@ export function CRMCustomFieldsSettings() {
                           </td>
                           <td className="py-3 px-4 text-center">
                             {field.is_visible ? (
-                              <Eye size={18} className="text-green-600 mx-auto" />
+                              <EyeIcon width={18} height={18} className="text-green-600 mx-auto" />
                             ) : (
-                              <EyeOff size={18} className="text-gray-400 mx-auto" />
+                              <EyeSlashIcon width={18} height={18} className="text-gray-400 mx-auto" />
                             )}
                           </td>
                           <td className="py-3 px-4 text-center">
@@ -243,7 +243,7 @@ export function CRMCustomFieldsSettings() {
                                   setShowCreateModal(true);
                                 }}
                               >
-                                <Edit size={16} className="mr-1" />
+                                <PencilIcon width={16} height={16} className="mr-1" />
                                 Editar
                               </Button>
                               <Button
@@ -253,9 +253,9 @@ export function CRMCustomFieldsSettings() {
                                 title={field.is_visible ? 'Ocultar campo' : 'Mostrar campo'}
                               >
                                 {field.is_visible ? (
-                                  <EyeOff size={16} />
+                                  <EyeSlashIcon width={16} height={16} />
                                 ) : (
-                                  <Eye size={16} />
+                                  <EyeIcon width={16} height={16} />
                                 )}
                               </Button>
                               {field.is_deletable && (
@@ -265,7 +265,7 @@ export function CRMCustomFieldsSettings() {
                                   onClick={() => handleDelete(field)}
                                   className="text-red-600 hover:text-red-700 hover:bg-red-50"
                                 >
-                                  <Trash2 size={16} />
+                                  <TrashIcon width={16} height={16} />
                                 </Button>
                               )}
                             </div>
@@ -294,21 +294,4 @@ export function CRMCustomFieldsSettings() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

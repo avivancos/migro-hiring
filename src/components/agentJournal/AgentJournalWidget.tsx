@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ProductivityScoreBadge } from './ProductivityScoreBadge';
 import { SignReportDialog } from './SignReportDialog';
-import { Phone, PhoneCall, Clock, CheckCircle, FileText, Briefcase, BookOpen, ArrowRight, RefreshCw, PenTool } from 'lucide-react';
+import { ArrowPathIcon, ArrowRightIcon, BookOpenIcon, BriefcaseIcon, CheckCircleIcon, ClockIcon, DocumentTextIcon, PencilIcon, PhoneIcon } from '@heroicons/react/24/outline';
 import { formatCallTime } from '@/utils/agentJournal';
 import { startOfToday } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -43,7 +43,7 @@ export function AgentJournalWidget() {
       <CardHeader className="p-4 sm:p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-green-600" />
+            <BookOpenIcon className="w-5 h-5 text-green-600" />
             <CardTitle className="text-base sm:text-lg font-bold">Mi Diario de Trabajo</CardTitle>
           </div>
           <div className="flex items-center gap-2">
@@ -55,7 +55,7 @@ export function AgentJournalWidget() {
               className="text-xs sm:text-sm"
               title="Sincronizar métricas"
             >
-              <RefreshCw className={`h-3 w-3 sm:h-4 sm:w-4 ${syncMetrics.isPending ? 'animate-spin' : ''}`} />
+              <ArrowPathIcon className={`h-3 w-3 sm:h-4 sm:w-4 ${syncMetrics.isPending ? 'animate-spin' : ''}`} />
             </Button>
             {!isSigned && (
               <Button
@@ -65,13 +65,13 @@ export function AgentJournalWidget() {
                 className="text-xs sm:text-sm border-green-600 text-green-700 hover:bg-green-50"
                 title="Firmar y enviar reporte"
               >
-                <PenTool className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                <PencilIcon className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                 <span className="hidden sm:inline">Firmar</span>
               </Button>
             )}
             {isSigned && (
               <div className="text-xs text-green-600 font-medium flex items-center gap-1">
-                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                <CheckCircleIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Firmado</span>
               </div>
             )}
@@ -82,7 +82,7 @@ export function AgentJournalWidget() {
               className="text-xs sm:text-sm"
             >
               Ver completo
-              <ArrowRight className="w-3 h-3 sm:w-4 sm:w-4 ml-1" />
+              <ArrowRightIcon className="w-3 h-3 sm:w-4 sm:w-4 ml-1" />
             </Button>
           </div>
         </div>
@@ -106,7 +106,7 @@ export function AgentJournalWidget() {
               <div className="p-3 rounded-lg border border-gray-200 bg-white">
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-xs text-gray-600">Llamadas Totales</p>
-                  <Phone className="h-3 w-3 text-gray-400" />
+                  <PhoneIcon className="h-3 w-3 text-gray-400" />
                 </div>
                 <p className="text-xl font-bold text-gray-900">{journal.total_calls}</p>
                 <p className="text-xs text-gray-500">llamadas</p>
@@ -114,7 +114,7 @@ export function AgentJournalWidget() {
               <div className="p-3 rounded-lg border border-green-200 bg-green-50/50">
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-xs text-gray-600">Llamadas Efectivas</p>
-                  <PhoneCall className="h-3 w-3 text-green-600" />
+                  <PhoneIcon className="h-3 w-3 text-green-600" />
                 </div>
                 <p className="text-xl font-bold text-gray-900">{journal.effective_calls}</p>
                 <p className="text-xs text-gray-500">llamadas</p>
@@ -122,14 +122,14 @@ export function AgentJournalWidget() {
               <div className="p-3 rounded-lg border border-gray-200 bg-white">
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-xs text-gray-600">Tiempo Total</p>
-                  <Clock className="h-3 w-3 text-gray-400" />
+                  <ClockIcon className="h-3 w-3 text-gray-400" />
                 </div>
                 <p className="text-xl font-bold text-gray-900">{formatCallTime(journal.total_call_time_seconds)}</p>
               </div>
               <div className="p-3 rounded-lg border border-green-200 bg-green-50/50">
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-xs text-gray-600">Tareas Completadas</p>
-                  <CheckCircle className="h-3 w-3 text-green-600" />
+                  <CheckCircleIcon className="h-3 w-3 text-green-600" />
                 </div>
                 <p className="text-xl font-bold text-gray-900">{journal.tasks_completed}</p>
                 <p className="text-xs text-gray-500">tareas</p>
@@ -137,7 +137,7 @@ export function AgentJournalWidget() {
               <div className="p-3 rounded-lg border border-gray-200 bg-white">
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-xs text-gray-600">Notas Creadas</p>
-                  <FileText className="h-3 w-3 text-gray-400" />
+                  <DocumentTextIcon className="h-3 w-3 text-gray-400" />
                 </div>
                 <p className="text-xl font-bold text-gray-900">{journal.notes_created}</p>
                 <p className="text-xs text-gray-500">notas</p>
@@ -145,7 +145,7 @@ export function AgentJournalWidget() {
               <div className="p-3 rounded-lg border border-gray-200 bg-white">
                 <div className="flex items-center justify-between mb-1">
                   <p className="text-xs text-gray-600">Oportunidades</p>
-                  <Briefcase className="h-3 w-3 text-gray-400" />
+                  <BriefcaseIcon className="h-3 w-3 text-gray-400" />
                 </div>
                 <p className="text-xl font-bold text-gray-900">{journal.opportunities_worked}</p>
                 <p className="text-xs text-gray-500">oportunidades</p>
@@ -167,7 +167,7 @@ export function AgentJournalWidget() {
           </div>
         ) : (
           <div className="text-center py-8 text-gray-500">
-            <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <BookOpenIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
             <p className="text-sm">No hay datos disponibles para hoy</p>
             <Button
               variant="outline"

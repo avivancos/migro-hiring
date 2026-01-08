@@ -7,7 +7,7 @@ import NoteCard from './NoteCard';
 import NoteFilters from './NoteFilters';
 import type { Note } from '@/types/crm';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface NoteFiltersState {
   created_by?: string;
@@ -86,7 +86,7 @@ export default function NoteList({
 
         {loading && (
           <div className="flex justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+            <ArrowPathIcon className="h-6 w-6 animate-spin text-gray-400" />
           </div>
         )}
       </div>

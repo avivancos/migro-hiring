@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { usePiliChat } from '@/hooks/usePiliChat';
-import { Send, Loader2, AlertCircle, RefreshCw, Lightbulb, AlertTriangle } from 'lucide-react';
+import { ArrowPathIcon, ExclamationCircleIcon, ExclamationTriangleIcon, LightBulbIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 
 interface PiliChatProps {
@@ -97,7 +97,7 @@ export function PiliChat({ initialConversationId, className }: PiliChatProps) {
             >
               {message.isLoading ? (
                 <div className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <ArrowPathIcon className="w-4 h-4 animate-spin" />
                   <span className="text-sm">Pili está pensando...</span>
                 </div>
               ) : (
@@ -135,7 +135,7 @@ export function PiliChat({ initialConversationId, className }: PiliChatProps) {
                   {/* Nota de truncado */}
                   {message.isTruncated && (
                     <div className="mt-2 p-2 bg-amber-50 border-l-3 border-amber-400 rounded text-xs text-amber-800 flex items-start gap-2">
-                      <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                      <ExclamationTriangleIcon className="w-3 h-3 mt-0.5 flex-shrink-0" />
                       <span>Respuesta truncada. Puedes pedir que continúe.</span>
                     </div>
                   )}
@@ -144,7 +144,7 @@ export function PiliChat({ initialConversationId, className }: PiliChatProps) {
                   {message.followUpQuestion && (
                     <div className="mt-3 p-3 bg-blue-50 border-l-3 border-blue-400 rounded">
                       <div className="flex items-center gap-2 mb-2">
-                        <Lightbulb className="w-3 h-3 text-blue-600" />
+                        <LightBulbIcon className="w-3 h-3 text-blue-600" />
                         <span className="text-xs font-semibold text-blue-700">
                           ¿Te gustaría que profundice?
                         </span>
@@ -181,14 +181,14 @@ export function PiliChat({ initialConversationId, className }: PiliChatProps) {
       {error && (
         <div className="mx-4 mb-2 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-600" />
+            <ExclamationCircleIcon className="w-4 h-4 text-red-600" />
             <p className="text-sm text-red-800">{error}</p>
           </div>
           <button
             onClick={retryLastMessage}
             className="text-sm text-red-600 hover:text-red-800 flex items-center gap-1"
           >
-            <RefreshCw className="w-3 h-3" />
+            <ArrowPathIcon className="w-3 h-3" />
             Reintentar
           </button>
         </div>
@@ -217,9 +217,9 @@ export function PiliChat({ initialConversationId, className }: PiliChatProps) {
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <ArrowPathIcon className="w-4 h-4 animate-spin" />
             ) : (
-              <Send className="w-4 h-4" />
+              <PaperAirplaneIcon className="w-4 h-4" />
             )}
           </Button>
         </div>
@@ -227,9 +227,4 @@ export function PiliChat({ initialConversationId, className }: PiliChatProps) {
     </div>
   );
 }
-
-
-
-
-
 

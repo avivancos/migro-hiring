@@ -3,7 +3,7 @@
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { LogOut, User } from 'lucide-react';
+import { ArrowRightOnRectangleIcon, UserIcon } from '@heroicons/react/24/outline';
 
 export function Header() {
   const location = useLocation();
@@ -34,7 +34,7 @@ export function Header() {
           {!isHomePage && isAuthenticated && user && (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 text-sm">
-                <User size={16} className="text-gray-500" />
+                <UserIcon width={16} height={16} className="text-gray-500" />
                 <span className="text-gray-700">{user.full_name}</span>
               </div>
               <Button
@@ -43,7 +43,7 @@ export function Header() {
                 onClick={logout}
                 className="text-gray-600 hover:text-gray-900"
               >
-                <LogOut size={16} className="mr-2" />
+                <ArrowRightOnRectangleIcon width={16} height={16} className="mr-2" />
                 Salir
               </Button>
             </div>

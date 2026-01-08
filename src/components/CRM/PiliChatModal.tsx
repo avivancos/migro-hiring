@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { PiliChat } from './PiliChat';
-import { X, MessageCircle } from 'lucide-react';
+import { ChatBubbleLeftRightIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 
 interface PiliChatModalProps {
@@ -22,7 +22,7 @@ export function PiliChatModal({ variant = 'floating' }: PiliChatModalProps) {
           className="flex items-center gap-2"
           aria-label="Abrir chat con Pili"
         >
-          <MessageCircle className="w-4 h-4" />
+          <ChatBubbleLeftRightIcon className="w-4 h-4" />
           <span className="hidden sm:inline">Chat</span>
         </Button>
 
@@ -37,7 +37,7 @@ export function PiliChatModal({ variant = 'floating' }: PiliChatModalProps) {
                   onClick={() => setIsOpen(false)}
                   className="p-2 hover:bg-gray-100 rounded"
                 >
-                  <X className="w-5 h-5" />
+                  <XMarkIcon className="w-5 h-5" />
                 </Button>
               </div>
               <div className="flex-1 overflow-hidden">
@@ -57,7 +57,7 @@ export function PiliChatModal({ variant = 'floating' }: PiliChatModalProps) {
         className="fixed bottom-6 right-6 w-14 h-14 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 flex items-center justify-center z-40 transition-transform hover:scale-110"
         aria-label="Abrir chat con Pili"
       >
-        <MessageCircle className="h-6 w-6" />
+        <ChatBubbleLeftRightIcon className="h-6 w-6" />
       </button>
 
       {isOpen && (
@@ -71,7 +71,7 @@ export function PiliChatModal({ variant = 'floating' }: PiliChatModalProps) {
                 onClick={() => setIsOpen(false)}
                 className="p-2 hover:bg-gray-100 rounded"
               >
-                <X className="w-5 h-5" />
+                <XMarkIcon className="w-5 h-5" />
               </Button>
             </div>
             <div className="flex-1 overflow-hidden">
@@ -83,9 +83,4 @@ export function PiliChatModal({ variant = 'floating' }: PiliChatModalProps) {
     </>
   );
 }
-
-
-
-
-
 

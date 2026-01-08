@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { Lead, Pipeline, PipelineStatus } from '@/types/crm';
 import { crmService } from '@/services/crmService';
-import { DollarSign, User, Calendar, Phone } from 'lucide-react';
+import { CalendarIcon, CurrencyDollarIcon, PhoneIcon, UserIcon } from '@heroicons/react/24/outline';
 
 interface PipelineKanbanProps {
   pipelineId?: string;
@@ -197,7 +197,7 @@ export function PipelineKanban({ pipelineId, onLeadClick }: PipelineKanbanProps)
                       <div className="space-y-2 text-sm text-gray-600 font-sans">
                         {lead.price && (
                           <div className="flex items-center gap-2">
-                            <DollarSign size={14} />
+                            <CurrencyDollarIcon width={14} height={14} />
                             <span className="font-semibold text-primary">
                               {formatCurrency(lead.price)}
                             </span>
@@ -206,7 +206,7 @@ export function PipelineKanban({ pipelineId, onLeadClick }: PipelineKanbanProps)
 
                         {lead.contact && (
                           <div className="flex items-center gap-2">
-                            <User size={14} />
+                            <UserIcon width={14} height={14} />
                             <span className="truncate">
                               {lead.contact.first_name} {lead.contact.last_name}
                             </span>
@@ -215,14 +215,14 @@ export function PipelineKanban({ pipelineId, onLeadClick }: PipelineKanbanProps)
 
                         {lead.contact?.phone && (
                           <div className="flex items-center gap-2">
-                            <Phone size={14} />
+                            <PhoneIcon width={14} height={14} />
                             <span>{lead.contact.phone}</span>
                           </div>
                         )}
 
                         {lead.expected_close_date && (
                           <div className="flex items-center gap-2">
-                            <Calendar size={14} />
+                            <CalendarIcon width={14} height={14} />
                             <span>
                               {new Date(lead.expected_close_date).toLocaleDateString('es-ES', {
                                 day: '2-digit',

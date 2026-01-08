@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Edit, Trash2, GripVertical } from 'lucide-react';
+import { EllipsisVerticalIcon, PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import type { TaskTemplate } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 
@@ -88,7 +88,7 @@ export function CRMTaskTemplatesSettings() {
           }}
           className="bg-green-600 hover:bg-green-700"
         >
-          <Plus size={20} className="mr-2" />
+          <PlusIcon width={20} height={20} className="mr-2" />
           Nueva Plantilla
         </Button>
       </div>
@@ -118,7 +118,7 @@ export function CRMTaskTemplatesSettings() {
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <GripVertical className="text-gray-400 cursor-move" />
+                      <EllipsisVerticalIcon className="text-gray-400 cursor-move" />
                       <h3 className="font-semibold">{template.name}</h3>
                       <span className="text-xs text-gray-500">
                         (Orden: {template.sort_order})
@@ -148,14 +148,14 @@ export function CRMTaskTemplatesSettings() {
                         setShowForm(true);
                       }}
                     >
-                      <Edit size={16} />
+                      <PencilIcon width={16} height={16} />
                     </Button>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleDelete(template.id)}
                     >
-                      <Trash2 size={16} />
+                      <TrashIcon width={16} height={16} />
                     </Button>
                   </div>
                 </div>
@@ -333,5 +333,4 @@ function TaskTemplateForm({
     </Card>
   );
 }
-
 

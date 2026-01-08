@@ -6,24 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { adminService } from '@/services/adminService';
-import {
-  Users,
-  UserPlus,
-  Search,
-  Edit,
-  Trash2,
-  Mail,
-  Shield,
-  UserCheck,
-  UserX,
-  Download,
-  FileText,
-  Filter,
-  X,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-} from 'lucide-react';
+import { ArrowDownIcon, ArrowDownTrayIcon, ArrowUpIcon, ArrowsUpDownIcon, DocumentTextIcon, EnvelopeIcon, FunnelIcon, MagnifyingGlassIcon, PencilIcon, ShieldCheckIcon, TrashIcon, UserIcon, UserPlusIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Badge } from '@/components/ui/badge';
 import type { User } from '@/types/user';
 
@@ -319,11 +302,11 @@ export function AdminUsers() {
   
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
-      return <ArrowUpDown className="w-4 h-4 text-gray-400" />;
+      return <ArrowsUpDownIcon className="w-4 h-4 text-gray-400" />;
     }
     return sortOrder === 'asc' 
-      ? <ArrowUp className="w-4 h-4 text-green-600" />
-      : <ArrowDown className="w-4 h-4 text-green-600" />;
+      ? <ArrowUpIcon className="w-4 h-4 text-green-600" />
+      : <ArrowDownIcon className="w-4 h-4 text-green-600" />;
   };
   
   // Obtener nacionalidades únicas para el filtro
@@ -423,7 +406,7 @@ export function AdminUsers() {
               disabled={exporting}
               className="flex items-center gap-2"
             >
-              <Download size={18} />
+              <ArrowDownTrayIcon width={18} height={18} />
               <span className="hidden sm:inline">Exportar CSV</span>
               <span className="sm:hidden">CSV</span>
             </Button>
@@ -433,7 +416,7 @@ export function AdminUsers() {
               disabled={exporting}
               className="flex items-center gap-2"
             >
-              <FileText size={18} />
+              <DocumentTextIcon width={18} height={18} />
               <span className="hidden sm:inline">Exportar JSON</span>
               <span className="sm:hidden">JSON</span>
             </Button>
@@ -441,7 +424,7 @@ export function AdminUsers() {
               onClick={() => navigate('/admin/users/create')}
               className="flex items-center gap-2"
             >
-              <UserPlus size={18} />
+              <UserPlusIcon width={18} height={18} />
               <span className="hidden sm:inline">Nuevo Usuario</span>
               <span className="sm:hidden">Nuevo</span>
             </Button>
@@ -455,7 +438,7 @@ export function AdminUsers() {
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 {/* Search */}
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input
                     ref={searchInputRef}
                     placeholder="Buscar por nombre, email, teléfono, nacionalidad..."
@@ -472,7 +455,7 @@ export function AdminUsers() {
                     onClick={() => setShowFilters(!showFilters)}
                     className="flex items-center gap-2"
                   >
-                    <Filter className="w-4 h-4" />
+                    <FunnelIcon className="w-4 h-4" />
                     <span>Filtros</span>
                     {hasActiveFilters && (
                       <span className="ml-1 bg-green-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
@@ -486,7 +469,7 @@ export function AdminUsers() {
                       onClick={clearFilters}
                       className="text-red-600 hover:text-red-700"
                     >
-                      <X className="w-4 h-4 mr-2" />
+                      <XMarkIcon className="w-4 h-4 mr-2" />
                       Limpiar
                     </Button>
                   )}
@@ -683,7 +666,7 @@ export function AdminUsers() {
           <CardContent>
             {filteredUsers.length === 0 && !loading ? (
               <div className="text-center py-12">
-                <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <UsersIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <p className="text-gray-600 mb-2">No se encontraron usuarios</p>
                 <Button
                   onClick={() => navigate('/admin/users/create')}
@@ -767,7 +750,7 @@ export function AdminUsers() {
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex items-center gap-1 text-sm text-gray-600">
-                              <Mail size={12} />
+                              <EnvelopeIcon width={12} height={12} />
                               {user.email}
                             </div>
                           </td>
@@ -778,7 +761,7 @@ export function AdminUsers() {
                                 className="flex items-center gap-1 w-fit"
                               >
                                 {user.is_superuser ? (
-                                  <Shield size={12} />
+                                  <ShieldCheckIcon width={12} height={12} />
                                 ) : null}
                                 {user.role || 'user'}
                               </Badge>
@@ -795,9 +778,9 @@ export function AdminUsers() {
                               className="flex items-center gap-1 w-fit"
                             >
                               {user.is_active ? (
-                                <UserCheck size={12} />
+                                <UserIcon width={12} height={12} />
                               ) : (
-                                <UserX size={12} />
+                                <UserIcon width={12} height={12} />
                               )}
                               {user.is_active ? 'Activo' : 'Inactivo'}
                             </Badge>
@@ -815,7 +798,7 @@ export function AdminUsers() {
                                 size="sm"
                                 onClick={() => navigate(`/admin/users/${user.id}`)}
                               >
-                                <Edit size={16} />
+                                <PencilIcon width={16} height={16} />
                               </Button>
                               <Button
                                 variant="ghost"
@@ -823,7 +806,7 @@ export function AdminUsers() {
                                 onClick={() => handleDelete(user.id)}
                                 className="text-red-600 hover:text-red-700"
                               >
-                                <Trash2 size={16} />
+                                <TrashIcon width={16} height={16} />
                               </Button>
                             </div>
                           </td>
@@ -842,7 +825,7 @@ export function AdminUsers() {
                           <div>
                             <p className="font-medium text-gray-900">{user.full_name || 'Sin nombre'}</p>
                             <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
-                              <Mail size={12} />
+                              <EnvelopeIcon width={12} height={12} />
                               {user.email}
                             </p>
                           </div>
@@ -853,7 +836,7 @@ export function AdminUsers() {
                               className="flex items-center gap-1"
                             >
                               {user.is_superuser ? (
-                                <Shield size={12} />
+                                <ShieldCheckIcon width={12} height={12} />
                               ) : null}
                               {user.role || 'user'}
                             </Badge>
@@ -862,9 +845,9 @@ export function AdminUsers() {
                               className="flex items-center gap-1"
                             >
                               {user.is_active ? (
-                                <UserCheck size={12} />
+                                <UserIcon width={12} height={12} />
                               ) : (
-                                <UserX size={12} />
+                                <UserIcon width={12} height={12} />
                               )}
                               {user.is_active ? 'Activo' : 'Inactivo'}
                             </Badge>
@@ -885,7 +868,7 @@ export function AdminUsers() {
                                 size="sm"
                                 onClick={() => navigate(`/admin/users/${user.id}`)}
                               >
-                                <Edit size={16} />
+                                <PencilIcon width={16} height={16} />
                               </Button>
                               <Button
                                 variant="ghost"
@@ -893,7 +876,7 @@ export function AdminUsers() {
                                 onClick={() => handleDelete(user.id)}
                                 className="text-red-600 hover:text-red-700"
                               >
-                                <Trash2 size={16} />
+                                <TrashIcon width={16} height={16} />
                               </Button>
                             </div>
                           </div>

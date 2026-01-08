@@ -1,7 +1,7 @@
 // DatePicker - Selector de fecha para reporte diario
 
 import { Button } from '@/components/ui/button';
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { format, addDays, subDays, startOfToday } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -84,11 +84,11 @@ export function DatePicker({ value, onChange, maxDate, minDate }: DatePickerProp
           disabled={isMinDate}
           className="h-8 w-8 p-0"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeftIcon className="h-4 w-4" />
         </Button>
         
         <div className="flex items-center gap-2 min-w-[140px] justify-center">
-          <Calendar className="h-4 w-4 text-gray-400" />
+          <CalendarIcon className="h-4 w-4 text-gray-400" />
           <span className="text-sm font-medium">
             {format(selectedDate, 'dd/MM/yyyy')}
           </span>
@@ -101,7 +101,7 @@ export function DatePicker({ value, onChange, maxDate, minDate }: DatePickerProp
           disabled={isMaxDate}
           className="h-8 w-8 p-0"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRightIcon className="h-4 w-4" />
         </Button>
       </div>
     </div>

@@ -2,7 +2,7 @@
 // Mobile-first con diseño optimizado
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, X } from 'lucide-react';
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
@@ -54,7 +54,7 @@ export function SearchBar({
 
   return (
     <div className={cn('relative', className)}>
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+      <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
       <Input
         ref={inputRef}
         type="text"
@@ -69,7 +69,7 @@ export function SearchBar({
           className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
           aria-label="Limpiar búsqueda"
         >
-          <X className="h-5 w-5" />
+          <XMarkIcon className="h-5 w-5" />
         </button>
       )}
     </div>

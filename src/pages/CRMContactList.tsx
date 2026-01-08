@@ -10,28 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { crmService } from '@/services/crmService';
 import { opportunityApi } from '@/services/opportunityApi';
 import type { Contact, ContactFilters, CRMUser } from '@/types/crm';
-import {
-  Search,
-  Plus,
-  Users,
-  Phone,
-  Mail,
-  MapPin,
-  Flag,
-  Star,
-  Filter,
-  ChevronRight,
-  ChevronLeft,
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  Grid3x3,
-  List,
-  X,
-  Calendar,
-  Settings2,
-  GripVertical,
-} from 'lucide-react';
+import { ArrowDownIcon, ArrowUpIcon, ArrowsUpDownIcon, CalendarIcon, ChevronLeftIcon, ChevronRightIcon, CogIcon, EllipsisVerticalIcon, EnvelopeIcon, FlagIcon, FunnelIcon, ListBulletIcon, MagnifyingGlassIcon, MapPinIcon, PhoneIcon, PlusIcon, Squares2X2Icon, StarIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/providers/AuthProvider';
 import { isAgent, isExactSearch, isAdminOrSuperuser } from '@/utils/searchValidation';
 import { Modal } from '@/components/common/Modal';
@@ -600,11 +579,11 @@ export function CRMContactList() {
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
-      return <ArrowUpDown className="w-4 h-4 text-gray-400" />;
+      return <ArrowsUpDownIcon className="w-4 h-4 text-gray-400" />;
     }
     return sortOrder === 'asc' 
-      ? <ArrowUp className="w-4 h-4 text-primary" />
-      : <ArrowDown className="w-4 h-4 text-primary" />;
+      ? <ArrowUpIcon className="w-4 h-4 text-primary" />
+      : <ArrowDownIcon className="w-4 h-4 text-primary" />;
   };
 
   const uniqueNacionalidades = useMemo(() => {
@@ -829,7 +808,7 @@ export function CRMContactList() {
             <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
               {contact.email ? (
                 <>
-                  <Mail className="w-4 h-4 flex-shrink-0" />
+                  <EnvelopeIcon className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate min-w-0" title={contact.email}>{contact.email}</span>
                 </>
               ) : (
@@ -844,7 +823,7 @@ export function CRMContactList() {
             <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
               {contact.phone ? (
                 <>
-                  <Phone className="w-4 h-4 flex-shrink-0" />
+                  <PhoneIcon className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate min-w-0" title={contact.phone}>{contact.phone}</span>
                 </>
               ) : (
@@ -859,7 +838,7 @@ export function CRMContactList() {
             <div className="flex items-center gap-2 text-sm text-gray-600 min-w-0">
               {contact.nacionalidad ? (
                 <>
-                  <Flag className="w-4 h-4 flex-shrink-0" />
+                  <FlagIcon className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate min-w-0" title={contact.nacionalidad}>{contact.nacionalidad}</span>
                 </>
               ) : (
@@ -896,7 +875,7 @@ export function CRMContactList() {
         return (
           <td key={columnKey} className={classNameMap[columnKey]} style={style}>
             <div className="flex items-center gap-2 min-w-0">
-              <Calendar className="w-4 h-4 flex-shrink-0" />
+              <CalendarIcon className="w-4 h-4 flex-shrink-0" />
               <span className="truncate min-w-0" title={formatDate(contact.created_at)}>{formatDate(contact.created_at)}</span>
             </div>
           </td>
@@ -905,7 +884,7 @@ export function CRMContactList() {
         return (
           <td key={columnKey} className={classNameMap[columnKey]} style={style}>
             <div className="flex items-center gap-2 min-w-0">
-              <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
+              <CalendarIcon className="w-4 h-4 text-blue-600 flex-shrink-0" />
               <span className="truncate min-w-0" title={formatDate(contact.updated_at)}>{formatDate(contact.updated_at)}</span>
             </div>
           </td>
@@ -915,7 +894,7 @@ export function CRMContactList() {
           <td key={columnKey} className={classNameMap[columnKey]} style={style}>
             {contact.ultima_llamada_fecha ? (
               <div className="flex items-center gap-2 min-w-0">
-                <Phone className="w-4 h-4 flex-shrink-0" />
+                <PhoneIcon className="w-4 h-4 flex-shrink-0" />
                 <span className="truncate min-w-0" title={formatDate(contact.ultima_llamada_fecha)}>{formatDate(contact.ultima_llamada_fecha)}</span>
               </div>
             ) : (
@@ -928,7 +907,7 @@ export function CRMContactList() {
           <td key={columnKey} className={classNameMap[columnKey]} style={style}>
             {contact.proxima_llamada_fecha ? (
               <div className="flex items-center gap-2 min-w-0">
-                <Calendar className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                <CalendarIcon className="w-4 h-4 text-blue-600 flex-shrink-0" />
                 <span className={`truncate min-w-0 ${new Date(contact.proxima_llamada_fecha).getTime() < new Date().getTime() ? 'text-red-600 font-semibold' : ''}`} title={formatDate(contact.proxima_llamada_fecha)}>
                   {formatDate(contact.proxima_llamada_fecha)}
                 </span>
@@ -950,7 +929,7 @@ export function CRMContactList() {
               }}
             >
               Ver
-              <ChevronRight className="w-4 h-4 ml-1" />
+              <ChevronRightIcon className="w-4 h-4 ml-1" />
             </Button>
           </td>
         );
@@ -1041,7 +1020,7 @@ export function CRMContactList() {
                 title="Configurar columnas"
                 className="flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
               >
-                <Settings2 className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <CogIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="sm:inline">Columnas</span>
               </Button>
             )}
@@ -1051,14 +1030,14 @@ export function CRMContactList() {
               title={viewMode === 'table' ? 'Vista de tarjetas' : 'Vista de tabla'}
               className="flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
             >
-              {viewMode === 'table' ? <Grid3x3 className="w-3 h-3 sm:w-4 sm:h-4" /> : <List className="w-3 h-3 sm:w-4 sm:h-4" />}
+              {viewMode === 'table' ? <Squares2X2Icon className="w-3 h-3 sm:w-4 sm:h-4" /> : <ListBulletIcon className="w-3 h-3 sm:w-4 sm:h-4" />}
               <span className="ml-1 sm:ml-2 sm:hidden">Vista</span>
             </Button>
             <Button
               onClick={() => navigate('/crm/contacts/new')}
               className="flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
             >
-              <Plus className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+              <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
               <span className="sm:inline">Nuevo Contacto</span>
             </Button>
           </div>
@@ -1069,7 +1048,7 @@ export function CRMContactList() {
             <div className="flex flex-col gap-3 sm:gap-4">
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 md:gap-4">
                 <div className="flex-1 relative">
-                  <Search className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+                  <MagnifyingGlassIcon className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                   <Input
                     ref={searchInputRef}
                     placeholder="Buscar por nombre, email, teléfono..."
@@ -1084,7 +1063,7 @@ export function CRMContactList() {
                     onClick={() => setShowFilters(!showFilters)}
                     className="flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
                   >
-                    <Filter className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                    <FunnelIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                     <span className="sm:inline">Filtros</span>
                     {hasActiveFilters && (
                       <span className="ml-1 sm:ml-2 bg-primary text-primary-foreground rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[10px] sm:text-xs">
@@ -1098,7 +1077,7 @@ export function CRMContactList() {
                       onClick={clearFilters}
                       className="text-red-600 hover:text-red-700 text-sm sm:text-base h-9 sm:h-10 px-2 sm:px-3"
                     >
-                      <X className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                      <XMarkIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                       <span className="hidden sm:inline">Limpiar</span>
                     </Button>
                   )}
@@ -1348,31 +1327,31 @@ export function CRMContactList() {
                       </h3>
                       {contact.email && (
                         <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                          <Mail className="w-4 h-4" />
+                          <EnvelopeIcon className="w-4 h-4" />
                           <span className="truncate">{contact.email}</span>
                         </div>
                       )}
                       {contact.phone && (
                         <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                          <Phone className="w-4 h-4" />
+                          <PhoneIcon className="w-4 h-4" />
                           <span>{contact.phone}</span>
                         </div>
                       )}
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
+                    <ChevronRightIcon className="w-5 h-5 text-gray-400" />
                   </div>
 
                   <div className="space-y-2">
                     {contact.nacionalidad && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Flag className="w-4 h-4" />
+                        <FlagIcon className="w-4 h-4" />
                         <span>{contact.nacionalidad}</span>
                       </div>
                     )}
 
                     {contact.lugar_residencia && (
                       <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <MapPin className="w-4 h-4" />
+                        <MapPinIcon className="w-4 h-4" />
                         <span>{contact.lugar_residencia}</span>
                       </div>
                     )}
@@ -1380,13 +1359,13 @@ export function CRMContactList() {
                     <div className="flex items-center gap-2 pt-2">
                       {contact.grading_llamada && (
                         <Badge variant={getGradingVariant(contact.grading_llamada)} className="text-xs">
-                          <Star className="w-3 h-3 inline mr-1" />
+                          <StarIcon className="w-3 h-3 inline mr-1" />
                           Llamada: {contact.grading_llamada}
                         </Badge>
                       )}
                       {contact.grading_situacion && (
                         <Badge variant={getGradingVariant(contact.grading_situacion)} className="text-xs">
-                          <Star className="w-3 h-3 inline mr-1" />
+                          <StarIcon className="w-3 h-3 inline mr-1" />
                           Situación: {contact.grading_situacion}
                         </Badge>
                       )}
@@ -1400,18 +1379,18 @@ export function CRMContactList() {
 
                     <div className="pt-2 border-t space-y-1.5 mt-3">
                       <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <Calendar className="w-3 h-3" />
+                        <CalendarIcon className="w-3 h-3" />
                         <span>Creación: {formatDate(contact.created_at)}</span>
                       </div>
                       {contact.ultima_llamada_fecha && (
                         <div className="flex items-center gap-2 text-xs text-gray-600">
-                          <Phone className="w-3 h-3" />
+                          <PhoneIcon className="w-3 h-3" />
                           <span>Última llamada: {formatDate(contact.ultima_llamada_fecha)}</span>
                         </div>
                       )}
                       {contact.proxima_llamada_fecha && (
                         <div className="flex items-center gap-2 text-xs text-gray-600">
-                          <Calendar className={`w-3 h-3 ${new Date(contact.proxima_llamada_fecha).getTime() < new Date().getTime() ? 'text-red-600' : 'text-blue-600'}`} />
+                          <CalendarIcon className={`w-3 h-3 ${new Date(contact.proxima_llamada_fecha).getTime() < new Date().getTime() ? 'text-red-600' : 'text-blue-600'}`} />
                           <span className={new Date(contact.proxima_llamada_fecha).getTime() < new Date().getTime() ? 'text-red-600 font-semibold' : ''}>
                             Próxima llamada: {formatDate(contact.proxima_llamada_fecha)}
                           </span>
@@ -1428,7 +1407,7 @@ export function CRMContactList() {
         {filteredAndSortedContacts.length === 0 && !loading && (
           <Card>
             <CardContent className="py-12 text-center">
-              <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+              <UsersIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p className="text-gray-500">No se encontraron contactos</p>
               {hasActiveFilters && (
                 <Button
@@ -1485,7 +1464,7 @@ export function CRMContactList() {
                     onClick={() => setPagination({ ...pagination, skip: Math.max(0, pagination.skip - pagination.limit) })}
                     disabled={pagination.skip === 0}
                   >
-                    <ChevronLeft className="w-4 h-4 mr-1" />
+                    <ChevronLeftIcon className="w-4 h-4 mr-1" />
                     Anterior
                   </Button>
                   {user?.role === 'agent' ? (
@@ -1507,7 +1486,7 @@ export function CRMContactList() {
                     disabled={user?.role === 'agent' ? pagination.skip + pagination.limit >= filteredAndSortedContacts.length : pagination.skip + pagination.limit >= totalContacts}
                   >
                     Siguiente
-                    <ChevronRight className="w-4 h-4 ml-1" />
+                    <ChevronRightIcon className="w-4 h-4 ml-1" />
                   </Button>
                 </div>
               </div>
@@ -1541,7 +1520,7 @@ export function CRMContactList() {
                       disabled={index === 0}
                       className="disabled:opacity-30 disabled:cursor-not-allowed"
                     >
-                      <ArrowUp className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                      <ArrowUpIcon className="w-4 h-4 text-gray-400 hover:text-gray-600" />
                     </button>
                     <button
                       type="button"
@@ -1549,10 +1528,10 @@ export function CRMContactList() {
                       disabled={index === columnOrder.length - 1}
                       className="disabled:opacity-30 disabled:cursor-not-allowed"
                     >
-                      <ArrowDown className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                      <ArrowDownIcon className="w-4 h-4 text-gray-400 hover:text-gray-600" />
                     </button>
                   </div>
-                  <GripVertical className="w-4 h-4 text-gray-400" />
+                  <EllipsisVerticalIcon className="w-4 h-4 text-gray-400" />
                   <span className="flex-1 font-medium text-gray-900">{columnLabels[columnKey]}</span>
                 </div>
                 <Switch

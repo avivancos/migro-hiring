@@ -5,17 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  CheckCircle2, 
-  Clock, 
-  AlertCircle, 
-  Phone, 
-  Calendar, 
-  FileText,
-  TrendingUp,
-  User,
-  ArrowRight
-} from 'lucide-react';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ArrowRightIcon, ArrowTrendingUpIcon, CalendarIcon, ClockIcon, DocumentTextIcon, ExclamationCircleIcon, PhoneIcon, UserIcon } from '@heroicons/react/24/outline';
 import type { Task, Lead, Contact } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { formatLeadStatus } from '@/utils/statusTranslations';
@@ -150,13 +141,13 @@ export function CRMActions() {
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'task':
-        return <CheckCircle2 size={18} />;
+        return <CheckCircleIcon width={18} height={18} />;
       case 'call':
-        return <Phone size={18} />;
+        return <PhoneIcon width={18} height={18} />;
       case 'expediente':
-        return <FileText size={18} />;
+        return <DocumentTextIcon width={18} height={18} />;
       default:
-        return <AlertCircle size={18} />;
+        return <ExclamationCircleIcon width={18} height={18} />;
     }
   };
 
@@ -211,14 +202,14 @@ export function CRMActions() {
               onClick={() => setFilter('urgent')}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
-              <AlertCircle size={16} className="mr-2" />
+              <ExclamationCircleIcon width={16} height={16} className="mr-2" />
               Urgentes
             </Button>
             <Button
               variant={filter === 'today' ? 'default' : 'outline'}
               onClick={() => setFilter('today')}
             >
-              <Calendar size={16} className="mr-2" />
+              <CalendarIcon width={16} height={16} className="mr-2" />
               Hoy
             </Button>
             <Button
@@ -242,7 +233,7 @@ export function CRMActions() {
                   {actions.filter(a => a.priority === 'urgent').length}
                 </p>
               </div>
-              <AlertCircle className="text-red-600" size={32} />
+              <ExclamationCircleIcon className="text-red-600" width={32} height={32} />
             </div>
           </CardContent>
         </Card>
@@ -258,7 +249,7 @@ export function CRMActions() {
                   }).length}
                 </p>
               </div>
-              <Clock className="text-orange-600" size={32} />
+              <ClockIcon className="text-orange-600" width={32} height={32} />
             </div>
           </CardContent>
         </Card>
@@ -276,7 +267,7 @@ export function CRMActions() {
                   }).length}
                 </p>
               </div>
-              <Calendar className="text-yellow-600" size={32} />
+              <CalendarIcon className="text-yellow-600" width={32} height={32} />
             </div>
           </CardContent>
         </Card>
@@ -287,7 +278,7 @@ export function CRMActions() {
                 <p className="text-sm text-gray-600">Total</p>
                 <p className="text-2xl font-bold text-gray-900">{actions.length}</p>
               </div>
-              <TrendingUp className="text-gray-600" size={32} />
+              <ArrowTrendingUpIcon className="text-gray-600" width={32} height={32} />
             </div>
           </CardContent>
         </Card>
@@ -330,23 +321,23 @@ export function CRMActions() {
                         <p className="text-sm text-gray-600 mb-2">{action.description}</p>
                         <div className="flex items-center gap-4 text-xs text-gray-500">
                           <div className="flex items-center gap-1">
-                            <User size={14} />
+                            <UserIcon width={14} height={14} />
                             {action.entityName}
                           </div>
                           <div className="flex items-center gap-1">
-                            <Clock size={14} />
+                            <ClockIcon width={14} height={14} />
                             {formatDate(action.dueDate)}
                           </div>
                           {action.relatedLead && (
                             <div className="flex items-center gap-1">
-                              <TrendingUp size={14} />
+                              <ArrowTrendingUpIcon width={14} height={14} />
                               {formatLeadStatus(action.relatedLead.status)}
                             </div>
                           )}
                         </div>
                       </div>
                     </div>
-                    <ArrowRight className="text-gray-400" size={20} />
+                    <ArrowRightIcon className="text-gray-400" width={20} height={20} />
                   </div>
                 </div>
               ))}

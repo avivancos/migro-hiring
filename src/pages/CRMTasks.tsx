@@ -8,7 +8,7 @@ import { TaskForm } from '@/components/CRM/TaskForm';
 import type { TaskFilters, TaskCreateRequest } from '@/types/crm';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Plus, ArrowLeft, Calendar } from 'lucide-react';
+import { ArrowLeftIcon, CalendarIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useTasks } from '@/hooks/useTasks';
 
 export function CRMTasks() {
@@ -51,7 +51,7 @@ export function CRMTasks() {
               size="icon"
               className="md:hidden"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeftIcon width={20} height={20} />
             </Button>
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Tareas</h1>
@@ -66,14 +66,14 @@ export function CRMTasks() {
               variant="outline"
               className="flex items-center gap-2"
             >
-              <Calendar size={18} />
+              <CalendarIcon width={18} height={18} />
               <span className="hidden md:inline">Calendario</span>
             </Button>
             <Button
               onClick={() => setShowForm(!showForm)}
               className="bg-green-600 hover:bg-green-700 flex items-center gap-2"
             >
-              <Plus size={18} />
+              <PlusIcon width={18} height={18} />
               Nueva Tarea
             </Button>
           </div>

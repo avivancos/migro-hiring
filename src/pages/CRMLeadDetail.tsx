@@ -5,7 +5,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Edit, User, Phone, Plus, PhoneCall, RefreshCw, DollarSign, ChevronDown, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
+import { ArrowLeftIcon, ArrowPathIcon, ChevronDownIcon, CurrencyDollarIcon, ExclamationCircleIcon, PencilIcon, PhoneIcon, PlusIcon, UserIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import type { Lead, Task, Call, Note, TaskCreateRequest, Contact, LeadCreateRequest, LeadUpdateRequest } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 import { LeadForm } from '@/components/CRM/LeadForm';
@@ -546,7 +547,7 @@ export function CRMLeadDetail() {
           variant="outline"
           onClick={() => setEditing(false)}
         >
-          <ArrowLeft size={18} className="mr-2" />
+          <ArrowLeftIcon width={18} height={18} className="mr-2" />
           Cancelar edición
         </Button>
             
@@ -555,7 +556,7 @@ export function CRMLeadDetail() {
               <Card className="border-green-300 bg-green-50 shadow-md">
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-3">
-                    <CheckCircle2 className="text-green-600 flex-shrink-0" size={24} />
+                    <CheckCircleIcon className="text-green-600 flex-shrink-0" width={24} height={24} />
                     <div className="flex-1">
                       <p className="font-semibold text-green-900">
                         {id === 'new' ? '¡Contacto creado exitosamente!' : '¡Contacto actualizado exitosamente!'}
@@ -613,7 +614,7 @@ export function CRMLeadDetail() {
             variant="outline"
             onClick={() => navigate('/crm/leads')}
           >
-            <ArrowLeft size={18} className="mr-2" />
+            <ArrowLeftIcon width={18} height={18} className="mr-2" />
             Volver
           </Button>
           <div>
@@ -627,7 +628,7 @@ export function CRMLeadDetail() {
             variant="outline"
             className="bg-white hover:bg-gray-50"
           >
-            <Edit size={18} className="mr-2" />
+            <PencilIcon width={18} height={18} className="mr-2" />
             Editar
           </Button>
           
@@ -637,9 +638,9 @@ export function CRMLeadDetail() {
               onClick={() => setShowNewTaskMenu(!showNewTaskMenu)}
               className="bg-green-600 hover:bg-green-700 text-white"
             >
-              <Plus size={18} className="mr-2" />
+              <PlusIcon width={18} height={18} className="mr-2" />
               Nuevo
-              <ChevronDown size={16} className="ml-2" />
+              <ChevronDownIcon width={16} height={16} className="ml-2" />
             </Button>
             
             {showNewTaskMenu && (
@@ -654,7 +655,7 @@ export function CRMLeadDetail() {
                       onClick={() => handleQuickTask('first_call')}
                       className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 transition-colors"
                     >
-                      <PhoneCall size={20} className="text-blue-600" />
+                      <PhoneIcon width={20} height={20} className="text-blue-600" />
                       <div>
                         <div className="font-semibold text-gray-900">Registrar Primera Llamada</div>
                         <div className="text-sm text-gray-500">Abrir formulario de llamada</div>
@@ -665,7 +666,7 @@ export function CRMLeadDetail() {
                       onClick={() => handleQuickTask('follow_up')}
                       className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 transition-colors"
                     >
-                      <RefreshCw size={20} className="text-green-600" />
+                      <ArrowPathIcon width={20} height={20} className="text-green-600" />
                       <div>
                         <div className="font-semibold text-gray-900">Seguimiento</div>
                         <div className="text-sm text-gray-500">Crear tarea de seguimiento</div>
@@ -676,7 +677,7 @@ export function CRMLeadDetail() {
                       onClick={() => handleQuickTask('note_sale')}
                       className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 transition-colors"
                     >
-                      <DollarSign size={20} className="text-yellow-600" />
+                      <CurrencyDollarIcon width={20} height={20} className="text-yellow-600" />
                       <div>
                         <div className="font-semibold text-gray-900">Anotar Venta</div>
                         <div className="text-sm text-gray-500">Registrar información de venta</div>
@@ -693,7 +694,7 @@ export function CRMLeadDetail() {
                       }}
                       className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 transition-colors"
                     >
-                      <Plus size={20} className="text-gray-600" />
+                      <PlusIcon width={20} height={20} className="text-gray-600" />
                       <div>
                         <div className="font-semibold text-gray-900">Tarea Personalizada</div>
                         <div className="text-sm text-gray-500">Crear tarea con opciones avanzadas</div>
@@ -731,12 +732,12 @@ export function CRMLeadDetail() {
               </span>
               {currentLead.initial_contact_completed ? (
                 <div className="flex items-center gap-2 mt-2">
-                  <CheckCircle2 size={16} className="text-green-600" />
+                  <CheckCircleIcon width={16} height={16} className="text-green-600" />
                   <span className="text-sm text-green-700">Contactado inicialmente</span>
                 </div>
               ) : (
                 <div className="flex items-center gap-2 mt-2">
-                  <AlertCircle size={16} className="text-yellow-600" />
+                  <ExclamationCircleIcon width={16} height={16} className="text-yellow-600" />
                   <span className="text-sm text-yellow-700">Pendiente de contacto inicial</span>
                 </div>
               )}
@@ -775,7 +776,7 @@ export function CRMLeadDetail() {
             <Card className="bg-white">
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <PhoneCall className="h-5 w-5" />
+                  <PhoneIcon className="h-5 w-5" />
                   Validación de Primera Llamada
                 </CardTitle>
               </CardHeader>
@@ -795,7 +796,7 @@ export function CRMLeadDetail() {
                   }}
                   className="w-full bg-green-600 hover:bg-green-700 text-white"
                 >
-                  <PhoneCall className="h-4 w-4 mr-2" />
+                  <PhoneIcon className="h-4 w-4 mr-2" />
                   Registrar Primera Llamada
                 </Button>
                 
@@ -808,12 +809,12 @@ export function CRMLeadDetail() {
                 >
                   {validatingContact ? (
                     <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      <ArrowPathIcon className="h-4 w-4 mr-2 animate-spin" />
                       Validando...
                     </>
                   ) : (
                     <>
-                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      <CheckCircleIcon className="h-4 w-4 mr-2" />
                       Marcar como Contactado Inicialmente
                     </>
                   )}
@@ -828,9 +829,9 @@ export function CRMLeadDetail() {
                   }`}>
                     <div className="flex items-start gap-2">
                       {validationResult.success ? (
-                        <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <CheckCircleIcon className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                       ) : (
-                        <XCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                        <XCircleIcon className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
                       )}
                       <div className="flex-1">
                         <p className={`font-semibold text-sm ${
@@ -914,7 +915,7 @@ export function CRMLeadDetail() {
                 <div>
                   <h3 className="font-semibold mb-2">Contacto Asociado</h3>
                   <div className="flex items-center gap-2 text-gray-700">
-                    <User size={18} />
+                    <UserIcon width={18} height={18} />
                     <span>{currentLead.contact.name}</span>
                   </div>
                   {!currentLead.contact.city && (
@@ -990,7 +991,7 @@ export function CRMLeadDetail() {
                 variant="outline"
                 size="sm"
               >
-                <Phone size={16} className="mr-2" />
+                <PhoneIcon width={16} height={16} className="mr-2" />
                 Registrar Llamada
               </Button>
             </CardHeader>
@@ -1002,7 +1003,7 @@ export function CRMLeadDetail() {
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <h4 className="font-semibold flex items-center gap-2">
-                            <Phone size={18} />
+                            <PhoneIcon width={18} height={18} />
                             {call.direction === 'inbound' ? 'Llamada Entrante' : 'Llamada Saliente'}
                           </h4>
                           <p className="text-sm text-gray-600 mt-1">

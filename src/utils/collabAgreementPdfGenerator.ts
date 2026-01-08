@@ -103,4 +103,3 @@ export function generateCollabAgreementPDF(): Blob {
   return doc.output('blob');
 }
 
-

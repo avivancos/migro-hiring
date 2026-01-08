@@ -5,7 +5,8 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Lock, ChevronRight } from 'lucide-react';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ChevronRightIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
 import type { PipelineStageRead, PipelineActionRead, ActionTypeRead, UserRole } from '@/types/pipeline';
 import type { WizardChanges } from '../PipelineModifyWizard';
@@ -92,7 +93,7 @@ export function AvailableActionsStep({
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <CheckCircleIcon className="h-5 w-5 text-green-600" />
               Acciones Requeridas
             </CardTitle>
           </CardHeader>
@@ -139,7 +140,7 @@ export function AvailableActionsStep({
         <Card className="opacity-60">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <Lock className="h-5 w-5 text-gray-400" />
+              <LockClosedIcon className="h-5 w-5 text-gray-400" />
               Acciones de Otros Roles
             </CardTitle>
           </CardHeader>
@@ -192,7 +193,7 @@ export function AvailableActionsStep({
           className="flex-1 h-12"
         >
           Continuar
-          <ChevronRight className="h-4 w-4 ml-2" />
+          <ChevronRightIcon className="h-4 w-4 ml-2" />
         </Button>
       </div>
     </div>
@@ -250,7 +251,7 @@ function ActionCard({ actionType, isSelected, isRequired, onToggle }: ActionCard
         </div>
         <div className="flex-shrink-0">
           {isSelected ? (
-            <CheckCircle2 className="h-6 w-6 text-blue-600" />
+            <CheckCircleIcon className="h-6 w-6 text-blue-600" />
           ) : (
             <div className="h-6 w-6 rounded-full border-2 border-gray-300" />
           )}
@@ -259,9 +260,4 @@ function ActionCard({ actionType, isSelected, isRequired, onToggle }: ActionCard
     </button>
   );
 }
-
-
-
-
-
 

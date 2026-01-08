@@ -57,7 +57,3 @@ export function useInfiniteScroll({
   return { lastElementRef, elementRef };
 }
 
-
-
-
-

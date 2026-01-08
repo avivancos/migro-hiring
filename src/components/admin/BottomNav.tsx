@@ -1,17 +1,17 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { 
-  LayoutDashboard, 
-  Users, 
-  FileText, 
-  MoreHorizontal
-} from 'lucide-react';
+  Squares2X2Icon, 
+  UsersIcon, 
+  DocumentTextIcon,
+  EllipsisHorizontalIcon 
+} from '@heroicons/react/24/outline';
 
 const navigation = [
-  { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-  { name: 'Usuarios', href: '/admin/users', icon: Users },
-  { name: 'Contratos', href: '/admin/contracts', icon: FileText },
-  { name: 'Más', href: '/admin/more', icon: MoreHorizontal }, // Placeholder for menu
+  { name: 'Dashboard', href: '/admin/dashboard', icon: Squares2X2Icon },
+  { name: 'Usuarios', href: '/admin/users', icon: UsersIcon },
+  { name: 'Contratos', href: '/admin/contracts', icon: DocumentTextIcon },
+  { name: 'Más', href: '/admin/more', icon: EllipsisHorizontalIcon }, // Placeholder for menu
 ];
 
 export function BottomNav() {
@@ -45,24 +45,4 @@ export function BottomNav() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

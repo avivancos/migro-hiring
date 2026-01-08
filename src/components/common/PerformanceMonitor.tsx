@@ -90,4 +90,3 @@ export function usePerformanceReport() {
   return report;
 }
 
-

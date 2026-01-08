@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, Download, Mail, Home, Loader2 } from 'lucide-react';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ArrowDownTrayIcon, ArrowPathIcon, EnvelopeIcon, HomeIcon } from '@heroicons/react/24/outline';
 import { hiringService } from '@/services/hiringService';
 
 interface ContractSuccessProps {
@@ -137,7 +138,7 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
           <div className="text-center">
             <div className="mb-4 flex justify-center">
               <div className="bg-green-100 p-6 rounded-full">
-                <CheckCircle2 className="text-green-600" size={64} />
+                <CheckCircleIcon className="text-green-600" width={64} height={64} />
               </div>
             </div>
             <CardTitle className="text-3xl text-emphasis-900">
@@ -164,19 +165,19 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
             </h3>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="text-green-600 flex-shrink-0" size={20} />
+                <CheckCircleIcon className="text-green-600 flex-shrink-0" width={20} height={20} />
                 <span className="text-gray-700">Datos personales confirmados</span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="text-green-600 flex-shrink-0" size={20} />
+                <CheckCircleIcon className="text-green-600 flex-shrink-0" width={20} height={20} />
                 <span className="text-gray-700">Contrato firmado digitalmente</span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="text-green-600 flex-shrink-0" size={20} />
+                <CheckCircleIcon className="text-green-600 flex-shrink-0" width={20} height={20} />
                 <span className="text-gray-700">Pago procesado correctamente</span>
               </div>
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="text-green-600 flex-shrink-0" size={20} />
+                <CheckCircleIcon className="text-green-600 flex-shrink-0" width={20} height={20} />
                 <span className="text-gray-700">Contrato generado y firmado digitalmente</span>
               </div>
             </div>
@@ -185,7 +186,7 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
           {/* Información del contrato */}
           <div className="bg-primary/5 border-2 border-primary/20 rounded-lg p-6">
             <div className="flex items-start gap-3 mb-4">
-              <Mail className="text-primary mt-1 flex-shrink-0" size={20} />
+              <EnvelopeIcon className="text-primary mt-1 flex-shrink-0" width={20} height={20} />
               <div>
                 <h3 className="font-semibold text-emphasis-900 mb-1">
                   Contrato Enviado por Email
@@ -221,12 +222,12 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
             >
               {downloading ? (
                 <>
-                  <Loader2 className="mr-2 animate-spin" size={20} />
+                  <ArrowPathIcon className="mr-2 animate-spin" width={20} height={20} />
                   Descargando...
                 </>
               ) : (
                 <>
-                  <Download className="mr-2" size={20} />
+                  <ArrowDownTrayIcon className="mr-2" width={20} height={20} />
                   Descargar Contrato PDF
                 </>
               )}
@@ -262,7 +263,7 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
               variant="outline"
               size="lg"
             >
-              <Home className="mr-2" size={18} />
+              <HomeIcon className="mr-2" width={18} height={18} />
               Volver al Inicio
             </Button>
           </div>

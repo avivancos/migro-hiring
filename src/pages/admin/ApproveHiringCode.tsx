@@ -7,16 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { pipelineApi } from '@/services/pipelineApi';
-import {
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  ArrowLeft,
-  Clock,
-  Mail,
-  DollarSign,
-  FileText,
-} from 'lucide-react';
+import { ArrowLeftIcon, CheckCircleIcon, ClockIcon, CurrencyDollarIcon, DocumentTextIcon, EnvelopeIcon, ExclamationCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { formatCurrency, formatDateTime } from '@/utils/formatters';
 import { usePageTitle } from '@/hooks/usePageTitle';
 
@@ -152,7 +143,7 @@ export function ApproveHiringCode() {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4">
-                <XCircle className="w-8 h-8 text-red-600" />
+                <XCircleIcon className="w-8 h-8 text-red-600" />
               </div>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">Error</h1>
               <p className="text-gray-600 mb-6">{error}</p>
@@ -162,7 +153,7 @@ export function ApproveHiringCode() {
                   onClick={() => navigate('/admin')}
                   className="flex-1"
                 >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  <ArrowLeftIcon className="w-4 h-4 mr-2" />
                   Volver al Dashboard
                 </Button>
                 <Button
@@ -188,7 +179,7 @@ export function ApproveHiringCode() {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
-                <CheckCircle className="w-8 h-8 text-green-600" />
+                <CheckCircleIcon className="w-8 h-8 text-green-600" />
               </div>
               <h1 className="text-2xl font-bold text-green-600 mb-2">
                 Solicitud Aprobada
@@ -204,7 +195,7 @@ export function ApproveHiringCode() {
                     {approvalResult.hiring_payment.hiring_code}
                   </p>
                   <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-                    <DollarSign className="w-4 h-4" />
+                    <CurrencyDollarIcon className="w-4 h-4" />
                     <span>
                       {formatCurrency(
                         approvalResult.hiring_payment.amount,
@@ -242,7 +233,7 @@ export function ApproveHiringCode() {
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
-                <FileText className="w-6 h-6 text-green-600" />
+                <DocumentTextIcon className="w-6 h-6 text-green-600" />
                 <CardTitle className="text-2xl">
                   Aprobar Solicitud de Código de Contratación
                 </CardTitle>
@@ -255,18 +246,18 @@ export function ApproveHiringCode() {
               {/* Información del Token */}
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-3">
-                  <AlertCircle className="w-5 h-5 text-blue-600" />
+                  <ExclamationCircleIcon className="w-5 h-5 text-blue-600" />
                   <span className="font-medium text-blue-900">Información del Token</span>
                 </div>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-blue-600" />
+                    <EnvelopeIcon className="w-4 h-4 text-blue-600" />
                     <span className="text-blue-700">
                       Email: <strong>{data.admin_email}</strong>
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-blue-600" />
+                    <ClockIcon className="w-4 h-4 text-blue-600" />
                     <span className="text-blue-700">
                       Expira: <strong>{formatDateTime(data.expires_at)}</strong>
                     </span>
@@ -278,7 +269,7 @@ export function ApproveHiringCode() {
               {data.hiring_payment && (
                 <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
                   <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-green-600" />
+                    <DocumentTextIcon className="w-5 h-5 text-green-600" />
                     Detalles del Contrato
                   </h2>
                   <div className="space-y-4">
@@ -321,7 +312,7 @@ export function ApproveHiringCode() {
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <div className="flex items-center gap-2">
-                    <XCircle className="w-5 h-5 text-red-600" />
+                    <XCircleIcon className="w-5 h-5 text-red-600" />
                     <p className="text-sm text-red-700">{error}</p>
                   </div>
                 </div>
@@ -335,7 +326,7 @@ export function ApproveHiringCode() {
                   className="flex-1"
                   disabled={validating}
                 >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  <ArrowLeftIcon className="w-4 h-4 mr-2" />
                   Cancelar
                 </Button>
                 <Button
@@ -351,7 +342,7 @@ export function ApproveHiringCode() {
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="w-4 h-4 mr-2" />
+                      <CheckCircleIcon className="w-4 h-4 mr-2" />
                       Aprobar Solicitud
                     </>
                   )}

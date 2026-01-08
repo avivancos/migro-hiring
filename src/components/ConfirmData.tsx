@@ -9,7 +9,7 @@ import { ContractViewer } from '@/components/ContractViewer';
 import { hiringService } from '@/services/hiringService';
 // Dynamic import para PDF generator (pesado, cargar bajo demanda)
 import type { HiringDetails } from '@/types/hiring';
-import { AlertCircle, FileText } from 'lucide-react';
+import { DocumentTextIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
 
 interface ConfirmDataProps {
   details: HiringDetails;
@@ -130,7 +130,7 @@ export function ConfirmData({ details, onConfirm, onBack }: ConfirmDataProps) {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-2xl text-emphasis-900 flex items-center gap-2">
-            <FileText className="text-primary" size={28} />
+            <DocumentTextIcon className="text-primary" width={28} height={28} />
             Confirmar Datos y Contrato
           </CardTitle>
         </CardHeader>
@@ -233,7 +233,7 @@ export function ConfirmData({ details, onConfirm, onBack }: ConfirmDataProps) {
           {/* Error */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center gap-2">
-              <AlertCircle size={20} />
+              <ExclamationCircleIcon width={20} height={20} />
               <p className="text-sm">{error}</p>
             </div>
           )}

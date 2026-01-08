@@ -6,7 +6,7 @@ import { OpportunityPriorityBadge } from './OpportunityPriorityBadge';
 import { OpportunityScore } from './OpportunityScore';
 import { Badge } from '@/components/ui/badge';
 import type { LeadOpportunity } from '@/types/opportunity';
-import { Phone, Mail, MapPin, User, ChevronRight } from 'lucide-react';
+import { ChevronRightIcon, EnvelopeIcon, MapPinIcon, PhoneIcon, UserIcon } from '@heroicons/react/24/outline';
 import { getDetectionReasonBadges } from '@/utils/opportunity';
 
 interface OpportunityCardProps {
@@ -112,7 +112,7 @@ export function OpportunityCard({
               {contactName}
             </h3>
           </div>
-          <ChevronRight className="h-5 w-5 text-gray-400 flex-shrink-0" />
+          <ChevronRightIcon className="h-5 w-5 text-gray-400 flex-shrink-0" />
         </div>
       </CardHeader>
 
@@ -132,19 +132,19 @@ export function OpportunityCard({
         <div className="space-y-2">
           {contactCity && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <MapPin className="h-4 w-4 text-gray-400" />
+              <MapPinIcon className="h-4 w-4 text-gray-400" />
               <span>{contactCity}</span>
             </div>
           )}
           {contactEmail && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Mail className="h-4 w-4 text-gray-400" />
+              <EnvelopeIcon className="h-4 w-4 text-gray-400" />
               <span className="truncate">{contactEmail}</span>
             </div>
           )}
           {contactMobile && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Phone className="h-4 w-4 text-gray-400" />
+              <PhoneIcon className="h-4 w-4 text-gray-400" />
               <span>{contactMobile}</span>
             </div>
           )}
@@ -167,7 +167,7 @@ export function OpportunityCard({
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
               <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100">
-                  <User className="h-4 w-4 text-blue-600" />
+                  <UserIcon className="h-4 w-4 text-blue-600" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-blue-600 font-medium mb-0.5">Responsable</p>

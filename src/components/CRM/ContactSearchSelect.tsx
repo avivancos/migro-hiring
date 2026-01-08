@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Search, X } from 'lucide-react';
+import { ArrowPathIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { crmService } from '@/services/crmService';
 import type { Contact } from '@/types/crm';
 import { cn } from '@/lib/utils';
@@ -154,7 +154,7 @@ export function ContactSearchSelect({
       
       <div className="relative mt-1">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
           <Input
             ref={inputRef}
             id="contact-search"
@@ -178,7 +178,7 @@ export function ContactSearchSelect({
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
               tabIndex={-1}
             >
-              <X className="h-4 w-4" />
+              <XMarkIcon className="h-4 w-4" />
             </button>
           )}
         </div>
@@ -188,7 +188,7 @@ export function ContactSearchSelect({
           <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
             {isSearching && searchQuery.length >= 2 ? (
               <div className="p-4 text-center text-gray-500">
-                <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+                <ArrowPathIcon className="w-5 h-5 animate-spin mx-auto mb-2" />
                 <p className="text-sm">Buscando...</p>
               </div>
             ) : searchResults.length > 0 ? (

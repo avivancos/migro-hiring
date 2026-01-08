@@ -4,7 +4,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, X, AlertCircle, User, Calendar, Flag } from 'lucide-react';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { CalendarIcon, ExclamationCircleIcon, FlagIcon, UserIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useCRMUsers } from '@/hooks/useCRMUsers';
@@ -66,7 +67,7 @@ export function ReviewChangesStep({
         <Card>
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <CheckCircleIcon className="h-5 w-5 text-green-600" />
               Cambios Realizados
             </CardTitle>
           </CardHeader>
@@ -87,7 +88,7 @@ export function ReviewChangesStep({
                   <div className="space-y-2 text-sm">
                     {action.responsibleId && (
                       <div className="flex items-center gap-2 text-gray-700">
-                        <User className="h-4 w-4 text-gray-500" />
+                        <UserIcon className="h-4 w-4 text-gray-500" />
                         <span className="font-medium">Responsable:</span>
                         <span>{getUserName(action.responsibleId)}</span>
                       </div>
@@ -95,7 +96,7 @@ export function ReviewChangesStep({
 
                     {action.dueDate && (
                       <div className="flex items-center gap-2 text-gray-700">
-                        <Calendar className="h-4 w-4 text-gray-500" />
+                        <CalendarIcon className="h-4 w-4 text-gray-500" />
                         <span className="font-medium">Fecha límite:</span>
                         <span>
                           {format(new Date(action.dueDate), 'dd MMMM yyyy', { locale: es })}
@@ -105,7 +106,7 @@ export function ReviewChangesStep({
 
                     {action.priority && (
                       <div className="flex items-center gap-2 text-gray-700">
-                        <Flag className="h-4 w-4 text-gray-500" />
+                        <FlagIcon className="h-4 w-4 text-gray-500" />
                         <span className="font-medium">Prioridad:</span>
                         <Badge variant={PRIORITY_COLORS[action.priority] || 'neutral'}>
                           {PRIORITY_LABELS[action.priority] || action.priority}
@@ -129,7 +130,7 @@ export function ReviewChangesStep({
         <Card>
           <CardContent className="py-8">
             <div className="text-center">
-              <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-3" />
+              <ExclamationCircleIcon className="h-12 w-12 text-yellow-500 mx-auto mb-3" />
               <h4 className="font-semibold text-gray-900 mb-2">
                 No hay cambios para aplicar
               </h4>
@@ -163,7 +164,7 @@ export function ReviewChangesStep({
       {/* Advertencia */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+          <ExclamationCircleIcon className="h-5 w-5 text-yellow-600 flex-shrink-0 mt-0.5" />
           <div>
             <h4 className="font-semibold text-yellow-900 mb-1">
               Confirmar Cambios
@@ -191,7 +192,7 @@ export function ReviewChangesStep({
               onClick={onCancel}
               className="h-12 px-6"
             >
-              <X className="h-4 w-4" />
+              <XMarkIcon className="h-4 w-4" />
             </Button>
           )}
         </div>
@@ -201,7 +202,7 @@ export function ReviewChangesStep({
           className="w-full h-14 text-base font-semibold"
           size="lg"
         >
-          <CheckCircle2 className="h-5 w-5 mr-2" />
+          <CheckCircleIcon className="h-5 w-5 mr-2" />
           Confirmar y Guardar
         </Button>
       </div>

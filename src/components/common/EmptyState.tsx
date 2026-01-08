@@ -37,10 +37,10 @@ export function EmptyState({
     
     // If it's a React component (function or ComponentType), render it
     if (typeof icon === 'function') {
-      const IconComponent = icon as ComponentType<{ size?: number; className?: string }>;
+      const IconComponent = icon as ComponentType<{ size?: number; width?: number; height?: number; className?: string }>;
       return (
         <div className="text-gray-400 mb-4">
-          <IconComponent size={48} className="text-gray-400" />
+          <IconComponent width={48} height={48} className="text-gray-400" />
         </div>
       );
     }

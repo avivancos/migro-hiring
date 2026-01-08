@@ -10,7 +10,7 @@ import { ContractSignature } from '@/components/ContractSignature';
 import { PaymentForm } from '@/components/PaymentForm';
 import { ContractSuccess } from '@/components/ContractSuccess';
 import { ProgressBar } from '@/components/Layout/ProgressBar';
-import { Loader2 } from 'lucide-react';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 // Dynamic import para PDF generator (pesado, cargar bajo demanda)
 
 type Step = 1 | 2 | 3 | 4 | 5;
@@ -222,7 +222,7 @@ export function HiringFlow() {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="mx-auto mb-4 animate-spin text-primary" size={48} />
+          <ArrowPathIcon className="mx-auto mb-4 animate-spin text-primary" width={48} height={48} />
           <p className="text-gray-600">Cargando información del servicio...</p>
         </div>
       </div>

@@ -1,7 +1,7 @@
 // Modal - Sistema de modales con animaciones
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { X } from 'lucide-react';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -94,7 +94,7 @@ export function Modal({
                 onClick={onClose}
                 className="h-8 w-8"
               >
-                <X className="h-4 w-4" />
+                <XMarkIcon className="h-4 w-4" />
               </Button>
             )}
           </div>
@@ -113,6 +113,4 @@ export function Modal({
     </div>
   );
 }
-
-
 

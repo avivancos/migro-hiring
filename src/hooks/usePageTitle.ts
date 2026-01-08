@@ -118,4 +118,3 @@ export function usePageTitle(customTitle?: string, seoOptions?: SEOOptions) {
   }, [location.pathname, customTitle]);
 }
 
-

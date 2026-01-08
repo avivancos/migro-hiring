@@ -7,7 +7,7 @@ import type { LeadOpportunity } from '@/types/opportunity';
 import { Badge } from '@/components/ui/badge';
 import { OpportunityPriorityBadge } from './OpportunityPriorityBadge';
 import { OpportunityScore } from './OpportunityScore';
-import { Mail, Phone, MapPin, User } from 'lucide-react';
+import { EnvelopeIcon, MapPinIcon, PhoneIcon, UserIcon } from '@heroicons/react/24/outline';
 import { getDetectionReasonBadges } from '@/utils/opportunity';
 
 interface OpportunityTableRowProps {
@@ -76,7 +76,7 @@ export const OpportunityTableRow = memo<OpportunityTableRowProps>(({ opportunity
             </div>
             {contact?.email && (
               <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
-                <Mail className="w-3 h-3" />
+                <EnvelopeIcon className="w-3 h-3" />
                 <span className="truncate max-w-xs">{contact.email}</span>
               </div>
             )}
@@ -111,13 +111,13 @@ export const OpportunityTableRow = memo<OpportunityTableRowProps>(({ opportunity
         <div className="space-y-1">
           {contact?.phone && (
             <div className="flex items-center gap-1 text-xs text-gray-600">
-              <Phone className="w-3 h-3" />
+              <PhoneIcon className="w-3 h-3" />
               <span>{contact.phone}</span>
             </div>
           )}
           {contact?.city && (
             <div className="flex items-center gap-1 text-xs text-gray-600">
-              <MapPin className="w-3 h-3" />
+              <MapPinIcon className="w-3 h-3" />
               <span>{contact.city}</span>
             </div>
           )}
@@ -144,7 +144,7 @@ export const OpportunityTableRow = memo<OpportunityTableRowProps>(({ opportunity
       <td className="px-4 py-3">
         {opportunity.assigned_to ? (
           <div className="flex items-center gap-2">
-            <User className="w-4 h-4 text-gray-400" />
+            <UserIcon className="w-4 h-4 text-gray-400" />
             <span className="text-sm text-gray-600 truncate max-w-[120px]">
               {opportunity.assigned_to.name || 'Sin asignar'}
             </span>
@@ -174,6 +174,4 @@ export const OpportunityTableRow = memo<OpportunityTableRowProps>(({ opportunity
 });
 
 OpportunityTableRow.displayName = 'OpportunityTableRow';
-
-
 

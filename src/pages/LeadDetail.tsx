@@ -11,17 +11,7 @@ import type { Lead } from '@/types/crm';
 import { CallHistory } from '@/components/CRM/CallHistory';
 import { ActivityTimeline } from '@/components/CRM/ActivityTimeline';
 import { LeadForm } from '@/components/CRM/LeadForm';
-import {
-  ArrowLeft,
-  Phone,
-  Mail,
-  Edit,
-  Trash2,
-  DollarSign,
-  User,
-  Building2,
-  Calendar,
-} from 'lucide-react';
+import { ArrowLeftIcon, BuildingOffice2Icon, CalendarIcon, CurrencyDollarIcon, EnvelopeIcon, PencilIcon, PhoneIcon, TrashIcon, UserIcon } from '@heroicons/react/24/outline';
 
 export function LeadDetail() {
   const { id } = useParams<{ id: string }>();
@@ -145,7 +135,7 @@ export function LeadDetail() {
               variant="ghost"
               size="icon"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeftIcon width={20} height={20} />
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{lead.name}</h1>
@@ -161,7 +151,7 @@ export function LeadDetail() {
                 variant="outline"
                 className="flex items-center gap-2"
               >
-                <Phone size={18} />
+                <PhoneIcon width={18} height={18} />
                 Llamar
               </Button>
             )}
@@ -170,7 +160,7 @@ export function LeadDetail() {
               variant="outline"
               className="flex items-center gap-2"
             >
-              <Edit size={18} />
+              <PencilIcon width={18} height={18} />
               Editar
             </Button>
             <Button
@@ -178,7 +168,7 @@ export function LeadDetail() {
               variant="outline"
               className="flex items-center gap-2 text-red-600 hover:bg-red-50"
             >
-              <Trash2 size={18} />
+              <TrashIcon width={18} height={18} />
               Eliminar
             </Button>
           </div>
@@ -193,7 +183,7 @@ export function LeadDetail() {
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <div className="flex items-center gap-2 text-gray-600 mb-1">
-                      <DollarSign size={16} />
+                      <CurrencyDollarIcon width={16} height={16} />
                       <span className="text-sm font-medium">Valor</span>
                     </div>
                     <p className="text-2xl font-bold text-green-600">
@@ -203,7 +193,7 @@ export function LeadDetail() {
 
                   <div>
                     <div className="flex items-center gap-2 text-gray-600 mb-1">
-                      <User size={16} />
+                      <UserIcon width={16} height={16} />
                       <span className="text-sm font-medium">Responsable</span>
                     </div>
                     <p className="text-lg font-medium text-gray-900">
@@ -214,7 +204,7 @@ export function LeadDetail() {
                   {lead.contact && (
                     <div>
                       <div className="flex items-center gap-2 text-gray-600 mb-1">
-                        <User size={16} />
+                        <UserIcon width={16} height={16} />
                         <span className="text-sm font-medium">Contacto</span>
                       </div>
                       <p className="text-lg font-medium text-gray-900">
@@ -222,13 +212,13 @@ export function LeadDetail() {
                       </p>
                       {lead.contact.email && (
                         <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
-                          <Mail size={14} />
+                          <EnvelopeIcon width={14} height={14} />
                           {lead.contact.email}
                         </p>
                       )}
                       {lead.contact.phone && (
                         <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
-                          <Phone size={14} />
+                          <PhoneIcon width={14} height={14} />
                           {lead.contact.phone}
                         </p>
                       )}
@@ -237,7 +227,7 @@ export function LeadDetail() {
 
                   <div>
                     <div className="flex items-center gap-2 text-gray-600 mb-1">
-                      <Calendar size={16} />
+                      <CalendarIcon width={16} height={16} />
                       <span className="text-sm font-medium">Creado</span>
                     </div>
                     <p className="text-sm text-gray-900">
@@ -248,7 +238,7 @@ export function LeadDetail() {
                   {lead.source && (
                     <div>
                       <div className="flex items-center gap-2 text-gray-600 mb-1">
-                        <Building2 size={16} />
+                        <BuildingOffice2Icon width={16} height={16} />
                         <span className="text-sm font-medium">Fuente</span>
                       </div>
                       <p className="text-sm text-gray-900">{lead.source}</p>

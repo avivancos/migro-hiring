@@ -142,7 +142,6 @@ CLÁUSULAS
 
 Y en prueba de conformidad, firman el presente Convenio, por duplicado y a un solo efecto, en el lugar y fecha indicados en el encabezamiento.
 
-
 Por EL DESPACHO                                         Por MIGRO SERVICIOS Y REMESAS S.L.
 
 Nombre: ${collaboratorName}                           Nombre: [Nombre representante MIGRO]

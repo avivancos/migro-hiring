@@ -1,29 +1,17 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { 
-  LayoutDashboard, 
-  Users, 
-  FileText, 
-  Shield, 
-  MessageSquare, 
-  Phone,
-  Lock,
-  Briefcase
-} from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
-
-const { Activity } = LucideIcons;
+import { BriefcaseIcon, ChartBarIcon, ChatBubbleLeftIcon, DocumentTextIcon, LockClosedIcon, PhoneIcon, ShieldCheckIcon, Squares2X2Icon, UsersIcon } from '@heroicons/react/24/outline';
 
 const navigation = [
-  { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-  { name: 'Usuarios', href: '/admin/users', icon: Users },
-  { name: 'Oportunidades', href: '/admin/opportunities', icon: Briefcase },
-  { name: 'Contratos', href: '/admin/contracts', icon: FileText },
-  { name: 'Tipos de Llamadas', href: '/admin/call-types', icon: Phone },
-  { name: 'Permisos de Rutas', href: '/admin/route-permissions', icon: Lock },
-  { name: 'Auditoría', href: '/admin/audit-logs', icon: Shield },
-  { name: 'Conversaciones', href: '/admin/conversations', icon: MessageSquare },
-  { name: 'Tracing', href: '/admin/tracing', icon: Activity },
+  { name: 'Dashboard', href: '/admin/dashboard', icon: Squares2X2Icon },
+  { name: 'Usuarios', href: '/admin/users', icon: UsersIcon },
+  { name: 'Oportunidades', href: '/admin/opportunities', icon: BriefcaseIcon },
+  { name: 'Contratos', href: '/admin/contracts', icon: DocumentTextIcon },
+  { name: 'Tipos de Llamadas', href: '/admin/call-types', icon: PhoneIcon },
+  { name: 'Permisos de Rutas', href: '/admin/route-permissions', icon: LockClosedIcon },
+  { name: 'Auditoría', href: '/admin/audit-logs', icon: ShieldCheckIcon },
+  { name: 'Conversaciones', href: '/admin/conversations', icon: ChatBubbleLeftIcon },
+  { name: 'Tracing', href: '/admin/tracing', icon: ChartBarIcon },
 ];
 
 interface SidebarProps {

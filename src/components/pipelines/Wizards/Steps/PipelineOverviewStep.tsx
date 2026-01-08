@@ -4,7 +4,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, Circle, ArrowRight } from 'lucide-react';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ArrowRightIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -88,13 +89,13 @@ export function PipelineOverviewStep({
                   {/* Indicador */}
                   <div className="flex flex-col items-center pt-1">
                     {isCompleted ? (
-                      <CheckCircle2 className="h-6 w-6 text-green-600 flex-shrink-0" />
+                      <CheckCircleIcon className="h-6 w-6 text-green-600 flex-shrink-0" />
                     ) : isCurrent ? (
                       <div className="h-6 w-6 rounded-full border-2 border-blue-600 bg-blue-50 flex items-center justify-center flex-shrink-0">
                         <div className="h-3 w-3 rounded-full bg-blue-600" />
                       </div>
                     ) : (
-                      <Circle className="h-6 w-6 text-gray-300 flex-shrink-0" />
+                      <XCircleIcon className="h-6 w-6 text-gray-300 flex-shrink-0" />
                     )}
                     {index < STAGE_ORDER.length - 1 && (
                       <div
@@ -179,14 +180,9 @@ export function PipelineOverviewStep({
         size="lg"
       >
         Continuar
-        <ArrowRight className="h-5 w-5 ml-2" />
+        <ArrowRightIcon className="h-5 w-5 ml-2" />
       </Button>
     </div>
   );
 }
-
-
-
-
-
 

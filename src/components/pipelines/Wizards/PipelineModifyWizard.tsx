@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { PipelineOverviewStep } from './Steps/PipelineOverviewStep';
 import { AvailableActionsStep } from './Steps/AvailableActionsStep';
 import { ModifyResponsiblesStep } from './Steps/ModifyResponsiblesStep';
@@ -184,7 +184,7 @@ export function PipelineModifyWizard({
               onClick={handlePrevious}
               className="min-w-[120px]"
             >
-              <ChevronLeft className="h-4 w-4 mr-2" />
+              <ChevronLeftIcon className="h-4 w-4 mr-2" />
               Atrás
             </Button>
             <div className="flex gap-2">
@@ -206,7 +206,7 @@ export function PipelineModifyWizard({
               className="min-w-[120px]"
             >
               Siguiente
-              <ChevronRight className="h-4 w-4 ml-2" />
+              <ChevronRightIcon className="h-4 w-4 ml-2" />
             </Button>
           </div>
         )}
@@ -214,7 +214,4 @@ export function PipelineModifyWizard({
     </div>
   );
 }
-
-
-
 

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { adminService } from '@/services/adminService';
 import { GRADE_PRICING, GRADE_PRICING_SUBSCRIPTION, GRADE_DESCRIPTIONS, type ClientGrade, type PaymentType } from '@/types/admin';
-import { UserPlus, LogOut, CheckCircle, Copy, AlertCircle } from 'lucide-react';
+import { ArrowRightOnRectangleIcon, CheckCircleIcon, DocumentDuplicateIcon, ExclamationCircleIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -227,7 +227,7 @@ export function AdminDashboard() {
             variant="outline"
             className="flex items-center gap-2"
           >
-            <LogOut size={18} />
+            <ArrowRightOnRectangleIcon width={18} height={18} />
             Salir
           </Button>
         </div>
@@ -237,7 +237,7 @@ export function AdminDashboard() {
           <Card className="mb-6 border-green-500 bg-green-50">
             <CardContent className="pt-6">
               <div className="flex items-start gap-3">
-                <CheckCircle className="text-green-600 mt-1" size={24} />
+                <CheckCircleIcon className="text-green-600 mt-1" width={24} height={24} />
                 <div className="flex-1">
                   <h3 className="font-semibold text-green-900 mb-2">{success}</h3>
                   
@@ -251,7 +251,7 @@ export function AdminDashboard() {
                           variant="ghost"
                           onClick={() => copyToClipboard(generatedCode)}
                         >
-                          <Copy size={16} />
+                          <DocumentDuplicateIcon width={16} height={16} />
                         </Button>
                       </div>
                     </div>
@@ -268,7 +268,7 @@ export function AdminDashboard() {
                             variant="ghost"
                             onClick={() => copyToClipboard(generatedUrl)}
                           >
-                            <Copy size={16} />
+                            <DocumentDuplicateIcon width={16} height={16} />
                           </Button>
                         </div>
                       </div>
@@ -290,7 +290,7 @@ export function AdminDashboard() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
-              <UserPlus className="text-primary" size={24} />
+              <UserPlusIcon className="text-primary" width={24} height={24} />
               Crear Nuevo Código de Contratación
             </CardTitle>
           </CardHeader>
@@ -619,7 +619,7 @@ export function AdminDashboard() {
               {/* Error */}
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center gap-2">
-                  <AlertCircle size={20} />
+                  <ExclamationCircleIcon width={20} height={20} />
                   <p className="text-sm">{error}</p>
                 </div>
               )}

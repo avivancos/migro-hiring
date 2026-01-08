@@ -27,23 +27,3 @@ export function Skeleton({
   );
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

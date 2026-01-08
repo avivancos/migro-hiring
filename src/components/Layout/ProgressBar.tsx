@@ -1,6 +1,6 @@
 // Progress bar component for hiring flow
 
-import { Check } from 'lucide-react';
+import { CheckIcon } from '@heroicons/react/24/outline';
 import { HIRING_STEPS } from '@/config/constants';
 import { cn } from '@/lib/utils';
 
@@ -51,7 +51,7 @@ export function ProgressBar({ currentStep }: ProgressBarProps) {
                       }
                     )}
                   >
-                    {isCompleted ? <Check size={24} /> : step.id}
+                    {isCompleted ? <CheckIcon width={24} height={24} /> : step.id}
                   </div>
 
                   {/* Step label */}

@@ -8,21 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { performanceTracingService } from '@/services/performanceTracingService';
 import type { PerformanceMetric } from '@/services/performanceTracingService';
 import { usePerformanceReport } from '@/components/common/PerformanceMonitor';
-import { 
-  AlertTriangle,
-  RefreshCw,
-  Download,
-  Trash2,
-  FileText,
-  Globe,
-  Code,
-  Server,
-} from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
+import { ArrowDownTrayIcon, ArrowPathIcon, ChartBarIcon, CodeBracketIcon, DocumentTextIcon, ExclamationTriangleIcon, GlobeAltIcon, ServerIcon, TrashIcon } from '@heroicons/react/24/outline';
+// import * as LucideIcons from 'lucide-react';
 
 export function AdminTracingDashboard() {
-  const { Activity } = LucideIcons;
-
   const report = usePerformanceReport();
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [slowThreshold] = useState(1000); // 1 segundo
@@ -130,7 +119,7 @@ export function AdminTracingDashboard() {
             size="sm"
             onClick={handleExport}
           >
-            <Download className="w-4 h-4 mr-2" />
+            <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
             Exportar
           </Button>
           <Button
@@ -138,7 +127,7 @@ export function AdminTracingDashboard() {
             size="sm"
             onClick={handleClear}
           >
-            <Trash2 className="w-4 h-4 mr-2" />
+            <TrashIcon className="w-4 h-4 mr-2" />
             Limpiar
           </Button>
           <Button
@@ -146,7 +135,7 @@ export function AdminTracingDashboard() {
             size="sm"
             onClick={() => setAutoRefresh(!autoRefresh)}
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${autoRefresh ? 'animate-spin' : ''}`} />
+            <ArrowPathIcon className={`w-4 h-4 mr-2 ${autoRefresh ? 'animate-spin' : ''}`} />
             {autoRefresh ? 'Auto-actualizar' : 'Manual'}
           </Button>
         </div>
@@ -163,7 +152,7 @@ export function AdminTracingDashboard() {
                   {report.metrics.length}
                 </p>
               </div>
-              <Activity className="w-8 h-8 text-green-600" />
+              <ChartBarIcon className="w-8 h-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
@@ -177,7 +166,7 @@ export function AdminTracingDashboard() {
                   {report.summary.totalPages}
                 </p>
               </div>
-              <FileText className="w-8 h-8 text-blue-600" />
+              <DocumentTextIcon className="w-8 h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
@@ -191,7 +180,7 @@ export function AdminTracingDashboard() {
                   {report.summary.totalComponents}
                 </p>
               </div>
-              <Code className="w-8 h-8 text-purple-600" />
+              <CodeBracketIcon className="w-8 h-8 text-purple-600" />
             </div>
           </CardContent>
         </Card>
@@ -205,7 +194,7 @@ export function AdminTracingDashboard() {
                   {report.summary.totalApiCalls}
                 </p>
               </div>
-              <Server className="w-8 h-8 text-orange-600" />
+              <ServerIcon className="w-8 h-8 text-orange-600" />
             </div>
           </CardContent>
         </Card>
@@ -215,7 +204,7 @@ export function AdminTracingDashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Globe className="w-5 h-5" />
+            <GlobeAltIcon className="w-5 h-5" />
             Análisis por Módulos
           </CardTitle>
         </CardHeader>
@@ -280,7 +269,7 @@ export function AdminTracingDashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-yellow-600" />
+            <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600" />
             Páginas Más Lentas
           </CardTitle>
         </CardHeader>
@@ -320,7 +309,7 @@ export function AdminTracingDashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Code className="w-5 h-5 text-purple-600" />
+            <CodeBracketIcon className="w-5 h-5 text-purple-600" />
             Componentes Más Lentos
           </CardTitle>
         </CardHeader>
@@ -357,7 +346,7 @@ export function AdminTracingDashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Server className="w-5 h-5 text-orange-600" />
+            <ServerIcon className="w-5 h-5 text-orange-600" />
             APIs Más Lentas
           </CardTitle>
         </CardHeader>
@@ -397,7 +386,7 @@ export function AdminTracingDashboard() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Globe className="w-5 h-5" />
+            <GlobeAltIcon className="w-5 h-5" />
             Análisis por Rutas
           </CardTitle>
         </CardHeader>
@@ -440,7 +429,7 @@ export function AdminTracingDashboard() {
         <Card className="border-yellow-200 bg-yellow-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-yellow-900">
-              <AlertTriangle className="w-5 h-5" />
+              <ExclamationTriangleIcon className="w-5 h-5" />
               Alertas: Métricas Lentas ({slowMetrics.length})
             </CardTitle>
           </CardHeader>

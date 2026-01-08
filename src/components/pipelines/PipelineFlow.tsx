@@ -1,7 +1,8 @@
 // Visualización del flujo de pipeline
 // Mobile-first con timeline horizontal/vertical según tamaño de pantalla
 
-import { CheckCircle2, Circle, ArrowRight } from 'lucide-react';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ArrowRightIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { PipelineStage, PipelineStageRead } from '@/types/pipeline';
@@ -61,13 +62,13 @@ export function PipelineFlow({ stage, onStageClick, editable = false }: Pipeline
                 {/* Indicador vertical */}
                 <div className="flex flex-col items-center">
                   {isCompleted ? (
-                    <CheckCircle2 className="h-6 w-6 text-green-600" />
+                    <CheckCircleIcon className="h-6 w-6 text-green-600" />
                   ) : isCurrent ? (
                     <div className="h-6 w-6 rounded-full border-2 border-green-600 bg-green-50 flex items-center justify-center">
                       <div className="h-3 w-3 rounded-full bg-green-600" />
                     </div>
                   ) : (
-                    <Circle className="h-6 w-6 text-gray-300" />
+                    <XCircleIcon className="h-6 w-6 text-gray-300" />
                   )}
                   {index < stages.length - 1 && (
                     <div
@@ -117,13 +118,13 @@ export function PipelineFlow({ stage, onStageClick, editable = false }: Pipeline
                   onClick={() => editable && onStageClick?.(s.key)}
                 >
                   {isCompleted ? (
-                    <CheckCircle2 className="h-8 w-8 text-green-600 mb-2" />
+                    <CheckCircleIcon className="h-8 w-8 text-green-600 mb-2" />
                   ) : isCurrent ? (
                     <div className="h-8 w-8 rounded-full border-2 border-green-600 bg-green-50 flex items-center justify-center mb-2">
                       <div className="h-4 w-4 rounded-full bg-green-600" />
                     </div>
                   ) : (
-                    <Circle className="h-8 w-8 text-gray-300 mb-2" />
+                    <XCircleIcon className="h-8 w-8 text-gray-300 mb-2" />
                   )}
                   <h4 className={cn(
                     'text-xs font-medium mb-1 text-center',
@@ -138,7 +139,7 @@ export function PipelineFlow({ stage, onStageClick, editable = false }: Pipeline
 
                 {/* Flecha */}
                 {index < stages.length - 1 && (
-                  <ArrowRight
+                  <ArrowRightIcon
                     className={cn(
                       'h-5 w-5 mx-2 flex-shrink-0',
                       isCompleted ? 'text-green-600' : 'text-gray-300'
@@ -153,8 +154,4 @@ export function PipelineFlow({ stage, onStageClick, editable = false }: Pipeline
     </Card>
   );
 }
-
-
-
-
 

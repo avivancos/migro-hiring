@@ -7,13 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { adminService } from '@/services/adminService';
 import type { Lead } from '@/types/crm';
-import {
-  Search,
-  ArrowLeft,
-  Phone,
-  Calendar,
-  Building2,
-} from 'lucide-react';
+import { ArrowLeftIcon, BuildingOffice2Icon, CalendarIcon, MagnifyingGlassIcon, PhoneIcon } from '@heroicons/react/24/outline';
 
 // Datos mock de leads (temporal - sin API)
 const mockLeads: Lead[] = [
@@ -131,7 +125,7 @@ export function CRMLeads() {
               variant="ghost"
               size="icon"
             >
-              <ArrowLeft size={20} />
+              <ArrowLeftIcon width={20} height={20} />
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Leads</h1>
@@ -147,7 +141,7 @@ export function CRMLeads() {
           <CardContent className="pt-6">
             <div className="flex gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width={20} height={20} />
                 <Input
                   placeholder="Buscar leads por nombre..."
                   className="pl-10"
@@ -183,20 +177,20 @@ export function CRMLeads() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
                       {lead.service_type && (
                         <div className="flex items-center gap-2">
-                          <Building2 size={16} />
+                          <BuildingOffice2Icon width={16} height={16} />
                           <span>{lead.service_type}</span>
                         </div>
                       )}
                       
                       {lead.source && (
                         <div className="flex items-center gap-2">
-                          <Phone size={16} />
+                          <PhoneIcon width={16} height={16} />
                           <span>{lead.source}</span>
                         </div>
                       )}
                       
                       <div className="flex items-center gap-2">
-                        <Calendar size={16} />
+                        <CalendarIcon width={16} height={16} />
                         <span>{formatDate(lead.created_at)}</span>
                       </div>
                     </div>

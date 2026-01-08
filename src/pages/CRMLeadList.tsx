@@ -5,10 +5,9 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Plus, Search, List, LayoutGrid } from 'lucide-react';
+import { CalendarIcon, CurrencyDollarIcon, ListBulletIcon, MagnifyingGlassIcon, PlusIcon, Squares2X2Icon, UserIcon } from '@heroicons/react/24/outline';
 import type { Lead, Pipeline } from '@/types/crm';
 import { crmService } from '@/services/crmService';
-import { DollarSign, User, Calendar } from 'lucide-react';
 import { formatLeadStatus } from '@/utils/statusTranslations';
 const LEAD_STATUSES = [
   { value: 'new', label: 'Nuevos', color: 'bg-blue-100 border-blue-300' },
@@ -151,7 +150,7 @@ export function CRMLeadList() {
               }}
           className="bg-green-600 hover:bg-green-700"
         >
-          <Plus size={20} className="mr-2" />
+          <PlusIcon width={20} height={20} className="mr-2" />
           Nuevo Contacto
         </Button>
       </div>
@@ -162,7 +161,7 @@ export function CRMLeadList() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" width={20} height={20} />
                 <Input
                   placeholder="Buscar por nombre, descripción o contacto..."
                   value={searchTerm}
@@ -190,14 +189,14 @@ export function CRMLeadList() {
                 variant={view === 'kanban' ? 'default' : 'outline'}
                 onClick={() => setView('kanban')}
               >
-                <LayoutGrid size={18} className="mr-2" />
+                <Squares2X2Icon width={18} height={18} className="mr-2" />
                 Kanban
               </Button>
               <Button
                 variant={view === 'list' ? 'default' : 'outline'}
                 onClick={() => setView('list')}
               >
-                <List size={18} className="mr-2" />
+                <ListBulletIcon width={18} height={18} className="mr-2" />
                 Lista
               </Button>
             </div>
@@ -249,19 +248,19 @@ export function CRMLeadList() {
                         </div>
                         {lead.contact && (
                           <div className="flex items-center text-xs text-gray-600">
-                            <User size={14} className="mr-1" />
+                            <UserIcon width={14} height={14} className="mr-1" />
                             {lead.contact.name}
                           </div>
                         )}
                         {lead.price > 0 && (
                           <div className="flex items-center text-xs text-green-600 font-semibold">
-                            <DollarSign size={14} className="mr-1" />
+                            <CurrencyDollarIcon width={14} height={14} className="mr-1" />
                             {formatPrice(lead.price, lead.currency)}
                           </div>
                         )}
                         {lead.closest_task_at && (
                           <div className="flex items-center text-xs text-gray-500">
-                            <Calendar size={14} className="mr-1" />
+                            <CalendarIcon width={14} height={14} className="mr-1" />
                             {new Date(lead.closest_task_at).toLocaleDateString('es-ES')}
                           </div>
                         )}

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Home, Search } from 'lucide-react';
+import { HomeIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 export function NotFound() {
   const navigate = useNavigate();
@@ -13,7 +13,7 @@ export function NotFound() {
           <div className="text-center">
             <div className="mb-6 flex justify-center">
               <div className="bg-primary/10 p-8 rounded-full">
-                <Search className="text-primary" size={80} />
+                <MagnifyingGlassIcon className="text-primary w-20 h-20" />
               </div>
             </div>
 
@@ -32,7 +32,7 @@ export function NotFound() {
                 className="bg-primary hover:bg-primary-700 text-white"
                 size="lg"
               >
-                <Home className="mr-2" size={20} />
+                <HomeIcon className="mr-2 w-5 h-5" />
                 Volver al Inicio
               </Button>
             </div>

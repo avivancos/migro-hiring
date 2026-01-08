@@ -3,7 +3,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Settings, FileText, Users, BarChart3, List, Clock } from 'lucide-react';
+import { ChartBarIcon, ClockIcon, Cog6ToothIcon, DocumentTextIcon, ListBulletIcon, UsersIcon } from '@heroicons/react/24/outline';
 
 export function CRMSettings() {
   const navigate = useNavigate();
@@ -12,35 +12,35 @@ export function CRMSettings() {
     {
       title: 'Plantillas de Tareas',
       description: 'Gestiona las plantillas de tareas que se crean automáticamente',
-      icon: FileText,
+      icon: DocumentTextIcon,
       path: '/crm/settings/task-templates',
       color: 'bg-blue-500',
     },
     {
       title: 'Campos Personalizados',
       description: 'Crea y gestiona campos personalizados para Contactos, Leads y Empresas',
-      icon: List,
+      icon: ListBulletIcon,
       path: '/crm/settings/custom-fields',
       color: 'bg-orange-500',
     },
     {
       title: 'Pipelines',
       description: 'Configura los pipelines y estados de ventas',
-      icon: BarChart3,
+      icon: ChartBarIcon,
       path: '/crm/settings/pipelines',
       color: 'bg-green-500',
     },
     {
       title: 'Usuarios',
       description: 'Gestiona los usuarios del CRM y sus permisos',
-      icon: Users,
+      icon: UsersIcon,
       path: '/crm/settings/users',
       color: 'bg-purple-500',
     },
     {
       title: 'Zona Horaria',
       description: 'Configura tu zona horaria preferida para visualizar fechas y horas',
-      icon: Clock,
+      icon: ClockIcon,
       path: '/crm/settings/timezone',
       color: 'bg-indigo-500',
     },
@@ -66,7 +66,7 @@ export function CRMSettings() {
               <CardHeader>
                 <div className="flex items-center gap-4">
                   <div className={`${section.color} p-3 rounded-lg text-white`}>
-                    <Icon size={24} />
+                    <Icon width={24} height={24} />
                   </div>
                   <CardTitle className="text-lg">{section.title}</CardTitle>
                 </div>
@@ -93,7 +93,7 @@ export function CRMSettings() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Settings size={20} />
+            <Cog6ToothIcon width={20} height={20} />
             Información del Sistema
           </CardTitle>
         </CardHeader>

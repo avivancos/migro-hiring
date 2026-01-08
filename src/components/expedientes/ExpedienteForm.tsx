@@ -2,7 +2,7 @@
 // Mobile-first con validación en tiempo real
 
 import { useState, useEffect } from 'react';
-import { Save, X } from 'lucide-react';
+import { ArrowDownTrayIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -273,7 +273,7 @@ export function ExpedienteForm({
             disabled={saving}
             className="w-full md:w-auto"
           >
-            <X className="h-4 w-4 mr-2" />
+            <XMarkIcon className="h-4 w-4 mr-2" />
             Cancelar
           </Button>
         )}
@@ -282,23 +282,11 @@ export function ExpedienteForm({
           disabled={saving}
           className="w-full md:w-auto"
         >
-          <Save className="h-4 w-4 mr-2" />
+          <ArrowDownTrayIcon className="h-4 w-4 mr-2" />
           {saving ? 'Guardando...' : isEditing ? 'Guardar Cambios' : 'Crear Expediente'}
         </Button>
       </div>
     </form>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
 

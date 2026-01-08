@@ -9,7 +9,8 @@ import { PeriodSelector } from './PeriodSelector';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { RefreshCw, Phone, Clock, CheckCircle, FileText, Briefcase, TrendingUp, Users } from 'lucide-react';
+import { ArrowPathIcon, ArrowTrendingUpIcon, BriefcaseIcon, ClockIcon, DocumentTextIcon, PhoneIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { formatCallTime } from '@/utils/agentJournal';
 import type { PeriodType } from '@/types/agentJournal';
 import { Skeleton } from '@/components/common/Skeleton';
@@ -53,7 +54,7 @@ export function PerformanceDashboardView() {
           disabled={syncMetrics.isPending}
           className="w-full sm:w-auto"
         >
-          <RefreshCw className={syncMetrics.isPending ? 'animate-spin' : ''} />
+          <ArrowPathIcon className={syncMetrics.isPending ? 'animate-spin' : ''} />
           {syncMetrics.isPending ? 'Sincronizando...' : 'Sincronizar Métricas'}
         </Button>
       </div>
@@ -68,20 +69,20 @@ export function PerformanceDashboardView() {
             title="Llamadas Totales"
             value={current?.total_calls ?? 0}
             unit="llamadas"
-            icon={Phone}
+            icon={PhoneIcon}
             loading={isLoading}
           />
           <MetricCard
             title="Tiempo Total"
             value={current ? formatCallTime(current.total_call_time_seconds) : '0s'}
-            icon={Clock}
+            icon={ClockIcon}
             loading={isLoading}
           />
           <MetricCard
             title="Tareas Completadas"
             value={current?.tasks_completed ?? 0}
             unit="tareas"
-            icon={CheckCircle}
+            icon={CheckCircleIcon}
             color="success"
             loading={isLoading}
           />
@@ -89,14 +90,14 @@ export function PerformanceDashboardView() {
             title="Notas Creadas"
             value={current?.notes_created ?? 0}
             unit="notas"
-            icon={FileText}
+            icon={DocumentTextIcon}
             loading={isLoading}
           />
           <MetricCard
             title="Oportunidades"
             value={current?.opportunities_worked ?? 0}
             unit="oportunidades"
-            icon={Briefcase}
+            icon={BriefcaseIcon}
             loading={isLoading}
           />
         </div>
@@ -160,7 +161,7 @@ export function PerformanceDashboardView() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
+                  <ArrowTrendingUpIcon className="h-5 w-5" />
                   Ranking en el Equipo
                 </CardTitle>
               </CardHeader>
@@ -188,7 +189,7 @@ export function PerformanceDashboardView() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5" />
+                  <UsersIcon className="h-5 w-5" />
                   Promedio del Equipo
                 </CardTitle>
               </CardHeader>

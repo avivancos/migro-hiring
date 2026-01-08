@@ -9,7 +9,8 @@ import { OpportunityDetailCard } from './OpportunityDetailCard';
 import { DatePicker } from './DatePicker';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { RefreshCw, Phone, PhoneCall, Clock, CheckCircle, FileText, Briefcase, PenTool, CheckCircle2 } from 'lucide-react';
+import { ArrowPathIcon, BriefcaseIcon, ClockIcon, DocumentTextIcon, PencilIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { formatCallTime } from '@/utils/agentJournal';
 import { startOfToday } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -71,7 +72,7 @@ export function DailyReportView() {
             variant="outline"
             className="w-full sm:w-auto"
           >
-            <RefreshCw className={syncMetrics.isPending ? 'animate-spin' : ''} />
+            <ArrowPathIcon className={syncMetrics.isPending ? 'animate-spin' : ''} />
             {syncMetrics.isPending ? 'Sincronizando...' : 'Sincronizar Métricas'}
           </Button>
           {!isSigned && (
@@ -79,13 +80,13 @@ export function DailyReportView() {
               onClick={() => setShowSignDialog(true)}
               className="w-full sm:w-auto bg-green-600 hover:bg-green-700"
             >
-              <PenTool className="mr-2" />
+              <PencilIcon className="mr-2" />
               Firmar y Enviar Reporte
             </Button>
           )}
           {isSigned && (
             <div className="flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-md text-green-700">
-              <CheckCircle2 className="h-5 w-5" />
+              <CheckCircleIcon className="h-5 w-5" />
               <span className="text-sm font-medium">Reporte firmado y enviado</span>
             </div>
           )}
@@ -98,28 +99,28 @@ export function DailyReportView() {
           title="Llamadas Totales"
           value={journal?.total_calls ?? 0}
           unit="llamadas"
-          icon={Phone}
+          icon={PhoneIcon}
           loading={isLoading}
         />
         <MetricCard
           title="Llamadas Efectivas"
           value={journal?.effective_calls ?? 0}
           unit="llamadas"
-          icon={PhoneCall}
+          icon={PhoneIcon}
           color="success"
           loading={isLoading}
         />
         <MetricCard
           title="Tiempo Total"
           value={journal ? formatCallTime(journal.total_call_time_seconds) : '0s'}
-          icon={Clock}
+          icon={ClockIcon}
           loading={isLoading}
         />
         <MetricCard
           title="Tareas Completadas"
           value={journal?.tasks_completed ?? 0}
           unit="tareas"
-          icon={CheckCircle}
+          icon={CheckCircleIcon}
           color="success"
           loading={isLoading}
         />
@@ -127,14 +128,14 @@ export function DailyReportView() {
           title="Notas Creadas"
           value={journal?.notes_created ?? 0}
           unit="notas"
-          icon={FileText}
+          icon={DocumentTextIcon}
           loading={isLoading}
         />
         <MetricCard
           title="Oportunidades"
           value={journal?.opportunities_worked ?? 0}
           unit="oportunidades"
-          icon={Briefcase}
+          icon={BriefcaseIcon}
           loading={isLoading}
         />
       </div>

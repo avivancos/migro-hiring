@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import type { CRMUser } from '@/types/crm';
 import { crmService } from '@/services/crmService';
 
@@ -103,7 +104,7 @@ export function AgentQuotaInfo({ agent }: AgentQuotaInfoProps) {
         {hasIncompleteLeads && (
           <div className="mt-3 p-3 bg-yellow-100 border border-yellow-300 rounded-lg">
             <div className="flex items-start gap-2">
-              <AlertCircle className="text-yellow-600 flex-shrink-0 mt-0.5" size={18} />
+              <ExclamationCircleIcon className="text-yellow-600 flex-shrink-0 mt-0.5" width={18} height={18} />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-yellow-900">
                   ⚠️ Leads incompletos del día anterior
@@ -120,7 +121,7 @@ export function AgentQuotaInfo({ agent }: AgentQuotaInfoProps) {
         {isQuotaReached && !hasIncompleteLeads && (
           <div className="mt-3 p-3 bg-blue-100 border border-blue-300 rounded-lg">
             <div className="flex items-start gap-2">
-              <AlertCircle className="text-blue-600 flex-shrink-0 mt-0.5" size={18} />
+              <ExclamationCircleIcon className="text-blue-600 flex-shrink-0 mt-0.5" width={18} height={18} />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-blue-900">
                   Cuota diaria alcanzada
@@ -136,7 +137,7 @@ export function AgentQuotaInfo({ agent }: AgentQuotaInfoProps) {
         {isAvailable && (
           <div className="mt-3 p-3 bg-green-100 border border-green-300 rounded-lg">
             <div className="flex items-start gap-2">
-              <CheckCircle2 className="text-green-600 flex-shrink-0 mt-0.5" size={18} />
+              <CheckCircleIcon className="text-green-600 flex-shrink-0 mt-0.5" width={18} height={18} />
               <div className="flex-1">
                 <p className="text-sm font-semibold text-green-900">
                   ✅ Disponible para recibir leads

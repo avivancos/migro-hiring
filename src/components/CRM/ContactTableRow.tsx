@@ -5,7 +5,7 @@ import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Contact } from '@/types/crm';
 import { Badge } from '@/components/ui/badge';
-import { Mail, Phone, Flag, Calendar, Star } from 'lucide-react';
+import { CalendarIcon, EnvelopeIcon, FlagIcon, PhoneIcon, StarIcon } from '@heroicons/react/24/outline';
 
 interface ContactTableRowProps {
   contact: Contact;
@@ -59,7 +59,7 @@ const renderCell = (contact: Contact, columnKey: string) => {
         <td key={columnKey} className="px-4 py-3 whitespace-nowrap">
           {contact.email ? (
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Mail className="w-4 h-4" />
+              <EnvelopeIcon className="w-4 h-4" />
               <span className="truncate max-w-xs">{contact.email}</span>
             </div>
           ) : (
@@ -72,7 +72,7 @@ const renderCell = (contact: Contact, columnKey: string) => {
         <td key={columnKey} className="px-4 py-3 whitespace-nowrap">
           {contact.phone ? (
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Phone className="w-4 h-4" />
+              <PhoneIcon className="w-4 h-4" />
               <span>{contact.phone}</span>
             </div>
           ) : (
@@ -85,7 +85,7 @@ const renderCell = (contact: Contact, columnKey: string) => {
         <td key={columnKey} className="px-4 py-3 whitespace-nowrap">
           {contact.nacionalidad ? (
             <div className="flex items-center gap-1 text-sm text-gray-600">
-              <Flag className="w-4 h-4" />
+              <FlagIcon className="w-4 h-4" />
               <span>{contact.nacionalidad}</span>
             </div>
           ) : (
@@ -98,7 +98,7 @@ const renderCell = (contact: Contact, columnKey: string) => {
         <td key={columnKey} className="px-4 py-3 whitespace-nowrap">
           {contact.grading_llamada ? (
             <Badge variant={getGradingVariant(contact.grading_llamada)} className="text-xs">
-              <Star className="w-3 h-3 mr-1" />
+              <StarIcon className="w-3 h-3 mr-1" />
               {contact.grading_llamada}
             </Badge>
           ) : (
@@ -111,7 +111,7 @@ const renderCell = (contact: Contact, columnKey: string) => {
         <td key={columnKey} className="px-4 py-3 whitespace-nowrap">
           {contact.grading_situacion ? (
             <Badge variant={getGradingVariant(contact.grading_situacion)} className="text-xs">
-              <Star className="w-3 h-3 mr-1" />
+              <StarIcon className="w-3 h-3 mr-1" />
               {contact.grading_situacion}
             </Badge>
           ) : (
@@ -123,7 +123,7 @@ const renderCell = (contact: Contact, columnKey: string) => {
       return (
         <td key={columnKey} className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
           <div className="flex items-center gap-1">
-            <Calendar className="w-4 h-4" />
+            <CalendarIcon className="w-4 h-4" />
             <span>{formatDate(contact.created_at)}</span>
           </div>
         </td>
@@ -139,7 +139,7 @@ const renderCell = (contact: Contact, columnKey: string) => {
         <td key={columnKey} className="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
           {contact.ultima_llamada_fecha ? (
             <div className="flex items-center gap-1">
-              <Phone className="w-4 h-4" />
+              <PhoneIcon className="w-4 h-4" />
               <span>{formatDate(contact.ultima_llamada_fecha)}</span>
             </div>
           ) : (
@@ -152,7 +152,7 @@ const renderCell = (contact: Contact, columnKey: string) => {
         <td key={columnKey} className="px-4 py-3 whitespace-nowrap text-sm">
           {contact.proxima_llamada_fecha ? (
             <div className={`flex items-center gap-1 ${new Date(contact.proxima_llamada_fecha).getTime() < new Date().getTime() ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
-              <Calendar className="w-4 h-4" />
+              <CalendarIcon className="w-4 h-4" />
               <span>{formatDate(contact.proxima_llamada_fecha)}</span>
             </div>
           ) : (

@@ -2,7 +2,8 @@
 // Mobile-first con formulario de validación completo
 
 import { useState } from 'react';
-import { CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
+import { ExclamationCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,7 +38,7 @@ export function PipelineValidationPanel({
       <Card>
         <CardContent className="pt-6">
           <div className="text-center py-8">
-            <AlertCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <ExclamationCircleIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
             <p className="text-gray-600">No tienes permisos para validar esta acción</p>
           </div>
         </CardContent>
@@ -123,7 +124,7 @@ export function PipelineValidationPanel({
               )}
             >
               <div className="flex items-center gap-3">
-                <CheckCircle2 className={cn(
+                <CheckCircleIcon className={cn(
                   'h-6 w-6',
                   status === 'validated' ? 'text-green-600' : 'text-gray-400'
                 )} />
@@ -148,7 +149,7 @@ export function PipelineValidationPanel({
               )}
             >
               <div className="flex items-center gap-3">
-                <XCircle className={cn(
+                <XCircleIcon className={cn(
                   'h-6 w-6',
                   status === 'rejected' ? 'text-red-600' : 'text-gray-400'
                 )} />
@@ -227,5 +228,4 @@ export function PipelineValidationPanel({
     </Card>
   );
 }
-
 

@@ -1,33 +1,20 @@
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Calendar,
-  Phone,
-  FileText,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  FileCheck,
-  TrendingUp,
-  CheckSquare,
-  StickyNote
-} from 'lucide-react';
+import { ArrowTrendingUpIcon, CalendarIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, Cog6ToothIcon, DocumentCheckIcon, DocumentTextIcon, PhoneIcon, Squares2X2Icon, UsersIcon } from '@heroicons/react/24/outline';
 import { MigroLogo } from '@/components/common/MigroLogo';
 
 const navigation = [
-  { name: 'Dashboard', href: '/crm', icon: LayoutDashboard },
-  { name: 'Contactos', href: '/crm/contacts', icon: Users },
-  { name: 'Oportunidades', href: '/crm/opportunities', icon: TrendingUp },
-  { name: 'Tareas', href: '/crm/tasks', icon: CheckSquare },
-  { name: 'Notas', href: '/crm/notes', icon: StickyNote },
-  { name: 'Contratos', href: '/crm/contracts', icon: FileCheck },
-  { name: 'Calendario', href: '/crm/calendar', icon: Calendar },
-  { name: 'Llamadas', href: '/crm/call', icon: Phone },
-  { name: 'Expedientes', href: '/crm/expedientes', icon: FileText },
-  { name: 'Configuración', href: '/crm/settings', icon: Settings },
+  { name: 'Dashboard', href: '/crm', icon: Squares2X2Icon },
+  { name: 'Contactos', href: '/crm/contacts', icon: UsersIcon },
+  { name: 'Oportunidades', href: '/crm/opportunities', icon: ArrowTrendingUpIcon },
+  { name: 'Tareas', href: '/crm/tasks', icon: CheckIcon },
+  { name: 'Notas', href: '/crm/notes', icon: DocumentTextIcon },
+  { name: 'Contratos', href: '/crm/contracts', icon: DocumentCheckIcon },
+  { name: 'Calendario', href: '/crm/calendar', icon: CalendarIcon },
+  { name: 'Llamadas', href: '/crm/call', icon: PhoneIcon },
+  { name: 'Expedientes', href: '/crm/expedientes', icon: DocumentTextIcon },
+  { name: 'Configuración', href: '/crm/settings', icon: Cog6ToothIcon },
 ];
 
 interface CRMSidebarProps {
@@ -70,9 +57,9 @@ export function CRMSidebar({ className, onClose, isCollapsed = false, onToggle }
             title={isCollapsed ? "Expandir sidebar" : "Colapsar sidebar"}
           >
             {isCollapsed ? (
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRightIcon className="h-4 w-4" />
             ) : (
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeftIcon className="h-4 w-4" />
             )}
           </Button>
         )}

@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { AlertCircle, CheckCircle2, FileText } from 'lucide-react';
+import { DocumentTextIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { hiringService } from '@/services/hiringService';
 import type { HiringDetails } from '@/types/hiring';
 
@@ -177,7 +178,7 @@ export function ContractDataRequestModal({
         size="md"
       >
         <div className="text-center py-6">
-          <CheckCircle2 className="w-16 h-16 text-green-600 mx-auto mb-4" />
+          <CheckCircleIcon className="w-16 h-16 text-green-600 mx-auto mb-4" />
           <p className="text-lg font-semibold text-gray-900 mb-2">
             Datos del contrato actualizados correctamente
           </p>
@@ -216,7 +217,7 @@ export function ContractDataRequestModal({
               </>
             ) : (
               <>
-                <FileText className="h-4 w-4 mr-2" />
+                <DocumentTextIcon className="h-4 w-4 mr-2" />
                 Enviar Solicitud
               </>
             )}
@@ -228,7 +229,7 @@ export function ContractDataRequestModal({
         {/* Alerta informativa */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+            <ExclamationCircleIcon className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <h3 className="font-semibold text-blue-900 mb-1">
                 Datos Faltantes del Contrato
@@ -307,7 +308,7 @@ export function ContractDataRequestModal({
                   onChange={(e) =>
                     setFormData({ ...formData, client_passport: e.target.value })
                   }
-                  placeholder="Ej: X1234567Z"
+                  placeholder="Ej: XMarkIcon1234567Z"
                   disabled={loading}
                   className="mt-1"
                 />
@@ -323,7 +324,7 @@ export function ContractDataRequestModal({
                   onChange={(e) =>
                     setFormData({ ...formData, client_nie: e.target.value })
                   }
-                  placeholder="Ej: X1234567Z"
+                  placeholder="Ej: XMarkIcon1234567Z"
                   disabled={loading}
                   className="mt-1"
                 />
@@ -408,7 +409,7 @@ export function ContractDataRequestModal({
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <ExclamationCircleIcon className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <h3 className="font-semibold text-red-900 mb-1">Error</h3>
                     <p className="text-red-700 text-sm">{error}</p>

@@ -71,15 +71,3 @@ export function useExpedienteFiles(expedienteId: string | null) {
   };
 }
 
-
-
-
-
-
-
-
-
-
-
-
-

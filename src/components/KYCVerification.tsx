@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { ArrowPathIcon, ExclamationCircleIcon, ShieldCheckIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { hiringService } from '@/services/hiringService';
 
 interface KYCVerificationProps {
@@ -175,7 +176,7 @@ export function KYCVerification({ hiringCode, onComplete, onBack }: KYCVerificat
       <Card className="shadow-lg">
         <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10">
           <CardTitle className="text-2xl text-emphasis-900 flex items-center gap-2">
-            <Shield className="text-primary" size={28} />
+            <ShieldCheckIcon className="text-primary" width={28} height={28} />
             Verificación de Identidad
           </CardTitle>
         </CardHeader>
@@ -186,7 +187,7 @@ export function KYCVerification({ hiringCode, onComplete, onBack }: KYCVerificat
               <div className="text-center py-8">
                 <div className="mb-6 flex justify-center">
                   <div className="bg-primary/10 p-6 rounded-full">
-                    <Shield className="text-primary" size={64} />
+                    <ShieldCheckIcon className="text-primary" width={64} height={64} />
                   </div>
                 </div>
                 
@@ -205,15 +206,15 @@ export function KYCVerification({ hiringCode, onComplete, onBack }: KYCVerificat
                   </h4>
                   <ul className="space-y-2 text-sm text-blue-800">
                     <li className="flex items-start gap-2">
-                      <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0" />
+                      <CheckCircleIcon width={16} height={16} className="mt-0.5 flex-shrink-0" />
                       <span>Un documento de identidad válido (DNI, Pasaporte, NIE)</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0" />
+                      <CheckCircleIcon width={16} height={16} className="mt-0.5 flex-shrink-0" />
                       <span>Buena iluminación para tomar fotos claras</span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0" />
+                      <CheckCircleIcon width={16} height={16} className="mt-0.5 flex-shrink-0" />
                       <span>Aproximadamente 2-3 minutos de tu tiempo</span>
                     </li>
                   </ul>
@@ -229,7 +230,7 @@ export function KYCVerification({ hiringCode, onComplete, onBack }: KYCVerificat
 
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center gap-2">
-                  <AlertCircle size={20} />
+                  <ExclamationCircleIcon width={20} height={20} />
                   <p className="text-sm">{error}</p>
                 </div>
               )}
@@ -250,7 +251,7 @@ export function KYCVerification({ hiringCode, onComplete, onBack }: KYCVerificat
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="mr-2 animate-spin" size={18} />
+                      <ArrowPathIcon className="mr-2 animate-spin" width={18} height={18} />
                       Iniciando...
                     </>
                   ) : (
@@ -264,7 +265,7 @@ export function KYCVerification({ hiringCode, onComplete, onBack }: KYCVerificat
           {verificationStarted && !verificationComplete && (
             <div className="text-center py-12">
               <div className="mb-6 flex justify-center">
-                <Loader2 className="text-primary animate-spin" size={64} />
+                <ArrowPathIcon className="text-primary animate-spin" width={64} height={64} />
               </div>
               
               <h3 className="text-xl font-semibold mb-4 text-emphasis-900">
@@ -314,7 +315,7 @@ export function KYCVerification({ hiringCode, onComplete, onBack }: KYCVerificat
 
               {error && (
                 <div className="mt-4 bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex items-center gap-2">
-                  <AlertCircle size={20} />
+                  <ExclamationCircleIcon width={20} height={20} />
                   <p className="text-sm">{error}</p>
                 </div>
               )}
@@ -325,7 +326,7 @@ export function KYCVerification({ hiringCode, onComplete, onBack }: KYCVerificat
             <div className="text-center py-12">
               <div className="mb-6 flex justify-center">
                 <div className="bg-green-100 p-6 rounded-full">
-                  <CheckCircle2 className="text-green-600" size={64} />
+                  <CheckCircleIcon className="text-green-600" width={64} height={64} />
                 </div>
               </div>
               

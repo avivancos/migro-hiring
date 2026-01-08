@@ -1,7 +1,7 @@
 // FirstCallAttemptBadge - Badge circular para cada intento de primera llamada
 
 import { cn } from '@/lib/utils';
-import { AlertTriangle, X, Check, Circle } from 'lucide-react';
+import { CheckIcon, ExclamationTriangleIcon, XCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 export type FirstCallAttemptStatus = 'pending' | 'orange' | 'red' | 'green';
 
@@ -27,21 +27,21 @@ const statusConfig = {
     border: 'border-[#FB923C]', // Naranja medio específico
     text: 'text-orange-700',
     icon: '⚠️',
-    iconComponent: AlertTriangle,
+    iconComponent: ExclamationTriangleIcon,
   },
   red: {
     bg: 'bg-[#FECACA]', // Rojo claro específico según documentación
     border: 'border-[#F87171]', // Rojo medio específico
     text: 'text-red-700',
     icon: '❌',
-    iconComponent: X,
+    iconComponent: XMarkIcon,
   },
   green: {
     bg: 'bg-[#BBF7D0]', // Verde claro específico según documentación
     border: 'border-[#4ADE80]', // Verde medio específico
     text: 'text-green-700',
     icon: '✅',
-    iconComponent: Check,
+    iconComponent: CheckIcon,
   },
 };
 
@@ -123,7 +123,7 @@ export function FirstCallAttemptBadge({
 
         {/* Icono de pending si es pending */}
         {status === 'pending' && (
-          <Circle className={cn('absolute opacity-30', iconSizeClasses[size], config.text)} />
+          <XCircleIcon className={cn('absolute opacity-30', iconSizeClasses[size], config.text)} />
         )}
       </button>
 
