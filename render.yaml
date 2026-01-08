@@ -8,8 +8,8 @@ services:
     plan: free
     region: oregon
     
-    # Build command estándar de Vite
-    buildCommand: npm ci --legacy-peer-deps && npm run build
+    # Build command con auto-repair
+    buildCommand: chmod +x scripts/render-build.sh && bash scripts/render-build.sh
     staticPublishPath: dist
     
     # Variables de entorno para build

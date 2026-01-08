@@ -1,0 +1,59 @@
+# Render Blueprint - Web Service con Auto-Repair Build
+# Configuración optimizada para Render con build script automático
+
+services:
+  - type: web
+    name: migro-hiring
+    runtime: node
+    plan: starter  # Cambiar a 'standard' o 'pro' para producción
+    region: oregon
+    
+    # Build command con auto-repair
+    buildCommand: chmod +x scripts/render-build.sh && bash scripts/render-build.sh
+    
+    # Start command
+    startCommand: npm start
+    
+    # Variables de entorno para build
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NPM_VERSION
+        value: "10"
+      - key: VITE_API_BASE_URL
+        value: https://api.migro.es/api
+      - key: VITE_APP_URL
+        value: https://contratacion.migro.es
+      - key: VITE_STRIPE_PUBLISHABLE_KEY
+        sync: false  # Configurar manualmente en el dashboard
+      - key: VITE_DEBUG_MODE
+        value: "false"
+      - key: VITE_API_TIMEOUT
+        value: "30000"
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"  # Render usa esta variable automáticamente
+    
+    # Health check
+    healthCheckPath: /
+    
+    # Auto-deploy desde main branch
+    autoDeploy: true
+    branch: main
+    
+    # Build y deploy settings
+    buildFilter:
+      paths:
+        - /**
+      ignoredPaths:
+        - node_modules/**
+        - .git/**
+        - docs/**
+        - scripts/**
+        - dist/**
+        - "*.md"
+        - "*.log"
+    
+    # Environment variables para el runtime (no build)
+    # Estas se pueden configurar también en el dashboard

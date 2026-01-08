@@ -65,6 +65,8 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc -b && vite build",
+    "build:render": "bash scripts/render-build.sh",
+    "build:render:win": "powershell -ExecutionPolicy Bypass -File scripts/render-build.ps1",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "node server.js",
