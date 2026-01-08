@@ -30,8 +30,13 @@ ENV VITE_APP_URL=$VITE_APP_URL
 ENV VITE_DEBUG_MODE=$VITE_DEBUG_MODE
 ENV VITE_API_TIMEOUT=$VITE_API_TIMEOUT
 
-# Build de producción
-RUN npm run build
+# Build de producción con auto-repair si hay scripts disponibles
+# Ejecutar scripts de auto-repair primero (opcional, no fallan si no existen)
+RUN node scripts/remove-unused-imports.js 2>/dev/null || true && \
+    node scripts/fix-icon-references.js 2>/dev/null || true && \
+    node scripts/fix-icon-names.js 2>/dev/null || true && \
+    node scripts/fix-imports-and-references.js 2>/dev/null || true && \
+    npm run build
 
 # ==========================================
 # Stage 2: Production
