@@ -2,7 +2,7 @@
 // Mobile-first con soporte para cámara y galería
 
 import { useState, useRef, useCallback } from 'react';
-import { ArrowUpTrayIcon, DocumentIcon, PhotoIcon as ImageIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowUpTrayIcon, DocumentIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -101,7 +101,7 @@ export function FileUpload({
 
   const getFileIcon = (file: File) => {
     if (file.type.startsWith('image/')) {
-      return <ImageIcon className="h-5 w-5 text-blue-500" />;
+      return <PhotoIcon className="h-5 w-5 text-blue-500" />;
     }
     return <DocumentIcon className="h-5 w-5 text-gray-500" />;
   };

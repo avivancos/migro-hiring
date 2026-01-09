@@ -278,6 +278,12 @@ Chunks generados:
 
 **Nota:** El script `fix-missing-icon-imports.js` detecta automáticamente todos los iconos Heroicons usados en el código (como componentes JSX) y verifica que estén correctamente importados, agregando los imports faltantes si es necesario. Sin embargo, se encontró que algunos archivos tenían imports duplicados de `CheckCircleIcon` (tanto de `solid` como de `outline`), que fueron corregidos manualmente para usar solo `solid`.
 
+**Mejoras adicionales:**
+- Script mejorado para verificar que los iconos se usen realmente como componentes JSX (no solo en strings como placeholders)
+- Script mejorado para evitar agregar imports duplicados
+- Script `remove-unused-imports.js` mejorado para detectar automáticamente imports no usados en todos los archivos
+- Corregido `ImageIcon` → `PhotoIcon` en `FileUpload.tsx`
+
 ---
 
 ## Próximos Pasos Recomendados

@@ -55,20 +55,61 @@ function fixFile(filePath) {
   });
   
   // Buscar todos los iconos Heroicons usados (como componentes JSX)
+  // Excluir iconos que solo aparecen en strings (placeholders, comentarios, etc.)
+  const stringRegex = /(['"`])(?:(?=(\\?))\2.)*?\1/g;
+  const allStrings = [];
+  let match;
+  while ((match = stringRegex.exec(content)) !== null) {
+    allStrings.push(match[0]);
+  }
+  
   HEROICON_NAMES.forEach(iconName => {
     // Buscar uso del icono como componente JSX: <IconName
     const jsxRegex = new RegExp(`<${iconName}(\\s|>)`, 'g');
-    if (jsxRegex.test(content)) {
-      // Si ya está importado, usar el mismo módulo
-      if (existingImports.has(iconName)) {
-        usedIcons.set(iconName, existingImports.get(iconName));
-      } else {
-        // Detectar el módulo basado en cómo se usa
-        // CheckCircleIcon puede estar en solid si se usa con colores sólidos
-        const module = iconName === 'CheckCircleIcon' && content.includes('text-green') 
-          ? '@heroicons/react/24/solid' 
-          : '@heroicons/react/24/outline';
-        usedIcons.set(iconName, module);
+    const jsxMatches = content.match(jsxRegex);
+    
+    if (jsxMatches && jsxMatches.length > 0) {
+      // Verificar que al menos una ocurrencia no esté dentro de un string
+      const lines = content.split('\n');
+      let hasRealUsage = false;
+      
+      lines.forEach((line, lineIndex) => {
+        if (line.includes(`<${iconName}`)) {
+          // Verificar si está dentro de un string en esta línea
+          const lineStrings = [];
+          const lineStringRegex = /(['"`])(?:(?=(\\?))\2.)*?\1/g;
+          let lineMatch;
+          while ((lineMatch = lineStringRegex.exec(line)) !== null) {
+            lineStrings.push(lineMatch);
+          }
+          
+          // Encontrar la posición de <IconName en la línea
+          const iconPos = line.indexOf(`<${iconName}`);
+          // Verificar si está dentro de algún string
+          const insideString = lineStrings.some(stringMatch => {
+            const start = stringMatch.index;
+            const end = start + stringMatch[0].length;
+            return iconPos >= start && iconPos < end;
+          });
+          
+          if (!insideString) {
+            hasRealUsage = true;
+          }
+        }
+      });
+      
+      if (hasRealUsage) {
+        // Si ya está importado, usar el mismo módulo
+        if (existingImports.has(iconName)) {
+          usedIcons.set(iconName, existingImports.get(iconName));
+        } else {
+          // Detectar el módulo basado en cómo se usa
+          // CheckCircleIcon puede estar en solid si se usa con colores sólidos
+          const module = iconName === 'CheckCircleIcon' && content.includes('text-green') 
+            ? '@heroicons/react/24/solid' 
+            : '@heroicons/react/24/outline';
+          usedIcons.set(iconName, module);
+        }
       }
     }
   });
@@ -103,23 +144,21 @@ function fixFile(filePath) {
     }
   });
 
-  // Verificar qué iconos faltan (solo si no están ya importados en otro módulo)
+  // Verificar qué iconos faltan (solo si no están ya importados)
   const missingIcons = new Map();
+  const allImportedIcons = new Set();
+  
+  // Recopilar todos los iconos ya importados
+  heroIconImports.forEach((iconSet) => {
+    iconSet.forEach(icon => allImportedIcons.add(icon));
+  });
+  existingImports.forEach((_, icon) => {
+    allImportedIcons.add(icon);
+  });
+  
   usedIcons.forEach((module, iconName) => {
     // Verificar si el icono ya está importado (en cualquier módulo)
-    let alreadyImported = false;
-    heroIconImports.forEach((iconSet) => {
-      if (iconSet.has(iconName)) {
-        alreadyImported = true;
-      }
-    });
-    
-    // También verificar en existingImports (por si acaso)
-    if (existingImports.has(iconName)) {
-      alreadyImported = true;
-    }
-    
-    if (!alreadyImported) {
+    if (!allImportedIcons.has(iconName)) {
       const existing = heroIconImports.get(module);
       
       if (!existing || !existing.has(iconName)) {
