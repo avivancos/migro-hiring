@@ -1,168 +1,116 @@
 const fs = require('fs');
 const path = require('path');
 
-// Mapeo de referencias de variables a iconos
-const VAR_TO_ICON = {
-  'Phone': 'PhoneIcon',
-  'Mail': 'EnvelopeIcon',
-  'Calendar': 'CalendarIcon',
-  'FileText': 'DocumentTextIcon',
-  'Users': 'UsersIcon',
-  'Clock': 'ClockIcon',
-  'CheckCircle': 'CheckCircleIcon',
-  'Briefcase': 'BriefcaseIcon',
-  'List': 'ListBulletIcon',
-  'BarChart3': 'ChartBarIcon',
-  'Activity': 'ChartBarIcon',
-  'Pencil': 'PencilIcon',
-  'Play': 'PlayIcon',
-  'Pause': 'PauseIcon',
-  'CheckSquare': 'CheckIcon', // No existe CheckSquareIcon, usar CheckIcon
-  'CheckSquareIcon': 'CheckIcon',
-};
+// Script final para corregir errores específicos que los otros scripts pueden introducir
 
-// Iconos que deben ser importados si se usan
-const ICONS_TO_IMPORT = {
-  'ChartBarIcon': '@heroicons/react/24/outline',
-  'ExclamationCircleIcon': '@heroicons/react/24/outline',
-  'UserIcon': '@heroicons/react/24/outline',
-  'ArrowRightIcon': '@heroicons/react/24/outline',
-  'ArrowTopRightOnSquareIcon': '@heroicons/react/24/outline',
-  'TrashIcon': '@heroicons/react/24/outline',
-  'XCircleIcon': '@heroicons/react/24/outline',
-  'EyeIcon': '@heroicons/react/24/outline',
-  'PlusIcon': '@heroicons/react/24/outline',
-  'FlagIcon': '@heroicons/react/24/outline',
-  'CurrencyEuroIcon': '@heroicons/react/24/outline',
-  'LinkIcon': '@heroicons/react/24/outline',
-  'CodeBracketIcon': '@heroicons/react/24/outline',
-  'ServerIcon': '@heroicons/react/24/outline',
-  'GlobeAltIcon': '@heroicons/react/24/outline',
-  'BellIcon': '@heroicons/react/24/outline',
-  'PlayIcon': '@heroicons/react/24/outline',
-  'PauseIcon': '@heroicons/react/24/outline',
-  'ArrowPathIcon': '@heroicons/react/24/outline',
-  'ArrowDownTrayIcon': '@heroicons/react/24/outline',
-  'HomeIcon': '@heroicons/react/24/outline',
-  'CheckIcon': '@heroicons/react/24/outline',
-  'DocumentTextIcon': '@heroicons/react/24/outline',
-  'CurrencyDollarIcon': '@heroicons/react/24/outline',
-};
+function fixFinalErrors(filePath) {
+  if (!fs.existsSync(filePath)) {
+    return false;
+  }
 
-function fixFile(filePath) {
   let content = fs.readFileSync(filePath, 'utf8');
   const original = content;
+  let changed = false;
 
-  // 1. Reemplazar referencias a variables de iconos antiguos
-  Object.entries(VAR_TO_ICON).forEach(([oldVar, newIcon]) => {
-    // En asignaciones: icon={OldVar}
-    content = content.replace(
-      new RegExp(`(icon|Icon|iconComponent)\\s*[:=]\\s*${oldVar}\\b`, 'g'),
-      `$1: ${newIcon}`
-    );
-    
-    // En returns: return OldVar
-    content = content.replace(
-      new RegExp(`return\\s+${oldVar}\\b`, 'g'),
-      `return ${newIcon}`
-    );
-    
-    // En comparaciones: === OldVar
-    content = content.replace(
-      new RegExp(`===?\\s*${oldVar}\\b`, 'g'),
-      (match) => match.replace(oldVar, newIcon)
-    );
-    
-    // En ternarios: ? OldVar :
-    content = content.replace(
-      new RegExp(`\\?\\s*${oldVar}\\s*:`, 'g'),
-      (match) => match.replace(oldVar, newIcon)
-    );
-  });
-
-  // 2. Reemplazar props size por width/height
-  content = content.replace(
-    /size=\{(\d+)\}/g,
-    'width={$1} height={$1}'
-  );
-
-  // 3. Agregar imports faltantes
-  const usedIcons = new Set();
+  // 1. Eliminar CheckIcon solo de archivos específicos donde sabemos que no se usa
+  // Verificar uso real (como componente JSX o como valor)
+  const checkIconUsedInJSX = /<CheckIcon\s/.test(content);
+  const checkIconUsedAsValue = /(icon|IconComponent|Icon):\s*CheckIcon|=\s*CheckIcon/.test(content);
+  const checkIconUsed = checkIconUsedInJSX || checkIconUsedAsValue;
   
-  // Detectar iconos usados
-  Object.keys(ICONS_TO_IMPORT).forEach(icon => {
-    if (content.includes(icon) && !content.includes(`import.*${icon}.*from`)) {
-      usedIcons.add(icon);
-    }
-  });
+  // Solo eliminar de archivos específicos donde sabemos que no se usa
+  const filesToFix = [
+    'KYCVerification.tsx',
+    'AdminRoutePermissions.tsx'
+  ];
+  const shouldFix = filesToFix.some(f => filePath.includes(f));
+  
+  if (content.includes('CheckIcon') && !checkIconUsed && shouldFix) {
+    // Remover de imports
+    content = content.replace(/import\s+{([^}]*)\bCheckIcon\b([^}]*)}\s+from\s+['"]@heroicons[^'"]+['"];?/g, (match) => {
+      changed = true;
+      const items = match.match(/import\s+{([^}]+)}/)[1]
+        .split(',')
+        .map(i => i.trim())
+        .filter(item => item && item !== 'CheckIcon');
+      
+      if (items.length === 0) {
+        return '';
+      }
+      
+      const moduleMatch = match.match(/from\s+['"](@heroicons\/react\/[^'"]+)['"]/);
+      const module = moduleMatch ? moduleMatch[1] : '@heroicons/react/24/outline';
+      
+      return `import { ${items.join(', ')} } from '${module}';`;
+    });
+  }
 
-  if (usedIcons.size > 0) {
-    // Buscar si ya hay imports de heroicons
-    const heroIconImports = content.match(/import\s+{[^}]+}\s+from\s+['"]@heroicons\/react\/24\/outline['"];/g);
+  // 2. Eliminar XMarkIcon si solo aparece en placeholders de texto (no en JSX)
+  // Verificar uso real en JSX
+  const xMarkIconUsed = /<XMarkIcon\s/.test(content);
+  if (content.includes('XMarkIcon') && !xMarkIconUsed) {
+    // Solo eliminar de archivos específicos donde sabemos que solo aparece en placeholders
+    const targetFiles = [
+      'ContractDataRequestModal.tsx',
+      'RequestContractModal.tsx',
+      'CRMDashboardPage.tsx'
+    ];
+    const shouldFix = targetFiles.some(f => filePath.includes(f));
     
-    if (heroIconImports && heroIconImports.length > 0) {
-      // Agregar a import existente
-      const lastImport = heroIconImports[heroIconImports.length - 1];
-      const match = lastImport.match(/import\s+{([^}]+)}\s+from/);
-      if (match) {
-        const existing = match[1].split(',').map(i => i.trim()).filter(Boolean);
-        const toAdd = Array.from(usedIcons).filter(icon => !existing.includes(icon));
+    if (shouldFix) {
+      // Remover de imports
+      content = content.replace(/import\s+{([^}]*)\bXMarkIcon\b([^}]*)}\s+from\s+['"]@heroicons[^'"]+['"];?/g, (match) => {
+        changed = true;
+        const items = match.match(/import\s+{([^}]+)}/)[1]
+          .split(',')
+          .map(i => i.trim())
+          .filter(item => item && item !== 'XMarkIcon');
         
-        if (toAdd.length > 0) {
-          const newItems = [...existing, ...toAdd].sort().join(', ');
-          content = content.replace(lastImport, lastImport.replace(/{[^}]+}/, `{ ${newItems} }`));
+        if (items.length === 0) {
+          return '';
         }
-      }
-    } else {
-      // Crear nuevo import
-      const iconsList = Array.from(usedIcons).sort().join(', ');
-      const firstLine = content.split('\n')[0];
-      if (!firstLine.includes('import')) {
-        content = `import { ${iconsList} } from '@heroicons/react/24/outline';\n${content}`;
-      } else {
-        // Insertar después de los primeros imports
-        const lines = content.split('\n');
-        let insertIndex = 0;
-        for (let i = 0; i < lines.length; i++) {
-          if (lines[i].trim().startsWith('import')) {
-            insertIndex = i + 1;
-          } else if (insertIndex > 0 && lines[i].trim() === '') {
-            break;
-          }
-        }
-        lines.splice(insertIndex, 0, `import { ${iconsList} } from '@heroicons/react/24/outline';`);
-        content = lines.join('\n');
-      }
+        
+        const moduleMatch = match.match(/from\s+['"](@heroicons\/react\/[^'"]+)['"]/);
+        const module = moduleMatch ? moduleMatch[1] : '@heroicons/react/24/outline';
+        
+        return `import { ${items.join(', ')} } from '${module}';`;
+      });
     }
   }
 
-  // 4. Eliminar referencias a LucideIcons
-  content = content.replace(/const\s*{\s*Activity\s*}\s*=\s*LucideIcons;?\s*/g, '');
-  content = content.replace(/\/\/\s*TODO:.*LucideIcons.*\n/gi, '');
-  content = content.replace(/\/\/\s*import.*LucideIcons.*\n/gi, '');
-
-  // 5. Corregir tipos incorrectos (UserIcon como tipo)
-  content = content.replace(/useState<UserIcon\s*\|\s*null>/g, 'useState<User | null>');
-
-  // 6. Corregir Bars3VerticalIcon
-  content = content.replace(/Bars3VerticalIcon/g, 'EllipsisVerticalIcon');
-  if (content.includes('EllipsisVerticalIcon') && !content.includes("import.*EllipsisVerticalIcon.*from")) {
-    content = content.replace(
-      /(import\s+{[^}]+}\s+from\s+['"]@heroicons\/react\/24\/outline['"];)/,
-      (match) => {
-        const itemsMatch = match.match(/import\s+{([^}]+)}/);
-        if (itemsMatch && !itemsMatch[1].includes('EllipsisVerticalIcon')) {
-          return match.replace(/{[^}]+}/, `{ ${itemsMatch[1]}, EllipsisVerticalIcon }`);
+  // 3. Eliminar BookOpenIcon duplicado (dejar solo el de outline)
+  if (content.includes('BookOpenIcon')) {
+    // Verificar si está importado desde solid
+    const solidImport = /import\s+{[^}]*\bBookOpenIcon\b[^}]*}\s+from\s+['"]@heroicons\/react\/24\/solid['"];?/g;
+    if (solidImport.test(content)) {
+      // Eliminar BookOpenIcon del import de solid
+      content = content.replace(/import\s+{([^}]*)\bBookOpenIcon\b([^}]*)}\s+from\s+['"]@heroicons\/react\/24\/solid['"];?/g, (match) => {
+        changed = true;
+        const items = match.match(/import\s+{([^}]+)}/)[1]
+          .split(',')
+          .map(i => i.trim())
+          .filter(item => item && item !== 'BookOpenIcon');
+        
+        if (items.length === 0) {
+          return '';
         }
-        return match;
-      }
-    );
+        
+        return `import { ${items.join(', ')} } from '@heroicons/react/24/solid';`;
+      });
+    }
   }
 
-  if (content !== original) {
+  // Limpiar líneas vacías múltiples
+  content = content.replace(/\n{3,}/g, '\n\n');
+  
+  // Limpiar líneas vacías al inicio
+  content = content.replace(/^\n+/, '');
+
+  if (changed && content !== original) {
     fs.writeFileSync(filePath, content, 'utf8');
     return true;
   }
+
   return false;
 }
 
@@ -176,22 +124,25 @@ function findFiles(dir, fileList = []) {
     if (stat.isDirectory() && !filePath.includes('node_modules')) {
       findFiles(filePath, fileList);
     } else if ((file.endsWith('.tsx') || file.endsWith('.ts')) && filePath.includes('src')) {
-      fileList.push(filePath);
+      // Excluir iconMapping.ts ya que es un archivo de configuración
+      if (!filePath.includes('iconMapping.ts')) {
+        fileList.push(filePath);
+      }
     }
   });
   
   return fileList;
 }
 
+console.log('Corrigiendo errores finales...\n');
+
 const srcDir = path.join(__dirname, '..', 'src');
 const files = findFiles(srcDir);
-
-console.log(`Corrigiendo errores finales en ${files.length} archivos...\n`);
 
 let fixed = 0;
 files.forEach(file => {
   try {
-    if (fixFile(file)) {
+    if (fixFinalErrors(file)) {
       fixed++;
       console.log(`✅ ${path.relative(srcDir, file)}`);
     }

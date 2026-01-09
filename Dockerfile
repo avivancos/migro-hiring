@@ -37,6 +37,7 @@ RUN node scripts/remove-unused-imports.js 2>/dev/null || true && \
     node scripts/fix-icon-names.js 2>/dev/null || true && \
     node scripts/fix-imports-and-references.js 2>/dev/null || true && \
     node scripts/fix-missing-icon-imports.js 2>/dev/null || true && \
+    node scripts/fix-final-errors.js 2>/dev/null || true && \
     npm run build
 
 # ==========================================
