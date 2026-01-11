@@ -98,7 +98,14 @@ export function CRMContactDetail() {
       });
       setCalls(sortedCalls);
       
-      setNotes(notesData.items || []);
+      // Ordenar notas de más recientes a más antiguas (similar a llamadas)
+      const sortedNotes = (notesData.items || []).sort((a, b) => {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return dateB - dateA; // Descendente (más recientes primero)
+      });
+      console.log('📝 [CRMContactDetail] Notas cargadas:', sortedNotes.length, sortedNotes.map(n => ({ id: n.id, content: n.content?.substring(0, 50) })));
+      setNotes(sortedNotes);
       setUsers(usersData);
       
       // Cargar oportunidades relacionadas (filtrar por contact_id)
@@ -562,9 +569,20 @@ export function CRMContactDetail() {
       }
 
       console.log('📝 [CRMContactDetail] Enviando nota:', cleanNoteData);
-      await crmService.createNote(cleanNoteData);
-      await loadContactData();
+      const createdNote = await crmService.createNote(cleanNoteData);
+      console.log('✅ [CRMContactDetail] Nota creada exitosamente:', createdNote.id);
+      
+      // Cerrar el formulario primero
       setShowNoteForm(false);
+      
+      // Forzar recarga de las notas sin usar caché para asegurar que se vea la nueva nota
+      // Esperar un pequeño delay para asegurar que el backend haya procesado la nota
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Recargar datos del contacto (incluyendo notas)
+      await loadContactData();
+      
+      // Cambiar a la pestaña de historial para ver la nota
       setActiveTab('history');
     } catch (err: any) {
       console.error('❌ [CRMContactDetail] Error creating note:', err);
