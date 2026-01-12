@@ -9,11 +9,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { adminService } from '@/services/adminService';
 import { crmService } from '@/services/crmService';
+import { contractsService } from '@/services/contractsService';
 import { GRADE_PRICING, GRADE_PRICING_SUBSCRIPTION, GRADE_DESCRIPTIONS, type ClientGrade, type PaymentType } from '@/types/admin';
 import type { Contact } from '@/types/crm';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { ArrowLeftIcon, DocumentDuplicateIcon, ExclamationCircleIcon, MagnifyingGlassIcon, UserPlusIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
+import { DocumentTextIcon, PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 export function AdminContractCreate() {
   const navigate = useNavigate();
@@ -39,6 +41,12 @@ export function AdminContractCreate() {
   const [paymentType, setPaymentType] = useState<PaymentType>('one_time');
   const [manualPaymentMode, setManualPaymentMode] = useState(false);
   const [manualPaymentNote, setManualPaymentNote] = useState('');
+
+  // Anexos al contrato (sin hiring_code hasta que se cree el contrato)
+  const [annexes, setAnnexes] = useState<Array<{ title: string; content: string }>>([]);
+  const [showAnnexModal, setShowAnnexModal] = useState(false);
+  const [editingAnnexIndex, setEditingAnnexIndex] = useState<number | null>(null);
+  const [annexForm, setAnnexForm] = useState({ title: '', content: '' });
 
   // Contact search
   const [contactSearch, setContactSearch] = useState('');
@@ -145,6 +153,46 @@ export function AdminContractCreate() {
     setShowContactDropdown(false);
   };
 
+  // Funciones para gestionar anexos
+  const handleAddAnnex = () => {
+    setAnnexForm({ title: '', content: '' });
+    setEditingAnnexIndex(null);
+    setShowAnnexModal(true);
+  };
+
+  const handleEditAnnex = (index: number) => {
+    setAnnexForm(annexes[index]);
+    setEditingAnnexIndex(index);
+    setShowAnnexModal(true);
+  };
+
+  const handleDeleteAnnex = (index: number) => {
+    if (confirm('¿Estás seguro de que deseas eliminar este anexo?')) {
+      setAnnexes(annexes.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleSaveAnnex = () => {
+    if (!annexForm.title.trim() || !annexForm.content.trim()) {
+      alert('Por favor completa todos los campos del anexo');
+      return;
+    }
+
+    if (editingAnnexIndex !== null) {
+      // Editar anexo existente
+      const updated = [...annexes];
+      updated[editingAnnexIndex] = { ...annexForm };
+      setAnnexes(updated);
+    } else {
+      // Agregar nuevo anexo
+      setAnnexes([...annexes, { ...annexForm }]);
+    }
+
+    setShowAnnexModal(false);
+    setAnnexForm({ title: '', content: '' });
+    setEditingAnnexIndex(null);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -247,6 +295,25 @@ export function AdminContractCreate() {
         setGeneratedUrl(manualUrl);
         console.log('🔗 URL generada manualmente:', manualUrl);
       }
+
+      // Guardar anexos si hay alguno
+      if (annexes.length > 0 && hiringCode) {
+        console.log('📎 Guardando anexos al contrato...', annexes.length);
+        try {
+          for (const annex of annexes) {
+            await contractsService.createAnnex({
+              hiring_code: hiringCode,
+              title: annex.title,
+              content: annex.content,
+            });
+          }
+          console.log('✅ Anexos guardados exitosamente');
+        } catch (annexError: any) {
+          console.error('⚠️ Error guardando anexos:', annexError);
+          // No bloqueamos el éxito del contrato si falla guardar anexos
+          // El usuario puede agregarlos manualmente después
+        }
+      }
       
       // Clear form
       setUserName('');
@@ -262,6 +329,7 @@ export function AdminContractCreate() {
       setPaymentType('one_time');
       setManualPaymentMode(false);
       setManualPaymentNote('');
+      setAnnexes([]);
       // Limpiar contacto seleccionado
       handleClearContact();
     } catch (err: any) {
@@ -804,6 +872,72 @@ export function AdminContractCreate() {
                 </div>
               </div>
 
+              {/* Anexos al Contrato */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-lg text-gray-900">
+                    Anexos al Contrato (Opcional)
+                  </h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleAddAnnex}
+                    className="flex items-center gap-2"
+                  >
+                    <PlusIcon width={16} height={16} />
+                    Agregar Anexo
+                  </Button>
+                </div>
+
+                {annexes.length === 0 ? (
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center text-gray-500 text-sm">
+                    No hay anexos agregados. Puedes agregar anexos adicionales al contrato.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {annexes.map((annex, index) => (
+                      <div
+                        key={index}
+                        className="bg-gray-50 border border-gray-200 rounded-lg p-4"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <DocumentTextIcon className="w-5 h-5 text-gray-400" />
+                              <h4 className="font-semibold text-gray-900">{annex.title}</h4>
+                            </div>
+                            <p className="text-sm text-gray-600 whitespace-pre-wrap line-clamp-3">
+                              {annex.content}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 ml-4">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditAnnex(index)}
+                              className="flex items-center gap-1"
+                            >
+                              <PencilIcon width={14} height={14} />
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteAnnex(index)}
+                              className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                            >
+                              <TrashIcon width={14} height={14} />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               {/* Pago Manual */}
               <div>
                 <h3 className="font-semibold text-lg mb-4 text-gray-900">
@@ -885,6 +1019,68 @@ export function AdminContractCreate() {
             </form>
           </CardContent>
         </Card>
+      )}
+
+      {/* Modal para crear/editar anexo */}
+      {showAnnexModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                {editingAnnexIndex !== null ? 'Editar Anexo' : 'Agregar Nuevo Anexo'}
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="annex-title">Título del Anexo *</Label>
+                  <Input
+                    id="annex-title"
+                    value={annexForm.title}
+                    onChange={(e) => setAnnexForm({ ...annexForm, title: e.target.value })}
+                    placeholder="Ej: Anexo I - Condiciones Especiales"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="annex-content">Contenido del Anexo *</Label>
+                  <Textarea
+                    id="annex-content"
+                    value={annexForm.content}
+                    onChange={(e) => setAnnexForm({ ...annexForm, content: e.target.value })}
+                    placeholder="Escribe el contenido del anexo aquí..."
+                    rows={10}
+                    className="font-mono text-sm"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Puedes escribir el contenido completo del anexo. Se guardará como texto plano.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowAnnexModal(false);
+                    setAnnexForm({ title: '', content: '' });
+                    setEditingAnnexIndex(null);
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSaveAnnex}
+                  disabled={!annexForm.title.trim() || !annexForm.content.trim()}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  {editingAnnexIndex !== null ? 'Guardar Cambios' : 'Agregar Anexo'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
