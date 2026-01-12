@@ -1313,11 +1313,38 @@ export function CRMContactDetail() {
                         // Navegar a la página de detalle de la oportunidad
                         navigate(`/crm/opportunities/${newOpportunity.id}`);
                       } catch (error: any) {
-                        console.error('Error creando oportunidad:', error);
-                        const errorMessage = error?.response?.data?.detail || 
-                                            error?.message || 
-                                            'Error al crear la oportunidad';
-                        alert(`Error al crear la oportunidad: ${errorMessage}`);
+                        console.error('❌ [CRMContactDetail] Error creando oportunidad:', error);
+                        console.error('❌ [CRMContactDetail] Error details:', {
+                          message: error?.message,
+                          status: error?.response?.status,
+                          data: error?.response?.data,
+                          detail: error?.response?.data?.detail,
+                        });
+                        
+                        let errorMessage = 'Error al crear la oportunidad';
+                        
+                        // Manejar error 422 (validación)
+                        if (error?.response?.status === 422) {
+                          const detail = error?.response?.data?.detail;
+                          if (Array.isArray(detail)) {
+                            errorMessage = 'Error de validación:\n\n' + 
+                              detail.map((err: any, index: number) => {
+                                const field = err.loc ? err.loc.join('.') : 'campo desconocido';
+                                const msg = err.msg || 'Error de validación';
+                                return `${index + 1}. ${field}: ${msg}`;
+                              }).join('\n');
+                          } else if (typeof detail === 'string') {
+                            errorMessage = `Error de validación: ${detail}`;
+                          } else {
+                            errorMessage = `Error de validación: ${JSON.stringify(detail, null, 2)}`;
+                          }
+                        } else if (error?.response?.data?.detail) {
+                          errorMessage = error.response.data.detail;
+                        } else if (error?.message) {
+                          errorMessage = error.message;
+                        }
+                        
+                        alert(`Error al crear la oportunidad:\n\n${errorMessage}`);
                       } finally {
                         setCreatingOpportunity(false);
                       }

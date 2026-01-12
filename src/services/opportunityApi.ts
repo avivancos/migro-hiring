@@ -335,15 +335,48 @@ export const opportunityApi = {
    * Endpoint: POST /api/crm/opportunities
    */
   async create(request: OpportunityCreateRequest): Promise<LeadOpportunity> {
+    // Construir el payload asegurándonos de que detection_reason sea un objeto
+    const payload: Record<string, any> = {
+      contact_id: request.contact_id,
+    };
+
+    // Agregar campos opcionales solo si están definidos
+    if (request.opportunity_score !== undefined) {
+      payload.opportunity_score = request.opportunity_score;
+    } else {
+      payload.opportunity_score = 50; // Default
+    }
+
+    // Convertir detection_reason a objeto si es string
+    if (request.detection_reason !== undefined) {
+      if (typeof request.detection_reason === 'string') {
+        payload.detection_reason = {
+          reason: request.detection_reason,
+          created_manually: true,
+        };
+      } else {
+        payload.detection_reason = request.detection_reason;
+      }
+    } else {
+      payload.detection_reason = {
+        reason: 'Oportunidad creada manualmente',
+        created_manually: true,
+      };
+    }
+
+    if (request.priority !== undefined) {
+      payload.priority = request.priority;
+    } else {
+      payload.priority = 'medium'; // Default
+    }
+
+    if (request.assigned_to_id !== undefined && request.assigned_to_id !== null) {
+      payload.assigned_to_id = request.assigned_to_id;
+    }
+
     const { data } = await api.post<LeadOpportunity>(
       `${CRM_BASE_PATH}/opportunities`,
-      {
-        contact_id: request.contact_id,
-        opportunity_score: request.opportunity_score ?? 50,
-        detection_reason: request.detection_reason ?? 'Oportunidad creada manualmente',
-        priority: request.priority ?? 'medium',
-        assigned_to_id: request.assigned_to_id,
-      }
+      payload
     );
     return data;
   },
