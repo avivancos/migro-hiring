@@ -5,6 +5,7 @@ import type { FormEvent } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DateInput } from '@/components/ui/DateInput';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ContactSearchSelect } from './ContactSearchSelect';
@@ -237,7 +238,7 @@ export const TaskForm = memo(function TaskForm({
               <Label htmlFor="complete_till">
                 Fecha de Vencimiento <span className="text-red-500">*</span>
               </Label>
-              <Input
+              <DateInput
                 id="complete_till"
                 type="datetime-local"
                 value={formData.complete_till}

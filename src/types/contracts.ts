@@ -154,6 +154,28 @@ export const GRADE_COLORS = {
   T: 'bg-purple-100 text-purple-800',
 } as const;
 
+// Anexos al contrato
+export interface ContractAnnex {
+  id?: string;
+  hiring_code: string;
+  title: string;
+  content: string;
+  created_at?: string;
+  updated_at?: string;
+  created_by?: string;
+}
+
+export interface ContractAnnexCreateRequest {
+  hiring_code: string;
+  title: string;
+  content: string;
+}
+
+export interface ContractAnnexUpdateRequest {
+  title?: string;
+  content?: string;
+}
+
 
 
 

@@ -22,6 +22,7 @@ import {
 import { formatDate, formatCurrency } from '@/utils/formatters';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { EditContractModal } from '@/components/contracts/EditContractModal';
+import { ContractAnnexes } from '@/components/contracts/ContractAnnexes';
 
 export function AdminContractDetail() {
   const navigate = useNavigate();
@@ -627,6 +628,9 @@ export function AdminContractDetail() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Contract Annexes */}
+          <ContractAnnexes hiringCode={contract.hiring_code} />
 
           {/* Payment Information */}
           {(contract.payment_intent_id || contract.manual_payment_confirmed) && (

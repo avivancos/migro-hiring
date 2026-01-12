@@ -6,6 +6,7 @@ import type { FormEvent } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DateInput } from '@/components/ui/DateInput';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { CheckIcon, PencilSquareIcon, PhoneIcon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -1001,7 +1002,7 @@ export const CallForm = memo(function CallForm({
                 {/* Fecha de llegada a España */}
                 <div>
                   <Label htmlFor="first_call_fecha_llegada">Fecha de Llegada a España</Label>
-                  <Input
+                  <DateInput
                     id="first_call_fecha_llegada"
                     type="date"
                     value={firstCallData.fecha_llegada_espana}
@@ -1243,7 +1244,7 @@ export const CallForm = memo(function CallForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="proxima_llamada_fecha">Próxima Llamada</Label>
-              <Input
+              <DateInput
                 id="proxima_llamada_fecha"
                 type="datetime-local"
                 value={formData.proxima_llamada_fecha}
@@ -1253,7 +1254,7 @@ export const CallForm = memo(function CallForm({
 
             <div>
               <Label htmlFor="proxima_accion_fecha">Próxima Acción</Label>
-              <Input
+              <DateInput
                 id="proxima_accion_fecha"
                 type="datetime-local"
                 value={formData.proxima_accion_fecha}

@@ -8,6 +8,9 @@ import type {
   ContractFilters,
   ContractCreateRequest,
   ContractUpdateRequest,
+  ContractAnnex,
+  ContractAnnexCreateRequest,
+  ContractAnnexUpdateRequest,
 } from '@/types/contracts';
 
 /**
@@ -448,6 +451,64 @@ export const contractsService = {
     ].join('\n');
     
     return new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  },
+
+  /**
+   * Get all annexes for a hiring code
+   */
+  async getAnnexes(hiringCode: string): Promise<ContractAnnex[]> {
+    const { data } = await api.get<ContractAnnex[]>(`/admin/hiring/${hiringCode}/annexes`, {
+      headers: {
+        'X-Admin-Password': 'Pomelo2005.1',
+      },
+    });
+    return data;
+  },
+
+  /**
+   * Create a new annex for a hiring code
+   */
+  async createAnnex(request: ContractAnnexCreateRequest): Promise<ContractAnnex> {
+    const { data } = await api.post<ContractAnnex>(
+      `/admin/hiring/${request.hiring_code}/annexes`,
+      {
+        title: request.title,
+        content: request.content,
+      },
+      {
+        headers: {
+          'X-Admin-Password': 'Pomelo2005.1',
+        },
+      }
+    );
+    return data;
+  },
+
+  /**
+   * Update an existing annex
+   */
+  async updateAnnex(annexId: string, request: ContractAnnexUpdateRequest): Promise<ContractAnnex> {
+    const { data } = await api.patch<ContractAnnex>(
+      `/admin/hiring/annexes/${annexId}`,
+      request,
+      {
+        headers: {
+          'X-Admin-Password': 'Pomelo2005.1',
+        },
+      }
+    );
+    return data;
+  },
+
+  /**
+   * Delete an annex
+   */
+  async deleteAnnex(annexId: string): Promise<void> {
+    await api.delete(`/admin/hiring/annexes/${annexId}`, {
+      headers: {
+        'X-Admin-Password': 'Pomelo2005.1',
+      },
+    });
   },
 };
 

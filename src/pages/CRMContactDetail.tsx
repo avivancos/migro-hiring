@@ -5,10 +5,12 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DateInput } from '@/components/ui/DateInput';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { crmService } from '@/services/crmService';
+import { adminService } from '@/services/adminService';
 import type { Contact, Task, Call, Note, CallCreateRequest, TaskCreateRequest, NoteCreateRequest } from '@/types/crm';
 import { ArrowLeftIcon, ArrowTopRightOnSquareIcon, BriefcaseIcon, CalendarIcon, ChartBarIcon, ClockIcon, DocumentTextIcon, EnvelopeIcon, FlagIcon, MapPinIcon, PencilIcon, PhoneIcon, PlusIcon, StarIcon, TrashIcon, UserIcon, UsersIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
@@ -88,7 +90,14 @@ export function CRMContactDetail() {
         setError(null);
       }
       
-      setTasks(tasksData.items || []);
+      // Ordenar tareas de más recientes a más antiguas
+      const sortedTasks = (tasksData.items || []).sort((a, b) => {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return dateB - dateA; // Descendente (más recientes primero)
+      });
+      console.log('📋 [CRMContactDetail] Tareas cargadas desde servidor:', sortedTasks.length, sortedTasks.map(t => ({ id: t.id, text: t.text?.substring(0, 50), complete_till: t.complete_till })));
+      setTasks(sortedTasks);
       
       // Ordenar llamadas de más recientes a más antiguas
       const sortedCalls = (callsData.items || []).sort((a, b) => {
@@ -446,7 +455,7 @@ export function CRMContactDetail() {
 
   // Función para guardar la fecha de próxima acción
   const handleSaveProximaAccion = async () => {
-    if (!editingProximaAccionId || !editingProximaAccionType || !editingProximaAccionFecha || !editingProximaAccionField) return;
+    if (!editingProximaAccionId || !editingProximaAccionType || !editingProximaAccionFecha || !editingProximaAccionField || !id) return;
     
     setUpdatingProximaAccion(true);
     try {
@@ -456,6 +465,43 @@ export function CRMContactDetail() {
           updates.proxima_accion_fecha = new Date(editingProximaAccionFecha).toISOString();
         } else if (editingProximaAccionField === 'proxima_llamada_fecha') {
           updates.proxima_llamada_fecha = new Date(editingProximaAccionFecha).toISOString();
+          
+          // Si se actualiza proxima_llamada_fecha, crear automáticamente una tarea de seguimiento
+          try {
+            const currentUser = adminService.getUser();
+            const responsibleUserId = currentUser?.id;
+            
+            if (responsibleUserId) {
+              const taskData: TaskCreateRequest = {
+                text: 'Llamada de seguimiento programada',
+                task_type: 'call',
+                entity_type: 'contacts',
+                entity_id: id,
+                responsible_user_id: responsibleUserId,
+                complete_till: new Date(editingProximaAccionFecha).toISOString(),
+              };
+              
+              console.log('📋 [CRMContactDetail] Creando tarea de seguimiento automática desde edición:', taskData);
+              const createdTask = await crmService.createTask(taskData);
+              console.log('✅ [CRMContactDetail] Tarea de seguimiento creada exitosamente:', createdTask.id);
+              
+              // Actualización optimista: agregar la tarea localmente
+              setTasks(prev => {
+                const updated = [createdTask, ...prev].sort((a, b) => {
+                  const dateA = new Date(a.created_at).getTime();
+                  const dateB = new Date(b.created_at).getTime();
+                  return dateB - dateA;
+                });
+                console.log('📋 [CRMContactDetail] Tareas actualizadas localmente:', updated.length, 'tareas');
+                return updated;
+              });
+            } else {
+              console.warn('⚠️ [CRMContactDetail] No se pudo obtener usuario responsable para la tarea de seguimiento');
+            }
+          } catch (taskErr: any) {
+            console.error('❌ [CRMContactDetail] Error creando tarea de seguimiento:', taskErr);
+            // No bloquear el flujo si falla la creación de la tarea
+          }
         }
         await crmService.updateCall(editingProximaAccionId, updates);
       } else if (editingProximaAccionType === 'task') {
@@ -488,10 +534,90 @@ export function CRMContactDetail() {
         // Asegurar que started_at esté presente (requerido por el backend)
         started_at: callData.started_at || new Date().toISOString(),
       };
-      await crmService.createCall(finalCallData);
-      await loadContactData();
+      
+      console.log('📞 [CRMContactDetail] Enviando llamada:', finalCallData);
+      console.log('📞 [CRMContactDetail] proxima_llamada_fecha:', finalCallData.proxima_llamada_fecha);
+      console.log('📞 [CRMContactDetail] responsible_user_id en llamada:', finalCallData.responsible_user_id);
+      
+      const createdCall = await crmService.createCall(finalCallData);
+      console.log('✅ [CRMContactDetail] Llamada creada exitosamente:', createdCall.id);
+      
+      // Si se especificó una próxima llamada, crear automáticamente una tarea de seguimiento
+      if (finalCallData.proxima_llamada_fecha) {
+        console.log('📋 [CRMContactDetail] Se detectó proxima_llamada_fecha, creando tarea de seguimiento...');
+        try {
+          // Obtener el usuario responsable (el de la llamada o el usuario actual)
+          const currentUser = adminService.getUser();
+          console.log('📋 [CRMContactDetail] Usuario actual:', currentUser?.id, currentUser?.email);
+          const responsibleUserId = finalCallData.responsible_user_id || currentUser?.id;
+          console.log('📋 [CRMContactDetail] Usuario responsable para tarea:', responsibleUserId);
+          
+          if (responsibleUserId) {
+            const taskData: TaskCreateRequest = {
+              text: 'Llamada de seguimiento programada',
+              task_type: 'call',
+              entity_type: 'contacts',
+              entity_id: id,
+              responsible_user_id: responsibleUserId,
+              complete_till: finalCallData.proxima_llamada_fecha,
+            };
+            
+            console.log('📋 [CRMContactDetail] Creando tarea de seguimiento automática:', taskData);
+            const createdTask = await crmService.createTask(taskData);
+            console.log('✅ [CRMContactDetail] Tarea de seguimiento creada exitosamente:', createdTask.id);
+            
+            // Actualización optimista: agregar la tarea localmente
+            setTasks(prev => {
+              const updated = [createdTask, ...prev].sort((a, b) => {
+                const dateA = new Date(a.created_at).getTime();
+                const dateB = new Date(b.created_at).getTime();
+                return dateB - dateA;
+              });
+              console.log('📋 [CRMContactDetail] Tareas actualizadas localmente:', updated.length, 'tareas');
+              return updated;
+            });
+          } else {
+            console.warn('⚠️ [CRMContactDetail] No se pudo obtener usuario responsable para la tarea de seguimiento');
+            console.warn('⚠️ [CRMContactDetail] responsible_user_id en llamada:', finalCallData.responsible_user_id);
+            console.warn('⚠️ [CRMContactDetail] Usuario actual:', currentUser);
+            alert('No se pudo crear la tarea de seguimiento automática: no se encontró usuario responsable. Por favor, crea la tarea manualmente.');
+          }
+        } catch (taskErr: any) {
+          console.error('❌ [CRMContactDetail] Error creando tarea de seguimiento:', taskErr);
+          console.error('❌ [CRMContactDetail] Error response:', taskErr?.response?.data);
+          console.error('❌ [CRMContactDetail] Error detail:', taskErr?.response?.data?.detail);
+          // No bloquear el flujo si falla la creación de la tarea, pero loguear el error
+          alert(`No se pudo crear la tarea de seguimiento automática: ${taskErr?.response?.data?.detail || taskErr?.message || 'Error desconocido'}. Por favor, crea la tarea manualmente.`);
+        }
+      } else {
+        console.log('ℹ️ [CRMContactDetail] No se detectó proxima_llamada_fecha, no se creará tarea automática');
+      }
+      
+      // Actualización optimista: agregar la llamada localmente
+      setCalls(prev => {
+        const updated = [createdCall, ...prev].sort((a, b) => {
+          const dateA = new Date(a.started_at || a.created_at).getTime();
+          const dateB = new Date(b.started_at || b.created_at).getTime();
+          return dateB - dateA;
+        });
+        console.log('📞 [CRMContactDetail] Llamadas actualizadas localmente:', updated.length, 'llamadas');
+        return updated;
+      });
+      
+      // Cerrar el formulario
       setShowCallForm(false);
+      
+      // Cambiar a la pestaña de historial
       setActiveTab('history');
+      
+      // Recargar datos del contacto en background para mantener consistencia
+      setTimeout(async () => {
+        try {
+          await loadContactData();
+        } catch (err) {
+          console.error('❌ [CRMContactDetail] Error recargando datos:', err);
+        }
+      }, 1000);
     } catch (err: any) {
       console.error('Error creating call:', err);
       // Manejar error 400 relacionado con responsible_user_id
@@ -514,10 +640,63 @@ export function CRMContactDetail() {
         entity_type: 'contacts',
         entity_id: id,
       };
-      await crmService.createTask(finalTaskData);
-      await loadContactData();
+      
+      console.log('📋 [CRMContactDetail] Enviando tarea:', finalTaskData);
+      const createdTask = await crmService.createTask(finalTaskData);
+      console.log('✅ [CRMContactDetail] Tarea creada exitosamente:', createdTask.id);
+      
+      // Cerrar el formulario primero
       setShowTaskForm(false);
+      
+      // Actualización optimista: agregar la tarea localmente inmediatamente
+      setTasks(prev => {
+        const updated = [createdTask, ...prev].sort((a, b) => {
+          const dateA = new Date(a.created_at).getTime();
+          const dateB = new Date(b.created_at).getTime();
+          return dateB - dateA; // Descendente (más recientes primero)
+        });
+        console.log('📋 [CRMContactDetail] Tareas actualizadas localmente:', updated.length, 'tareas');
+        return updated;
+      });
+      
+      // Cambiar a la pestaña de historial para ver la tarea
       setActiveTab('history');
+      
+      // Recargar tareas del servidor en background para mantener consistencia
+      // Usar un delay más largo para asegurar que el backend haya procesado la tarea
+      setTimeout(async () => {
+        try {
+          console.log('🔄 [CRMContactDetail] Recargando tareas del servidor...');
+          const tasksData = await crmService.getContactTasks(id, { limit: 50 });
+          const sortedTasks = (tasksData.items || []).sort((a, b) => {
+            const dateA = new Date(a.created_at).getTime();
+            const dateB = new Date(b.created_at).getTime();
+            return dateB - dateA;
+          });
+          console.log('📋 [CRMContactDetail] Tareas recargadas del servidor:', sortedTasks.length);
+          
+          // Solo actualizar si el servidor devuelve tareas (no sobrescribir si está vacío, podría ser un problema de timing)
+          setTasks(prev => {
+            // Si el servidor devuelve 0 tareas pero tenemos tareas localmente, mantener las locales
+            // Esto puede pasar si el backend aún no ha procesado la tarea
+            if (sortedTasks.length === 0 && prev.length > 0) {
+              console.warn('⚠️ [CRMContactDetail] Servidor devolvió 0 tareas pero tenemos tareas locales, manteniendo estado local');
+              return prev;
+            }
+            
+            // Si el servidor tiene tareas, usar las del servidor (más confiable)
+            if (sortedTasks.length > 0) {
+              return sortedTasks;
+            }
+            
+            // Si ambas están vacías, devolver vacío
+            return sortedTasks;
+          });
+        } catch (err) {
+          console.error('❌ [CRMContactDetail] Error recargando tareas:', err);
+          // No mostrar error al usuario, la tarea ya está en el estado local
+        }
+      }, 1000); // Aumentar delay a 1 segundo para dar más tiempo al backend
     } catch (err: any) {
       console.error('Error creating task:', err);
       // Manejar error 400 relacionado con responsible_user_id
@@ -575,15 +754,56 @@ export function CRMContactDetail() {
       // Cerrar el formulario primero
       setShowNoteForm(false);
       
-      // Forzar recarga de las notas sin usar caché para asegurar que se vea la nueva nota
-      // Esperar un pequeño delay para asegurar que el backend haya procesado la nota
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // Recargar datos del contacto (incluyendo notas)
-      await loadContactData();
+      // Actualización optimista: agregar la nota localmente inmediatamente
+      setNotes(prev => {
+        const updated = [createdNote, ...prev].sort((a, b) => {
+          const dateA = new Date(a.created_at).getTime();
+          const dateB = new Date(b.created_at).getTime();
+          return dateB - dateA; // Descendente (más recientes primero)
+        });
+        console.log('📝 [CRMContactDetail] Notas actualizadas localmente:', updated.length, 'notas');
+        return updated;
+      });
       
       // Cambiar a la pestaña de historial para ver la nota
       setActiveTab('history');
+      
+      // Recargar notas del servidor en background para mantener consistencia
+      // Usar un delay más largo para asegurar que el backend haya procesado la nota
+      setTimeout(async () => {
+        try {
+          console.log('🔄 [CRMContactDetail] Recargando notas del servidor...');
+          const notesData = await crmService.getContactNotes(id, { limit: 50 });
+          const sortedNotes = (notesData.items || []).sort((a, b) => {
+            const dateA = new Date(a.created_at).getTime();
+            const dateB = new Date(b.created_at).getTime();
+            return dateB - dateA;
+          });
+          console.log('📝 [CRMContactDetail] Notas recargadas del servidor:', sortedNotes.length);
+          
+          // Solo actualizar si el servidor devuelve notas (no sobrescribir si está vacío, podría ser un problema de timing)
+          // O si el servidor tiene más notas de las que tenemos localmente (para casos donde se crearon notas desde otro dispositivo)
+          setNotes(prev => {
+            // Si el servidor devuelve 0 notas pero tenemos notas localmente, mantener las locales
+            // Esto puede pasar si el backend aún no ha procesado la nota
+            if (sortedNotes.length === 0 && prev.length > 0) {
+              console.warn('⚠️ [CRMContactDetail] Servidor devolvió 0 notas pero tenemos notas locales, manteniendo estado local');
+              return prev;
+            }
+            
+            // Si el servidor tiene notas, usar las del servidor (más confiable)
+            if (sortedNotes.length > 0) {
+              return sortedNotes;
+            }
+            
+            // Si ambas están vacías, devolver vacío
+            return sortedNotes;
+          });
+        } catch (err) {
+          console.error('❌ [CRMContactDetail] Error recargando notas:', err);
+          // No mostrar error al usuario, la nota ya está en el estado local
+        }
+      }, 1000); // Aumentar delay a 1 segundo para dar más tiempo al backend
     } catch (err: any) {
       console.error('❌ [CRMContactDetail] Error creating note:', err);
       console.error('❌ [CRMContactDetail] Error response:', err?.response?.data);
@@ -1879,7 +2099,7 @@ export function CRMContactDetail() {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="proxima_accion_fecha_edit">Fecha y Hora</Label>
-                  <Input
+                  <DateInput
                     id="proxima_accion_fecha_edit"
                     type="datetime-local"
                     value={editingProximaAccionFecha}

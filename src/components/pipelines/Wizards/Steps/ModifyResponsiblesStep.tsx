@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { DateInput } from '@/components/ui/DateInput';
 import { Textarea } from '@/components/ui/textarea';
 import { CalendarIcon, ChevronRightIcon, ExclamationCircleIcon, UserIcon } from '@heroicons/react/24/outline';
 import { format, addDays } from 'date-fns';
@@ -198,7 +199,7 @@ export function ModifyResponsiblesStep({
               <CalendarIcon className="h-4 w-4 text-gray-500" />
               Fecha Límite
             </Label>
-            <Input
+            <DateInput
               id="dueDate"
               type="date"
               value={actionConfig.dueDate || ''}

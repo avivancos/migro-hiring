@@ -55,10 +55,11 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
       }
     };
 
-    // Usar 'click' en lugar de 'mousedown' para evitar conflictos con los clicks en los resultados
-    document.addEventListener('click', handleClickOutside, true);
+    // Usar 'click' sin capture para evitar conflictos con los clicks en los resultados
+    // El capture: true puede interferir con los clicks en los resultados
+    document.addEventListener('click', handleClickOutside);
     return () => {
-      document.removeEventListener('click', handleClickOutside, true);
+      document.removeEventListener('click', handleClickOutside);
     };
   }, []);
 
@@ -85,8 +86,10 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
       e.preventDefault();
       e.stopPropagation();
     }
-    setSearchQuery('');
+    // Cerrar el dropdown y limpiar búsqueda
     setShowSearchResults(false);
+    setSearchQuery('');
+    // Navegar inmediatamente
     navigate(`/crm/contacts/${contactId}`);
   };
 
@@ -168,10 +171,10 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
                     {searchResults.map((contact) => (
                       <div
                         key={contact.id}
-                        onClick={(e) => handleContactSelect(contact.id, e)}
-                        onMouseDown={(e) => {
-                          e.preventDefault(); // Prevenir que el blur cierre el dropdown antes del click
-                          e.stopPropagation(); // Evitar que el click se propague al document
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleContactSelect(contact.id, e);
                         }}
                         className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
                       >
@@ -274,12 +277,10 @@ export function CRMHeader(_props: CRMHeaderProps = {}) {
                         <div
                           key={contact.id}
                           onClick={(e) => {
-                            handleContactSelect(contact.id, e);
-                            setMobileMenuOpen(false);
-                          }}
-                          onMouseDown={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
+                            handleContactSelect(contact.id, e);
+                            setMobileMenuOpen(false);
                           }}
                           className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 transition-colors"
                         >

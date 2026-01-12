@@ -6,6 +6,7 @@ import type { FormEvent } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { DateInput } from '@/components/ui/DateInput';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { Contact, Company } from '@/types/crm';
@@ -390,7 +391,7 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
               {/* Fecha de Llegada a España */}
               <div>
                 <Label htmlFor="fecha_llegada_espana">Fecha de Llegada a España</Label>
-                <Input
+                <DateInput
                   id="fecha_llegada_espana"
                   type="date"
                   value={formData.fecha_llegada_espana}
