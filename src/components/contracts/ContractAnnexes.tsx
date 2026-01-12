@@ -220,7 +220,7 @@ export function ContractAnnexes({ hiringCode }: ContractAnnexesProps) {
 
       {/* Modal Crear Anexo */}
       <Modal
-        visible={showCreateModal}
+        open={showCreateModal}
         onClose={() => !saving && setShowCreateModal(false)}
         title="Crear Nuevo Anexo"
         size="lg"
@@ -272,7 +272,7 @@ export function ContractAnnexes({ hiringCode }: ContractAnnexesProps) {
 
       {/* Modal Editar Anexo */}
       <Modal
-        visible={showEditModal}
+        open={showEditModal}
         onClose={() => !saving && setShowEditModal(false)}
         title="Editar Anexo"
         size="lg"
@@ -321,7 +321,7 @@ export function ContractAnnexes({ hiringCode }: ContractAnnexesProps) {
 
       {/* Modal Confirmar Eliminación */}
       <Modal
-        visible={showDeleteModal}
+        open={showDeleteModal}
         onClose={() => !saving && setShowDeleteModal(false)}
         title="Confirmar Eliminación"
         size="md"
