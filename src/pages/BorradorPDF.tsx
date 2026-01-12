@@ -47,7 +47,7 @@ export function BorradorPDF() {
           paymentDate: new Date().toISOString(),
           paymentMethod: 'Ejemplo de borrador',
           clientSignature: 'Juan Pérez García'
-        }, false); // isDraft = false (sin marca de agua para compartir)
+        }, false, undefined); // isDraft = false (sin marca de agua para compartir), sin anexos en ejemplo
 
         setContractBlob(blob);
         

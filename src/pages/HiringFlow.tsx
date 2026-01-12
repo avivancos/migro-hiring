@@ -122,13 +122,25 @@ export function HiringFlow() {
           // Dynamic import para PDF generator
           const { generateContractPDF } = await import('@/utils/contractPdfGenerator');
           // Generar PDF definitivo CON firma (isDraft = false)
+          // Cargar anexos si existen
+          let annexesToInclude: Array<{ title: string; content: string }> | undefined = undefined;
+          try {
+            const loadedAnnexes = await hiringService.getAnnexes(code);
+            if (loadedAnnexes.length > 0) {
+              annexesToInclude = loadedAnnexes.map(a => ({ title: a.title, content: a.content }));
+              console.log('📎 Anexos cargados para PDF definitivo:', annexesToInclude.length);
+            }
+          } catch (annexError) {
+            console.warn('No se pudieron cargar anexos:', annexError);
+          }
+          
           const contractBlob = generateContractPDF(details, {
             paymentIntentId,
             stripeTransactionId: paymentIntentId,
             paymentDate: new Date().toISOString(),
             paymentMethod: 'Stripe Checkout',
             clientSignature: clientSignature || undefined
-          }, false); // isDraft = false (contrato final SIN marca de agua)
+          }, false, annexesToInclude); // isDraft = false (contrato final SIN marca de agua)
           
           console.log('📄 Contrato definitivo generado con firma, tamaño:', contractBlob.size);
           

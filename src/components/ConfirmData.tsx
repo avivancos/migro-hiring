@@ -70,8 +70,40 @@ export function ConfirmData({ details, onConfirm, onBack }: ConfirmDataProps) {
   useEffect(() => {
     const generatePDF = async () => {
       try {
+        // Cargar anexos si no vienen en details
+        let annexesToInclude = details.annexes;
+        console.log('📎 ConfirmData - Anexos en details:', details.annexes?.length || 0);
+        
+        if (!annexesToInclude || annexesToInclude.length === 0) {
+          console.log('📎 ConfirmData - Cargando anexos desde backend...');
+          try {
+            const loadedAnnexes = await hiringService.getAnnexes(details.hiring_code);
+            console.log('📎 ConfirmData - Anexos recibidos del backend:', loadedAnnexes.length, loadedAnnexes);
+            if (loadedAnnexes.length > 0) {
+              annexesToInclude = loadedAnnexes.map(a => ({ title: a.title, content: a.content }));
+              console.log('📎 ConfirmData - Anexos procesados para PDF:', annexesToInclude.length, annexesToInclude);
+            } else {
+              console.log('📎 ConfirmData - No hay anexos en el backend');
+              annexesToInclude = [];
+            }
+          } catch (annexError: any) {
+            console.error('❌ ConfirmData - Error cargando anexos:', annexError);
+            console.error('❌ Error details:', {
+              message: annexError?.message,
+              response: annexError?.response?.data,
+              status: annexError?.response?.status,
+              url: annexError?.config?.url
+            });
+            annexesToInclude = [];
+          }
+        } else {
+          console.log('📎 ConfirmData - Usando anexos de details:', annexesToInclude.length);
+        }
+        
+        console.log('📎 ConfirmData - Anexos finales para PDF:', annexesToInclude.length, annexesToInclude);
+        
         const { generateContractPDF } = await import('@/utils/contractPdfGenerator');
-        const blob = generateContractPDF(details, undefined, true); // isDraft = true (vista previa con marca de agua)
+        const blob = generateContractPDF(details, undefined, true, annexesToInclude); // isDraft = true (vista previa con marca de agua)
         setContractBlob(blob);
       } catch (err) {
         console.error('Error generating contract PDF:', err);

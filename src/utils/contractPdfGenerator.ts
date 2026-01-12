@@ -11,7 +11,7 @@ export function generateContractPDF(details: HiringDetails, paymentData?: {
   paymentMethod?: string;
   paymentNote?: string;
   clientSignature?: string;
-}, isDraft: boolean = true): Blob {
+}, isDraft: boolean = true, annexes?: Array<{ title: string; content: string }>): Blob {
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -412,6 +412,32 @@ Esta garantía no resultará aplicable en los supuestos de desistimiento volunta
   addSpace(2);
   addText('Las Partes, con renuncia expresa a cualquier otro fuero que le pudiera corresponder, someten a la jurisdicción de los Juzgados y Tribunales de Salamanca para la resolución de controversias que pudiera surgir en la interpretación, ejecución o cumplimiento.', 10, false);
   addSpace(8);
+
+  // Anexos al contrato (si existen)
+  const contractAnnexes = annexes || details.annexes || [];
+  console.log('📎 PDF Generator - Anexos recibidos:', {
+    fromParam: annexes?.length || 0,
+    fromDetails: details.annexes?.length || 0,
+    total: contractAnnexes.length,
+    annexes: contractAnnexes
+  });
+  
+  if (contractAnnexes.length > 0) {
+    console.log('📎 Agregando anexos al PDF:', contractAnnexes.length);
+    addSpace(5);
+    addText('ANEXOS AL CONTRATO:', 12, true);
+    addSpace(3);
+    
+    contractAnnexes.forEach((annex, index) => {
+      console.log(`📎 Agregando anexo ${index + 1}:`, annex.title);
+      addText(`ANEXO ${index + 1} - ${annex.title.toUpperCase()}`, 11, true);
+      addSpace(2);
+      addText(annex.content, 10, false);
+      addSpace(4);
+    });
+  } else {
+    console.log('⚠️ No hay anexos para incluir en el PDF');
+  }
 
   // Información del Pago (si está disponible)
   if (paymentData) {

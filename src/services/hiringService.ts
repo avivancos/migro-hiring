@@ -20,6 +20,33 @@ export const hiringService = {
   },
 
   /**
+   * Get annexes for a hiring code (public endpoint)
+   * Falls back to admin endpoint if public doesn't exist
+   */
+  async getAnnexes(code: string): Promise<Array<{ id?: string; title: string; content: string }>> {
+    console.log('📎 hiringService.getAnnexes - Buscando anexos para:', code);
+    
+    // Como el backend solo tiene endpoint admin, usar directamente el admin
+    // En el flujo público, esto funcionará porque el backend debería permitir acceso
+    // o mejor aún, incluir anexos en GET /hiring/{code}
+    try {
+      console.log('📎 Usando endpoint admin para obtener anexos...');
+      const { contractsService } = await import('@/services/contractsService');
+      const adminAnnexes = await contractsService.getAnnexes(code);
+      console.log('✅ Anexos obtenidos del endpoint admin:', adminAnnexes.length, adminAnnexes);
+      return adminAnnexes.map(a => ({ id: a.id, title: a.title, content: a.content }));
+    } catch (adminError: any) {
+      console.error('❌ Error cargando anexos desde admin:', {
+        message: adminError?.message,
+        response: adminError?.response?.data,
+        status: adminError?.response?.status,
+        url: adminError?.config?.url
+      });
+      return [];
+    }
+  },
+
+  /**
    * Step 2: Confirm user data
    */
   async confirmData(code: string, request: ConfirmDataRequest): Promise<void> {

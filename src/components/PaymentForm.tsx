@@ -254,6 +254,18 @@ export function PaymentForm(props: PaymentFormProps) {
       if (props.hiringDetails) {
         const clientSignature = localStorage.getItem(`client_signature_${props.hiringCode}`);
         
+        // Cargar anexos si existen
+        let annexesToInclude: Array<{ title: string; content: string }> | undefined = undefined;
+        try {
+          const loadedAnnexes = await hiringService.getAnnexes(props.hiringCode);
+          if (loadedAnnexes.length > 0) {
+            annexesToInclude = loadedAnnexes.map(a => ({ title: a.title, content: a.content }));
+            console.log('📎 Anexos cargados para PDF (test):', annexesToInclude.length);
+          }
+        } catch (annexError) {
+          console.warn('No se pudieron cargar anexos:', annexError);
+        }
+        
         // Dynamic import para PDF generator
         const { generateContractPDF } = await import('@/utils/contractPdfGenerator');
         const contractBlob = generateContractPDF(props.hiringDetails, {
@@ -262,7 +274,7 @@ export function PaymentForm(props: PaymentFormProps) {
           paymentDate: new Date().toISOString(),
           paymentMethod: 'Simulación TEST',
           clientSignature: clientSignature || undefined
-        }, false); // isDraft = false (contrato definitivo SIN marca de agua)
+        }, false, annexesToInclude); // isDraft = false (contrato definitivo SIN marca de agua)
 
         const formData = new FormData();
         formData.append('contract', contractBlob, `contrato_definitivo_${props.hiringCode}.pdf`);
@@ -299,6 +311,18 @@ export function PaymentForm(props: PaymentFormProps) {
       // Obtener firma del cliente
       const clientSignature = localStorage.getItem(`client_signature_${props.hiringCode}`);
       
+      // Cargar anexos si existen
+      let annexesToInclude: Array<{ title: string; content: string }> | undefined = undefined;
+      try {
+        const loadedAnnexes = await hiringService.getAnnexes(props.hiringCode);
+        if (loadedAnnexes.length > 0) {
+          annexesToInclude = loadedAnnexes.map(a => ({ title: a.title, content: a.content }));
+          console.log('📎 Anexos cargados para PDF (manual):', annexesToInclude.length);
+        }
+      } catch (annexError) {
+        console.warn('No se pudieron cargar anexos:', annexError);
+      }
+      
       // Dynamic import para PDF generator
       const { generateContractPDF } = await import('@/utils/contractPdfGenerator');
       // Generar PDF definitivo CON firma (isDraft = false)
@@ -309,7 +333,7 @@ export function PaymentForm(props: PaymentFormProps) {
         paymentMethod: props.hiringDetails.manual_payment_method || 'Pago manual',
         paymentNote: props.hiringDetails.manual_payment_note,
         clientSignature: clientSignature || undefined
-      }, false); // isDraft = false (contrato final SIN marca de agua)
+      }, false, annexesToInclude); // isDraft = false (contrato final SIN marca de agua)
       
       console.log('📄 Contrato definitivo generado con firma, tamaño:', contractBlob.size);
       
@@ -458,6 +482,18 @@ export function PaymentForm(props: PaymentFormProps) {
                     if (props.hiringDetails) {
                       const clientSignature = localStorage.getItem(`client_signature_${props.hiringCode}`);
                       
+                      // Cargar anexos si existen
+                      let annexesToInclude: Array<{ title: string; content: string }> | undefined = undefined;
+                      try {
+                        const loadedAnnexes = await hiringService.getAnnexes(props.hiringCode);
+                        if (loadedAnnexes.length > 0) {
+                          annexesToInclude = loadedAnnexes.map(a => ({ title: a.title, content: a.content }));
+                          console.log('📎 Anexos cargados para PDF (live):', annexesToInclude.length);
+                        }
+                      } catch (annexError) {
+                        console.warn('No se pudieron cargar anexos:', annexError);
+                      }
+                      
                       // Dynamic import para PDF generator
                       const { generateContractPDF } = await import('@/utils/contractPdfGenerator');
                       const contractBlob = generateContractPDF(props.hiringDetails, {
@@ -466,7 +502,7 @@ export function PaymentForm(props: PaymentFormProps) {
                         paymentDate: new Date().toISOString(),
                         paymentMethod: 'Simulación LIVE (Mantenimiento)',
                         clientSignature: clientSignature || undefined
-                      }, false);
+                      }, false, annexesToInclude);
 
                       const formData = new FormData();
                       formData.append('contract', contractBlob, `contrato_definitivo_${props.hiringCode}.pdf`);

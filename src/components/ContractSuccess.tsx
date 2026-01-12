@@ -106,6 +106,19 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
     const manualPaymentDate = localStorage.getItem(`manual_payment_date_${hiringCode}`);
     const manualPaymentMethod = localStorage.getItem(`manual_payment_method_${hiringCode}`);
     
+    // Cargar anexos si existen
+    let annexesToInclude: Array<{ title: string; content: string }> | undefined = undefined;
+    try {
+      const { hiringService } = await import('@/services/hiringService');
+      const loadedAnnexes = await hiringService.getAnnexes(hiringCode);
+      if (loadedAnnexes.length > 0) {
+        annexesToInclude = loadedAnnexes.map(a => ({ title: a.title, content: a.content }));
+        console.log('📎 Anexos cargados para descarga:', annexesToInclude.length);
+      }
+    } catch (annexError) {
+      console.warn('No se pudieron cargar anexos:', annexError);
+    }
+    
     // Generar PDF localmente
     console.log('🔄 Generando PDF localmente...');
     const contractBlob = generateContractPDF(details, {
@@ -115,7 +128,7 @@ export function ContractSuccess({ hiringCode, serviceName, userEmail }: Contract
       paymentMethod: manualPaymentMethod || 'Generado localmente',
       paymentNote: manualPaymentNote || undefined,
       clientSignature: clientSignature || undefined
-    }, false); // isDraft = false (contrato final sin marca de agua)
+    }, false, annexesToInclude); // isDraft = false (contrato final sin marca de agua)
     console.log('✅ PDF generado, tamaño:', contractBlob.size, 'bytes');
     
     // Descargar el PDF generado

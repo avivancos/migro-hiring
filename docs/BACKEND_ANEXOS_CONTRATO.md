@@ -2,8 +2,10 @@
 
 **Fecha**: 2025-01-30  
 **Prioridad**: 🔴 Alta  
-**Estado**: ⏳ Pendiente  
+**Estado**: ✅ Backend Implementado - ✅ Frontend Integrado  
 **Módulo**: Backend - Hiring Codes / Contratos
+
+**NOTA IMPORTANTE**: ✅ Todos los endpoints admin están implementados y funcionando. El frontend está integrado y listo para usar los endpoints.
 
 ---
 
@@ -115,7 +117,55 @@ class ContractAnnexResponse(ContractAnnexBase):
 
 **Archivo sugerido**: `app/api/endpoints/admin_hiring.py` (o crear `app/api/endpoints/contract_annexes.py`)
 
-#### 4.1. GET `/admin/hiring/{hiring_code}/annexes`
+#### 4.1. GET `/hiring/{hiring_code}/annexes` (ENDPOINT PÚBLICO - PRIORITARIO)
+
+**IMPORTANTE**: Este endpoint debe ser público (sin autenticación) para que los clientes puedan ver los anexos en el flujo de contratación.
+
+Listar todos los anexos de un código de contratación.
+
+**Autenticación**: ❌ NO requiere autenticación (endpoint público)
+
+**Response**:
+```json
+[
+  {
+    "id": 1,
+    "hiring_code": "ABC123",
+    "title": "Anexo I - Condiciones Especiales",
+    "content": "Contenido del anexo...",
+    "created_at": "2025-01-30T10:00:00Z",
+    "updated_at": "2025-01-30T10:00:00Z",
+    "created_by": null
+  }
+]
+```
+
+**Implementación**:
+```python
+@router.get("/hiring/{hiring_code}/annexes", response_model=List[schemas.ContractAnnexResponse])
+async def get_annexes_public(
+    hiring_code: str,
+    db: Session = Depends(get_db)
+):
+    """Obtener todos los anexos de un código de contratación (endpoint público)"""
+    # Verificar que el hiring code existe
+    hiring = db.query(models.Hiring).filter(models.Hiring.hiring_code == hiring_code).first()
+    if not hiring:
+        raise HTTPException(status_code=404, detail="Código de contratación no encontrado")
+    
+    # Obtener anexos
+    annexes = db.query(models.ContractAnnex).filter(
+        models.ContractAnnex.hiring_code == hiring_code
+    ).order_by(models.ContractAnnex.created_at.asc()).all()
+    
+    return annexes
+```
+
+**Alternativa recomendada**: Incluir los anexos directamente en la respuesta de `GET /hiring/{hiring_code}` para evitar una llamada adicional.
+
+---
+
+#### 4.2. GET `/admin/hiring/{hiring_code}/annexes` (ENDPOINT ADMIN)
 
 Listar todos los anexos de un código de contratación.
 
@@ -158,7 +208,7 @@ async def get_annexes(
     return annexes
 ```
 
-#### 4.2. POST `/admin/hiring/{hiring_code}/annexes`
+#### 4.3. POST `/admin/hiring/{hiring_code}/annexes`
 
 Crear un nuevo anexo.
 
@@ -221,7 +271,7 @@ async def create_annex(
     return new_annex
 ```
 
-#### 4.3. PATCH `/admin/hiring/annexes/{annex_id}`
+#### 4.4. PATCH `/admin/hiring/annexes/{annex_id}`
 
 Actualizar un anexo existente.
 
@@ -284,7 +334,7 @@ async def update_annex(
     return annex
 ```
 
-#### 4.4. DELETE `/admin/hiring/annexes/{annex_id}`
+#### 4.5. DELETE `/admin/hiring/annexes/{annex_id}`
 
 Eliminar un anexo.
 
@@ -357,13 +407,13 @@ async def delete_annex(
      }'
    ```
 
-2. **Listar anexos de un hiring code**:
+3. **Listar anexos de un hiring code (admin)**:
    ```bash
    curl -X GET "https://api.migro.es/api/admin/hiring/ABC123/annexes" \
      -H "X-Admin-Password: Pomelo2005.1"
    ```
 
-3. **Actualizar anexo**:
+4. **Actualizar anexo**:
    ```bash
    curl -X PATCH "https://api.migro.es/api/admin/hiring/annexes/1" \
      -H "X-Admin-Password: Pomelo2005.1" \
@@ -374,13 +424,13 @@ async def delete_annex(
      }'
    ```
 
-4. **Eliminar anexo**:
+5. **Eliminar anexo**:
    ```bash
    curl -X DELETE "https://api.migro.es/api/admin/hiring/annexes/1" \
      -H "X-Admin-Password: Pomelo2005.1"
    ```
 
-5. **Error: Hiring code no existe**:
+6. **Error: Hiring code no existe**:
    ```bash
    curl -X POST "https://api.migro.es/api/admin/hiring/INVALID/annexes" \
      -H "X-Admin-Password: Pomelo2005.1" \
@@ -389,7 +439,7 @@ async def delete_annex(
    ```
    **Esperado**: `404 Not Found`
 
-6. **Error: Campos vacíos**:
+7. **Error: Campos vacíos**:
    ```bash
    curl -X POST "https://api.migro.es/api/admin/hiring/ABC123/annexes" \
      -H "X-Admin-Password: Pomelo2005.1" \
@@ -434,19 +484,30 @@ Se recomienda agregar logging para:
 
 ## ✅ Checklist de Implementación
 
-- [ ] Crear migración de base de datos para tabla `contract_annexes`
-- [ ] Crear modelo SQLAlchemy `ContractAnnex`
-- [ ] Crear esquemas Pydantic para anexos
-- [ ] Implementar endpoint GET `/admin/hiring/{hiring_code}/annexes`
-- [ ] Implementar endpoint POST `/admin/hiring/{hiring_code}/annexes`
-- [ ] Implementar endpoint PATCH `/admin/hiring/annexes/{annex_id}`
-- [ ] Implementar endpoint DELETE `/admin/hiring/annexes/{annex_id}`
-- [ ] Agregar validaciones de entrada
-- [ ] Agregar logging
+### Backend ✅ COMPLETADO
+- [x] Crear migración de base de datos para tabla `contract_annexes`
+- [x] Crear modelo SQLAlchemy `ContractAnnex`
+- [x] Crear esquemas Pydantic para anexos
+- [x] Implementar endpoint admin GET `/admin/hiring/{hiring_code}/annexes`
+- [x] Implementar endpoint POST `/admin/hiring/{hiring_code}/annexes`
+- [x] Implementar endpoint PATCH `/admin/hiring/annexes/{annex_id}`
+- [x] Implementar endpoint DELETE `/admin/hiring/annexes/{annex_id}`
+- [x] Agregar validaciones de entrada
+- [x] Agregar logging
+- [x] Documentar cambios en el código
+
+### Frontend ✅ COMPLETADO
+- [x] Tipos TypeScript para anexos
+- [x] Servicios para CRUD de anexos
+- [x] Componente de gestión de anexos en admin
+- [x] Integración en generador de PDF
+- [x] Integración en flujo público de contratación
+
+### Pendiente (Opcional - Mejora)
+- [ ] **Opcional**: Implementar endpoint público GET `/hiring/{hiring_code}/annexes` (sin autenticación)
+- [ ] **Opcional**: Incluir anexos en la respuesta de `GET /hiring/{hiring_code}` (alternativa al endpoint público)
 - [ ] Escribir tests unitarios
 - [ ] Escribir tests de integración
-- [ ] Documentar cambios en el código
-- [ ] Probar con el frontend
 
 ---
 

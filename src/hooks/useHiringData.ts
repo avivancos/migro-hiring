@@ -38,6 +38,31 @@ export function useHiringData(code: string) {
       console.log('💰 Manual payment note:', data.manual_payment_note);
       console.log('💰 Manual payment method:', data.manual_payment_method);
       console.log('📊 OBJETO COMPLETO:', JSON.stringify(data, null, 2));
+      
+      // Cargar anexos si no vienen en la respuesta
+      if (!data.annexes || data.annexes.length === 0) {
+        console.log('📎 useHiringData - No hay anexos en la respuesta, cargando desde backend...');
+        try {
+          const loadedAnnexes = await hiringService.getAnnexes(code);
+          console.log('📎 useHiringData - Anexos recibidos:', loadedAnnexes.length, loadedAnnexes);
+          if (loadedAnnexes.length > 0) {
+            data.annexes = loadedAnnexes.map(a => ({ title: a.title, content: a.content }));
+            console.log('✅ useHiringData - Anexos agregados a details:', data.annexes.length, data.annexes);
+          } else {
+            console.log('📎 useHiringData - No hay anexos para este contrato');
+          }
+        } catch (annexError: any) {
+          console.error('❌ useHiringData - Error cargando anexos:', {
+            message: annexError?.message,
+            response: annexError?.response?.data,
+            status: annexError?.response?.status
+          });
+          // Continuar sin anexos
+        }
+      } else {
+        console.log('✅ useHiringData - Anexos ya incluidos en la respuesta:', data.annexes.length, data.annexes);
+      }
+      
       setDetails(data);
     } catch (err) {
       const message = getErrorMessage(err);

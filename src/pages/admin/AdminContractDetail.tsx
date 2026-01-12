@@ -121,6 +121,17 @@ export function AdminContractDetail() {
     };
     
     // Generar PDF localmente
+    // Cargar anexos si existen
+    let annexesToInclude: Array<{ title: string; content: string }> | undefined = undefined;
+    try {
+      const loadedAnnexes = await contractsService.getAnnexes(contract.hiring_code);
+      if (loadedAnnexes.length > 0) {
+        annexesToInclude = loadedAnnexes.map(a => ({ title: a.title, content: a.content }));
+      }
+    } catch (annexError) {
+      console.warn('No se pudieron cargar anexos:', annexError);
+    }
+    
     const contractBlob = generateContractPDF(hiringDetails, {
       paymentIntentId: contract.payment_intent_id || 'admin_generated',
       stripeTransactionId: contract.payment_intent_id || `admin_${Date.now()}`,
@@ -128,7 +139,7 @@ export function AdminContractDetail() {
       paymentMethod: contract.manual_payment_method || 'Generado desde admin',
       paymentNote: contract.manual_payment_note,
       clientSignature: undefined, // No tenemos firma del cliente en el admin
-    }, !isFinal); // isDraft = true si no es final, false si es final
+    }, !isFinal, annexesToInclude); // isDraft = true si no es final, false si es final
     
     // Descargar el PDF generado
     const url = window.URL.createObjectURL(contractBlob);

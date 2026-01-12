@@ -44,6 +44,12 @@ export interface HiringDetails {
   first_payment_amount?: number; // Monto del primer pago en centavos
   subscription_id?: string; // Solo para suscripciones
   subscription_status?: string; // Solo para suscripciones
+  // Anexos al contrato
+  annexes?: Array<{
+    id?: string;
+    title: string;
+    content: string;
+  }>;
 }
 
 export interface ConfirmDataRequest {
