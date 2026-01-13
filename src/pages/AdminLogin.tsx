@@ -37,10 +37,6 @@ export function AdminLogin() {
     setLoading(true);
     setError(null);
 
-    // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/2b14ca23-0842-4fd5-8b43-eab84c4904d2',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'AdminLogin.tsx:40',message:'Login iniciado - valores del formulario',data:{email:email,emailLength:email.length,emailHasSpaces:email.trim()!==email,passwordLength:password.length,passwordHasSpaces:password.trim()!==password},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-    // #endregion
-
     try {
       await login(email, password);
       
