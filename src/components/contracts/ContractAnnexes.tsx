@@ -19,7 +19,7 @@ interface ContractAnnexesProps {
 }
 
 export function ContractAnnexes({ hiringCode }: ContractAnnexesProps) {
-  const { user, isAdmin } = useAuth();
+  const { isAdmin } = useAuth();
   const [annexes, setAnnexes] = useState<ContractAnnex[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
