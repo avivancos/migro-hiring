@@ -40,16 +40,49 @@ api.interceptors.request.use(
       '/auth/refresh',
       // Pili LLM deshabilitado - movido a repositorio externo
       // '/ai/pili-openai/health', // Health check no requiere autenticación
-      '/hiring/', // Endpoints públicos de contratación (no requieren autenticación)
       '/pipelines/admin/approve-hiring-code' // Endpoint público de aprobación con token
     ];
-    const isPublicEndpoint = config.url && publicEndpoints.some(endpoint => config.url!.includes(endpoint));
+    
+    // Endpoints públicos de contratación (no requieren autenticación)
+    // IMPORTANTE: Solo aplicar a rutas que NO sean /admin/hiring/
+    const isPublicHiringEndpoint = config.url?.includes('/hiring/') && 
+                                    !config.url?.includes('/admin/hiring/');
+    
+    // Endpoint GET de anexos es público (no requiere autenticación)
+    // POST, PATCH, DELETE sí requieren autenticación JWT con permisos de admin
+    const isAnnexesGetEndpoint = config.method?.toLowerCase() === 'get' && 
+                                  config.url?.includes('/admin/hiring/') && 
+                                  config.url?.includes('/annexes') &&
+                                  !config.url?.includes('/annexes/'); // Excluir GET de anexo específico si existe
+    
+    const isPublicEndpoint = (config.url && publicEndpoints.some(endpoint => config.url!.includes(endpoint))) || 
+                            isPublicHiringEndpoint ||
+                            isAnnexesGetEndpoint;
     
     // No añadir token si ya tiene X-Admin-Password (autenticación alternativa)
     const hasAdminPassword = config.headers && 'X-Admin-Password' in config.headers;
     
+    // Log de depuración para endpoints de anexos
+    if (config.url?.includes('/annexes')) {
+      console.log('🔍 [api.ts] Endpoint de anexos:', {
+        url: config.url,
+        method: config.method,
+        isAnnexesGetEndpoint,
+        isPublicEndpoint,
+        hasAdminPassword,
+      });
+    }
+    
     if (!isPublicEndpoint && !hasAdminPassword) {
       let token = TokenStorage.getAccessToken();
+      
+      // Log de depuración para endpoints de anexos
+      if (config.url?.includes('/annexes')) {
+        console.log('🔍 [api.ts] Token para anexos:', {
+          hasToken: !!token,
+          tokenLength: token?.length,
+        });
+      }
       
       if (token) {
         // Usar TokenStorage como fuente de verdad (usa expires_in del servidor con buffer de 2 min)
@@ -111,6 +144,21 @@ api.interceptors.request.use(
         }
         
         config.headers.Authorization = `Bearer ${token}`;
+        
+        // Log de depuración para endpoints de anexos
+        if (config.url?.includes('/annexes')) {
+          console.log('✅ [api.ts] Token JWT agregado para anexos');
+        }
+      } else {
+        // Log de depuración si no hay token
+        if (config.url?.includes('/annexes')) {
+          console.warn('⚠️ [api.ts] No hay token disponible para endpoint de anexos');
+        }
+      }
+    } else {
+      // Log de depuración si es endpoint público
+      if (config.url?.includes('/annexes')) {
+        console.log('ℹ️ [api.ts] Endpoint de anexos es público, no se agrega token');
       }
     }
     

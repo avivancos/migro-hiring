@@ -474,6 +474,7 @@ export const contractsService = {
     const { data } = await api.post<ContractAnnex>(
       `/admin/hiring/${request.hiring_code}/annexes`,
       {
+        hiring_code: request.hiring_code,
         title: request.title,
         content: request.content,
       }

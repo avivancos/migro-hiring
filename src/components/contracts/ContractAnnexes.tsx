@@ -11,12 +11,15 @@ import { DocumentTextIcon, PencilIcon, TrashIcon, PlusIcon } from '@heroicons/re
 import type { ContractAnnex, ContractAnnexCreateRequest, ContractAnnexUpdateRequest } from '@/types/contracts';
 import { contractsService } from '@/services/contractsService';
 import { formatDate } from '@/utils/formatters';
+import { useAuth } from '@/providers/AuthProvider';
+import { getErrorMessage } from '@/services/api';
 
 interface ContractAnnexesProps {
   hiringCode: string;
 }
 
 export function ContractAnnexes({ hiringCode }: ContractAnnexesProps) {
+  const { user, isAdmin } = useAuth();
   const [annexes, setAnnexes] = useState<ContractAnnex[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -67,6 +70,11 @@ export function ContractAnnexes({ hiringCode }: ContractAnnexesProps) {
   };
 
   const handleSaveCreate = async () => {
+    if (!isAdmin) {
+      alert('Solo los administradores pueden crear anexos');
+      return;
+    }
+
     if (!formData.title.trim() || !formData.content.trim()) {
       alert('Por favor completa todos los campos');
       return;
@@ -85,13 +93,27 @@ export function ContractAnnexes({ hiringCode }: ContractAnnexesProps) {
       await loadAnnexes();
     } catch (error: any) {
       console.error('Error creando anexo:', error);
-      alert(error.message || 'Error al crear el anexo');
+      
+      // Manejo específico de errores de autenticación y permisos
+      if (error.response?.status === 401) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      } else if (error.response?.status === 403) {
+        alert('No tienes permisos de administrador para crear anexos.');
+      } else {
+        const errorMessage = getErrorMessage(error);
+        alert(errorMessage || 'Error al crear el anexo');
+      }
     } finally {
       setSaving(false);
     }
   };
 
   const handleSaveEdit = async () => {
+    if (!isAdmin) {
+      alert('Solo los administradores pueden editar anexos');
+      return;
+    }
+
     if (!selectedAnnex || !formData.title.trim() || !formData.content.trim()) {
       alert('Por favor completa todos los campos');
       return;
@@ -110,13 +132,27 @@ export function ContractAnnexes({ hiringCode }: ContractAnnexesProps) {
       await loadAnnexes();
     } catch (error: any) {
       console.error('Error actualizando anexo:', error);
-      alert(error.message || 'Error al actualizar el anexo');
+      
+      // Manejo específico de errores de autenticación y permisos
+      if (error.response?.status === 401) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      } else if (error.response?.status === 403) {
+        alert('No tienes permisos de administrador para editar anexos.');
+      } else {
+        const errorMessage = getErrorMessage(error);
+        alert(errorMessage || 'Error al actualizar el anexo');
+      }
     } finally {
       setSaving(false);
     }
   };
 
   const handleConfirmDelete = async () => {
+    if (!isAdmin) {
+      alert('Solo los administradores pueden eliminar anexos');
+      return;
+    }
+
     if (!selectedAnnex || !selectedAnnex.id) return;
 
     setSaving(true);
@@ -127,7 +163,16 @@ export function ContractAnnexes({ hiringCode }: ContractAnnexesProps) {
       await loadAnnexes();
     } catch (error: any) {
       console.error('Error eliminando anexo:', error);
-      alert(error.message || 'Error al eliminar el anexo');
+      
+      // Manejo específico de errores de autenticación y permisos
+      if (error.response?.status === 401) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      } else if (error.response?.status === 403) {
+        alert('No tienes permisos de administrador para eliminar anexos.');
+      } else {
+        const errorMessage = getErrorMessage(error);
+        alert(errorMessage || 'Error al eliminar el anexo');
+      }
     } finally {
       setSaving(false);
     }
@@ -158,14 +203,16 @@ export function ContractAnnexes({ hiringCode }: ContractAnnexesProps) {
               <DocumentTextIcon width={20} height={20} />
               Anexos al Contrato
             </CardTitle>
-            <Button
-              onClick={handleCreate}
-              size="sm"
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
-            >
-              <PlusIcon width={16} height={16} />
-              Nuevo Anexo
-            </Button>
+            {isAdmin && (
+              <Button
+                onClick={handleCreate}
+                size="sm"
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white"
+              >
+                <PlusIcon width={16} height={16} />
+                Nuevo Anexo
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -187,24 +234,26 @@ export function ContractAnnexes({ hiringCode }: ContractAnnexesProps) {
                       <h4 className="font-semibold text-gray-900 mb-1">{annex.title}</h4>
                       <p className="text-sm text-gray-600 whitespace-pre-wrap">{annex.content}</p>
                     </div>
-                    <div className="flex items-center gap-2 ml-4">
-                      <Button
-                        onClick={() => handleEdit(annex)}
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-1"
-                      >
-                        <PencilIcon width={14} height={14} />
-                      </Button>
-                      <Button
-                        onClick={() => handleDelete(annex)}
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:border-red-300"
-                      >
-                        <TrashIcon width={14} height={14} />
-                      </Button>
-                    </div>
+                    {isAdmin && (
+                      <div className="flex items-center gap-2 ml-4">
+                        <Button
+                          onClick={() => handleEdit(annex)}
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center gap-1"
+                        >
+                          <PencilIcon width={14} height={14} />
+                        </Button>
+                        <Button
+                          onClick={() => handleDelete(annex)}
+                          variant="outline"
+                          size="sm"
+                          className="flex items-center gap-1 text-red-600 hover:text-red-700 hover:border-red-300"
+                        >
+                          <TrashIcon width={14} height={14} />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   {annex.created_at && (
                     <p className="text-xs text-gray-400 mt-2">
@@ -230,8 +279,11 @@ export function ContractAnnexes({ hiringCode }: ContractAnnexesProps) {
             <Label htmlFor="annex-title">Título del Anexo *</Label>
             <Input
               id="annex-title"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              value={formData.title || ''}
+              onChange={(e) => {
+                const newTitle = e.target.value;
+                setFormData(prev => ({ ...prev, title: newTitle }));
+              }}
               placeholder="Ej: Anexo I - Condiciones Especiales"
               disabled={saving}
             />
@@ -240,8 +292,11 @@ export function ContractAnnexes({ hiringCode }: ContractAnnexesProps) {
             <Label htmlFor="annex-content">Contenido del Anexo *</Label>
             <Textarea
               id="annex-content"
-              value={formData.content}
-              onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+              value={formData.content || ''}
+              onChange={(e) => {
+                const newContent = e.target.value;
+                setFormData(prev => ({ ...prev, content: newContent }));
+              }}
               placeholder="Escribe el contenido del anexo aquí..."
               rows={10}
               disabled={saving}
@@ -261,8 +316,13 @@ export function ContractAnnexes({ hiringCode }: ContractAnnexesProps) {
             </Button>
             <Button
               onClick={handleSaveCreate}
-              disabled={saving || !formData.title.trim() || !formData.content.trim()}
-              className="bg-green-600 hover:bg-green-700 text-white"
+              disabled={saving || !formData.title?.trim() || !formData.content?.trim()}
+              className="bg-green-600 hover:bg-green-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              title={
+                !formData.title?.trim() || !formData.content?.trim()
+                  ? 'Por favor completa todos los campos requeridos'
+                  : ''
+              }
             >
               {saving ? 'Guardando...' : 'Guardar Anexo'}
             </Button>
