@@ -7,7 +7,7 @@
 ## 🎯 Documentación Principal
 
 ### 1. **Prompt Completo del Agente Frontend**
-📄 **Archivo**: `docs/admin-react/FRONTEND_AGENT_PROMPT.md` (si existe) o consultar `docs/admin-react/IMPLEMENTACION_COMPLETA.md`
+📄 **Archivo**: `docs/admin-react/FRONTEND_AGENT_PROMPT.md`
 
 **Contenido**:
 - Principios fundamentales de UX/UI
@@ -24,38 +24,20 @@
 ### 2. **Instrucciones Específicas por Funcionalidad**
 
 #### A. **Sistema de Anexos al Contrato** (NUEVO - 2025-01-30)
-📄 **Archivo**: `docs/BACKEND_ANEXOS_CONTRATO.md`
+📄 **Archivo**: `docs/BACKEND_CONTRACT_ANNEXES_IMPLEMENTATION.md`
 
-**Estado Frontend**: ✅ **IMPLEMENTADO**
-
-**Componentes Frontend**:
-- `src/components/contracts/ContractAnnexes.tsx` - Componente principal de gestión
-- Integrado en `src/pages/admin/AdminContractDetail.tsx`
-
-**Endpoints Backend a implementar**:
-- `GET /admin/hiring/{hiring_code}/annexes` - Listar anexos
-- `POST /admin/hiring/{hiring_code}/annexes` - Crear anexo
-- `PATCH /admin/hiring/annexes/{annex_id}` - Actualizar anexo
-- `DELETE /admin/hiring/annexes/{annex_id}` - Eliminar anexo
+**Endpoints a implementar**:
+- `GET /api/admin/hiring/{hiring_code}/annexes` - Listar anexos
+- `POST /api/admin/hiring/{hiring_code}/annexes` - Crear anexo
+- `PATCH /api/admin/hiring/annexes/{annex_id}` - Actualizar anexo
+- `DELETE /api/admin/hiring/annexes/{annex_id}` - Eliminar anexo
 
 **Autenticación**: Header `X-Admin-Password: Pomelo2005.1`
 
-**Schemas TypeScript** (ya implementados):
-- `ContractAnnex` - Interfaz principal
-- `ContractAnnexCreateRequest` - Para crear
-- `ContractAnnexUpdateRequest` - Para actualizar
-
-**Ubicación en Frontend**:
-- Ruta: `/admin/contracts/{code}` (página de detalle de contrato)
-- Sección: Después de "Información del Servicio"
-
-**Características implementadas**:
-- ✅ Listar anexos de un contrato
-- ✅ Crear nuevo anexo (modal con título y contenido)
-- ✅ Editar anexo existente
-- ✅ Eliminar anexo (con confirmación)
-- ✅ UI responsive y moderna
-- ✅ Validación de campos requeridos
+**Schemas**:
+- `ContractAnnexResponse` - Para respuestas
+- `ContractAnnexCreate` - Para crear
+- `ContractAnnexUpdate` - Para actualizar
 
 ---
 
@@ -99,12 +81,31 @@
 ---
 
 #### D. **Creación de Contactos desde Replit**
-📄 **Archivo**: `docs/MENSAJE_PARA_AGENTE_REPLIT.md` (si existe)
+📄 **Archivo**: `docs/MENSAJE_PARA_AGENTE_REPLIT.md`
 
 **Endpoint**:
 - `POST /api/crm/contacts`
 
 **Importante**: Incluir `source: "replit"` para crear automáticamente una oportunidad asociada.
+
+---
+
+#### E. **Acceso Sin Restricciones para Agentes** (NUEVO - 2025-01-30)
+📄 **Archivo**: `docs/FRONTEND_ACCESO_AGENTES_SIN_RESTRICCIONES.md`
+
+**Cambio Crítico**: El backend ha eliminado todas las restricciones de acceso basadas en roles.
+
+**Recursos afectados**:
+- Oportunidades (Opportunities)
+- Contactos (Contacts)
+- Notas (Notes)
+- Tareas (Tasks)
+- Llamadas (Calls)
+- Actividades (Activities)
+
+**Acción requerida**: Eliminar filtros automáticos y validaciones de permisos en el frontend. Todos los usuarios autenticados pueden acceder a todos los recursos.
+
+**Ver**: `docs/FRONTEND_ACCESO_AGENTES_SIN_RESTRICCIONES.md` para detalles completos y ejemplos de código.
 
 ---
 
@@ -193,7 +194,7 @@ Para cada módulo implementado, verificar:
 - [ ] ✅ Manejo de errores elegante
 - [ ] ✅ Loading states apropiados
 - [ ] ✅ Validación de formularios clara
-- [ ] ✅ Permisos respetados según rol
+- [ ] ✅ Acceso sin restricciones implementado (ver `FRONTEND_ACCESO_AGENTES_SIN_RESTRICCIONES.md`)
 - [ ] ✅ Navegación intuitiva
 - [ ] ✅ Búsqueda y filtros funcionales
 - [ ] ✅ Exportación implementada (si aplica)
@@ -231,19 +232,18 @@ Para cada módulo implementado, verificar:
 
 ### Guías de Implementación Específicas
 
-- **Autenticación**: `docs/FRONTEND_AUTH_PERSISTENCE_GUIDE.md`
-- **Validación de Errores**: `docs/FRONTEND_VALIDATION_ERROR_HANDLING.md` ✅
-- **Hiring Payments**: Ver documentación en `docs/FRONTEND_*` relacionada con pagos
-- **Stripe Checkout**: Ver documentación en `docs/FRONTEND_*` relacionada con Stripe
-- **Qualification Tests**: Ver documentación en `docs/frontend_qualification_test_guide.md` (si existe)
-- **Agent Journal**: `docs/FRONTEND_AGENT_JOURNAL_IMPLEMENTATION.md`
-- **Anexos al Contrato**: `docs/BACKEND_ANEXOS_CONTRATO.md` ✅ (Frontend implementado)
+- **Acceso Sin Restricciones para Agentes** (NUEVO - 2025-01-30): `docs/FRONTEND_ACCESO_AGENTES_SIN_RESTRICCIONES.md`
+- **Autenticación**: `docs/FRONTEND_AUTHENTICATION_GUIDE.md`
+- **Validación de Errores**: `docs/FRONTEND_VALIDATION_ERROR_HANDLING.md`
+- **Hiring Payments**: `docs/FRONTEND_HIRING_PAYMENTS_GUIDE.md`
+- **Stripe Checkout**: `docs/FRONTEND_STRIPE_CHECKOUT_GUIDE.md`
+- **Qualification Tests**: `docs/frontend_qualification_test_guide.md`
+- **Agent Journal**: `docs/frontend_agent_journal_mega_prompt.md`
 
 ### Quick Starts
 
-- **Quick Start General**: Ver `docs/admin-react/IMPLEMENTACION_COMPLETA.md`
-- **Email Actions**: Ver `docs/FRONTEND_APROBACION_HIRING_CODE_TOKEN.md`
-- **Hiring Code Request**: `docs/FRONTEND_AGENT_HIRING_CODE_REQUEST_QUICK_START.md`
+- **Quick Start General**: `FRONTEND_QUICK_START.md`
+- **Email Actions**: `docs/FRONTEND_EMAIL_ACTIONS_QUICK_START.md`
 
 ### Módulos Admin React
 
@@ -324,6 +324,6 @@ ls docs/*HIRING*.md
 
 ---
 
-**Para más detalles, consulta los documentos específicos mencionados arriba.**
+---
 
-**Última actualización**: 2025-01-30
+**Para más detalles, consulta el documento completo**: `docs/admin-react/FRONTEND_AGENT_PROMPT.md`

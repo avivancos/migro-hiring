@@ -455,30 +455,27 @@ export const contractsService = {
 
   /**
    * Get all annexes for a hiring code
+   * Requires JWT authentication with admin role
    */
   async getAnnexes(hiringCode: string): Promise<ContractAnnex[]> {
-    const { data } = await api.get<ContractAnnex[]>(`/admin/hiring/${hiringCode}/annexes`, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1',
-      },
-    });
+    // El interceptor de axios agregará automáticamente el token JWT
+    // No usar X-Admin-Password porque el backend requiere JWT
+    const { data } = await api.get<ContractAnnex[]>(`/admin/hiring/${hiringCode}/annexes`);
     return data;
   },
 
   /**
    * Create a new annex for a hiring code
+   * Requires JWT authentication with admin role
    */
   async createAnnex(request: ContractAnnexCreateRequest): Promise<ContractAnnex> {
+    // El interceptor de axios agregará automáticamente el token JWT
+    // No usar X-Admin-Password porque el backend requiere JWT
     const { data } = await api.post<ContractAnnex>(
       `/admin/hiring/${request.hiring_code}/annexes`,
       {
         title: request.title,
         content: request.content,
-      },
-      {
-        headers: {
-          'X-Admin-Password': 'Pomelo2005.1',
-        },
       }
     );
     return data;
@@ -486,29 +483,26 @@ export const contractsService = {
 
   /**
    * Update an existing annex
+   * Requires JWT authentication with admin role
    */
   async updateAnnex(annexId: string, request: ContractAnnexUpdateRequest): Promise<ContractAnnex> {
+    // El interceptor de axios agregará automáticamente el token JWT
+    // No usar X-Admin-Password porque el backend requiere JWT
     const { data } = await api.patch<ContractAnnex>(
       `/admin/hiring/annexes/${annexId}`,
-      request,
-      {
-        headers: {
-          'X-Admin-Password': 'Pomelo2005.1',
-        },
-      }
+      request
     );
     return data;
   },
 
   /**
    * Delete an annex
+   * Requires JWT authentication with admin role
    */
   async deleteAnnex(annexId: string): Promise<void> {
-    await api.delete(`/admin/hiring/annexes/${annexId}`, {
-      headers: {
-        'X-Admin-Password': 'Pomelo2005.1',
-      },
-    });
+    // El interceptor de axios agregará automáticamente el token JWT
+    // No usar X-Admin-Password porque el backend requiere JWT
+    await api.delete(`/admin/hiring/annexes/${annexId}`);
   },
 };
 

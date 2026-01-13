@@ -19,6 +19,19 @@
   - Los agentes no pueden ver detalles de contratos porque esta ruta solo está habilitada para admin
   - Documentación completa en `docs/FRONTEND_AGENT_CONTRACTS_ROUTES_PERMISSIONS.md` ✅
 
+### ⚠️ Pendiente Crítico: Eliminar Restricciones de Acceso para Agentes (NUEVO - 2025-01-30)
+- [ ] **ELIMINAR filtros automáticos y validaciones de permisos basadas en roles** ⚠️ CRÍTICO
+  - El backend ha eliminado todas las restricciones de acceso basadas en roles
+  - Todos los usuarios autenticados pueden acceder a todos los recursos
+  - Acción requerida: Eliminar filtros automáticos en Dashboard, Contactos, Oportunidades, Notas, Tareas, Llamadas
+  - Documentación completa en `docs/FRONTEND_ACCESO_AGENTES_SIN_RESTRICCIONES.md` ✅
+  - Archivos a modificar:
+    - `src/pages/CRMDashboardPage.tsx`
+    - `src/pages/CRMContactList.tsx`
+    - `src/pages/CRMOpportunities.tsx`
+    - `src/components/opportunities/OpportunityList.tsx`
+    - `src/utils/searchValidation.ts` (simplificar o eliminar)
+
 ---
 
 ## 🎯 Objetivos Actuales (UI Redesign)
@@ -32,6 +45,14 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 ---
 
 ## 📋 Tareas Pendientes
+
+### ✅ Documentación Actualizada (Enero 2025)
+- [x] Actualización del resumen ejecutivo del agente frontend ✅
+  - [x] Documento `docs/FRONTEND_AGENT_RESUMEN_EJECUTIVO.md` actualizado con nueva información ✅
+  - [x] Agregada sección sobre acceso sin restricciones para agentes ✅
+  - [x] Agregada referencia a sistema de anexos al contrato ✅
+  - [x] Documentación creada: `docs/BACKEND_CONTRACT_ANNEXES_IMPLEMENTATION.md` ✅
+  - [x] Documentación creada: `docs/FRONTEND_ACCESO_AGENTES_SIN_RESTRICCIONES.md` ✅
 
 ### ✅ Hotfixes recientes (Enero 2026)
 - [x] Corrección TS en `RequestContractModal` (uso de `current_stage` en vez de `name`) y callback de hiring code sin usar; build en Docker verificado.
