@@ -4,12 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { OpportunityList } from '@/components/opportunities/OpportunityList';
 import { crmService } from '@/services/crmService';
 import { useEffect, useState } from 'react';
-import { useAuth } from '@/providers/AuthProvider';
-import { isAgent } from '@/utils/searchValidation';
 
 export function CRMOpportunities() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [availableAgents, setAvailableAgents] = useState<
     Array<{ id: string; name: string }>
   >([]);
