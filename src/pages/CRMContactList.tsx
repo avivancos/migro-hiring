@@ -1,6 +1,6 @@
 // CRM Contact List - Lista de contactos con filtros, ordenamiento y búsqueda avanzada (estilo ActiveCampaign)
 
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -94,11 +94,25 @@ export function CRMContactList() {
   
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // Ref para prevenir actualizaciones infinitas
+  const isUpdatingUrlRef = useRef(false);
+  const isInitialMount = useRef(true);
+
   useEffect(() => {
     crmService.getUsers(true).then(setUsers).catch(() => setUsers([]));
   }, []);
 
+  // Sincronizar estado con URL solo cuando cambian los filtros (no durante la carga inicial)
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
+    if (isUpdatingUrlRef.current) {
+      return;
+    }
+
     const params = new URLSearchParams();
     if (searchTerm) params.set('search', searchTerm);
     if (gradingLlamada) params.set('grading_llamada', gradingLlamada);
@@ -119,8 +133,19 @@ export function CRMContactList() {
     params.set('skip', pagination.skip.toString());
     params.set('limit', pagination.limit.toString());
     
-    setSearchParams(params, { replace: true });
-  }, [searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, fechaModificacionDesde, fechaModificacionHasta, sortField, sortOrder, viewMode, pagination.skip, pagination.limit]);
+    const newUrl = params.toString();
+    const currentUrl = searchParams.toString();
+    
+    // Solo actualizar si la URL realmente cambió
+    if (newUrl !== currentUrl) {
+      isUpdatingUrlRef.current = true;
+      setSearchParams(params, { replace: true });
+      // Resetear el flag después de un pequeño delay
+      setTimeout(() => {
+        isUpdatingUrlRef.current = false;
+      }, 0);
+    }
+  }, [searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, fechaModificacionDesde, fechaModificacionHasta, sortField, sortOrder, viewMode, pagination.skip, pagination.limit, setSearchParams]);
 
   // Resetear paginación cuando cambian los filtros (excepto cuando cambia explícitamente la paginación)
   const prevFiltersRef = useRef({ searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder });
@@ -137,15 +162,10 @@ export function CRMContactList() {
     prevFiltersRef.current = currentFilters;
   }, [searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadContacts();
-    }
-  }, [isAuthenticated, searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder, pagination.skip, pagination.limit]);
-
+  // Sincronizar searchTerm desde URL solo una vez al montar
   useEffect(() => {
     const searchFromUrl = searchParams.get('search');
-    if (searchFromUrl) {
+    if (searchFromUrl && isInitialMount.current) {
       const decoded = decodeURIComponent(searchFromUrl.replace(/\+/g, ' '));
       if (decoded !== searchTerm) {
         setSearchTerm(decoded);
@@ -155,7 +175,7 @@ export function CRMContactList() {
         }, 300);
       }
     }
-  }, [searchParams]);
+  }, []); // Solo ejecutar una vez al montar
 
   // Función helper para enriquecer un contacto con información de llamadas
   const enrichContactWithCallInfo = async (contact: Contact): Promise<Contact> => {
@@ -214,7 +234,17 @@ export function CRMContactList() {
     }
   };
 
-  const loadContacts = async () => {
+  // Ref para evitar múltiples llamadas simultáneas a loadContacts
+  const isLoadingRef = useRef(false);
+  const loadContactsTimeoutRef = useRef<number | null>(null);
+  const loadContactsRef = useRef<() => Promise<void>>(() => Promise.resolve());
+
+  const loadContacts = useCallback(async () => {
+    if (isLoadingRef.current) {
+      return; // Ya hay una carga en progreso
+    }
+    
+    isLoadingRef.current = true;
     setLoading(true);
     try {
       const filters: ContactFilters = {
@@ -327,8 +357,35 @@ export function CRMContactList() {
       setTotalContacts(0);
     } finally {
       setLoading(false);
+      isLoadingRef.current = false;
     }
-  };
+  }, [pagination.skip, pagination.limit, responsibleUserId, searchTerm, gradingLlamada, gradingSituacion, nacionalidad, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder, userIsAdmin, userIsAgent]);
+
+  // Mantener la referencia actualizada
+  useEffect(() => {
+    loadContactsRef.current = loadContacts;
+  }, [loadContacts]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    // Cancelar cualquier llamada pendiente
+    if (loadContactsTimeoutRef.current) {
+      clearTimeout(loadContactsTimeoutRef.current);
+    }
+
+    // Debounce para evitar múltiples llamadas rápidas
+    loadContactsTimeoutRef.current = setTimeout(() => {
+      loadContactsRef.current();
+    }, 300); // Aumentado a 300ms para mejor debounce
+
+    return () => {
+      if (loadContactsTimeoutRef.current) {
+        clearTimeout(loadContactsTimeoutRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder, pagination.skip, pagination.limit]);
 
   const filteredAndSortedContacts = useMemo(() => {
     let filtered = [...contacts];

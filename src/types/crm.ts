@@ -91,6 +91,7 @@ export interface Contact {
   edad?: number;
   tiene_familiares_espana?: boolean;
   avatar_url?: string;
+  landing_product?: string | null; // Producto de landing: 'situacion_irregular', 'nacionalidad', o null si no existe
   
   // Embedded
   company?: Company;

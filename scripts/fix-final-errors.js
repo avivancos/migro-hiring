@@ -100,6 +100,45 @@ function fixFinalErrors(filePath) {
     }
   }
 
+  // 4. Eliminar imports y variables no utilizados específicos de CRMOpportunities.tsx
+  if (filePath.includes('CRMOpportunities.tsx')) {
+    // Eliminar import de isAgent si no se usa
+    if (content.includes('import') && content.includes('isAgent') && !content.match(/isAgent\(/)) {
+      // Eliminar isAgent del import
+      content = content.replace(/import\s+{([^}]*)\bisAgent\b([^}]*)}\s+from\s+['"]@\/utils\/searchValidation['"];?\n?/g, (match) => {
+        changed = true;
+        const items = match.match(/import\s+{([^}]+)}/)[1]
+          .split(',')
+          .map(i => i.trim())
+          .filter(item => item && item !== 'isAgent');
+        
+        if (items.length === 0) {
+          return '';
+        }
+        
+        return `import { ${items.join(', ')} } from '@/utils/searchValidation';`;
+      });
+    }
+    
+    // Eliminar import de useAuth si no se usa
+    const useAuthMatches = content.match(/useAuth\(/g);
+    const hasUseAuthUsage = useAuthMatches && useAuthMatches.length > 0;
+    
+    if (content.includes('import') && content.includes('useAuth') && !hasUseAuthUsage) {
+      content = content.replace(/import\s+{\s*useAuth\s*}\s+from\s+['"]@\/providers\/AuthProvider['"];?\n?/g, '');
+      changed = true;
+    }
+    
+    // Eliminar variable user si no se usa (después de la línea de useAuth)
+    const userMatches = content.match(/\buser\b/g);
+    const hasUserUsage = userMatches && userMatches.length > 1; // Más de 1 porque aparece en la declaración
+    
+    if (content.includes('const { user } = useAuth();') && !hasUserUsage) {
+      content = content.replace(/const\s+{\s*user\s*}\s*=\s*useAuth\(\);?\n?/g, '');
+      changed = true;
+    }
+  }
+
   // Limpiar líneas vacías múltiples
   content = content.replace(/\n{3,}/g, '\n\n');
   
