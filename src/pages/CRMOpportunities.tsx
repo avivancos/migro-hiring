@@ -47,7 +47,7 @@ export function CRMOpportunities() {
       <OpportunityList
         onOpportunitySelect={handleOpportunitySelect}
         availableAgents={availableAgents}
-        filters={userIsAgent && user?.id ? { assigned_to: user.id } : undefined}
+        filters={undefined}
       />
     </div>
   );

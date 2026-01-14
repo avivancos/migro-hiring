@@ -167,16 +167,23 @@ class LocalDatabaseService {
         { path: '/crm/leads/:id', module: 'CRM', description: 'Detalle de lead', agent: true, lawyer: true },
         { path: '/crm/opportunities', module: 'CRM', description: 'Lista de oportunidades', agent: true, lawyer: true },
         { path: '/crm/opportunities/:id', module: 'CRM', description: 'Detalle de oportunidad', agent: true, lawyer: true },
+        { path: '/crm/opportunities/:opportunityId/analyze', module: 'CRM', description: 'Análisis de caso', agent: true, lawyer: true },
         { path: '/crm/calendar', module: 'CRM', description: 'Calendario de tareas', agent: true, lawyer: true },
+        { path: '/crm/tasks', module: 'CRM', description: 'Lista de tareas', agent: true, lawyer: true },
         { path: '/crm/tasks/:id', module: 'CRM', description: 'Detalle de tarea', agent: true, lawyer: true },
+        { path: '/crm/notes', module: 'CRM', description: 'Notas', agent: true, lawyer: true },
+        { path: '/crm/journal', module: 'CRM', description: 'Diario del agente', agent: true, lawyer: true },
         { path: '/crm/actions', module: 'CRM', description: 'Acciones', agent: true, lawyer: true },
         { path: '/crm/expedientes', module: 'CRM', description: 'Lista de expedientes', agent: true, lawyer: true },
         { path: '/crm/expedientes/:id', module: 'CRM', description: 'Detalle de expediente', agent: true, lawyer: true },
+        { path: '/crm/expedientes/new', module: 'CRM', description: 'Crear expediente', agent: true, lawyer: true },
         { path: '/crm/call', module: 'CRM', description: 'Manejador de llamadas', agent: true, lawyer: true },
+        { path: '/crm/call-handler', module: 'CRM', description: 'Manejador de llamadas (alias)', agent: true, lawyer: true },
         { path: '/crm/settings', module: 'CRM', description: 'Configuración del CRM', agent: false, lawyer: true },
         { path: '/crm/settings/task-templates', module: 'CRM', description: 'Plantillas de tareas', agent: false, lawyer: true },
         { path: '/crm/settings/custom-fields', module: 'CRM', description: 'Campos personalizados', agent: false, lawyer: true },
-        { path: '/crm/contracts', module: 'CRM', description: 'Contratos', agent: true, lawyer: true },
+        { path: '/crm/settings/timezone', module: 'CRM', description: 'Configuración de zona horaria', agent: false, lawyer: true },
+        { path: '/crm/contracts', module: 'CRM', description: 'Contratos - Solo administradores', agent: false, lawyer: false },
       ];
 
       const stmt = this.db.prepare(`
@@ -196,6 +203,90 @@ class LocalDatabaseService {
 
       stmt.free();
       this.saveDatabase();
+    } else {
+      // Si la base de datos ya existe, actualizar la ruta de contratos para restringir acceso
+      // Solo actualizar si no ha sido modificada manualmente (verificar si tiene valores por defecto)
+      try {
+        const contractsResult = this.db.exec(
+          'SELECT * FROM route_permissions WHERE route_path = ?',
+          ['/crm/contracts']
+        );
+        
+        if (contractsResult.length > 0 && contractsResult[0].values.length > 0) {
+          const row = contractsResult[0].values[0];
+          const columns = contractsResult[0].columns;
+          const obj: any = {};
+          columns.forEach((col: string, idx: number) => {
+            obj[col] = row[idx];
+          });
+          
+          // Solo actualizar si aún tiene los valores por defecto (ambos true)
+          // Esto evita sobrescribir cambios manuales del administrador
+          if (obj.agent_allowed === 1 && obj.lawyer_allowed === 1) {
+            this.db.run(
+              `UPDATE route_permissions 
+               SET agent_allowed = 0, lawyer_allowed = 0, 
+                   description = 'Contratos - Solo administradores',
+                   updated_at = datetime('now')
+               WHERE route_path = ?`,
+              ['/crm/contracts']
+            );
+            this.saveDatabase();
+          }
+        } else {
+          // Si no existe la ruta, crearla con permisos restringidos
+          this.db.run(
+            `INSERT INTO route_permissions (route_path, module, description, agent_allowed, lawyer_allowed, admin_allowed)
+             VALUES (?, ?, ?, ?, ?, 1)`,
+            ['/crm/contracts', 'CRM', 'Contratos - Solo administradores', 0, 0]
+          );
+          this.saveDatabase();
+        }
+      } catch (error) {
+        console.warn('No se pudo actualizar/crear ruta de contratos:', error);
+      }
+      
+      // Sincronizar rutas faltantes
+      this.syncMissingRoutes();
+    }
+  }
+
+  private syncMissingRoutes(): void {
+    if (!this.db) return;
+
+    const missingRoutes = [
+      { path: '/crm/tasks', module: 'CRM', description: 'Lista de tareas', agent: true, lawyer: true },
+      { path: '/crm/notes', module: 'CRM', description: 'Notas', agent: true, lawyer: true },
+      { path: '/crm/journal', module: 'CRM', description: 'Diario del agente', agent: true, lawyer: true },
+      { path: '/crm/opportunities/:opportunityId/analyze', module: 'CRM', description: 'Análisis de caso', agent: true, lawyer: true },
+      { path: '/crm/expedientes/new', module: 'CRM', description: 'Crear expediente', agent: true, lawyer: true },
+      { path: '/crm/call-handler', module: 'CRM', description: 'Manejador de llamadas (alias)', agent: true, lawyer: true },
+      { path: '/crm/settings/timezone', module: 'CRM', description: 'Configuración de zona horaria', agent: false, lawyer: true },
+    ];
+
+    try {
+      for (const route of missingRoutes) {
+        const existing = this.db.exec(
+          'SELECT COUNT(*) as count FROM route_permissions WHERE route_path = ?',
+          [route.path]
+        );
+        
+        const count = existing.length > 0 && existing[0].values.length > 0 
+          ? existing[0].values[0][0] as number 
+          : 0;
+        
+        if (count === 0) {
+          // Ruta no existe, agregarla
+          this.db.run(
+            `INSERT INTO route_permissions (route_path, module, description, agent_allowed, lawyer_allowed, admin_allowed)
+             VALUES (?, ?, ?, ?, ?, 1)`,
+            [route.path, route.module, route.description, route.agent ? 1 : 0, route.lawyer ? 1 : 0]
+          );
+        }
+      }
+      this.saveDatabase();
+    } catch (error) {
+      console.warn('Error sincronizando rutas faltantes:', error);
     }
   }
 

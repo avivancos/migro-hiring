@@ -149,8 +149,15 @@ function AppContent() {
             <Route path="contacts/:id/edit" element={<LazyLoadWrapper fallback="spinner"><CRMContactEdit /></LazyLoadWrapper>} />
             <Route path="contacts/:id" element={<LazyLoadWrapper fallback="spinner"><CRMContactDetail /></LazyLoadWrapper>} />
             
-            {/* CRM Contracts */}
-            <Route path="contracts" element={<LazyLoadWrapper fallback="spinner"><CRMContracts /></LazyLoadWrapper>} />
+            {/* CRM Contracts - Restringido mediante sistema dinámico de permisos */}
+            <Route 
+              path="contracts" 
+              element={
+                <ProtectedRoute useDynamicPermissions={true}>
+                  <LazyLoadWrapper fallback="spinner"><CRMContracts /></LazyLoadWrapper>
+                </ProtectedRoute>
+              } 
+            />
             
             {/* CRM Leads */}
             <Route path="leads" element={<LazyLoadWrapper fallback="skeleton" skeletonCount={5}><CRMLeadList /></LazyLoadWrapper>} />

@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ArrowTrendingUpIcon, CalendarIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, Cog6ToothIcon, DocumentCheckIcon, DocumentTextIcon, PhoneIcon, Squares2X2Icon, UsersIcon } from '@heroicons/react/24/outline';
 import { MigroLogo } from '@/components/common/MigroLogo';
+import { useAuth } from '@/providers/AuthProvider';
 
 const navigation = [
   { name: 'Dashboard', href: '/crm', icon: Squares2X2Icon },
@@ -10,7 +11,7 @@ const navigation = [
   { name: 'Oportunidades', href: '/crm/opportunities', icon: ArrowTrendingUpIcon },
   { name: 'Tareas', href: '/crm/tasks', icon: CheckIcon },
   { name: 'Notas', href: '/crm/notes', icon: DocumentTextIcon },
-  { name: 'Contratos', href: '/crm/contracts', icon: DocumentCheckIcon },
+  { name: 'Contratos', href: '/crm/contracts', icon: DocumentCheckIcon, adminOnly: true },
   { name: 'Calendario', href: '/crm/calendar', icon: CalendarIcon },
   { name: 'Llamadas', href: '/crm/call', icon: PhoneIcon },
   { name: 'Expedientes', href: '/crm/expedientes', icon: DocumentTextIcon },
@@ -26,6 +27,15 @@ interface CRMSidebarProps {
 
 export function CRMSidebar({ className, onClose, isCollapsed = false, onToggle }: CRMSidebarProps) {
   const location = useLocation();
+  const { isAdmin } = useAuth();
+
+  // Filtrar navegación según permisos
+  const filteredNavigation = navigation.filter(item => {
+    if (item.adminOnly && !isAdmin) {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div className={cn("flex flex-col flex-grow bg-white pt-5 pb-4 overflow-y-auto h-full relative", className)}>
@@ -70,7 +80,7 @@ export function CRMSidebar({ className, onClose, isCollapsed = false, onToggle }
         "mt-5 flex-1 space-y-1",
         isCollapsed ? "px-2" : "px-2"
       )}>
-        {navigation.map((item) => {
+        {filteredNavigation.map((item) => {
           const isActive = location.pathname === item.href || 
                           (item.href !== '/crm' && location.pathname.startsWith(item.href));
           return (

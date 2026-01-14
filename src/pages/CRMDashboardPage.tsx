@@ -24,7 +24,7 @@ export function CRMDashboardPage() {
   // Medir rendimiento de la página
   usePagePerformanceTrace({ pageName: 'CRM Dashboard' });
 
-  const { isAuthenticated, isLoading, user } = useAuth();
+  const { isAuthenticated, isLoading, user, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
@@ -45,7 +45,6 @@ export function CRMDashboardPage() {
   
   // Determinar si el usuario es agente
   const userIsAgent = user ? isAgent(user.role) : false;
-  // const userIsAdmin = user ? isAdminOrSuperuser(user.role, user.is_superuser) : false;
 
   // Solo cargar datos si está autenticado
   useEffect(() => {
@@ -72,8 +71,8 @@ export function CRMDashboardPage() {
       // Para agentes, cargar solo sus oportunidades asignadas
       const loadPromises: Promise<any>[] = [
         crmService.getPipelines().catch(() => []), // Si pipelines no está implementado, usar array vacío
-        // No cargar contratos para agentes
-        userIsAgent ? Promise.resolve({ items: [], total: 0 }) : contractsService.getContracts({ limit: 10, skip: 0 }).catch(() => ({ items: [], total: 0 })), // Obtener últimos contratos
+        // Solo cargar contratos para administradores
+        isAdmin ? contractsService.getContracts({ limit: 10, skip: 0 }).catch(() => ({ items: [], total: 0 })) : Promise.resolve({ items: [], total: 0 }), // Obtener últimos contratos
         crmService.getCalendarCalls({
           start_date: startOfWeek.toISOString(),
           end_date: endOfWeek.toISOString(),
@@ -84,28 +83,16 @@ export function CRMDashboardPage() {
         }).catch(() => []), // Obtener tareas de la semana actual
       ];
       
-      // Solo cargar contactos y contar si no es agente
-      if (!userIsAgent) {
-        loadPromises.push(
-          crmService.getAllContacts().catch(() => []), // Cargar todos los contactos
-          crmService.getContactsCount().catch(() => 0) // Obtener el conteo real del backend
-        );
-      } else {
-        // Para agentes, no cargar contactos ni contar
-        loadPromises.push(Promise.resolve([]), Promise.resolve(0));
-      }
+      // Cargar contactos y contar para todos los usuarios (agentes ahora pueden ver todo)
+      loadPromises.push(
+        crmService.getAllContacts().catch(() => []), // Cargar todos los contactos
+        crmService.getContactsCount().catch(() => 0) // Obtener el conteo real del backend
+      );
       
-      // Cargar oportunidades: todas para admins, solo asignadas para agentes
-      if (userIsAgent && user?.id) {
-        loadPromises.push(
-          opportunityApi.list({ assigned_to: user.id, limit: 1000 }).catch(() => ({ opportunities: [], total: 0 }))
-        );
-      } else {
-        // Para admins, cargar oportunidades recientes (últimas 10)
-        loadPromises.push(
-          opportunityApi.list({ limit: 10, page: 1 }).catch(() => ({ opportunities: [], total: 0 }))
-        );
-      }
+      // Cargar oportunidades recientes para todos (últimas 10)
+      loadPromises.push(
+        opportunityApi.list({ limit: 10, page: 1 }).catch(() => ({ opportunities: [], total: 0 }))
+      );
       
       // Cargar tareas y notas recientes
       loadPromises.push(
@@ -117,16 +104,12 @@ export function CRMDashboardPage() {
 
       // Los contactos ahora incluyen todos los campos de leads (service_type, status, etc.)
       // Usar contactos directamente como "leads" (son lo mismo ahora)
-      // Para agentes, no establecer contactos ni total
-      if (!userIsAgent) {
-        setLeads(allContacts as any);
-        setTotalContactsCount(totalCount);
-      } else {
-        setLeads([]);
-        setTotalContactsCount(0);
-        // Establecer conteo de oportunidades asignadas
-        setMyOpportunitiesCount(opportunitiesResponse?.total || 0);
-      }
+      // Todos los usuarios pueden ver todos los contactos
+      setLeads(allContacts as any);
+      setTotalContactsCount(totalCount);
+      
+      // Establecer conteo de oportunidades para todos
+      setMyOpportunitiesCount(opportunitiesResponse?.total || 0);
       
       // Guardar oportunidades recientes para mostrar en dashboard (para todos)
       if (opportunitiesResponse?.opportunities) {
@@ -425,43 +408,39 @@ export function CRMDashboardPage() {
   return (
     <div className="w-full space-y-4 sm:space-y-6">
         {/* Cards de Estadísticas */}
-        <div className={`grid grid-cols-1 sm:grid-cols-2 ${userIsAgent ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-3 sm:gap-4`}>
-          {/* Ocultar "Contactos Totales" para agentes */}
-          {!userIsAgent && (
-            <Card className="border-l-4 border-l-blue-500">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Contactos Totales</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{totalContactsCount}</p>
-                  </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <UsersIcon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
-                  </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {/* Card de contactos - visible para todos */}
+          <Card className="border-l-4 border-l-blue-500">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Contactos Totales</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">{totalContactsCount}</p>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+                <div className="p-3 bg-blue-100 rounded-full">
+                  <UsersIcon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
           
-          {/* Para agentes, mostrar solo sus oportunidades asignadas */}
-          {userIsAgent && (
-            <Card className="border-l-4 border-l-purple-500">
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Mis Oportunidades</p>
-                    <p className="text-2xl sm:text-3xl font-bold text-gray-900">{myOpportunitiesCount}</p>
-                  </div>
-                  <div className="p-3 bg-purple-100 rounded-full">
-                    <ChartBarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
-                  </div>
+          {/* Card de oportunidades - visible para todos */}
+          <Card className="border-l-4 border-l-purple-500">
+            <CardContent className="p-4 sm:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Oportunidades</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">{myOpportunitiesCount}</p>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+                <div className="p-3 bg-purple-100 rounded-full">
+                  <ChartBarIcon className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Ocultar tarjetas de contratos para agentes */}
-          {!userIsAgent && (
+          {/* Mostrar tarjetas de contratos solo para administradores */}
+          {isAdmin && (
             <>
               <Card className="border-l-4 border-l-green-500">
                 <CardContent className="p-4 sm:p-6">
@@ -708,8 +687,8 @@ export function CRMDashboardPage() {
         </div>
         )}
 
-        {/* Últimos Contratos - Solo para no agentes */}
-        {!userIsAgent && (
+        {/* Últimos Contratos - Solo para administradores */}
+        {isAdmin && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             {/* Mini Calendario Semanal */}
             <Card className="lg:col-span-2">
