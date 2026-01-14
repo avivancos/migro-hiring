@@ -10,7 +10,6 @@ import { isAgent } from '@/utils/searchValidation';
 export function CRMOpportunities() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const userIsAgent = user ? isAgent(user.role) : false;
   const [availableAgents, setAvailableAgents] = useState<
     Array<{ id: string; name: string }>
   >([]);

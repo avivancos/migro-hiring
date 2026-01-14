@@ -55,7 +55,8 @@ export function CRMContactDetail() {
   const [relatedOpportunities, setRelatedOpportunities] = useState<LeadOpportunity[]>([]);
   const [loadingOpportunities, setLoadingOpportunities] = useState(false);
   const [creatingOpportunity, setCreatingOpportunity] = useState(false);
-  const { isAdmin } = useAuth();
+  const [assigningOpportunity, setAssigningOpportunity] = useState(false);
+  const { isAdmin, user } = useAuth();
   
   // Ref para evitar recargas innecesarias
   const lastLoadTime = useRef<number>(0);
@@ -846,6 +847,49 @@ export function CRMContactDetail() {
 
   // La autenticación se maneja con ProtectedRoute en App.tsx
 
+  // Función para asignar la oportunidad al agente actual
+  const handleAssignOpportunityToMe = async () => {
+    if (!user?.id || !relatedOpportunities.length || !relatedOpportunities[0]?.id) {
+      console.error('❌ [CRMContactDetail] No se puede asignar: falta usuario u oportunidad');
+      return;
+    }
+
+    const opportunity = relatedOpportunities[0];
+    
+    // Verificar que la oportunidad no esté asignada a otro responsable
+    if (opportunity.assigned_to_id && opportunity.assigned_to_id !== user.id) {
+      const assignedUserName = opportunity.assigned_to?.name || 
+                                opportunity.assigned_to?.email || 
+                                'otro agente';
+      if (!confirm(`Esta oportunidad ya está asignada a ${assignedUserName}. ¿Deseas reasignarla a ti?`)) {
+        return;
+      }
+    }
+
+    setAssigningOpportunity(true);
+    try {
+      await opportunityApi.assign(opportunity.id, user.id);
+      
+      // Recargar los datos del contacto para actualizar la oportunidad
+      await loadContactData();
+      
+      console.log('✅ [CRMContactDetail] Oportunidad asignada correctamente');
+    } catch (error: any) {
+      console.error('❌ [CRMContactDetail] Error asignando oportunidad:', error);
+      
+      let errorMessage = 'Error al asignar la oportunidad';
+      if (error?.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(`Error al asignar la oportunidad:\n\n${errorMessage}`);
+    } finally {
+      setAssigningOpportunity(false);
+    }
+  };
+
   const handleDeleteContact = async () => {
     if (!id || !contact) return;
     
@@ -1011,17 +1055,72 @@ export function CRMContactDetail() {
                     </div>
                   )}
                   {/* Responsable/Agente asignado a través de la oportunidad */}
-                  {relatedOpportunities.length > 0 && relatedOpportunities[0]?.assigned_to && (
-                    <div className="flex items-center gap-2 text-gray-700 mt-3 pt-3 border-t border-gray-200">
-                      <UsersIcon className="w-4 h-4 text-gray-500" />
-                      <div className="flex flex-col">
-                        <span className="text-xs text-gray-500">Responsable</span>
-                        <span className="text-sm font-medium text-gray-900">
-                          {relatedOpportunities[0].assigned_to.name || 
-                           relatedOpportunities[0].assigned_to.email || 
-                           'Sin asignar'}
-                        </span>
-                      </div>
+                  {relatedOpportunities.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      {relatedOpportunities[0]?.assigned_to ? (
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <UsersIcon className="w-4 h-4 text-gray-500" />
+                          <div className="flex flex-col flex-1">
+                            <span className="text-xs text-gray-500">Responsable</span>
+                            <span className="text-sm font-medium text-gray-900">
+                              {relatedOpportunities[0].assigned_to.name || 
+                               relatedOpportunities[0].assigned_to.email || 
+                               'Sin asignar'}
+                            </span>
+                          </div>
+                          {/* Botón para asignarse si el responsable es diferente al agente actual */}
+                          {user?.id && relatedOpportunities[0].assigned_to_id !== user.id && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleAssignOpportunityToMe}
+                              disabled={assigningOpportunity}
+                              className="ml-auto"
+                            >
+                              {assigningOpportunity ? (
+                                <>
+                                  <ClockIcon className="w-4 h-4 mr-1 animate-spin" />
+                                  Asignando...
+                                </>
+                              ) : (
+                                <>
+                                  <UserIcon className="w-4 h-4 mr-1" />
+                                  Asignarme
+                                </>
+                              )}
+                            </Button>
+                          )}
+                        </div>
+                      ) : (
+                        /* Botón para asignarse si no hay responsable */
+                        user?.id && (
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2 text-gray-500">
+                              <UsersIcon className="w-4 h-4" />
+                              <span className="text-xs">Sin responsable asignado</span>
+                            </div>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={handleAssignOpportunityToMe}
+                              disabled={assigningOpportunity}
+                              className="w-full"
+                            >
+                              {assigningOpportunity ? (
+                                <>
+                                  <ClockIcon className="w-4 h-4 mr-1 animate-spin" />
+                                  Asignando...
+                                </>
+                              ) : (
+                                <>
+                                  <UserIcon className="w-4 h-4 mr-1" />
+                                  Asignarme Oportunidad
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        )
+                      )}
                     </div>
                   )}
                 </div>
