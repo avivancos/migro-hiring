@@ -14,7 +14,7 @@ interface ContactTableRowProps {
 }
 
 // Función helper para obtener variante de badge
-const getGradingVariant = (grading?: 'A' | 'B+' | 'B-' | 'C'): 'default' | 'secondary' | 'destructive' | 'outline' => {
+const getGradingVariant = (grading?: 'A' | 'B+' | 'B-' | 'C' | 'D'): 'default' | 'secondary' | 'destructive' | 'outline' => {
   switch (grading) {
     case 'A':
       return 'default';
@@ -23,6 +23,8 @@ const getGradingVariant = (grading?: 'A' | 'B+' | 'B-' | 'C'): 'default' | 'seco
     case 'B-':
       return 'outline';
     case 'C':
+      return 'destructive';
+    case 'D':
       return 'destructive';
     default:
       return 'outline';

@@ -60,8 +60,8 @@ export const CallForm = memo(function CallForm({
     tipo_trabajo_detalle: '',
     servicio_propuesto: '',
     servicio_detalle: '',
-    grading_llamada: '' as '' | 'A' | 'B+' | 'B-' | 'C',
-    grading_situacion: '' as '' | 'A' | 'B+' | 'B-' | 'C',
+    grading_llamada: '' as '' | 'A' | 'B+' | 'B-' | 'C' | 'D',
+    grading_situacion: '' as '' | 'A' | 'B+' | 'B-' | 'C' | 'D',
   });
 
   // Opciones de duración en minutos
@@ -548,10 +548,10 @@ export const CallForm = memo(function CallForm({
         
         // Gradings
         if (firstCallData.grading_llamada) {
-          contactUpdates.grading_llamada = firstCallData.grading_llamada as 'A' | 'B+' | 'B-' | 'C';
+          contactUpdates.grading_llamada = firstCallData.grading_llamada as 'A' | 'B+' | 'B-' | 'C' | 'D';
         }
         if (firstCallData.grading_situacion) {
-          contactUpdates.grading_situacion = firstCallData.grading_situacion as 'A' | 'B+' | 'B-' | 'C';
+          contactUpdates.grading_situacion = firstCallData.grading_situacion as 'A' | 'B+' | 'B-' | 'C' | 'D';
         }
         
         // Marcar como contactado inicialmente cuando se guarda la primera llamada exitosamente
@@ -1163,7 +1163,7 @@ export const CallForm = memo(function CallForm({
                     value={firstCallData.grading_llamada}
                     onChange={(e) => setFirstCallData(prev => ({ 
                       ...prev, 
-                      grading_llamada: e.target.value as '' | 'A' | 'B+' | 'B-' | 'C'
+                      grading_llamada: e.target.value as '' | 'A' | 'B+' | 'B-' | 'C' | 'D'
                     }))}
                     className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   >
@@ -1172,6 +1172,7 @@ export const CallForm = memo(function CallForm({
                     <option value="B+">B+ - Buen interés</option>
                     <option value="B-">B- - Interés moderado</option>
                     <option value="C">C - Bajo interés</option>
+                    <option value="D">D - Descartar (sin interés/no viable)</option>
                   </select>
                 </div>
 
@@ -1182,7 +1183,7 @@ export const CallForm = memo(function CallForm({
                     value={firstCallData.grading_situacion}
                     onChange={(e) => setFirstCallData(prev => ({ 
                       ...prev, 
-                      grading_situacion: e.target.value as '' | 'A' | 'B+' | 'B-' | 'C'
+                      grading_situacion: e.target.value as '' | 'A' | 'B+' | 'B-' | 'C' | 'D'
                     }))}
                     className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                   >
@@ -1191,6 +1192,7 @@ export const CallForm = memo(function CallForm({
                     <option value="B+">B+ - Situación buena</option>
                     <option value="B-">B- - Situación regular</option>
                     <option value="C">C - Situación complicada</option>
+                    <option value="D">D - Descartar (no viable)</option>
                   </select>
                 </div>
               </div>
@@ -1207,7 +1209,7 @@ export const CallForm = memo(function CallForm({
                   value={firstCallData.grading_llamada}
                   onChange={(e) => setFirstCallData(prev => ({ 
                     ...prev, 
-                    grading_llamada: e.target.value as '' | 'A' | 'B+' | 'B-' | 'C'
+                    grading_llamada: e.target.value as '' | 'A' | 'B+' | 'B-' | 'C' | 'D'
                   }))}
                   className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -1216,6 +1218,7 @@ export const CallForm = memo(function CallForm({
                   <option value="B+">B+ - Buen interés</option>
                   <option value="B-">B- - Interés moderado</option>
                   <option value="C">C - Bajo interés</option>
+                  <option value="D">D - Descartar (sin interés/no viable)</option>
                 </select>
               </div>
 
@@ -1226,7 +1229,7 @@ export const CallForm = memo(function CallForm({
                   value={firstCallData.grading_situacion}
                   onChange={(e) => setFirstCallData(prev => ({ 
                     ...prev, 
-                    grading_situacion: e.target.value as '' | 'A' | 'B+' | 'B-' | 'C'
+                    grading_situacion: e.target.value as '' | 'A' | 'B+' | 'B-' | 'C' | 'D'
                   }))}
                   className="flex h-9 w-full rounded-md border border-input bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                 >
@@ -1235,6 +1238,7 @@ export const CallForm = memo(function CallForm({
                   <option value="B+">B+ - Situación buena</option>
                   <option value="B-">B- - Situación regular</option>
                   <option value="C">C - Situación complicada</option>
+                  <option value="D">D - Descartar (no viable)</option>
                 </select>
               </div>
             </div>

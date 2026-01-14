@@ -306,7 +306,7 @@ export function CRMContactDetail() {
     return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [calls, tasks, notes]);
 
-  const getGradingColor = (grading?: 'A' | 'B+' | 'B-' | 'C'): string => {
+  const getGradingColor = (grading?: 'A' | 'B+' | 'B-' | 'C' | 'D'): string => {
     switch (grading) {
       case 'A':
         return 'bg-green-100 text-green-800 border-green-200';
@@ -316,6 +316,8 @@ export function CRMContactDetail() {
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'C':
         return 'bg-red-100 text-red-800 border-red-200';
+      case 'D':
+        return 'bg-red-900 text-red-100 border-red-800';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }

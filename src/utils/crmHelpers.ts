@@ -30,6 +30,7 @@ export function getContactsStatsByGrading(contacts: Array<{ grading_llamada?: st
       'B+': 0,
       'B-': 0,
       C: 0,
+      D: 0,
       sinGrading: 0,
     },
     situacion: {
@@ -37,6 +38,7 @@ export function getContactsStatsByGrading(contacts: Array<{ grading_llamada?: st
       'B+': 0,
       'B-': 0,
       C: 0,
+      D: 0,
       sinGrading: 0,
     },
   };
@@ -44,7 +46,7 @@ export function getContactsStatsByGrading(contacts: Array<{ grading_llamada?: st
   contacts.forEach(contact => {
     // Estadísticas de grading_llamada
     if (contact.grading_llamada) {
-      const grading = contact.grading_llamada as 'A' | 'B+' | 'B-' | 'C';
+      const grading = contact.grading_llamada as 'A' | 'B+' | 'B-' | 'C' | 'D';
       if (stats.llamada.hasOwnProperty(grading)) {
         stats.llamada[grading]++;
       }
@@ -54,7 +56,7 @@ export function getContactsStatsByGrading(contacts: Array<{ grading_llamada?: st
 
     // Estadísticas de grading_situacion
     if (contact.grading_situacion) {
-      const grading = contact.grading_situacion as 'A' | 'B+' | 'B-' | 'C';
+      const grading = contact.grading_situacion as 'A' | 'B+' | 'B-' | 'C' | 'D';
       if (stats.situacion.hasOwnProperty(grading)) {
         stats.situacion[grading]++;
       }
@@ -249,6 +251,7 @@ export function getGradingColor(grading?: string): string {
     'B+': '#22c55e', // light green
     'B-': '#f59e0b', // amber
     C: '#ef4444', // red
+    D: '#991b1b', // dark red
   };
   return colors[grading || ''] || '#6b7280';
 }

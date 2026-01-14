@@ -80,8 +80,8 @@ export interface Contact {
   custom_fields?: Record<string, any>;
   
   // Campos específicos de Migro
-  grading_llamada?: 'A' | 'B+' | 'B-' | 'C';
-  grading_situacion?: 'A' | 'B+' | 'B-' | 'C';
+  grading_llamada?: 'A' | 'B+' | 'B-' | 'C' | 'D';
+  grading_situacion?: 'A' | 'B+' | 'B-' | 'C' | 'D';
   nacionalidad?: string;
   tiempo_espana?: string; // "3 años", "6 meses", etc.
   empadronado?: boolean;
@@ -409,8 +409,8 @@ export interface ContactCreateRequest {
   custom_fields?: Record<string, any>;
   
   // Campos específicos de Migro
-  grading_llamada?: 'A' | 'B+' | 'B-' | 'C';
-  grading_situacion?: 'A' | 'B+' | 'B-' | 'C';
+  grading_llamada?: 'A' | 'B+' | 'B-' | 'C' | 'D';
+  grading_situacion?: 'A' | 'B+' | 'B-' | 'C' | 'D';
   nacionalidad?: string;
   tiempo_espana?: string;
   empadronado?: boolean;
@@ -591,8 +591,8 @@ export interface ContactFilters {
   email?: string;
   phone?: string;
   nacionalidad?: string;
-  grading_llamada?: 'A' | 'B+' | 'B-' | 'C';
-  grading_situacion?: 'A' | 'B+' | 'B-' | 'C';
+  grading_llamada?: 'A' | 'B+' | 'B-' | 'C' | 'D';
+  grading_situacion?: 'A' | 'B+' | 'B-' | 'C' | 'D';
   responsible_user_id?: string; // UUID
   company_id?: string; // UUID
   sort_by?: string; // 'name', 'created_at', 'grading_llamada'

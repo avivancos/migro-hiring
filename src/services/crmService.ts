@@ -1228,8 +1228,8 @@ export const crmService = {
     assignTasks?: boolean;
     initialCall?: Omit<CallCreateRequest, 'entity_id' | 'entity_type'>;
     updateGradings?: {
-      grading_llamada?: 'A' | 'B+' | 'B-' | 'C';
-      grading_situacion?: 'A' | 'B+' | 'B-' | 'C';
+      grading_llamada?: 'A' | 'B+' | 'B-' | 'C' | 'D';
+      grading_situacion?: 'A' | 'B+' | 'B-' | 'C' | 'D';
     };
   }): Promise<{
     contact: Contact;

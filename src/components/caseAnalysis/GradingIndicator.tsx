@@ -3,7 +3,7 @@
 import { cn } from '@/lib/utils';
 
 interface GradingIndicatorProps {
-  grading: 'A' | 'B+' | 'B-' | 'C';
+  grading: 'A' | 'B+' | 'B-' | 'C' | 'D';
   showLabel?: boolean;
   className?: string;
 }
@@ -18,6 +18,7 @@ export function GradingIndicator({
     'B+': { color: '#5AC8FA', label: 'Favorable', bgColor: 'bg-[#5AC8FA]' },
     'B-': { color: '#FF9500', label: 'Aceptable', bgColor: 'bg-[#FF9500]' },
     C: { color: '#FF3B30', label: 'Complejo', bgColor: 'bg-[#FF3B30]' },
+    D: { color: '#991b1b', label: 'Descartar', bgColor: 'bg-[#991b1b]' },
   };
 
   const { color, label, bgColor } = config[grading];

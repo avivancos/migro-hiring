@@ -343,6 +343,7 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
                   <option value="B+">B+</option>
                   <option value="B-">B-</option>
                   <option value="C">C</option>
+                  <option value="D">D (Descartar)</option>
                 </select>
               </div>
 
@@ -360,6 +361,7 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
                   <option value="B+">B+</option>
                   <option value="B-">B-</option>
                   <option value="C">C</option>
+                  <option value="D">D (Descartar)</option>
                 </select>
               </div>
 

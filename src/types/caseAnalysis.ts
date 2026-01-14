@@ -95,7 +95,7 @@ export interface PiliAnalysis {
 export interface CaseAnalysisResponse {
   // Calificaciones principales
   score: number; // 1-10
-  grading: 'A' | 'B+' | 'B-' | 'C';
+  grading: 'A' | 'B+' | 'B-' | 'C' | 'D';
   
   // Análisis de venta
   sales_feasibility: SalesFeasibility;

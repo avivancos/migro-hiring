@@ -68,15 +68,15 @@ export function CRMContactList() {
   const [viewMode, setViewMode] = useState<ViewMode>((searchParams.get('view') as ViewMode) || 'table');
   
   // Filtros
-  const getGradingFromUrl = (param: string | null): 'A' | 'B+' | 'B-' | 'C' | '' => {
-    if (param === 'A' || param === 'B+' || param === 'B-' || param === 'C') {
+  const getGradingFromUrl = (param: string | null): 'A' | 'B+' | 'B-' | 'C' | 'D' | '' => {
+    if (param === 'A' || param === 'B+' || param === 'B-' || param === 'C' || param === 'D') {
       return param;
     }
     return '';
   };
   
-  const [gradingLlamada, setGradingLlamada] = useState<'A' | 'B+' | 'B-' | 'C' | ''>(getGradingFromUrl(searchParams.get('grading_llamada')));
-  const [gradingSituacion, setGradingSituacion] = useState<'A' | 'B+' | 'B-' | 'C' | ''>(getGradingFromUrl(searchParams.get('grading_situacion')));
+  const [gradingLlamada, setGradingLlamada] = useState<'A' | 'B+' | 'B-' | 'C' | 'D' | ''>(getGradingFromUrl(searchParams.get('grading_llamada')));
+  const [gradingSituacion, setGradingSituacion] = useState<'A' | 'B+' | 'B-' | 'C' | 'D' | ''>(getGradingFromUrl(searchParams.get('grading_situacion')));
   const [nacionalidad, setNacionalidad] = useState(searchParams.get('nacionalidad') || '');
   const [responsibleUserId, setResponsibleUserId] = useState(searchParams.get('responsible_user_id') || '');
   const [empadronado, setEmpadronado] = useState<string>(searchParams.get('empadronado') || '');
@@ -233,8 +233,8 @@ export function CRMContactList() {
         filters.search = searchTerm;
       }
       
-      if (gradingLlamada) filters.grading_llamada = gradingLlamada as 'A' | 'B+' | 'B-' | 'C';
-      if (gradingSituacion) filters.grading_situacion = gradingSituacion as 'A' | 'B+' | 'B-' | 'C';
+      if (gradingLlamada) filters.grading_llamada = gradingLlamada as 'A' | 'B+' | 'B-' | 'C' | 'D';
+      if (gradingSituacion) filters.grading_situacion = gradingSituacion as 'A' | 'B+' | 'B-' | 'C' | 'D';
       if (nacionalidad) filters.nacionalidad = nacionalidad;
       if (empadronado) filters.empadronado = empadronado === 'true';
       if (tieneIngresos) filters.tiene_ingresos = tieneIngresos === 'true';
@@ -394,12 +394,12 @@ export function CRMContactList() {
           bValue = new Date(b.updated_at).getTime();
           break;
         case 'grading_llamada':
-          const gradingOrder = { 'A': 4, 'B+': 3, 'B-': 2, 'C': 1 };
+          const gradingOrder = { 'A': 5, 'B+': 4, 'B-': 3, 'C': 2, 'D': 1 };
           aValue = gradingOrder[a.grading_llamada as keyof typeof gradingOrder] || 0;
           bValue = gradingOrder[b.grading_llamada as keyof typeof gradingOrder] || 0;
           break;
         case 'grading_situacion':
-          const situacionOrder = { 'A': 4, 'B+': 3, 'B-': 2, 'C': 1 };
+          const situacionOrder = { 'A': 5, 'B+': 4, 'B-': 3, 'C': 2, 'D': 1 };
           aValue = situacionOrder[a.grading_situacion as keyof typeof situacionOrder] || 0;
           bValue = situacionOrder[b.grading_situacion as keyof typeof situacionOrder] || 0;
           break;
@@ -457,12 +457,13 @@ export function CRMContactList() {
 
   const hasActiveFilters = searchTerm || gradingLlamada || gradingSituacion || nacionalidad || responsibleUserId || empadronado || tieneIngresos || ultimaLlamadaDesde || ultimaLlamadaHasta || proximaLlamadaDesde || proximaLlamadaHasta || fechaModificacionDesde || fechaModificacionHasta;
 
-  const getGradingVariant = (grading?: 'A' | 'B+' | 'B-' | 'C'): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "error" | "info" | "neutral" => {
+  const getGradingVariant = (grading?: 'A' | 'B+' | 'B-' | 'C' | 'D'): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "error" | "info" | "neutral" => {
     switch (grading) {
       case 'A': return 'success';
       case 'B+': return 'info';
       case 'B-': return 'warning';
       case 'C': return 'error';
+      case 'D': return 'destructive';
       default: return 'neutral';
     }
   };
@@ -1001,6 +1002,7 @@ export function CRMContactList() {
                         <option value="B+">B+</option>
                         <option value="B-">B-</option>
                         <option value="C">C</option>
+                        <option value="D">D (Descartar)</option>
                       </select>
                     </div>
 
@@ -1018,6 +1020,7 @@ export function CRMContactList() {
                         <option value="B+">B+</option>
                         <option value="B-">B-</option>
                         <option value="C">C</option>
+                        <option value="D">D (Descartar)</option>
                       </select>
                     </div>
 
