@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 // Import MD crudo (Vite ?raw)
 // @ts-ignore – Vite raw import
 import agreementMd from '@/legal/colab_agreement.md?raw';
+import { PUBLIC_DOMAIN } from '@/config/constants';
 
 function renderPdf(rawContent: string, title: string, footerUrl = 'contratacion.migro.es/colaboradores'): Blob {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
@@ -92,10 +93,10 @@ export function generateCollabAgreementPdfFromMd(contentOverride?: string): Blob
 }
 
 export function generateCollabAgreementPdfFromText(rawText: string): Blob {
-  return renderPdf(rawText, 'CONVENIO MARCO DE COLABORACIÓN ENTRE ABOGADO COLABORADOR Y MIGRO SERVICIOS Y REMESAS S.L.', 'contratacion.migro.es/colaboradores');
+  return renderPdf(rawText, 'CONVENIO MARCO DE COLABORACIÓN ENTRE ABOGADO COLABORADOR Y MIGRO SERVICIOS Y REMESAS S.L.', `${PUBLIC_DOMAIN}/colaboradores`);
 }
 
 export function generatePdfWithTitle(rawText: string, title: string, footerUrl?: string): Blob {
-  return renderPdf(rawText, title, footerUrl ?? 'contratacion.migro.es');
+  return renderPdf(rawText, title, footerUrl ?? PUBLIC_DOMAIN);
 }
 

@@ -12,6 +12,7 @@ import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { ArrowRightOnRectangleIcon, DocumentDuplicateIcon, ExclamationCircleIcon, UserPlusIcon } from '@heroicons/react/24/outline';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
+import { PUBLIC_APP_URL } from '@/config/constants';
 
 export function AdminDashboard() {
   const navigate = useNavigate();
@@ -141,7 +142,7 @@ export function AdminDashboard() {
         setGeneratedUrl(shortUrl);
       } else {
         // Generar URL manualmente si no viene en la respuesta
-        const manualUrl = `https://contratacion.migro.es/${hiringCode}`;
+        const manualUrl = `${PUBLIC_APP_URL}/${hiringCode}`;
         setGeneratedUrl(manualUrl);
         console.log('🔗 URL generada manualmente:', manualUrl);
       }

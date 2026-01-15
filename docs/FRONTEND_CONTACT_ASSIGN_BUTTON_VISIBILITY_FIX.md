@@ -84,19 +84,26 @@ console.log('✅ [CRMContactDetail] Oportunidad asignada correctamente', {
 
 ### 3. Log de Advertencia para Problemas Potenciales
 
-Se agregó un log de advertencia que solo se ejecuta si hay un problema real:
+Se agregó un log de advertencia que detecta inconsistencias en los datos:
 
 ```typescript
-// Log de depuración solo si hay un problema potencial (IDs parecen iguales pero se muestra botón)
-if (oppAssignedToId && currentUserId && areEqual && shouldShowButton) {
-  console.warn('⚠️ [CRMContactDetail] Problema detectado: IDs son iguales pero se muestra botón', {
-    oppAssignedToId,
-    currentUserId,
-    rawOppId: relatedOpportunities[0].assigned_to_id,
-    rawUserId: user.id,
-  });
+// Log de advertencia si hay una inconsistencia: IDs normalizados iguales pero originales diferentes
+// Esto puede indicar un problema de normalización o formato de datos
+if (oppAssignedToId && currentUserId && areEqual) {
+  const rawOppId = relatedOpportunities[0].assigned_to_id;
+  const rawUserId = user.id;
+  if (rawOppId !== rawUserId) {
+    console.warn('⚠️ [CRMContactDetail] IDs normalizados son iguales pero originales difieren (normalización funcionando correctamente):', {
+      normalizedOppId: oppAssignedToId,
+      normalizedUserId: currentUserId,
+      rawOppId,
+      rawUserId,
+    });
+  }
 }
 ```
+
+**Nota**: La condición original `areEqual && shouldShowButton` nunca puede ser verdadera porque `shouldShowButton = oppAssignedToId && !areEqual`. Cuando `areEqual` es `true`, `shouldShowButton` es `false`, haciendo la condición imposible. Se corrigió para detectar problemas reales de formato de datos.
 
 ---
 

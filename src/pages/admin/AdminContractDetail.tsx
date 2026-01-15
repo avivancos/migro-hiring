@@ -23,6 +23,7 @@ import { formatDate, formatCurrency } from '@/utils/formatters';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { EditContractModal } from '@/components/contracts/EditContractModal';
 import { ContractAnnexes } from '@/components/contracts/ContractAnnexes';
+import { SHORT_URL_BASE } from '@/config/constants';
 
 export function AdminContractDetail() {
   const navigate = useNavigate();
@@ -199,7 +200,7 @@ export function AdminContractDetail() {
     if (!contract) return;
     
     // Formato: migro.es/c/(codigo)
-    const url = `https://migro.es/c/${contract.hiring_code}`;
+    const url = `${SHORT_URL_BASE}/c/${contract.hiring_code}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);

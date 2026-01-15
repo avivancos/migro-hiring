@@ -881,7 +881,12 @@ export function CRMContactDetail() {
       // expandirlo manualmente usando la lista de usuarios disponibles
       let manuallyExpanded = false;
       if (updatedOpportunity.assigned_to_id && !updatedOpportunity.assigned_to && users.length > 0) {
-        const assignedUser = users.find(u => u.id === updatedOpportunity.assigned_to_id);
+        // Normalizar IDs para comparación (trim y lowercase para evitar problemas de formato)
+        const normalizedAssignedToId = updatedOpportunity.assigned_to_id?.trim().toLowerCase();
+        const assignedUser = users.find(u => {
+          const normalizedUserId = u.id?.trim().toLowerCase();
+          return normalizedUserId === normalizedAssignedToId;
+        });
         if (assignedUser) {
           // Crear objeto CRMUser completo con todos los campos requeridos
           updatedOpportunity.assigned_to = {
@@ -1125,8 +1130,23 @@ export function CRMContactDetail() {
                             const areEqual = oppAssignedToId === currentUserId;
                             const shouldShowButton = oppAssignedToId && !areEqual;
                             
+                            // Log de advertencia si hay una inconsistencia: IDs normalizados iguales pero originales diferentes
+                            // Esto puede indicar un problema de normalización o formato de datos
+                            if (oppAssignedToId && currentUserId && areEqual) {
+                              const rawOppId = relatedOpportunities[0].assigned_to_id;
+                              const rawUserId = user.id;
+                              if (rawOppId !== rawUserId) {
+                                console.warn('⚠️ [CRMContactDetail] IDs normalizados son iguales pero originales difieren (normalización funcionando correctamente):', {
+                                  normalizedOppId: oppAssignedToId,
+                                  normalizedUserId: currentUserId,
+                                  rawOppId,
+                                  rawUserId,
+                                });
+                              }
+                            }
+                            
                             // Log de depuración para verificar la lógica (solo en desarrollo)
-                            if (process.env.NODE_ENV === 'development' && oppAssignedToId && currentUserId) {
+                            if (import.meta.env.DEV && oppAssignedToId && currentUserId) {
                               console.log('🔍 [CRMContactDetail] Verificación de botón "Asignarme":', {
                                 oppAssignedToId,
                                 currentUserId,
