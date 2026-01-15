@@ -877,16 +877,48 @@ export function CRMContactDetail() {
       // Esto asegura que la UI se actualice correctamente con todos los datos
       const updatedOpportunity = await opportunityApi.get(opportunity.id);
       
+      // Si el backend no expandió assigned_to pero assigned_to_id está presente,
+      // expandirlo manualmente usando la lista de usuarios disponibles
+      let manuallyExpanded = false;
+      if (updatedOpportunity.assigned_to_id && !updatedOpportunity.assigned_to && users.length > 0) {
+        const assignedUser = users.find(u => u.id === updatedOpportunity.assigned_to_id);
+        if (assignedUser) {
+          // Crear objeto CRMUser completo con todos los campos requeridos
+          updatedOpportunity.assigned_to = {
+            id: assignedUser.id,
+            name: assignedUser.name || assignedUser.email || 'Usuario sin nombre',
+            email: assignedUser.email || '',
+            phone: assignedUser.phone,
+            role_name: assignedUser.role_name,
+            is_active: assignedUser.is_active ?? true,
+            avatar_url: assignedUser.avatar_url,
+            created_at: assignedUser.created_at || new Date().toISOString(),
+            updated_at: assignedUser.updated_at || new Date().toISOString(),
+            daily_lead_quota: assignedUser.daily_lead_quota,
+          };
+          manuallyExpanded = true;
+        }
+      }
+      
       // Actualizar directamente el estado de oportunidades relacionadas con la oportunidad actualizada
       // Esto evita tener que recargar todos los datos y actualiza la UI inmediatamente
       setRelatedOpportunities([updatedOpportunity]);
       
+      // Normalizar IDs para comparación (trim y lowercase para evitar problemas de formato)
+      const normalizedAssignedToId = updatedOpportunity.assigned_to_id?.trim().toLowerCase();
+      const normalizedUserId = user.id?.trim().toLowerCase();
+      const isAssignedToCurrentUser = normalizedAssignedToId === normalizedUserId;
+      
       console.log('✅ [CRMContactDetail] Oportunidad asignada correctamente', {
         opportunityId: updatedOpportunity.id,
         assignedToId: updatedOpportunity.assigned_to_id,
+        normalizedAssignedToId,
         currentUserId: user.id,
+        normalizedUserId,
+        isAssignedToCurrentUser,
         hasAssignedTo: !!updatedOpportunity.assigned_to,
-        assignedToName: updatedOpportunity.assigned_to?.name || updatedOpportunity.assigned_to?.email,
+        assignedToName: updatedOpportunity.assigned_to?.name || updatedOpportunity.assigned_to?.email || getUserName(updatedOpportunity.assigned_to_id),
+        manuallyExpanded,
       });
     } catch (error: any) {
       console.error('❌ [CRMContactDetail] Error asignando oportunidad:', error);
@@ -1071,19 +1103,40 @@ export function CRMContactDetail() {
                   {/* Responsable/Agente asignado a través de la oportunidad */}
                   {relatedOpportunities.length > 0 && (
                     <div className="mt-3 pt-3 border-t border-gray-200">
-                      {relatedOpportunities[0]?.assigned_to ? (
+                      {/* Verificar si hay responsable usando assigned_to_id (más confiable que assigned_to expandido) */}
+                      {relatedOpportunities[0]?.assigned_to_id ? (
                         <div className="flex items-center gap-2 text-gray-700">
                           <UsersIcon className="w-4 h-4 text-gray-500" />
                           <div className="flex flex-col flex-1">
                             <span className="text-xs text-gray-500">Responsable</span>
                             <span className="text-sm font-medium text-gray-900">
-                              {relatedOpportunities[0].assigned_to.name || 
-                               relatedOpportunities[0].assigned_to.email || 
+                              {/* Usar assigned_to expandido si está disponible, sino usar getUserName con assigned_to_id */}
+                              {relatedOpportunities[0].assigned_to?.name || 
+                               relatedOpportunities[0].assigned_to?.email || 
+                               getUserName(relatedOpportunities[0].assigned_to_id) ||
                                'Sin asignar'}
                             </span>
                           </div>
                           {/* Botón para asignarse si el responsable es diferente al agente actual */}
-                          {user?.id && relatedOpportunities[0].assigned_to_id !== user.id && (
+                          {/* Normalizar IDs para comparación (trim y lowercase para evitar problemas de formato) */}
+                          {user?.id && (() => {
+                            const oppAssignedToId = relatedOpportunities[0].assigned_to_id?.trim().toLowerCase();
+                            const currentUserId = user.id?.trim().toLowerCase();
+                            const areEqual = oppAssignedToId === currentUserId;
+                            const shouldShowButton = oppAssignedToId && !areEqual;
+                            
+                            // Log de depuración solo si hay un problema potencial (IDs parecen iguales pero se muestra botón)
+                            if (oppAssignedToId && currentUserId && areEqual && shouldShowButton) {
+                              console.warn('⚠️ [CRMContactDetail] Problema detectado: IDs son iguales pero se muestra botón', {
+                                oppAssignedToId,
+                                currentUserId,
+                                rawOppId: relatedOpportunities[0].assigned_to_id,
+                                rawUserId: user.id,
+                              });
+                            }
+                            
+                            return shouldShowButton;
+                          })() && (
                             <Button
                               variant="outline"
                               size="sm"
