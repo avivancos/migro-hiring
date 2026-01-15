@@ -1391,6 +1391,9 @@ export function CRMContactDetail() {
                 <p className="text-sm text-gray-600 text-center">
                   No hay oportunidad enlazada a este contacto
                 </p>
+                <p className="text-xs text-gray-500 text-center">
+                  Al crear la oportunidad, se te asignará automáticamente
+                </p>
                 {contact && (
                   <Button
                     onClick={async () => {
@@ -1398,13 +1401,14 @@ export function CRMContactDetail() {
                       
                       setCreatingOpportunity(true);
                       try {
-                        // Crear la oportunidad con el agente asignado al contacto si existe
+                        // Crear la oportunidad asignándola al usuario actual (quien la crea)
+                        // Si no hay usuario actual, usar el responsable del contacto como fallback
                         const newOpportunity = await opportunityApi.create({
                           contact_id: contact.id,
                           opportunity_score: 50, // Score por defecto
                           detection_reason: 'Oportunidad creada manualmente desde contacto',
                           priority: 'medium',
-                          assigned_to_id: contact.responsible_user_id, // Asignar al agente del contacto
+                          assigned_to_id: user?.id || contact.responsible_user_id, // Asignar al usuario actual o al responsable del contacto
                         });
                         
                         // Recargar los datos del contacto para mostrar la nueva oportunidad
@@ -1460,7 +1464,7 @@ export function CRMContactDetail() {
                     ) : (
                       <>
                         <PlusIcon className="w-4 h-4 mr-2" />
-                        Crear Oportunidad
+                        Crear Oportunidad y Asignarme
                       </>
                     )}
                   </Button>
