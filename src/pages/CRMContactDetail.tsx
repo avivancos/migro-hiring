@@ -1125,11 +1125,13 @@ export function CRMContactDetail() {
                             const areEqual = oppAssignedToId === currentUserId;
                             const shouldShowButton = oppAssignedToId && !areEqual;
                             
-                            // Log de depuración solo si hay un problema potencial (IDs parecen iguales pero se muestra botón)
-                            if (oppAssignedToId && currentUserId && areEqual && shouldShowButton) {
-                              console.warn('⚠️ [CRMContactDetail] Problema detectado: IDs son iguales pero se muestra botón', {
+                            // Log de depuración para verificar la lógica (solo en desarrollo)
+                            if (process.env.NODE_ENV === 'development' && oppAssignedToId && currentUserId) {
+                              console.log('🔍 [CRMContactDetail] Verificación de botón "Asignarme":', {
                                 oppAssignedToId,
                                 currentUserId,
+                                areEqual,
+                                shouldShowButton,
                                 rawOppId: relatedOpportunities[0].assigned_to_id,
                                 rawUserId: user.id,
                               });
