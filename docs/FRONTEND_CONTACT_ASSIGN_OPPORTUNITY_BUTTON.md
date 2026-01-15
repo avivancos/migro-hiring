@@ -50,8 +50,9 @@ El botón aparece en dos escenarios:
 1. Verifica que exista usuario autenticado y oportunidad relacionada
 2. Si la oportunidad ya tiene otro responsable, muestra confirmación antes de reasignar
 3. Llama al endpoint `POST /api/crm/opportunities/{id}/assign` con el ID del agente actual
-4. Recarga los datos del contacto para actualizar la información
-5. Muestra mensajes de error si la asignación falla
+4. Obtiene la oportunidad actualizada completa usando `opportunityApi.get(id)` para asegurar que todos los datos expandidos estén disponibles
+5. Actualiza directamente el estado `relatedOpportunities` con la oportunidad actualizada (evita recargar todos los datos y actualiza la UI inmediatamente)
+6. Muestra mensajes de error si la asignación falla
 
 **Validaciones:**
 - Verifica que el usuario esté autenticado (`user?.id`)
@@ -83,11 +84,14 @@ const { isAdmin, user } = useAuth();
 const handleAssignOpportunityToMe = async () => {
   // Verificaciones
   // Confirmación si hay otro responsable
-  // Llamada a API
-  // Recarga de datos
+  // Llamada a API para asignar
+  // Obtener oportunidad actualizada completa
+  // Actualizar estado directamente (evita recarga completa)
   // Manejo de errores
 }
 ```
+
+**Nota importante**: Después de asignar, se obtiene la oportunidad completa actualizada y se actualiza directamente el estado `relatedOpportunities`. Esto evita el problema de que `loadContactData()` tenga una protección que evita recargas muy frecuentes, asegurando que la UI se actualice inmediatamente.
 
 4. **UI del botón:**
 - Sección de información del contacto (líneas ~1013-1026)
@@ -96,8 +100,9 @@ const handleAssignOpportunityToMe = async () => {
 ### Servicios Utilizados
 
 - **`opportunityApi.assign(id, userId)`**: Asigna una oportunidad a un usuario
+- **`opportunityApi.get(id)`**: Obtiene una oportunidad completa con todos los datos expandidos
 - **`useAuth()`**: Hook para obtener usuario actual
-- **`loadContactData()`**: Recarga los datos del contacto después de asignar
+- **`setRelatedOpportunities()`**: Actualiza directamente el estado de oportunidades relacionadas (más eficiente que recargar todos los datos)
 
 ---
 

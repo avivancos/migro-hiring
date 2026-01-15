@@ -870,12 +870,24 @@ export function CRMContactDetail() {
 
     setAssigningOpportunity(true);
     try {
+      // Asignar la oportunidad
       await opportunityApi.assign(opportunity.id, user.id);
       
-      // Recargar los datos del contacto para actualizar la oportunidad
-      await loadContactData();
+      // Recargar la oportunidad completa con todos los datos expandidos (assigned_to, contact, etc.)
+      // Esto asegura que la UI se actualice correctamente con todos los datos
+      const updatedOpportunity = await opportunityApi.get(opportunity.id);
       
-      console.log('✅ [CRMContactDetail] Oportunidad asignada correctamente');
+      // Actualizar directamente el estado de oportunidades relacionadas con la oportunidad actualizada
+      // Esto evita tener que recargar todos los datos y actualiza la UI inmediatamente
+      setRelatedOpportunities([updatedOpportunity]);
+      
+      console.log('✅ [CRMContactDetail] Oportunidad asignada correctamente', {
+        opportunityId: updatedOpportunity.id,
+        assignedToId: updatedOpportunity.assigned_to_id,
+        currentUserId: user.id,
+        hasAssignedTo: !!updatedOpportunity.assigned_to,
+        assignedToName: updatedOpportunity.assigned_to?.name || updatedOpportunity.assigned_to?.email,
+      });
     } catch (error: any) {
       console.error('❌ [CRMContactDetail] Error asignando oportunidad:', error);
       
