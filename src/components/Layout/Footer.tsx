@@ -1,5 +1,5 @@
 // Footer component
-import { SHORT_URL_BASE } from '@/config/constants';
+import { config } from '@/config/constants';
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
@@ -34,7 +34,7 @@ export function Footer() {
               Política de Privacidad
             </a>
             <a
-              href={SHORT_URL_BASE}
+              href={config.SHORT_URL_BASE}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-gray-600 hover:text-primary transition-colors"

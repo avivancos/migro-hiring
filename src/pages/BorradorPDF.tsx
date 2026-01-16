@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import type { HiringDetails } from '@/types/hiring';
 import { Button } from '@/components/ui/button';
 import { ArrowDownTrayIcon } from '@heroicons/react/24/outline';
-import { PUBLIC_APP_URL } from '@/config/constants';
+import { config } from '@/config/constants';
 
 export function BorradorPDF() {
   const [contractBlob, setContractBlob] = useState<Blob | null>(null);
@@ -29,7 +29,7 @@ export function BorradorPDF() {
     status: 'pending',
     kyc_status: null,
     expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    short_url: `${PUBLIC_APP_URL}/EJEMPLO`,
+    short_url: `${config.PUBLIC_APP_URL}/EJEMPLO`,
     grade: 'B' as const,
   };
 

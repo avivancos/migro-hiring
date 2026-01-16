@@ -8,7 +8,7 @@
 
 import axios from 'axios';
 import TokenStorage from '@/utils/tokenStorage';
-import { API_BASE_URL } from '@/config/constants';
+import { config } from '@/config/constants';
 
 const TEST_EMAIL = 'agusvc@gmail.com';
 const TEST_PASSWORD = 'pomelo2005';
@@ -89,7 +89,7 @@ async function loginAndGetTokens(): Promise<SavedTokens> {
   
   try {
     const response = await axios.post(
-      `${API_BASE_URL}/auth/login`,
+      `${config.API_BASE_URL}/auth/login`,
       {
         email: TEST_EMAIL,
         password: TEST_PASSWORD,

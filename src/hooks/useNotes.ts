@@ -66,9 +66,23 @@ export function useNotes(options: UseNotesOptions = {}) {
           // No hacer nada, el filtro no se aplicará
         }
         
-        // Buscar el usuario CRM correspondiente al usuario del sistema usando el email
-        if (user?.email && crmUsers.length > 0) {
-          const crmUser = crmUsers.find(u => u.email === user.email);
+        // Buscar el usuario CRM correspondiente al usuario del sistema
+        // Intentar primero por ID, luego por email (case-insensitive)
+        if ((user?.id || user?.email) && crmUsers.length > 0) {
+          const currentEmail = user.email?.toLowerCase();
+          const currentUserId = user.id;
+          
+          const crmUser = crmUsers.find(u => {
+            // Buscar por ID primero (más confiable)
+            const matchesId = currentUserId && u.id === currentUserId;
+            // Luego buscar por email (case-insensitive)
+            const matchesEmail = currentEmail && (
+              u.email?.toLowerCase() === currentEmail || 
+              u.email === user.email
+            );
+            return matchesId || matchesEmail;
+          });
+          
           if (crmUser) {
             filters.created_by = crmUser.id;
             console.log('🔍 [useNotes] Usuario regular, filtrando por CRM user:', {
@@ -76,21 +90,47 @@ export function useNotes(options: UseNotesOptions = {}) {
               systemUserEmail: user.email,
               crmUserId: crmUser.id,
               crmUserName: crmUser.name,
+              crmUserEmail: crmUser.email,
+              matchedBy: currentUserId && crmUser.id === currentUserId ? 'ID' : 'email',
             });
           } else {
-            console.warn('⚠️ [useNotes] No se encontró usuario CRM para:', user.email);
+            console.warn('⚠️ [useNotes] No se encontró usuario CRM para:', {
+              systemUserId: user.id,
+              systemUserEmail: user.email,
+              availableCrmUsers: crmUsers.map(u => ({ id: u.id, email: u.email, name: u.name })),
+            });
           }
-        } else if (user?.email && crmUsers.length === 0) {
+        } else if ((user?.id || user?.email) && crmUsers.length === 0) {
           // Si aún no se han cargado los usuarios CRM, intentar cargarlos ahora
           try {
             const users = await crmService.getUsers(true);
             setCrmUsers(users);
-            const crmUser = users.find(u => u.email === user.email);
+            
+            const currentEmail = user.email?.toLowerCase();
+            const currentUserId = user.id;
+            
+            const crmUser = users.find(u => {
+              const matchesId = currentUserId && u.id === currentUserId;
+              const matchesEmail = currentEmail && (
+                u.email?.toLowerCase() === currentEmail || 
+                u.email === user.email
+              );
+              return matchesId || matchesEmail;
+            });
+            
             if (crmUser) {
               filters.created_by = crmUser.id;
               console.log('🔍 [useNotes] Usuario CRM encontrado después de carga:', {
                 crmUserId: crmUser.id,
                 crmUserName: crmUser.name,
+                crmUserEmail: crmUser.email,
+                matchedBy: currentUserId && crmUser.id === currentUserId ? 'ID' : 'email',
+              });
+            } else {
+              console.warn('⚠️ [useNotes] No se encontró usuario CRM después de carga:', {
+                systemUserId: user.id,
+                systemUserEmail: user.email,
+                availableCrmUsers: users.map(u => ({ id: u.id, email: u.email, name: u.name })),
               });
             }
           } catch (err) {
@@ -118,10 +158,19 @@ export function useNotes(options: UseNotesOptions = {}) {
       // Verificar que los usuarios regulares solo ven sus propias notas
       let filteredNotes = notesList;
       
-      if (!isAdmin && user?.email) {
-        // Buscar el usuario CRM para comparar correctamente
-        const crmUser = crmUsers.find(u => u.email === user.email) || 
-                       (crmUsers.length === 0 ? null : null);
+      if (!isAdmin && (user?.id || user?.email)) {
+        // Buscar el usuario CRM para comparar correctamente (por ID o email)
+        const currentEmail = user.email?.toLowerCase();
+        const currentUserId = user.id;
+        
+        const crmUser = crmUsers.find(u => {
+          const matchesId = currentUserId && u.id === currentUserId;
+          const matchesEmail = currentEmail && (
+            u.email?.toLowerCase() === currentEmail || 
+            u.email === user.email
+          );
+          return matchesId || matchesEmail;
+        });
         
         if (crmUser) {
           // Filtrar solo notas del usuario CRM actual (medida de seguridad adicional)

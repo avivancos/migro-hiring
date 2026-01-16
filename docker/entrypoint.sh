@@ -25,9 +25,14 @@ if [ ! -f "$TEMPLATE" ]; then
 fi
 
 echo "[entrypoint] Generando config de nginx en $TARGET con PORT=$PORT_VALUE y API_BASE_URL=$API_BASE_URL_VALUE"
-# Escapar caracteres especiales para sed (/, &, \, etc.)
-# Escapar todos los caracteres especiales de regex de sed
-API_BASE_URL_ESCAPED=$(printf '%s\n' "$API_BASE_URL_VALUE" | sed 's/[[\.*^$()+?{|]/\\&/g')
+# Escapar caracteres especiales para sed en el contexto de reemplazo
+# IMPORTANTE: El orden de escape es crítico:
+# 1. Primero escapar \ (backslash) - debe ser primero porque es el carácter de escape
+# 2. Luego escapar & (ampersand) - representa el texto completo coincidente en reemplazo
+# 3. Luego escapar / (forward slash) - aunque usamos | como delimitador, es buena práctica
+# 4. Finalmente escapar otros caracteres especiales de regex
+# Usamos múltiples pasos de sed para asegurar el orden correcto de escape
+API_BASE_URL_ESCAPED=$(printf '%s\n' "$API_BASE_URL_VALUE" | sed -e 's/\\/\\\\/g' -e 's/&/\\&/g' -e 's/\//\\\//g' -e 's/\[/\\[/g' -e 's/\]/\\]/g' -e 's/\./\\./g' -e 's/\*/\\*/g' -e 's/\^/\\^/g' -e 's/\$/\\$/g' -e 's/(/\\(/g' -e 's/)/\\)/g' -e 's/+/\\+/g' -e 's/?/\\?/g' -e 's/{/\\{/g' -e 's/}/\\}/g' -e 's/|/\\|/g')
 # Reemplazar tanto el puerto como la URL de la API (ya escapada)
 sed -e "s/__PORT__/${PORT_VALUE}/g" -e "s|__API_BASE_URL__|${API_BASE_URL_ESCAPED}|g" "$TEMPLATE" > "$TARGET"
 

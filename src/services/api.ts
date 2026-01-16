@@ -1,23 +1,48 @@
 // Axios instance with interceptors
 
 import axios, { AxiosError } from 'axios';
-import { API_BASE_URL, API_TIMEOUT } from '@/config/constants';
+import { config, API_TIMEOUT } from '@/config/constants';
 import { isTokenExpired, isTokenExpiringSoon, getTokenTimeRemaining } from '@/utils/jwt';
 import TokenStorage from '@/utils/tokenStorage';
 import { performanceTracingService } from './performanceTracingService';
 
-// Create axios instance
-export const api = axios.create({
-  baseURL: API_BASE_URL,
-  timeout: API_TIMEOUT,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
+// Create axios instance lazy (solo se crea cuando se accede)
+// IMPORTANTE: La instancia se crea de forma lazy para evitar evaluación inmediata de config.API_BASE_URL
+// durante la inicialización del módulo. Esto permite que la aplicación cargue incluso si faltan variables de entorno.
+let _apiInstance: ReturnType<typeof axios.create> | null = null;
+
+const getApiInstance = () => {
+  if (_apiInstance === null) {
+    _apiInstance = axios.create({
+      baseURL: config.API_BASE_URL, // Se evalúa solo cuando se crea la instancia
+      timeout: API_TIMEOUT,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    });
+    
+    // Configurar interceptores después de crear la instancia
+    setupApiInterceptors(_apiInstance);
+  }
+  return _apiInstance;
+};
+
+// Exportar como getter para evaluación lazy
+export const api = new Proxy({} as ReturnType<typeof axios.create>, {
+  get(target, prop) {
+    return getApiInstance()[prop as keyof ReturnType<typeof axios.create>];
+  },
+  set(target, prop, value) {
+    (getApiInstance() as any)[prop] = value;
+    return true;
   },
 });
 
-// Request interceptor - Add JWT token and check expiration proactively
-api.interceptors.request.use(
+// Función para configurar interceptores (se llama después de crear la instancia)
+function setupApiInterceptors(instance: ReturnType<typeof axios.create>) {
+  // Request interceptor - Add JWT token and check expiration proactively
+  instance.interceptors.request.use(
   async (config) => {
     // Iniciar medición de performance para llamadas API
     if (config.url) {
@@ -27,7 +52,7 @@ api.interceptors.request.use(
         {
           method: config.method?.toUpperCase(),
           url: config.url,
-          endpoint: config.url.replace(API_BASE_URL, ''),
+          endpoint: config.url?.replace(getApiInstance().defaults.baseURL || '', '') || '',
         }
       );
       (config as any).__perfMarkName = markName;
@@ -231,7 +256,7 @@ const refreshTokenProactively = async (): Promise<string | null> => {
   try {
     console.log('🔄 Refrescando token proactivamente...');
     const response = await axios.post(
-      `${API_BASE_URL}/auth/refresh`,
+      `${config.API_BASE_URL}/auth/refresh`,
       { refresh_token: refreshToken },
       { timeout: API_TIMEOUT }
     );
@@ -311,7 +336,7 @@ const refreshTokenProactively = async (): Promise<string | null> => {
   }
 };
 
-api.interceptors.response.use(
+  instance.interceptors.response.use(
   (response) => {
     // Finalizar medición de performance
     const markName = (response.config as any).__perfMarkName;
@@ -410,7 +435,7 @@ api.interceptors.response.use(
             originalRequest.headers.Authorization = `Bearer ${newToken}`;
             
             // Reintentar petición original
-            return api(originalRequest);
+            return instance(originalRequest);
           } else {
             // Refresh falló - verificar si los tokens todavía existen
             // Si existen, fue un error temporal y NO debemos limpiar ni redirigir
@@ -504,11 +529,8 @@ api.interceptors.response.use(
     // Los tokens solo se limpian cuando el refresh token está realmente inválido/expirado
     return Promise.reject(error);
   }
-);
-
-/**
- * Handle API errors and return user-friendly messages
- */
+  );
+}
 export function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const axiosError = error as AxiosError<{ detail?: string }>;

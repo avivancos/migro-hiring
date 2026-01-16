@@ -2,7 +2,7 @@
 // Conecta al servicio externo de Pili
 
 import axios from 'axios';
-import { PILI_API_BASE_URL } from '@/config/constants';
+import { config } from '@/config/constants';
 import type {
   PiliChatRequest,
   PiliChatResponse,
@@ -15,14 +15,23 @@ import type {
 const PILI_API_TIMEOUT = 60000;
 
 // Instancia de axios para el servicio de Pili (sin interceptores de autenticación)
-const piliApi = axios.create({
-  baseURL: PILI_API_BASE_URL,
-  timeout: PILI_API_TIMEOUT,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  },
-});
+// IMPORTANTE: La instancia se crea de forma lazy para evitar evaluación inmediata de config.PILI_API_BASE_URL
+// durante la inicialización del módulo. Esto permite que la aplicación cargue incluso si faltan variables de entorno.
+let _piliApiInstance: ReturnType<typeof axios.create> | null = null;
+
+const getPiliApiInstance = () => {
+  if (_piliApiInstance === null) {
+    _piliApiInstance = axios.create({
+      baseURL: config.PILI_API_BASE_URL, // Se evalúa solo cuando se crea la instancia
+      timeout: PILI_API_TIMEOUT,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    });
+  }
+  return _piliApiInstance;
+};
 
 export const piliService = {
   /**
@@ -58,7 +67,7 @@ export const piliService = {
         throw new Error('La pregunta es demasiado larga (máximo 5000 caracteres).');
       }
 
-      const response = await piliApi.post<PiliChatResponse>(
+      const response = await getPiliApiInstance().post<PiliChatResponse>(
         '/pili/chat',
         {
           query: queryTrimmed,
@@ -135,7 +144,7 @@ export const piliService = {
         throw new Error('La pregunta es demasiado larga (máximo 5000 caracteres).');
       }
 
-      const response = await piliApi.post<PiliChatMessagesResponse>(
+      const response = await getPiliApiInstance().post<PiliChatMessagesResponse>(
         '/pili/chat/messages',
         {
           query: queryTrimmed,
@@ -184,7 +193,7 @@ export const piliService = {
    */
   async checkHealth(): Promise<HealthResponse> {
     try {
-      const response = await piliApi.get<HealthResponse>('/pili/health');
+      const response = await getPiliApiInstance().get<HealthResponse>('/pili/health');
       return response.data;
     } catch (error: any) {
       console.error('Error en piliService.checkHealth:', error);

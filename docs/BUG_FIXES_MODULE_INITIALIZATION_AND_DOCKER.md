@@ -84,28 +84,46 @@ export const APP_URL = requireInProduction(rawAppUrlForApp, 'VITE_APP_URL', 'htt
 
 ### Bug 3: Caracteres Especiales sin Escapar en sed
 
-**Ubicación:** `docker/entrypoint.sh:28-29`
+**Ubicación:** `docker/entrypoint.sh:27-37`
 
-**Problema:**
+**Problema Original:**
 Se usaba `${API_BASE_URL_VALUE}` directamente en `sed` sin escapar caracteres especiales:
 ```bash
 sed -e "s/__PORT__/${PORT_VALUE}/g" -e "s|__API_BASE_URL__|${API_BASE_URL_VALUE}|g" "$TEMPLATE" > "$TARGET"
 ```
 
+**Problema en la Primera Solución:**
+El patrón de escape inicial `'s/[[\.*^$()+?{|]/\\&/g'` tenía problemas:
+- No escapaba `/` (forward slash) correctamente, aunque se usaba `|` como delimitador
+- No escapaba `&` (ampersand) correctamente para el contexto de reemplazo
+- No escapaba `\` (backslash) primero, lo cual es crítico porque es el carácter de escape
+- El orden de escape era incorrecto, causando que algunos caracteres no se escaparan correctamente
+
 **Impacto:**
-- URLs que contienen `/`, `&`, `\`, u otros caracteres especiales de regex causan que el comando `sed` falle
+- URLs que contienen `/`, `&`, `\`, u otros caracteres especiales causan que el comando `sed` falle
 - El comando puede comportarse de forma inesperada o generar configuraciones de nginx inválidas
 - Ejemplo: `https://api.migro.es/api` contiene `/` que puede romper el patrón de reemplazo
+- URLs con `&` (como parámetros de query) causan que `sed` interprete incorrectamente el reemplazo
 
-**Solución:**
-Se agregó escape de caracteres especiales antes de usar en `sed`:
+**Solución Corregida:**
+Se implementó escape completo de caracteres especiales con el orden correcto:
 ```bash
-# Escapar caracteres especiales para sed (/, &, \, etc.)
-# Escapar todos los caracteres especiales de regex de sed
-API_BASE_URL_ESCAPED=$(printf '%s\n' "$API_BASE_URL_VALUE" | sed 's/[[\.*^$()+?{|]/\\&/g')
+# Escapar caracteres especiales para sed en el contexto de reemplazo
+# IMPORTANTE: El orden de escape es crítico:
+# 1. Primero escapar \ (backslash) - debe ser primero porque es el carácter de escape
+# 2. Luego escapar & (ampersand) - representa el texto completo coincidente en reemplazo
+# 3. Luego escapar / (forward slash) - aunque usamos | como delimitador, es buena práctica
+# 4. Finalmente escapar otros caracteres especiales de regex
+API_BASE_URL_ESCAPED=$(printf '%s\n' "$API_BASE_URL_VALUE" | sed -e 's/\\/\\\\/g' -e 's/&/\\&/g' -e 's/\//\\\//g' -e 's/\[/\\[/g' -e 's/\]/\\]/g' -e 's/\./\\./g' -e 's/\*/\\*/g' -e 's/\^/\\^/g' -e 's/\$/\\$/g' -e 's/(/\\(/g' -e 's/)/\\)/g' -e 's/+/\\+/g' -e 's/?/\\?/g' -e 's/{/\\{/g' -e 's/}/\\}/g' -e 's/|/\\|/g')
 # Reemplazar tanto el puerto como la URL de la API (ya escapada)
 sed -e "s/__PORT__/${PORT_VALUE}/g" -e "s|__API_BASE_URL__|${API_BASE_URL_ESCAPED}|g" "$TEMPLATE" > "$TARGET"
 ```
+
+**Caracteres Escapados:**
+1. `\` (backslash) - primero, porque es el carácter de escape
+2. `&` (ampersand) - crítico para el contexto de reemplazo
+3. `/` (forward slash) - común en URLs
+4. `[`, `]`, `.`, `*`, `^`, `$`, `(`, `)`, `+`, `?`, `{`, `}`, `|` - caracteres especiales de regex
 
 ---
 
