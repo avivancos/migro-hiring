@@ -101,7 +101,10 @@ function findFiles(dir, fileList = []) {
       findFiles(filePath, fileList);
     } else if ((file.endsWith('.tsx') || file.endsWith('.ts')) && filePath.includes('src')) {
       // Excluir iconMapping.ts ya que es un archivo de configuración
-      if (!filePath.includes('iconMapping.ts')) {
+      // Excluir TaskTableRow.tsx y TaskList.tsx para evitar conflictos con importaciones
+      if (!filePath.includes('iconMapping.ts') && 
+          !filePath.includes('TaskTableRow.tsx') && 
+          !filePath.includes('TaskList.tsx')) {
         fileList.push(filePath);
       }
     }

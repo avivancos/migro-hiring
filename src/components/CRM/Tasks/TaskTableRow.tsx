@@ -6,13 +6,15 @@ import { useNavigate, Link } from 'react-router-dom';
 import type { Task } from '@/types/crm';
 import { Badge } from '@/components/ui/badge';
 import { formatDate } from '@/utils/formatters';
-import { BellIcon } from '@heroicons/react/24/outline';
-import { CalendarIcon } from '@heroicons/react/24/outline';
-import { CheckIcon } from '@heroicons/react/24/outline';
-import { EnvelopeIcon } from '@heroicons/react/24/outline';
-import { PhoneIcon } from '@heroicons/react/24/outline';
-import { UserIcon } from '@heroicons/react/24/outline';
-import { UsersIcon } from '@heroicons/react/24/outline';
+import {
+  BellIcon,
+  CalendarIcon,
+  CheckIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  UserIcon,
+  UsersIcon,
+} from '@heroicons/react/24/outline';
 
 interface TaskTableRowProps {
   task: Task;
