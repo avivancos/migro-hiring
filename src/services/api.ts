@@ -539,10 +539,28 @@ export function getErrorMessage(error: unknown): string {
           return 'Los datos proporcionados son inválidos.';
         case 429:
           return 'Demasiadas solicitudes. Por favor espera un momento.';
-        case 500:
-          return 'Error del servidor. Por favor intenta más tarde.';
-        case 503:
-          return 'Servicio temporalmente no disponible.';
+      case 500:
+        // Para errores 500, intentar extraer mensaje específico del backend
+        if (data?.detail) {
+          const detailStr = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+          
+          // Detectar errores de Pydantic comunes
+          if (detailStr.includes('is not fully defined')) {
+            return 'Error de configuración en el servidor. Por favor, contacta al administrador.';
+          }
+          
+          // Mostrar mensaje del backend si está disponible (limitado a 200 caracteres)
+          return detailStr.length > 200 ? detailStr.substring(0, 200) + '...' : detailStr;
+        }
+        return 'Error del servidor. Por favor intenta más tarde.';
+      case 503:
+        // Error 503 generalmente indica servicio no disponible o en mantenimiento
+        // Mostrar mensaje específico del backend si está disponible
+        if (data?.detail) {
+          const detailStr = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+          return detailStr;
+        }
+        return 'Servicio temporalmente no disponible.';
         default:
           return 'Ha ocurrido un error inesperado.';
       }

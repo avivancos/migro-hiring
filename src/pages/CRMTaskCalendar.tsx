@@ -134,6 +134,9 @@ export function CRMTaskCalendar() {
         crmService.getCalendarTasks({
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
+        }).catch((err) => {
+          console.warn('⚠️ [CRMTaskCalendar] Error cargando tareas del calendario:', err);
+          return [];
         }),
         // Usar el nuevo endpoint específico para calendario que permite filtrar por fechas
         crmService.getCalendarCalls({

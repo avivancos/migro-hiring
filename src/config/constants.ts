@@ -1,14 +1,22 @@
 // Constants and configuration
 
-// Normalizar la URL de la API (eliminar barra final si existe)
-const normalizeApiUrl = (url: string | undefined): string => {
-  if (!url) return 'https://api.migro.es/api';
-  return url.endsWith('/') ? url.slice(0, -1) : url;
+// Helper para normalizar valores de entorno (tratar strings vacíos como undefined)
+const normalizeEnvValue = (value: string | undefined): string | undefined => {
+  return value && value.trim() !== '' ? value : undefined;
 };
 
-// SIEMPRE USA API DE PRODUCCIÓN
-// En desarrollo, usar VITE_API_BASE_URL del .env
-// En producción, usar el fallback o la variable de entorno
+// Normalizar la URL de la API (eliminar barra final si existe)
+const normalizeApiUrl = (url: string | undefined): string => {
+  // Normalizar primero para tratar strings vacíos como undefined
+  const normalized = normalizeEnvValue(url);
+  if (!normalized) {
+    throw new Error('VITE_API_BASE_URL no está definida. Por favor, configura esta variable de entorno.');
+  }
+  return normalized.endsWith('/') ? normalized.slice(0, -1) : normalized;
+};
+
+// URL base de la API - REQUERIDA como variable de entorno
+// No hay fallback de producción para evitar hardcodes
 const rawApiUrl = import.meta.env.VITE_API_BASE_URL;
 export const API_BASE_URL = normalizeApiUrl(rawApiUrl);
 
@@ -18,40 +26,53 @@ if (import.meta.env.DEV) {
     raw: rawApiUrl,
     normalized: API_BASE_URL,
     fromEnv: !!rawApiUrl,
-    fallback: !rawApiUrl,
   });
 }
-export const STRIPE_PUBLISHABLE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_live_51SCgH4Djtj7fY0EsiZB6PvzabhQzCrgLQr728oJkfbUDciK9nk29ajRta3IuMK1tSXRv3RUQloYNez3BEwY2DmIp00RhGVHymj';
-export const APP_URL = import.meta.env.VITE_APP_URL || 'http://localhost:5173';
+
+// Stripe Publishable Key - REQUERIDA como variable de entorno
+// No hay fallback para evitar hardcodes de claves
+// También normalizar para manejar strings vacíos
+const rawStripeKey = normalizeEnvValue(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+export const STRIPE_PUBLISHABLE_KEY = rawStripeKey;
+if (!STRIPE_PUBLISHABLE_KEY) {
+  throw new Error('VITE_STRIPE_PUBLISHABLE_KEY no está definida. Por favor, configura esta variable de entorno.');
+}
+
+// URL de la aplicación
+// Usa la misma normalización para manejar strings vacíos
+const rawAppUrlForApp = normalizeEnvValue(import.meta.env.VITE_APP_URL);
+export const APP_URL = rawAppUrlForApp || 'http://localhost:5173';
 export const API_TIMEOUT = Number(import.meta.env.VITE_API_TIMEOUT) || 30000;
 export const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 
 // URLs públicas de la aplicación
-// En desarrollo: usar localhost
-// En producción: usar dominios reales
-export const PUBLIC_APP_URL = import.meta.env.VITE_APP_URL || 
+// Usa variables de entorno, con fallback solo para desarrollo local
+// Maneja strings vacíos como undefined para evitar errores en builds de Docker
+const rawAppUrl = normalizeEnvValue(import.meta.env.VITE_APP_URL);
+export const PUBLIC_APP_URL = rawAppUrl || 
   (import.meta.env.PROD 
-    ? 'https://contratacion.migro.es' 
+    ? (() => { throw new Error('VITE_APP_URL debe estar definida en producción'); })()
     : 'http://localhost:5173');
 
 // URL corta para compartir contratos (migro.es/c/CODE)
-export const SHORT_URL_BASE = import.meta.env.VITE_SHORT_URL_BASE || 
+const rawShortUrlBase = normalizeEnvValue(import.meta.env.VITE_SHORT_URL_BASE);
+export const SHORT_URL_BASE = rawShortUrlBase || 
   (import.meta.env.PROD 
-    ? 'https://migro.es' 
+    ? (() => { throw new Error('VITE_SHORT_URL_BASE debe estar definida en producción'); })()
     : 'http://localhost:5173');
 
 // Dominio público para footers y referencias (sin protocolo)
-export const PUBLIC_DOMAIN = import.meta.env.VITE_PUBLIC_DOMAIN || 
+const rawPublicDomain = normalizeEnvValue(import.meta.env.VITE_PUBLIC_DOMAIN);
+export const PUBLIC_DOMAIN = rawPublicDomain || 
   (import.meta.env.PROD 
-    ? 'contratacion.migro.es' 
+    ? (() => { throw new Error('VITE_PUBLIC_DOMAIN debe estar definida en producción'); })()
     : 'localhost:5173');
 
 // API de Pili - Servicio externo
-// En producción: https://pili.migro.es/api
-// En desarrollo: http://localhost:8001/api
-export const PILI_API_BASE_URL = import.meta.env.VITE_PILI_API_URL || 
+const rawPiliApiUrl = normalizeEnvValue(import.meta.env.VITE_PILI_API_URL);
+export const PILI_API_BASE_URL = rawPiliApiUrl || 
   (import.meta.env.PROD 
-    ? 'https://pili.migro.es/api' 
+    ? (() => { throw new Error('VITE_PILI_API_URL debe estar definida en producción'); })()
     : 'http://localhost:8001/api');
 
 export const HIRING_STEPS = [

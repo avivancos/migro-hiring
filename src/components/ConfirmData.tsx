@@ -10,6 +10,7 @@ import { hiringService } from '@/services/hiringService';
 // Dynamic import para PDF generator (pesado, cargar bajo demanda)
 import type { HiringDetails } from '@/types/hiring';
 import { DocumentTextIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { SHORT_URL_BASE } from '@/config/constants';
 
 interface ConfirmDataProps {
   details: HiringDetails;
@@ -229,7 +230,7 @@ export function ConfirmData({ details, onConfirm, onBack }: ConfirmDataProps) {
                 Confirmo que mis datos personales son correctos y autorizo su uso para
                 la gestión del servicio contratado de acuerdo con la{' '}
                 <a
-                  href="https://migro.es/privacidad"
+                  href={`${SHORT_URL_BASE}/privacidad`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline font-semibold"

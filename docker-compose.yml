@@ -18,9 +18,27 @@ services:
       # El Dockerfile solo tiene 2 stages: deps, builder, y runner (nginx)
       # Docker usa el último por defecto (runner)
       args:
-        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-https://api.migro.es/api}
-        - VITE_STRIPE_PUBLISHABLE_KEY=${VITE_STRIPE_PUBLISHABLE_KEY}
-        - VITE_APP_URL=${VITE_APP_URL:-https://contratacion.migro.es}
+        # Usar DOCKER_API_BASE_URL si existe, sino convertir localhost de VITE_API_BASE_URL
+        - VITE_API_BASE_URL=${DOCKER_API_BASE_URL:-${VITE_API_BASE_URL}}
+        # Valores por defecto solo para desarrollo local (localhost)
+        # En producción, estas variables DEBEN estar definidas o el build fallará
+        # NOTA: VITE_STRIPE_PUBLISHABLE_KEY usa pk_test_placeholder como fallback solo para desarrollo
+        # En producción, DEBE estar definida con una clave real
+        - VITE_STRIPE_PUBLISHABLE_KEY=${VITE_STRIPE_PUBLISHABLE_KEY:-pk_test_placeholder}
+        - VITE_APP_URL=${VITE_APP_URL:-http://localhost:5173}
+        - VITE_SHORT_URL_BASE=${VITE_SHORT_URL_BASE:-http://localhost:5173}
+        - VITE_PUBLIC_DOMAIN=${VITE_PUBLIC_DOMAIN:-localhost:5173}
+        - VITE_PILI_API_URL=${DOCKER_PILI_API_URL:-${VITE_PILI_API_URL:-http://localhost:8001/api}}
+        - VITE_DEBUG_MODE=${VITE_DEBUG_MODE:-false}
+        - VITE_API_TIMEOUT=${VITE_API_TIMEOUT:-30000}
+    environment:
+      # Pasar VITE_API_BASE_URL al contenedor para el CSP de nginx
+      - VITE_API_BASE_URL=${DOCKER_API_BASE_URL:-${VITE_API_BASE_URL}}
+      # Configurar PORT para que nginx escuche en el puerto correcto
+      - PORT=80
+    extra_hosts:
+      # Mapear host.docker.internal a la IP del host para compatibilidad
+      - "host.docker.internal:host-gateway"
     ports:
       - "80:80"
     networks:

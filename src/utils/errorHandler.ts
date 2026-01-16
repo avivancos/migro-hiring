@@ -78,10 +78,49 @@ export function handleApiError(error: unknown): ApiError {
         };
       case 500:
       case 502:
-      case 503:
+        // Para errores 500, intentar extraer mensaje específico del backend
+        if (data?.detail) {
+          // Si es un error de Pydantic u otro error específico, mostrar solo la parte relevante
+          const detailStr = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+          
+          // Detectar errores de Pydantic comunes
+          if (detailStr.includes('is not fully defined')) {
+            return {
+              message: 'Error de configuración en el servidor. Por favor, contacta al administrador.',
+              code: 'PYDANTIC_ERROR',
+              status,
+              details: data,
+            };
+          }
+          
+          // Mostrar mensaje del backend si está disponible
+          return {
+            message: detailStr.length > 200 ? detailStr.substring(0, 200) + '...' : detailStr,
+            code: 'SERVER_ERROR',
+            status,
+            details: data,
+          };
+        }
         return {
           message: 'Error del servidor. Por favor, intenta más tarde.',
           code: 'SERVER_ERROR',
+          status,
+        };
+      case 503:
+        // Error 503 generalmente indica servicio no disponible o en mantenimiento
+        // Mostrar mensaje específico del backend si está disponible
+        if (data?.detail) {
+          const detailStr = typeof data.detail === 'string' ? data.detail : JSON.stringify(data.detail);
+          return {
+            message: detailStr,
+            code: 'SERVICE_UNAVAILABLE',
+            status,
+            details: data,
+          };
+        }
+        return {
+          message: 'Servicio temporalmente no disponible. Por favor, intenta más tarde.',
+          code: 'SERVICE_UNAVAILABLE',
           status,
         };
       default:

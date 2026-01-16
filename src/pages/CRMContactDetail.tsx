@@ -245,7 +245,12 @@ export function CRMContactDetail() {
       return 'Cargando...';
     }
     
-    const user = users.find(u => String(u.id).trim() === String(userId).trim());
+    // Normalizar IDs para comparación (trim y lowercase para consistencia con otras comparaciones)
+    const normalizedUserId = String(userId).trim().toLowerCase();
+    const user = users.find(u => {
+      const normalizedUId = String(u.id).trim().toLowerCase();
+      return normalizedUId === normalizedUserId;
+    });
     if (!user) {
       return `Usuario ${userId.slice(0, 8)}...`;
     }

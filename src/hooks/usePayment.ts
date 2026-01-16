@@ -18,6 +18,9 @@ export function usePayment(code: string) {
   // Initialize Stripe
   const getStripe = (): Promise<Stripe | null> => {
     if (!stripePromise) {
+      if (!STRIPE_PUBLISHABLE_KEY) {
+        throw new Error('Stripe publishable key no está configurada');
+      }
       stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
     }
     return stripePromise;

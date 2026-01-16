@@ -18,15 +18,23 @@ RUN npm ci --legacy-peer-deps
 COPY . .
 
 # Variables de entorno para build
-ARG VITE_API_BASE_URL=https://api.migro.es/api
+# NOTA: Estas variables DEBEN ser proporcionadas en el build
+# No hay valores por defecto para evitar hardcodes
+ARG VITE_API_BASE_URL
 ARG VITE_STRIPE_PUBLISHABLE_KEY
-ARG VITE_APP_URL=https://contratacion.migro.es
+ARG VITE_APP_URL
+ARG VITE_SHORT_URL_BASE
+ARG VITE_PUBLIC_DOMAIN
+ARG VITE_PILI_API_URL
 ARG VITE_DEBUG_MODE=false
 ARG VITE_API_TIMEOUT=30000
 
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV VITE_STRIPE_PUBLISHABLE_KEY=$VITE_STRIPE_PUBLISHABLE_KEY
 ENV VITE_APP_URL=$VITE_APP_URL
+ENV VITE_SHORT_URL_BASE=$VITE_SHORT_URL_BASE
+ENV VITE_PUBLIC_DOMAIN=$VITE_PUBLIC_DOMAIN
+ENV VITE_PILI_API_URL=$VITE_PILI_API_URL
 ENV VITE_DEBUG_MODE=$VITE_DEBUG_MODE
 ENV VITE_API_TIMEOUT=$VITE_API_TIMEOUT
 
@@ -47,6 +55,11 @@ FROM nginx:alpine
 
 # Puerto por defecto para Render (se puede sobreescribir con PORT)
 ENV PORT=10000
+
+# Variable de entorno para el CSP de nginx (se pasa desde docker-compose)
+# El entrypoint.sh la usará para reemplazar __API_BASE_URL__ en la plantilla
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 # Copiar configuración de nginx (plantilla) y entrypoint
 RUN mkdir -p /etc/nginx/templates

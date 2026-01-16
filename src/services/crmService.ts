@@ -982,11 +982,23 @@ export const crmService = {
    * Retorna solo tareas con is_completed: false
    */
   async getCalendarTasks(filters: { start_date: string; end_date?: string; entity_type?: string; responsible_user_id?: string }): Promise<Task[]> {
-    const { data } = await api.get<Task[]>(`${CRM_BASE_PATH}/tasks/calendar`, {
-      params: filters,
-    });
-    // El endpoint retorna un array directo (List[TaskResponse])
-    return Array.isArray(data) ? data : [];
+    try {
+      const { data } = await api.get<Task[]>(`${CRM_BASE_PATH}/tasks/calendar`, {
+        params: filters,
+      });
+      // El endpoint retorna un array directo (List[TaskResponse])
+      return Array.isArray(data) ? data : [];
+    } catch (error: any) {
+      // Solo manejar 404 (endpoint no existe aún) - retornar array vacío
+      if (error.response?.status === 404) {
+        console.warn('⚠️ [crmService] Endpoint /tasks/calendar no encontrado (404). El backend puede no estar actualizado.');
+        return [];
+      }
+      // Para otros errores (500, network, etc.), re-lanzar el error
+      // para que el código que llama pueda manejarlo apropiadamente
+      console.error('❌ [crmService] Error en getCalendarTasks:', error);
+      throw error;
+    }
   },
 
   /**

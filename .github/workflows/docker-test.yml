@@ -1,0 +1,145 @@
+name: Docker - Test y Verificación
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'Dockerfile'
+      - 'docker-compose.yml'
+      - 'docker/**'
+      - '.github/workflows/docker-test.yml'
+
+jobs:
+  docker-test:
+    name: Test Docker Completo
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build con variables de entorno
+        run: |
+          docker build \
+            --build-arg VITE_API_BASE_URL=https://api.migro.es/api \
+            --build-arg VITE_STRIPE_PUBLISHABLE_KEY=pk_test_placeholder \
+            --build-arg VITE_APP_URL=https://contratacion.migro.es \
+            --build-arg VITE_SHORT_URL_BASE=https://migro.es \
+            --build-arg VITE_PUBLIC_DOMAIN=contratacion.migro.es \
+            --build-arg VITE_PILI_API_URL=https://pili.migro.es/api \
+            --build-arg VITE_DEBUG_MODE=false \
+            --build-arg VITE_API_TIMEOUT=30000 \
+            -t migro-hiring:ci-test \
+            .
+
+      - name: Verificar estructura de la imagen
+        run: |
+          echo "=== Verificando estructura de la imagen ==="
+          docker run --rm migro-hiring:ci-test sh -c "
+            echo '📁 Archivos en /usr/share/nginx/html:'
+            ls -lah /usr/share/nginx/html/ | head -15
+            echo ''
+            echo '📄 Verificando index.html:'
+            test -f /usr/share/nginx/html/index.html && echo '✅ index.html existe' || echo '❌ index.html NO existe'
+            echo ''
+            echo '🔧 Verificando entrypoint:'
+            test -f /entrypoint.sh && echo '✅ entrypoint.sh existe' || echo '❌ entrypoint.sh NO existe'
+            test -x /entrypoint.sh && echo '✅ entrypoint.sh es ejecutable' || echo '❌ entrypoint.sh NO es ejecutable'
+            echo ''
+            echo '📋 Verificando configuración nginx:'
+            test -f /etc/nginx/templates/default.conf.template && echo '✅ nginx template existe' || echo '❌ nginx template NO existe'
+          "
+
+      - name: Test contenedor con variables de entorno
+        run: |
+          echo "=== Iniciando contenedor de prueba ==="
+          docker run -d \
+            --name migro-hiring-ci-test \
+            -p 8080:80 \
+            -e PORT=80 \
+            -e VITE_API_BASE_URL=https://api.migro.es/api \
+            migro-hiring:ci-test
+          
+          # Esperar a que nginx inicie
+          echo "⏳ Esperando a que nginx inicie..."
+          sleep 8
+          
+          # Verificar logs
+          echo "=== Logs del contenedor ==="
+          docker logs migro-hiring-ci-test | tail -20
+
+      - name: Test endpoints HTTP
+        run: |
+          echo "=== Probando endpoints ==="
+          
+          # Health check
+          echo "🔍 Probando /healthz..."
+          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthz || echo "000")
+          if [ "$HEALTH_STATUS" = "200" ]; then
+            echo "✅ /healthz responde correctamente (200)"
+          else
+            echo "❌ /healthz falló (Status: $HEALTH_STATUS)"
+            exit 1
+          fi
+          
+          # Root endpoint
+          echo "🔍 Probando /..."
+          ROOT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/ || echo "000")
+          if [ "$ROOT_STATUS" = "200" ]; then
+            echo "✅ / responde correctamente (200)"
+          else
+            echo "❌ / falló (Status: $ROOT_STATUS)"
+            exit 1
+          fi
+          
+          # Verificar que devuelve HTML
+          echo "🔍 Verificando contenido HTML..."
+          HTML_CONTENT=$(curl -s http://localhost:8080/ | head -5)
+          if echo "$HTML_CONTENT" | grep -q "html"; then
+            echo "✅ Contenido HTML válido"
+          else
+            echo "❌ No se encontró contenido HTML válido"
+            echo "Contenido recibido:"
+            echo "$HTML_CONTENT"
+            exit 1
+          fi
+
+      - name: Test configuración nginx
+        run: |
+          echo "=== Verificando configuración nginx ==="
+          docker exec migro-hiring-ci-test nginx -t
+          
+          # Verificar que nginx está escuchando en el puerto correcto
+          echo "🔍 Verificando puerto de nginx..."
+          docker exec migro-hiring-ci-test sh -c "netstat -tuln | grep :80 || ss -tuln | grep :80"
+
+      - name: Capturar logs completos
+        if: always()
+        run: |
+          echo "=== Logs completos del contenedor ===" > docker-ci-logs.txt
+          docker logs migro-hiring-ci-test >> docker-ci-logs.txt 2>&1
+          echo "" >> docker-ci-logs.txt
+          echo "=== Estado del contenedor ===" >> docker-ci-logs.txt
+          docker ps -a | grep migro-hiring-ci-test >> docker-ci-logs.txt
+          echo "" >> docker-ci-logs.txt
+          echo "=== Configuración nginx ===" >> docker-ci-logs.txt
+          docker exec migro-hiring-ci-test cat /etc/nginx/conf.d/default.conf >> docker-ci-logs.txt 2>&1 || true
+
+      - name: Limpiar contenedor
+        if: always()
+        run: |
+          docker stop migro-hiring-ci-test || true
+          docker rm migro-hiring-ci-test || true
+
+      - name: Subir logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-ci-logs
+          path: docker-ci-logs.txt
+          retention-days: 30

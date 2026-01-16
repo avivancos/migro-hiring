@@ -1,0 +1,186 @@
+name: CI - Tests y Build
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Tests Unitarios
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci --legacy-peer-deps
+
+      - name: Ejecutar linter
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Ejecutar tests
+        run: npm run test:ci
+        env:
+          VITE_API_BASE_URL: http://localhost:3000/api
+          VITE_STRIPE_PUBLISHABLE_KEY: pk_test_placeholder
+          VITE_APP_URL: http://localhost:5173
+          VITE_SHORT_URL_BASE: http://localhost:5173
+          VITE_PUBLIC_DOMAIN: localhost:5173
+          VITE_PILI_API_URL: http://localhost:8001/api
+          VITE_DEBUG_MODE: false
+          VITE_API_TIMEOUT: 30000
+
+      - name: Subir resultados de tests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            test-results.log
+            coverage/
+
+  build:
+    name: Build de Producción
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Instalar dependencias
+        run: npm ci --legacy-peer-deps
+
+      - name: Build de producción
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: https://api.migro.es/api
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+          VITE_APP_URL: https://contratacion.migro.es
+          VITE_SHORT_URL_BASE: https://migro.es
+          VITE_PUBLIC_DOMAIN: contratacion.migro.es
+          VITE_PILI_API_URL: https://pili.migro.es/api
+          VITE_DEBUG_MODE: false
+          VITE_API_TIMEOUT: 30000
+
+      - name: Verificar build
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "❌ Error: El directorio dist no existe"
+            exit 1
+          fi
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ Error: dist/index.html no existe"
+            exit 1
+          fi
+          echo "✅ Build completado correctamente"
+          ls -lh dist/ | head -10
+
+      - name: Subir artefactos de build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: dist/
+          retention-days: 7
+
+  docker:
+    name: Build y Test Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build imagen Docker
+        run: |
+          docker build \
+            --build-arg VITE_API_BASE_URL=https://api.migro.es/api \
+            --build-arg VITE_STRIPE_PUBLISHABLE_KEY=${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }} \
+            --build-arg VITE_APP_URL=https://contratacion.migro.es \
+            --build-arg VITE_SHORT_URL_BASE=https://migro.es \
+            --build-arg VITE_PUBLIC_DOMAIN=contratacion.migro.es \
+            --build-arg VITE_PILI_API_URL=https://pili.migro.es/api \
+            --build-arg VITE_DEBUG_MODE=false \
+            --build-arg VITE_API_TIMEOUT=30000 \
+            -t migro-hiring:test \
+            .
+
+      - name: Verificar imagen Docker
+        run: |
+          docker images migro-hiring:test
+          docker run --rm migro-hiring:test sh -c "ls -la /usr/share/nginx/html/ | head -10"
+
+      - name: Test contenedor Docker
+        run: |
+          docker run -d --name migro-hiring-test -p 8080:80 \
+            -e PORT=80 \
+            -e VITE_API_BASE_URL=https://api.migro.es/api \
+            migro-hiring:test
+          
+          # Esperar a que nginx inicie
+          sleep 5
+          
+          # Verificar health check
+          curl -f http://localhost:8080/healthz || exit 1
+          
+          # Verificar que la app responde
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/)
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ Error: La aplicación no responde correctamente (Status: $STATUS)"
+            docker logs migro-hiring-test
+            exit 1
+          fi
+          
+          echo "✅ Docker container funciona correctamente"
+          
+          # Limpiar
+          docker stop migro-hiring-test
+          docker rm migro-hiring-test
+
+      - name: Subir logs de Docker
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-logs
+          path: |
+            docker-*.log
+          retention-days: 7
+
+  summary:
+    name: Resumen de CI
+    runs-on: ubuntu-latest
+    needs: [test, build, docker]
+    if: always()
+    
+    steps:
+      - name: Resumen
+        run: |
+          echo "## ✅ Resumen de CI/CD" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Estado |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Tests | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docker | ${{ needs.docker.result }} |" >> $GITHUB_STEP_SUMMARY

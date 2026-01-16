@@ -1,0 +1,18 @@
+
+Name                                    Size(KB) LastWriteTime
+----                                    -------- -------------
+docker-build-final.log                     25,08 15/01/2026 20:28:08
+docker-endpoints-test.log                   0,18 15/01/2026 20:21:26
+docker-final-verification.log               1,69 15/01/2026 20:27:05
+docker-full-logs.log                        2,08 15/01/2026 20:21:37
+docker-inspect.log                          0,03 15/01/2026 20:20:11
+docker-logs.log                             1,92 15/01/2026 20:16:18
+docker-nginx-test.log                       0,13 15/01/2026 20:17:52
+docker-processes.log                        0,83 15/01/2026 20:21:51
+docker-status.log                           0,11 15/01/2026 20:17:41
+docker-verification-20260115-202227.log     0,30 15/01/2026 20:22:27
+FINAL_VERIFICATION_REPORT.log               0,50 15/01/2026 20:28:52
+npm-install.log                             0,55 15/01/2026 20:17:29
+test-results.log                           96,59 15/01/2026 20:19:52
+verification-summary.log                    0,16 15/01/2026 20:24:07
+
