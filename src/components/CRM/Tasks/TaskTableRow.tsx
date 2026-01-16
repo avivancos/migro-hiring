@@ -5,20 +5,18 @@ import { memo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import type { Task } from '@/types/crm';
 import { Badge } from '@/components/ui/badge';
-import { 
-  BellIcon, 
-  CalendarIcon, 
-  CheckIcon, 
-  EnvelopeIcon, 
-  PhoneIcon, 
-  UserIcon, 
-  UsersIcon 
-} from '@heroicons/react/24/outline';
 import { formatDate } from '@/utils/formatters';
+import { BellIcon } from '@heroicons/react/24/outline';
+import { CalendarIcon } from '@heroicons/react/24/outline';
+import { CheckIcon } from '@heroicons/react/24/outline';
+import { EnvelopeIcon } from '@heroicons/react/24/outline';
+import { PhoneIcon } from '@heroicons/react/24/outline';
+import { UserIcon } from '@heroicons/react/24/outline';
+import { UsersIcon } from '@heroicons/react/24/outline';
 
 interface TaskTableRowProps {
   task: Task;
-  onSelect?: (id: string) => void;
+  onSelect?: (task: Task) => void;
 }
 
 // Helper para formatear solo la hora
@@ -63,7 +61,7 @@ export const TaskTableRow = memo<TaskTableRowProps>(({ task, onSelect }) => {
 
   const handleClick = () => {
     if (onSelect) {
-      onSelect(task.id);
+      onSelect(task);
     } else {
       navigate(`/crm/tasks/${task.id}`);
     }
