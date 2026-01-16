@@ -19,9 +19,10 @@ COPY . .
 
 # Variables de entorno para build
 # NOTA: Estas variables DEBEN ser proporcionadas en el build
-# No hay valores por defecto para evitar hardcodes
+# Valores por defecto solo para desarrollo local (evitar errores en build)
+# En producción, estas variables DEBEN estar definidas o el build fallará
 ARG VITE_API_BASE_URL
-ARG VITE_STRIPE_PUBLISHABLE_KEY
+ARG VITE_STRIPE_PUBLISHABLE_KEY=pk_test_placeholder
 ARG VITE_APP_URL
 ARG VITE_SHORT_URL_BASE
 ARG VITE_PUBLIC_DOMAIN
@@ -58,7 +59,9 @@ ENV PORT=10000
 
 # Variable de entorno para el CSP de nginx (se pasa desde docker-compose)
 # El entrypoint.sh la usará para reemplazar __API_BASE_URL__ en la plantilla
-ARG VITE_API_BASE_URL
+# IMPORTANTE: Los ARGs no se pasan automáticamente entre stages, 
+# por lo que debemos pasarlo explícitamente o usar un valor por defecto
+ARG VITE_API_BASE_URL=http://localhost:8000/api
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 # Copiar configuración de nginx (plantilla) y entrypoint

@@ -221,25 +221,60 @@ export const crmService = {
       console.log('📤 [crmService] Enviando búsqueda:', params.search);
     }
     
+    console.log('📤 [crmService] Obteniendo contactos con filtros:', {
+      skip: params.skip,
+      limit: params.limit,
+      sort_by: params.sort_by,
+      sort_order: params.sort_order,
+      view: params.view,
+      responsible_user_id: params.responsible_user_id,
+      search: params.search ? 'presente' : 'ausente',
+    });
+    
     const { data } = await api.get<any>(`${CRM_BASE_PATH}/contacts`, {
       params,
     });
     
+    // Logging para diagnóstico
+    console.log('📥 [crmService] Respuesta del backend:', {
+      isArray: Array.isArray(data),
+      hasEmbedded: !!(data?._embedded),
+      contactsCount: Array.isArray(data) ? data.length : data?._embedded?.contacts?.length || 0,
+      total: data?._page?.total || (Array.isArray(data) ? data.length : 0),
+      rawDataKeys: Object.keys(data || {}),
+    });
+    
     // Si la respuesta es un array, convertir a formato estándar
     if (Array.isArray(data)) {
-      return {
+      const result = {
         items: data,
         total: data.length,
         skip: filters?.skip || 0,
         limit: filters?.limit || 20,
       };
+      
+      if (data.length === 0) {
+        console.warn('⚠️ [crmService] El backend retornó un array vacío de contactos. Esto puede indicar que el agente no tiene oportunidades asignadas.');
+      }
+      
+      return result;
     }
     
     // Si tiene formato _embedded/_page (backend real)
     if (data._embedded && data._embedded.contacts) {
+      const contacts = data._embedded.contacts;
+      const total = data._page?.total || contacts.length;
+      
+      if (contacts.length === 0 && total === 0) {
+        console.warn('⚠️ [crmService] El backend retornó 0 contactos. Posibles causas:');
+        console.warn('  1. El agente no tiene oportunidades asignadas');
+        console.warn('  2. El backend está filtrando por oportunidades asignadas');
+        console.warn('  3. No hay contactos en la base de datos');
+      }
+      
       return {
-        items: data._embedded.contacts,
-        total: data._page?.total || data._embedded.contacts.length,
+        items: contacts,
+        total,
         skip: ((data._page?.page || 1) - 1) * (data._page?.limit || 50),
         limit: data._page?.limit || 50,
       };

@@ -245,10 +245,11 @@ export function CRMContactDetail() {
       return 'Cargando...';
     }
     
-    // Normalizar IDs para comparación (trim y lowercase para consistencia con otras comparaciones)
-    const normalizedUserId = String(userId).trim().toLowerCase();
+    // Normalizar IDs para comparación (solo trim, mantener case-sensitive)
+    // Los IDs de usuario son case-sensitive, no deben convertirse a lowercase
+    const normalizedUserId = String(userId).trim();
     const user = users.find(u => {
-      const normalizedUId = String(u.id).trim().toLowerCase();
+      const normalizedUId = String(u.id).trim();
       return normalizedUId === normalizedUserId;
     });
     if (!user) {
@@ -886,10 +887,11 @@ export function CRMContactDetail() {
       // expandirlo manualmente usando la lista de usuarios disponibles
       let manuallyExpanded = false;
       if (updatedOpportunity.assigned_to_id && !updatedOpportunity.assigned_to && users.length > 0) {
-        // Normalizar IDs para comparación (trim y lowercase para evitar problemas de formato)
-        const normalizedAssignedToId = updatedOpportunity.assigned_to_id?.trim().toLowerCase();
+        // Normalizar IDs para comparación (solo trim, mantener case-sensitive)
+        // Los IDs de usuario son case-sensitive, no deben convertirse a lowercase
+        const normalizedAssignedToId = updatedOpportunity.assigned_to_id?.trim();
         const assignedUser = users.find(u => {
-          const normalizedUserId = u.id?.trim().toLowerCase();
+          const normalizedUserId = String(u.id).trim();
           return normalizedUserId === normalizedAssignedToId;
         });
         if (assignedUser) {
@@ -914,9 +916,10 @@ export function CRMContactDetail() {
       // Esto evita tener que recargar todos los datos y actualiza la UI inmediatamente
       setRelatedOpportunities([updatedOpportunity]);
       
-      // Normalizar IDs para comparación (trim y lowercase para evitar problemas de formato)
-      const normalizedAssignedToId = updatedOpportunity.assigned_to_id?.trim().toLowerCase();
-      const normalizedUserId = user.id?.trim().toLowerCase();
+      // Normalizar IDs para comparación (solo trim, mantener case-sensitive)
+      // Los IDs de usuario son case-sensitive, no deben convertirse a lowercase
+      const normalizedAssignedToId = updatedOpportunity.assigned_to_id?.trim();
+      const normalizedUserId = String(user.id).trim();
       const isAssignedToCurrentUser = normalizedAssignedToId === normalizedUserId;
       
       console.log('✅ [CRMContactDetail] Oportunidad asignada correctamente', {
@@ -1128,10 +1131,10 @@ export function CRMContactDetail() {
                             </span>
                           </div>
                           {/* Botón para asignarse si el responsable es diferente al agente actual */}
-                          {/* Normalizar IDs para comparación (trim y lowercase para evitar problemas de formato) */}
+                          {/* Normalizar IDs para comparación (solo trim, mantener case-sensitive) */}
                           {user?.id && (() => {
-                            const oppAssignedToId = relatedOpportunities[0].assigned_to_id?.trim().toLowerCase();
-                            const currentUserId = user.id?.trim().toLowerCase();
+                            const oppAssignedToId = relatedOpportunities[0].assigned_to_id?.trim();
+                            const currentUserId = String(user.id).trim();
                             const areEqual = oppAssignedToId === currentUserId;
                             const shouldShowButton = oppAssignedToId && !areEqual;
                             

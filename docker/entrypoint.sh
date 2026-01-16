@@ -25,7 +25,10 @@ if [ ! -f "$TEMPLATE" ]; then
 fi
 
 echo "[entrypoint] Generando config de nginx en $TARGET con PORT=$PORT_VALUE y API_BASE_URL=$API_BASE_URL_VALUE"
-# Reemplazar tanto el puerto como la URL de la API
-sed -e "s/__PORT__/${PORT_VALUE}/g" -e "s|__API_BASE_URL__|${API_BASE_URL_VALUE}|g" "$TEMPLATE" > "$TARGET"
+# Escapar caracteres especiales para sed (/, &, \, etc.)
+# Escapar todos los caracteres especiales de regex de sed
+API_BASE_URL_ESCAPED=$(printf '%s\n' "$API_BASE_URL_VALUE" | sed 's/[[\.*^$()+?{|]/\\&/g')
+# Reemplazar tanto el puerto como la URL de la API (ya escapada)
+sed -e "s/__PORT__/${PORT_VALUE}/g" -e "s|__API_BASE_URL__|${API_BASE_URL_ESCAPED}|g" "$TEMPLATE" > "$TARGET"
 
 exec "$@"

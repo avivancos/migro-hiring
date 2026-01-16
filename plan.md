@@ -46,6 +46,33 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 
 ## 📋 Tareas Pendientes
 
+### ✅ Fix Backend: Error 422 en Endpoint de Contactos - Parámetros de Ordenamiento (Enero 2026)
+- [x] Backend: Agregados parámetros `sort_by` y `sort_order` al endpoint `/api/crm/contacts` ✅
+  - Validación estricta de campos permitidos y orden (asc/desc)
+  - Ordenamiento por relevancia cuando hay búsqueda
+  - Documentación: `docs/BACKEND_CONTACTS_SORTING_FIX.md` ✅
+- [x] Frontend: Verificado que ya está usando correctamente los parámetros ✅
+  - Tipos TypeScript correctamente definidos en `ContactFilters`
+  - Valores por defecto coinciden con el backend (`created_at`, `desc`)
+  - No se requieren cambios en el frontend
+
+### ✅ Diagnóstico: Agentes no ven contactos (Enero 2025)
+- [x] Documentar el problema de contactos vacíos para agentes ✅
+  - Creado `docs/BACKEND_AGENT_CONTACTS_EMPTY_ISSUE.md` con análisis completo
+  - Identificado que el backend filtra contactos por oportunidades asignadas
+  - Agentes sin oportunidades asignadas no ven contactos
+- [x] Mejorar logging en `crmService.getContacts()` ✅
+  - Agregado logging detallado de filtros enviados
+  - Agregado logging de respuesta del backend
+  - Agregado warning cuando el backend retorna array vacío
+- [x] Mejorar mensaje de error para agentes ✅
+  - Agregado mensaje informativo cuando agentes no ven contactos
+  - Explicación de posibles causas del problema
+  - Instrucciones para revisar logs en consola
+- [ ] **PENDIENTE BACKEND**: Eliminar filtro de oportunidades para agentes
+  - El backend debe permitir que agentes vean todos los contactos
+  - Ver `docs/BACKEND_AGENT_CONTACTS_EMPTY_ISSUE.md` para detalles
+
 ### ✅ Documentación Actualizada (Enero 2025)
 - [x] Actualización del resumen ejecutivo del agente frontend ✅
   - [x] Documento `docs/FRONTEND_AGENT_RESUMEN_EJECUTIVO.md` actualizado con nueva información ✅
@@ -59,6 +86,18 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 - [x] Botón para descartar oportunidad con motivo (marca `lost` y agrega motivo en notas).
   - [x] Documentación backend: `docs/BACKEND_OPPORTUNITY_DISCARD_ENDPOINT.md` ✅
   - [x] Documentación frontend: `docs/FRONTEND_OPPORTUNITY_DISCARD_BUTTON.md` ✅
+- [x] Corrección de bugs críticos: Comparación case-insensitive de IDs y conversión incorrecta de URL de Pili.
+  - [x] Bug 1: Eliminada conversión a lowercase en comparación de IDs de usuario (4 lugares en `CRMContactDetail.tsx`) ✅
+  - [x] Bug 2: Corregida conversión de localhost a host.docker.internal para `VITE_PILI_API_URL` (debe usar localhost porque se ejecuta en el navegador) ✅
+  - [x] Actualizado `docker-compose.yml` para no usar `DOCKER_PILI_API_URL` ✅
+  - [x] Documentación: `docs/BUG_FIXES_USER_ID_AND_PILI_URL.md` ✅
+- [x] Corrección de bugs críticos: Inicialización de módulos y configuración de Docker.
+  - [x] Bug 1: Eliminado throw inmediato para STRIPE_PUBLISHABLE_KEY (permite que la app cargue sin Stripe) ✅
+  - [x] Bug 2: Eliminados IIFEs que ejecutaban throws inmediatamente en operadores ternarios (5 lugares) ✅
+  - [x] Bug 3: Agregado escape de caracteres especiales en sed para API_BASE_URL_VALUE ✅
+  - [x] Bug 4: Agregado valor por defecto para VITE_STRIPE_PUBLISHABLE_KEY en Dockerfile ✅
+  - [x] Bug 5: Agregado valor por defecto para VITE_API_BASE_URL en stage de producción ✅
+  - [x] Documentación: `docs/BUG_FIXES_MODULE_INITIALIZATION_AND_DOCKER.md` ✅
 - [x] Configuración Render como **Node Web Service** (Vite + Express) + blueprint `render-node.yaml`.
   - [x] Documentación: `docs/RENDER_NODE_WEB_SERVICE.md` ✅
 - [x] Modelo de convenio freelance para agentes de ventas documentado en `docs/CONVENIO_COLABORACION_FREELANCE_AGENTES_VENTAS.md`.

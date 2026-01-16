@@ -50,16 +50,17 @@ if (-not $env:VITE_PUBLIC_DOMAIN) {
     Write-Host "🔧 VITE_PUBLIC_DOMAIN no definida, usando dominio de VITE_APP_URL: $env:VITE_PUBLIC_DOMAIN" -ForegroundColor Yellow
 }
 
-# Convertir también VITE_PILI_API_URL si existe
-if ($env:VITE_PILI_API_URL) {
-    $dockerPiliUrl = $env:VITE_PILI_API_URL -replace 'localhost', 'host.docker.internal'
-    $env:DOCKER_PILI_API_URL = $dockerPiliUrl
-    Write-Host "🔧 URL de Pili para Docker: $dockerPiliUrl" -ForegroundColor Green
-} else {
+# IMPORTANTE: NO convertir localhost a host.docker.internal para VITE_PILI_API_URL
+# porque esta URL se usa en el navegador del usuario (fuera de Docker), no dentro del contenedor
+# El navegador necesita usar localhost:8001 que está mapeado desde el host
+# Solo se convierte para variables que se usan DENTRO del contenedor
+if (-not $env:VITE_PILI_API_URL) {
     # Si no está definida, usar un valor por defecto para desarrollo
-    $env:VITE_PILI_API_URL = "http://host.docker.internal:8001/api"
-    $env:DOCKER_PILI_API_URL = $env:VITE_PILI_API_URL
+    $env:VITE_PILI_API_URL = "http://localhost:8001/api"
     Write-Host "🔧 VITE_PILI_API_URL no definida, usando valor por defecto: $env:VITE_PILI_API_URL" -ForegroundColor Yellow
+} else {
+    Write-Host "🔧 URL de Pili (usada por el navegador): $env:VITE_PILI_API_URL" -ForegroundColor Green
+    Write-Host "ℹ️  NOTA: El navegador usa localhost porque corre fuera de Docker" -ForegroundColor Yellow
 }
 
 # Iniciar docker-compose

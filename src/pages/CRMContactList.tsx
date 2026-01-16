@@ -1366,7 +1366,25 @@ export function CRMContactList() {
           <Card>
             <CardContent className="py-12 text-center">
               <UsersIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-gray-500">No se encontraron contactos</p>
+              <p className="text-gray-500 mb-2">No se encontraron contactos</p>
+              {userIsAgent && (
+                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg max-w-2xl mx-auto">
+                  <p className="text-sm text-yellow-800 mb-2">
+                    <strong>⚠️ Información para agentes:</strong>
+                  </p>
+                  <p className="text-sm text-yellow-700 mb-2">
+                    Si eres un agente y no ves contactos, puede ser porque:
+                  </p>
+                  <ul className="text-sm text-yellow-700 text-left list-disc list-inside space-y-1 mb-2">
+                    <li>No tienes oportunidades asignadas</li>
+                    <li>El backend está filtrando contactos por oportunidades asignadas</li>
+                    <li>Los contactos no tienen oportunidades asociadas</li>
+                  </ul>
+                  <p className="text-xs text-yellow-600 mt-3">
+                    Revisa la consola del navegador (F12) para ver los logs de diagnóstico.
+                  </p>
+                </div>
+              )}
               {hasActiveFilters && (
                 <Button
                   variant="outline"

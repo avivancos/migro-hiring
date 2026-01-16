@@ -28,7 +28,10 @@ services:
         - VITE_APP_URL=${VITE_APP_URL:-http://localhost:5173}
         - VITE_SHORT_URL_BASE=${VITE_SHORT_URL_BASE:-http://localhost:5173}
         - VITE_PUBLIC_DOMAIN=${VITE_PUBLIC_DOMAIN:-localhost:5173}
-        - VITE_PILI_API_URL=${DOCKER_PILI_API_URL:-${VITE_PILI_API_URL:-http://localhost:8001/api}}
+        # IMPORTANTE: VITE_PILI_API_URL se usa en el navegador, no dentro del contenedor
+        # Por lo tanto, NO debe usar DOCKER_PILI_API_URL (que sería host.docker.internal)
+        # El navegador necesita usar localhost:8001 que está mapeado desde el host
+        - VITE_PILI_API_URL=${VITE_PILI_API_URL:-http://localhost:8001/api}
         - VITE_DEBUG_MODE=${VITE_DEBUG_MODE:-false}
         - VITE_API_TIMEOUT=${VITE_API_TIMEOUT:-30000}
     environment:
