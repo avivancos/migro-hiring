@@ -1226,6 +1226,78 @@ export function CRMContactList() {
           </CardContent>
         </Card>
 
+        {/* Controles de Paginación Superior */}
+        {!loading && (user?.role === 'agent' ? filteredAndSortedContacts.length > 0 : totalContacts > 0) && (
+          <Card className="mb-4">
+            <CardContent className="pt-4 pb-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  {user?.role === 'agent' ? (
+                    <div className="text-sm text-gray-600">
+                      Mostrando {pagination.skip + 1} - {Math.min(pagination.skip + pagination.limit, filteredAndSortedContacts.length)} de {filteredAndSortedContacts.length}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-600">
+                      Mostrando {pagination.skip + 1} - {Math.min(pagination.skip + pagination.limit, totalContacts)} de {totalContacts}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="items-per-page-top" className="text-sm text-gray-600 whitespace-nowrap">
+                      Por página:
+                    </Label>
+                    <select
+                      id="items-per-page-top"
+                      value={pagination.limit}
+                      onChange={(e) => {
+                        const newLimit = parseInt(e.target.value);
+                        setPagination({ skip: 0, limit: newLimit });
+                      }}
+                      className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      <option value="25">25</option>
+                      <option value="50">50</option>
+                      <option value="100">100</option>
+                      <option value="200">200</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPagination({ ...pagination, skip: Math.max(0, pagination.skip - pagination.limit) })}
+                    disabled={pagination.skip === 0}
+                  >
+                    <ChevronLeftIcon className="w-4 h-4 mr-1" />
+                    <span className="hidden sm:inline">Anterior</span>
+                  </Button>
+                  {user?.role === 'agent' ? (
+                    <span className="text-sm text-gray-600 px-3 min-w-[100px] text-center">
+                      Página {Math.floor(pagination.skip / pagination.limit) + 1} de {Math.ceil(filteredAndSortedContacts.length / pagination.limit)}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-600 px-3 min-w-[100px] text-center">
+                      Página {Math.floor(pagination.skip / pagination.limit) + 1} de {Math.ceil(totalContacts / pagination.limit)}
+                    </span>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newSkip = pagination.skip + pagination.limit;
+                      setPagination({ ...pagination, skip: newSkip });
+                    }}
+                    disabled={user?.role === 'agent' ? pagination.skip + pagination.limit >= filteredAndSortedContacts.length : pagination.skip + pagination.limit >= totalContacts}
+                  >
+                    <span className="hidden sm:inline">Siguiente</span>
+                    <ChevronRightIcon className="w-4 h-4 ml-1" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {loading ? (
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>

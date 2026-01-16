@@ -341,4 +341,3 @@ export function useCalendarTasks(options: UseCalendarTasksOptions = {}) {
     refetch: fetchCalendarTasks,
   };
 }
-

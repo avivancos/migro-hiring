@@ -78,7 +78,7 @@ export function useNotes(options: UseNotesOptions = {}) {
             // Luego buscar por email (case-insensitive)
             const matchesEmail = currentEmail && (
               u.email?.toLowerCase() === currentEmail || 
-              u.email === user.email
+              u.email?.toLowerCase() === user.email?.toLowerCase()
             );
             return matchesId || matchesEmail;
           });
@@ -113,7 +113,7 @@ export function useNotes(options: UseNotesOptions = {}) {
               const matchesId = currentUserId && u.id === currentUserId;
               const matchesEmail = currentEmail && (
                 u.email?.toLowerCase() === currentEmail || 
-                u.email === user.email
+                u.email?.toLowerCase() === user.email?.toLowerCase()
               );
               return matchesId || matchesEmail;
             });
@@ -167,7 +167,7 @@ export function useNotes(options: UseNotesOptions = {}) {
           const matchesId = currentUserId && u.id === currentUserId;
           const matchesEmail = currentEmail && (
             u.email?.toLowerCase() === currentEmail || 
-            u.email === user.email
+            u.email?.toLowerCase() === user.email?.toLowerCase()
           );
           return matchesId || matchesEmail;
         });

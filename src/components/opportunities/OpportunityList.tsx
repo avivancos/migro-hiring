@@ -10,10 +10,14 @@ import { useOpportunities } from '@/hooks/useOpportunities';
 import type { OpportunityFilters as OpportunityFiltersType } from '@/types/opportunity';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ChevronLeftIcon, ChevronRightIcon, ListBulletIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
+import { Label } from '@/components/ui/label';
+import { ArrowDownIcon, ArrowUpIcon, ArrowsUpDownIcon, ChevronLeftIcon, ChevronRightIcon, ListBulletIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 
 type ViewMode = 'cards' | 'table';
 const VIEW_MODE_STORAGE_KEY = 'crm_opportunities_view_mode';
+
+type SortField = 'contact' | 'score' | 'priority' | 'status' | 'responsible' | 'created_at';
+type SortOrder = 'asc' | 'desc';
 
 interface OpportunityListProps {
   filters?: OpportunityFiltersType;
@@ -27,9 +31,19 @@ export function OpportunityList({
   availableAgents = [],
 }: OpportunityListProps) {
   // Estado de vista (tabla o cards) con persistencia en localStorage
+  // Por defecto siempre es 'table'
   const [viewMode, setViewMode] = React.useState<ViewMode>(() => {
     const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
-    return (saved === 'table' || saved === 'cards') ? saved : 'cards';
+    // Solo respetar si es 'table', sino forzar 'table' por defecto
+    if (saved === 'table') {
+      return 'table';
+    }
+    // Si hay 'cards' guardado, limpiarlo y usar 'table'
+    if (saved === 'cards') {
+      localStorage.removeItem(VIEW_MODE_STORAGE_KEY);
+    }
+    // Por defecto siempre es 'table'
+    return 'table';
   });
 
   // Guardar preferencia en localStorage cuando cambie
@@ -49,9 +63,9 @@ export function OpportunityList({
   
   const {
     opportunities: rawOpportunities,
-    total: _total,
+    total,
     page,
-    limit: _limit,
+    limit,
     totalPages,
     isLoading,
     error,
@@ -76,12 +90,92 @@ export function OpportunityList({
     }
   }, [rawOpportunities]);
   
-  // Usar oportunidades filtradas para mostrar
-  const opportunities = filteredOpportunities;
+  // Estado de ordenamiento
+  const [sortField, setSortField] = React.useState<SortField>('created_at');
+  const [sortOrder, setSortOrder] = React.useState<SortOrder>('desc');
+
+  // Ordenar oportunidades localmente
+  const opportunities = React.useMemo(() => {
+    const sorted = [...filteredOpportunities];
+    
+    sorted.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'contact':
+          const aContactName = a.contact?.name || 
+            (a.contact?.first_name ? `${a.contact.first_name} ${a.contact.last_name || ''}`.trim() : '') ||
+            a.contact?.email?.split('@')[0] || '';
+          const bContactName = b.contact?.name || 
+            (b.contact?.first_name ? `${b.contact.first_name} ${b.contact.last_name || ''}`.trim() : '') ||
+            b.contact?.email?.split('@')[0] || '';
+          aValue = aContactName.toLowerCase();
+          bValue = bContactName.toLowerCase();
+          break;
+        case 'score':
+          aValue = a.opportunity_score || 0;
+          bValue = b.opportunity_score || 0;
+          break;
+        case 'priority':
+          const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+          aValue = priorityOrder[a.priority as keyof typeof priorityOrder] || 0;
+          bValue = priorityOrder[b.priority as keyof typeof priorityOrder] || 0;
+          break;
+        case 'status':
+          const statusOrder = { 'pending': 1, 'assigned': 2, 'contacted': 3, 'converted': 4, 'expired': 5, 'lost': 6 };
+          aValue = statusOrder[a.status] || 0;
+          bValue = statusOrder[b.status] || 0;
+          break;
+        case 'responsible':
+          aValue = a.assigned_to?.name || '';
+          bValue = b.assigned_to?.name || '';
+          break;
+        case 'created_at':
+          aValue = new Date(a.created_at).getTime();
+          bValue = new Date(b.created_at).getTime();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  }, [filteredOpportunities, sortField, sortOrder]);
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+  };
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) {
+      return <ArrowsUpDownIcon className="w-4 h-4 text-gray-400" />;
+    }
+    return sortOrder === 'asc' 
+      ? <ArrowUpIcon className="w-4 h-4 text-primary" />
+      : <ArrowDownIcon className="w-4 h-4 text-primary" />;
+  };
 
   const handlePageChange = (newPage: number) => {
     setFilters((prev) => ({ ...prev, page: newPage }));
   };
+
+  const handleLimitChange = (newLimit: number) => {
+    setFilters((prev) => ({ ...prev, page: 1, limit: newLimit }));
+  };
+
+  // Calcular rangos para mostrar
+  const startItem = total > 0 ? (page - 1) * limit + 1 : 0;
+  const endItem = Math.min(page * limit, total);
 
   if (isLoading && opportunities.length === 0) {
     return (
@@ -169,6 +263,61 @@ export function OpportunityList({
         onFilteredOpportunitiesChange={handleFilteredOpportunitiesChange}
       />
 
+      {/* Controles de Paginación Superior */}
+      {!isLoading && total > 0 && (
+        <Card className="mb-4">
+          <CardContent className="pt-4 pb-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-gray-600">
+                  Mostrando {startItem} - {endItem} de {total}
+                  {filteredOpportunities.length !== rawOpportunities.length && ' (filtradas)'}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="items-per-page-top" className="text-sm text-gray-600 whitespace-nowrap">
+                    Por página:
+                  </Label>
+                  <select
+                    id="items-per-page-top"
+                    value={limit}
+                    onChange={(e) => handleLimitChange(parseInt(e.target.value))}
+                    className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page <= 1}
+                >
+                  <ChevronLeftIcon className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Anterior</span>
+                </Button>
+                <span className="text-sm text-gray-600 px-3 min-w-[100px] text-center">
+                  Página {page} de {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page >= totalPages}
+                >
+                  <span className="hidden sm:inline">Siguiente</span>
+                  <ChevronRightIcon className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Barra de herramientas con toggle de vista */}
       <div className="flex items-center justify-between gap-4">
         <div className="text-sm text-gray-600">
@@ -215,81 +364,152 @@ export function OpportunityList({
 
       {/* Lista de oportunidades - Vista de Tabla */}
       {viewMode === 'table' && (
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contacto
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Score
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Prioridad
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Estado
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contacto
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Razón
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Responsable
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {opportunities.map((opportunity) => (
-                    <OpportunityTableRow
-                      key={opportunity.id}
-                      opportunity={opportunity}
-                      onSelect={onOpportunitySelect}
-                    />
-                  ))}
-                </tbody>
-              </table>
+        <>
+          {/* Vista móvil: Cards en móvil, tabla en desktop */}
+          <div className="block md:hidden space-y-4">
+            {opportunities.map((opportunity) => (
+              <OpportunityCard
+                key={opportunity.id}
+                opportunity={opportunity}
+                onSelect={onOpportunitySelect}
+                showActions={true}
+              />
+            ))}
+          </div>
+          
+          {/* Vista desktop: Tabla */}
+          <Card className="hidden md:block">
+            <CardContent className="p-0">
+              <div className="overflow-x-auto -mx-4 sm:mx-0">
+                <div className="inline-block min-w-full align-middle">
+                  <div className="overflow-hidden">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th 
+                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                            onClick={() => handleSort('contact')}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>Contacto</span>
+                              <SortIcon field="contact" />
+                            </div>
+                          </th>
+                          <th 
+                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                            onClick={() => handleSort('score')}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>Score</span>
+                              <SortIcon field="score" />
+                            </div>
+                          </th>
+                          <th 
+                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                            onClick={() => handleSort('priority')}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>Prioridad</span>
+                              <SortIcon field="priority" />
+                            </div>
+                          </th>
+                          <th 
+                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                            onClick={() => handleSort('status')}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>Estado</span>
+                              <SortIcon field="status" />
+                            </div>
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Contacto
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Razón
+                          </th>
+                          <th 
+                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                            onClick={() => handleSort('responsible')}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span>Responsable</span>
+                              <SortIcon field="responsible" />
+                            </div>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {opportunities.map((opportunity) => (
+                          <OpportunityTableRow
+                            key={opportunity.id}
+                            opportunity={opportunity}
+                            onSelect={onOpportunitySelect}
+                          />
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {/* Controles de Paginación Inferior */}
+      {!isLoading && total > 0 && totalPages > 1 && (
+        <Card className="mt-4">
+          <CardContent className="pt-4 pb-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="text-sm text-gray-600">
+                  Mostrando {startItem} - {endItem} de {total}
+                  {filteredOpportunities.length !== rawOpportunities.length && ' (filtradas)'}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="items-per-page-bottom" className="text-sm text-gray-600 whitespace-nowrap">
+                    Por página:
+                  </Label>
+                  <select
+                    id="items-per-page-bottom"
+                    value={limit}
+                    onChange={(e) => handleLimitChange(parseInt(e.target.value))}
+                    className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page <= 1}
+                >
+                  <ChevronLeftIcon className="w-4 h-4 mr-1" />
+                  <span className="hidden sm:inline">Anterior</span>
+                </Button>
+                <span className="text-sm text-gray-600 px-3 min-w-[100px] text-center">
+                  Página {page} de {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page >= totalPages}
+                >
+                  <span className="hidden sm:inline">Siguiente</span>
+                  <ChevronRightIcon className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {/* Paginación */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-4 border-t">
-          <div className="text-sm text-gray-600">
-            Mostrando {opportunities.length > 0 ? 1 : 0} a {opportunities.length} de{' '}
-            {opportunities.length} oportunidades {filteredOpportunities.length !== rawOpportunities.length ? '(filtradas)' : ''}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(page - 1)}
-              disabled={page <= 1}
-            >
-              <ChevronLeftIcon className="h-4 w-4" />
-              Anterior
-            </Button>
-            <div className="text-sm text-gray-600">
-              Página {page} de {totalPages}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handlePageChange(page + 1)}
-              disabled={page >= totalPages}
-            >
-              Siguiente
-              <ChevronRightIcon className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
       )}
     </div>
   );

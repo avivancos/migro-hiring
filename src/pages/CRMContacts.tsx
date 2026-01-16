@@ -10,16 +10,16 @@ import { adminService } from '@/services/adminService';
 import { crmService } from '@/services/crmService';
 import type { Contact, ContactFilters } from '@/types/crm';
 import { ArrowLeftIcon, BuildingOffice2Icon, EnvelopeIcon, FunnelIcon, MagnifyingGlassIcon, PhoneIcon, PlusIcon, UserIcon } from '@heroicons/react/24/outline';
+import { Paginator } from '@/components/common/Paginator';
 
 export function CRMContacts() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState<ContactFilters>({
     skip: 0,
-    limit: 20,
+    limit: 25,
   });
   const [showFilters, setShowFilters] = useState(false);
 
@@ -37,9 +37,7 @@ export function CRMContacts() {
     try {
       const response = await crmService.getContacts(filters);
       setContacts(response.items || []);
-      const currentPage = Math.floor((response.skip || 0) / (response.limit || 20)) + 1;
-      setPage(currentPage);
-      setTotalPages(Math.ceil((response.total || 0) / (response.limit || 20)));
+      setTotal(response.total || 0);
     } catch (err) {
       console.error('Error loading contacts:', err);
     } finally {
@@ -192,26 +190,44 @@ export function CRMContacts() {
             </div>
 
             {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center gap-2 mt-6">
-                <Button
-                  onClick={() => setFilters({ ...filters, skip: Math.max(0, (page - 2) * (filters.limit || 20)) })}
-                  disabled={page === 1}
-                  variant="outline"
-                >
-                  Anterior
-                </Button>
-                <span className="flex items-center px-4 text-sm text-gray-600">
-                  Página {page} de {totalPages}
-                </span>
-                <Button
-                  onClick={() => setFilters({ ...filters, skip: page * (filters.limit || 20) })}
-                  disabled={page === totalPages}
-                  variant="outline"
-                >
-                  Siguiente
-                </Button>
-              </div>
+            {!loading && total > 0 && (
+              <>
+                {/* Paginador Superior */}
+                <Paginator
+                  total={total}
+                  page={Math.floor((filters.skip || 0) / (filters.limit || 25)) + 1}
+                  limit={filters.limit || 25}
+                  totalPages={Math.ceil(total / (filters.limit || 25))}
+                  onPageChange={(newPage) => {
+                    setFilters({ ...filters, skip: (newPage - 1) * (filters.limit || 25) });
+                  }}
+                  onLimitChange={(newLimit) => {
+                    setFilters({ ...filters, skip: 0, limit: newLimit });
+                  }}
+                  itemName="contacto"
+                  itemNamePlural="contactos"
+                  className="mb-4"
+                />
+                
+                {/* Paginador Inferior */}
+                {Math.ceil(total / (filters.limit || 25)) > 1 && (
+                  <Paginator
+                    total={total}
+                    page={Math.floor((filters.skip || 0) / (filters.limit || 25)) + 1}
+                    limit={filters.limit || 25}
+                    totalPages={Math.ceil(total / (filters.limit || 25))}
+                    onPageChange={(newPage) => {
+                      setFilters({ ...filters, skip: (newPage - 1) * (filters.limit || 25) });
+                    }}
+                    onLimitChange={(newLimit) => {
+                      setFilters({ ...filters, skip: 0, limit: newLimit });
+                    }}
+                    itemName="contacto"
+                    itemNamePlural="contactos"
+                    className="mt-6"
+                  />
+                )}
+              </>
             )}
           </>
         )}

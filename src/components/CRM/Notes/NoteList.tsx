@@ -1,5 +1,5 @@
 // NoteList - Lista de notas con paginación
-// Mobile-first
+// Mobile-first con paginación tradicional unificada
 
 import { useState } from 'react';
 import { useNotes } from '@/hooks/useNotes';
@@ -8,6 +8,7 @@ import NoteFilters from './NoteFilters';
 import type { Note } from '@/types/crm';
 import { Button } from '@/components/ui/button';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
+import { Paginator } from '@/components/common/Paginator';
 
 interface NoteFiltersState {
   created_by?: string;
@@ -34,14 +35,39 @@ export default function NoteList({
   onNoteDelete,
 }: NoteListProps) {
   const [filters, setFilters] = useState<NoteFiltersState>({});
+  const [pagination, setPagination] = useState({ skip: 0, limit: 25 });
   
-  const { notes, loading, error, refresh } = useNotes({
+  const { notes, loading, error, total, refresh } = useNotes({
     entityId,
     entityType,
     createdBy: filters.created_by,
     autoLoad: true,
-    limit: 50,
+    skip: pagination.skip,
+    limit: pagination.limit,
   });
+
+  // Calcular página actual y total de páginas
+  const currentPage = pagination.limit 
+    ? Math.floor(pagination.skip / pagination.limit) + 1 
+    : 1;
+  const totalPages = pagination.limit && total > 0 
+    ? Math.max(1, Math.ceil(total / pagination.limit)) 
+    : 1;
+
+  const handlePageChange = (newPage: number) => {
+    const newSkip = (newPage - 1) * pagination.limit;
+    setPagination(prev => ({ ...prev, skip: newSkip }));
+  };
+
+  const handleLimitChange = (newLimit: number) => {
+    setPagination({ skip: 0, limit: newLimit });
+  };
+
+  // Cuando cambian los filtros, resetear paginación
+  const handleFiltersChange = (newFilters: NoteFiltersState) => {
+    setFilters(newFilters);
+    setPagination({ skip: 0, limit: pagination.limit });
+  };
 
   if (error) {
     return (
@@ -52,7 +78,7 @@ export default function NoteList({
     );
   }
 
-  // Filtrar por tipo de nota si está especificado
+  // Filtrar por tipo de nota si está especificado (filtrado local)
   const filteredNotes = filters.note_type
     ? notes.filter(note => note.note_type === filters.note_type)
     : notes;
@@ -62,7 +88,23 @@ export default function NoteList({
       {showFilters && (
         <NoteFilters 
           filters={filters} 
-          onFiltersChange={setFilters} 
+          onFiltersChange={handleFiltersChange} 
+        />
+      )}
+
+      {/* Paginador Superior */}
+      {!loading && total > 0 && (
+        <Paginator
+          total={total}
+          page={currentPage}
+          limit={pagination.limit}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          onLimitChange={handleLimitChange}
+          itemName="nota"
+          itemNamePlural="notas"
+          filteredCount={filteredNotes.length !== notes.length ? filteredNotes.length : undefined}
+          className="mb-4"
         />
       )}
 
@@ -90,6 +132,22 @@ export default function NoteList({
           </div>
         )}
       </div>
+
+      {/* Paginador Inferior */}
+      {!loading && total > 0 && totalPages > 1 && (
+        <Paginator
+          total={total}
+          page={currentPage}
+          limit={pagination.limit}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          onLimitChange={handleLimitChange}
+          itemName="nota"
+          itemNamePlural="notas"
+          filteredCount={filteredNotes.length !== notes.length ? filteredNotes.length : undefined}
+          className="mt-4"
+        />
+      )}
     </div>
   );
 }
