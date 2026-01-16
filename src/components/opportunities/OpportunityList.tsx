@@ -15,6 +15,7 @@ import { ArrowDownIcon, ArrowUpIcon, ArrowsUpDownIcon, ChevronLeftIcon, ChevronR
 
 type ViewMode = 'cards' | 'table';
 const VIEW_MODE_STORAGE_KEY = 'crm_opportunities_view_mode';
+const DEFAULT_VIEW_MODE: ViewMode = 'table';
 
 type SortField = 'contact' | 'score' | 'priority' | 'status' | 'responsible' | 'created_at';
 type SortOrder = 'asc' | 'desc';
@@ -31,19 +32,19 @@ export function OpportunityList({
   availableAgents = [],
 }: OpportunityListProps) {
   // Estado de vista (tabla o cards) con persistencia en localStorage
-  // Por defecto siempre es 'table'
+  // Por defecto siempre es 'table' (definido en constante)
   const [viewMode, setViewMode] = React.useState<ViewMode>(() => {
     const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
-    // Solo respetar si es 'table', sino forzar 'table' por defecto
-    if (saved === 'table') {
-      return 'table';
-    }
-    // Si hay 'cards' guardado, limpiarlo y usar 'table'
+    // Si hay 'cards' guardado, limpiarlo para forzar 'table' por defecto
     if (saved === 'cards') {
       localStorage.removeItem(VIEW_MODE_STORAGE_KEY);
     }
+    // Solo respetar si es 'table', sino usar el modo predeterminado
+    if (saved === 'table') {
+      return DEFAULT_VIEW_MODE;
+    }
     // Por defecto siempre es 'table'
-    return 'table';
+    return DEFAULT_VIEW_MODE;
   });
 
   // Guardar preferencia en localStorage cuando cambie

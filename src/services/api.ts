@@ -30,10 +30,10 @@ const getApiInstance = () => {
 
 // Exportar como getter para evaluación lazy
 export const api = new Proxy({} as ReturnType<typeof axios.create>, {
-  get(target, prop) {
+  get(_target, prop) {
     return getApiInstance()[prop as keyof ReturnType<typeof axios.create>];
   },
-  set(target, prop, value) {
+  set(_target, prop, value) {
     (getApiInstance() as any)[prop] = value;
     return true;
   },

@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useTasks } from '@/hooks/useTasks';
 import type { TaskFilters, Task } from '@/types/crm';
 import TaskCard from './TaskCard';
-import TaskTableRow from './TaskTableRow';
+import { TaskTableRow } from './TaskTableRow';
 import TaskFiltersComponent from './TaskFilters';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,6 +14,7 @@ import { Paginator } from '@/components/common/Paginator';
 
 type ViewMode = 'cards' | 'table';
 const VIEW_MODE_STORAGE_KEY = 'crm_tasks_view_mode';
+const DEFAULT_VIEW_MODE: ViewMode = 'table';
 
 type SortField = 'type' | 'text' | 'contact' | 'complete_till' | 'status' | 'created_at';
 type SortOrder = 'asc' | 'desc';
@@ -30,19 +31,19 @@ export default function TaskList({
   onTaskPress 
 }: TaskListProps) {
   // Estado de vista (tabla o cards) con persistencia en localStorage
-  // Por defecto siempre es 'table'
+  // Por defecto siempre es 'table' (definido en constante)
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
-    // Solo respetar si es 'table', sino forzar 'table' por defecto
-    if (saved === 'table') {
-      return 'table';
-    }
-    // Si hay 'cards' guardado, limpiarlo y usar 'table'
+    // Si hay 'cards' guardado, limpiarlo para forzar 'table' por defecto
     if (saved === 'cards') {
       localStorage.removeItem(VIEW_MODE_STORAGE_KEY);
     }
+    // Solo respetar si es 'table', sino usar el modo predeterminado
+    if (saved === 'table') {
+      return DEFAULT_VIEW_MODE;
+    }
     // Por defecto siempre es 'table'
-    return 'table';
+    return DEFAULT_VIEW_MODE;
   });
 
   // Guardar preferencia en localStorage cuando cambie

@@ -41,8 +41,8 @@ export function Paginator({
   showInfo = true,
   filteredCount,
   className = '',
-  itemName = 'item',
-  itemNamePlural = 'items',
+  itemName: _itemName = 'item',
+  itemNamePlural: _itemNamePlural = 'items',
 }: PaginatorProps) {
   // Calcular rangos para mostrar
   const startItem = total > 0 ? (page - 1) * limit + 1 : 0;
