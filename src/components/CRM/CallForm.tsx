@@ -205,9 +205,41 @@ export const CallForm = memo(function CallForm({
         contact = await crmService.getContact(formData.entity_id);
       }
       
-      // Verificar si es primera llamada: si faltan datos básicos
-      const hasBasicData = contact.city && contact.state && contact.nacionalidad;
-      setIsFirstCall(!hasBasicData);
+      // Verificar si es primera llamada: verificar si ya hay llamadas previas completadas
+      // Si ya hay llamadas previas completadas, NO es primera llamada
+      let isFirst = true;
+      try {
+        const previousCallsResponse = await crmService.getCalls({
+          entity_id: formData.entity_id,
+          entity_type: formData.entity_type,
+          limit: 100,
+        });
+        
+        const previousCalls = previousCallsResponse.items || [];
+        // Si estamos editando una llamada existente, excluirla del conteo
+        const otherCalls = call?.id 
+          ? previousCalls.filter(c => c.id !== call.id)
+          : previousCalls;
+        
+        // Si hay llamadas completadas previas (excluyendo la actual si estamos editando), NO es primera llamada
+        const hasCompletedCalls = otherCalls.some(c => c.call_status === 'completed');
+        if (hasCompletedCalls) {
+          isFirst = false;
+          console.log('🔍 [CallForm] Ya existen llamadas completadas previas, NO es primera llamada');
+        } else {
+          console.log('🔍 [CallForm] No hay llamadas completadas previas, verificando datos básicos...');
+          // Si no hay llamadas previas, verificar si faltan datos básicos como indicador adicional
+          const hasBasicData = contact.city && contact.state && contact.nacionalidad;
+          isFirst = !hasBasicData;
+        }
+      } catch (err) {
+        console.warn('⚠️ [CallForm] Error verificando llamadas previas, usando fallback de datos básicos:', err);
+        // Fallback: si hay error al verificar llamadas, usar verificación de datos básicos
+        const hasBasicData = contact.city && contact.state && contact.nacionalidad;
+        isFirst = !hasBasicData;
+      }
+      
+      setIsFirstCall(isFirst);
       
       // Pre-llenar teléfono del contacto (priorizar phone, luego mobile)
       const contactPhone = contact.phone || contact.mobile || '';
