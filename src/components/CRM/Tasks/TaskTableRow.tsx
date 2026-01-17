@@ -75,7 +75,7 @@ export const TaskTableRow = memo<TaskTableRowProps>(({ task, onSelect }) => {
       onClick={handleClick}
     >
       {/* Tipo */}
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 whitespace-nowrap">
         <div className="flex items-center gap-2">
           <div className={`p-1.5 rounded ${task.is_completed ? 'bg-gray-100' : isOverdue ? 'bg-red-100' : 'bg-blue-100'}`}>
             <Icon className={`w-4 h-4 ${task.is_completed ? 'text-gray-600' : isOverdue ? 'text-red-600' : 'text-blue-600'}`} />
@@ -94,7 +94,7 @@ export const TaskTableRow = memo<TaskTableRowProps>(({ task, onSelect }) => {
       </td>
 
       {/* Contacto */}
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 whitespace-nowrap">
         {task.contact_id && task.contact_name ? (
           <Link
             to={`/crm/contacts/${task.contact_id}`}
@@ -118,7 +118,7 @@ export const TaskTableRow = memo<TaskTableRowProps>(({ task, onSelect }) => {
       </td>
 
       {/* Fecha límite */}
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 whitespace-nowrap">
         {task.complete_till ? (
           <div className="flex items-center gap-2">
             <CalendarIcon className={`w-4 h-4 ${isOverdue && !task.is_completed ? 'text-red-600' : 'text-gray-400'}`} />
@@ -137,7 +137,7 @@ export const TaskTableRow = memo<TaskTableRowProps>(({ task, onSelect }) => {
       </td>
 
       {/* Estado */}
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 whitespace-nowrap">
         {task.is_completed ? (
           <Badge variant="success">Completada</Badge>
         ) : isOverdue ? (
@@ -148,7 +148,7 @@ export const TaskTableRow = memo<TaskTableRowProps>(({ task, onSelect }) => {
       </td>
 
       {/* Fecha de creación */}
-      <td className="px-4 py-3">
+      <td className="px-4 py-3 whitespace-nowrap">
         <div className="text-sm text-gray-600">
           {formatDate(task.created_at)}
         </div>

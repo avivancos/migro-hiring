@@ -109,8 +109,24 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
       if (formData.notes?.trim()) cleanedData.notes = formData.notes.trim();
       
       // Campos Migro específicos
-      if (formData.grading_llamada) cleanedData.grading_llamada = formData.grading_llamada;
-      if (formData.grading_situacion) cleanedData.grading_situacion = formData.grading_situacion;
+      // Los gradings deben enviarse siempre si hay un valor seleccionado o si el contacto original tenía un valor
+      // Si el valor está vacío ('') y el contacto original tenía un valor, se envía null para eliminar
+      // Si hay un valor seleccionado, se envía ese valor
+      if (formData.grading_llamada && formData.grading_llamada.trim()) {
+        // Hay un valor seleccionado, enviarlo
+        cleanedData.grading_llamada = formData.grading_llamada;
+      } else if (contact?.grading_llamada) {
+        // El contacto original tenía un valor pero ahora está vacío, enviar null para eliminar
+        cleanedData.grading_llamada = null;
+      }
+      
+      if (formData.grading_situacion && formData.grading_situacion.trim()) {
+        // Hay un valor seleccionado, enviarlo
+        cleanedData.grading_situacion = formData.grading_situacion;
+      } else if (contact?.grading_situacion) {
+        // El contacto original tenía un valor pero ahora está vacío, enviar null para eliminar
+        cleanedData.grading_situacion = null;
+      }
       if (formData.nacionalidad?.trim()) cleanedData.nacionalidad = formData.nacionalidad.trim();
       if (formData.tiempo_espana?.trim()) cleanedData.tiempo_espana = formData.tiempo_espana.trim();
       if (formData.lugar_residencia?.trim()) cleanedData.lugar_residencia = formData.lugar_residencia.trim();

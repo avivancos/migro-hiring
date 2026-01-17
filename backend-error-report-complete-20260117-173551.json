@@ -1,0 +1,12 @@
+{
+  "summary": {
+    "total_warnings": 4,
+    "failed": 0,
+    "total_errors": 0,
+    "total_checked": 133,
+    "passed": 129
+  },
+  "api_base_url": "http://localhost:3000/api",
+  "mode": "all",
+  "timestamp": "2026-01-17T17:35:53Z"
+}

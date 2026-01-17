@@ -1,0 +1,95 @@
+{
+  "timestamp": "2026-01-17T15:03:21.059Z",
+  "forms": [
+    {
+      "name": "Contact",
+      "file": "src/components/CRM/__tests__/ContactForm.test.tsx",
+      "status": "error",
+      "error": "parsedResults is not defined",
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "name": "Call",
+      "file": "src/components/CRM/__tests__/CallForm.test.tsx",
+      "status": "error",
+      "error": "parsedResults is not defined",
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "name": "Note",
+      "file": "src/components/CRM/__tests__/NoteForm.test.tsx",
+      "status": "error",
+      "error": "parsedResults is not defined",
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "name": "Task",
+      "file": "src/components/CRM/__tests__/TaskForm.test.tsx",
+      "status": "error",
+      "error": "parsedResults is not defined",
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "name": "Lead",
+      "file": "src/components/CRM/__tests__/LeadForm.test.tsx",
+      "status": "error",
+      "error": "parsedResults is not defined",
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "name": "Company",
+      "file": "src/components/CRM/__tests__/CompanyForm.test.tsx",
+      "status": "error",
+      "error": "parsedResults is not defined",
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "name": "Expediente",
+      "file": "src/components/expedientes/__tests__/ExpedienteForm.test.tsx",
+      "status": "error",
+      "error": "parsedResults is not defined",
+      "tests": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+      }
+    }
+  ],
+  "summary": {
+    "total": 0,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0
+  }
+}

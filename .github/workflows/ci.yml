@@ -168,10 +168,39 @@ jobs:
             docker-*.log
           retention-days: 7
 
+  backend-diagnosis:
+    name: Diagnóstico Backend (Opcional)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Solo ejecutar si el backend está disponible (no fallar CI si no está)
+    continue-on-error: true
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Hacer ejecutable script de diagnóstico
+        run: chmod +x scripts/diagnose-backend.sh
+
+      - name: Ejecutar diagnóstico del backend
+        run: ./scripts/diagnose-backend.sh
+        env:
+          VITE_API_BASE_URL: https://api.migro.es/api
+
+      - name: Subir resultados de diagnóstico
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-diagnosis-results
+          path: |
+            backend-error-report-*.json
+            backend-error-report-*.txt
+          retention-days: 7
+
   summary:
     name: Resumen de CI
     runs-on: ubuntu-latest
-    needs: [test, build, docker]
+    needs: [test, build, docker, backend-diagnosis]
     if: always()
     
     steps:
@@ -184,3 +213,4 @@ jobs:
           echo "| Tests | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Build | ${{ needs.build.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Docker | ${{ needs.docker.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Diagnóstico Backend | ${{ needs.backend-diagnosis.result }} |" >> $GITHUB_STEP_SUMMARY

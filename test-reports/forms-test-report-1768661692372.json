@@ -1,0 +1,95 @@
+{
+  "timestamp": "2026-01-17T14:54:52.375Z",
+  "forms": [
+    {
+      "name": "Contact",
+      "file": "src/components/CRM/__tests__/ContactForm.test.tsx",
+      "status": "passed",
+      "tests": {
+        "total": 1,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failures": []
+    },
+    {
+      "name": "Call",
+      "file": "src/components/CRM/__tests__/CallForm.test.tsx",
+      "status": "passed",
+      "tests": {
+        "total": 1,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failures": []
+    },
+    {
+      "name": "Note",
+      "file": "src/components/CRM/__tests__/NoteForm.test.tsx",
+      "status": "passed",
+      "tests": {
+        "total": 1,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failures": []
+    },
+    {
+      "name": "Task",
+      "file": "src/components/CRM/__tests__/TaskForm.test.tsx",
+      "status": "passed",
+      "tests": {
+        "total": 1,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failures": []
+    },
+    {
+      "name": "Lead",
+      "file": "src/components/CRM/__tests__/LeadForm.test.tsx",
+      "status": "passed",
+      "tests": {
+        "total": 1,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failures": []
+    },
+    {
+      "name": "Company",
+      "file": "src/components/CRM/__tests__/CompanyForm.test.tsx",
+      "status": "passed",
+      "tests": {
+        "total": 1,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failures": []
+    },
+    {
+      "name": "Expediente",
+      "file": "src/components/expedientes/__tests__/ExpedienteForm.test.tsx",
+      "status": "passed",
+      "tests": {
+        "total": 1,
+        "passed": 0,
+        "failed": 0,
+        "skipped": 0
+      },
+      "failures": []
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0
+  }
+}

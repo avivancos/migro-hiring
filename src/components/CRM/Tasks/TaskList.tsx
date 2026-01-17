@@ -33,23 +33,27 @@ export default function TaskList({
   // Estado de vista (tabla o cards) con persistencia en localStorage
   // Por defecto siempre es 'table' (definido en constante)
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    // Siempre forzar 'table' por defecto
     const saved = localStorage.getItem(VIEW_MODE_STORAGE_KEY);
-    // Si hay 'cards' guardado, limpiarlo para forzar 'table' por defecto
     if (saved === 'cards') {
       localStorage.removeItem(VIEW_MODE_STORAGE_KEY);
     }
-    // Solo respetar si es 'table', sino usar el modo predeterminado
-    if (saved === 'table') {
-      return DEFAULT_VIEW_MODE;
-    }
-    // Por defecto siempre es 'table'
     return DEFAULT_VIEW_MODE;
   });
 
   // Guardar preferencia en localStorage cuando cambie
   useEffect(() => {
-    localStorage.setItem(VIEW_MODE_STORAGE_KEY, viewMode);
+    if (viewMode === 'table') {
+      localStorage.setItem(VIEW_MODE_STORAGE_KEY, viewMode);
+    }
   }, [viewMode]);
+
+  // Asegurar que siempre esté en modo tabla al montar
+  useEffect(() => {
+    if (viewMode !== 'table') {
+      setViewMode('table');
+    }
+  }, []);
 
   const [filters, setFilters] = useState<TaskFilters>({
     ...initialFilters,
@@ -159,6 +163,11 @@ export default function TaskList({
     );
   }
 
+  // Debug: verificar estado
+  useEffect(() => {
+    console.log('TaskList - viewMode:', viewMode, 'tasks:', tasks.length, 'loading:', loading);
+  }, [viewMode, tasks.length, loading]);
+
   return (
     <div className="space-y-4">
       {showFilters && (
@@ -169,11 +178,11 @@ export default function TaskList({
       )}
 
       {/* Barra de herramientas con toggle de vista */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 mb-4">
         <div className="text-sm text-gray-600">
           {tasks.length} {tasks.length === 1 ? 'tarea' : 'tareas'}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           <Button
             variant="outline"
             onClick={() => setViewMode(viewMode === 'table' ? 'cards' : 'table')}
@@ -237,103 +246,121 @@ export default function TaskList({
         <>
           {/* Vista móvil: Cards en móvil, tabla en desktop */}
           <div className="block md:hidden space-y-4">
-            {tasks.map(task => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                onPress={() => onTaskPress?.(task)}
-                showActions={true}
-              />
-            ))}
+            {loading ? (
+              <div className="flex justify-center py-8">
+                <ArrowPathIcon className="h-6 w-6 animate-spin text-gray-400" />
+              </div>
+            ) : tasks.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                <p>No hay tareas que mostrar</p>
+              </div>
+            ) : (
+              tasks.map(task => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  onPress={() => onTaskPress?.(task)}
+                  showActions={true}
+                />
+              ))
+            )}
           </div>
           
           {/* Vista desktop: Tabla */}
           <Card className="hidden md:block">
             <CardContent className="p-0">
-              <div className="overflow-x-auto -mx-4 sm:mx-0">
-                <div className="inline-block min-w-full align-middle">
-                  <div className="overflow-hidden">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th 
-                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                            onClick={() => handleSort('type')}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span>Tipo</span>
-                              <SortIcon field="type" />
-                            </div>
-                          </th>
-                          <th 
-                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                            onClick={() => handleSort('text')}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span>Tarea</span>
-                              <SortIcon field="text" />
-                            </div>
-                          </th>
-                          <th 
-                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                            onClick={() => handleSort('contact')}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span>Contacto</span>
-                              <SortIcon field="contact" />
-                            </div>
-                          </th>
-                          <th 
-                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                            onClick={() => handleSort('complete_till')}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span>Fecha límite</span>
-                              <SortIcon field="complete_till" />
-                            </div>
-                          </th>
-                          <th 
-                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                            onClick={() => handleSort('status')}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span>Estado</span>
-                              <SortIcon field="status" />
-                            </div>
-                          </th>
-                          <th 
-                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                            onClick={() => handleSort('created_at')}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span>Creada</span>
-                              <SortIcon field="created_at" />
-                            </div>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
-                        {tasks.map((task) => (
-                          <TaskTableRow
-                            key={task.id}
-                            task={task}
-                            onSelect={onTaskPress}
-                          />
-                        ))}
-                      </tbody>
-                    </table>
+              {loading ? (
+                <div className="flex justify-center py-12">
+                  <ArrowPathIcon className="h-6 w-6 animate-spin text-gray-400" />
+                </div>
+              ) : (
+                <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <div className="inline-block min-w-full align-middle">
+                    <div className="overflow-hidden">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th 
+                              className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                              onClick={() => handleSort('type')}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span>Tipo</span>
+                                <SortIcon field="type" />
+                              </div>
+                            </th>
+                            <th 
+                              className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                              onClick={() => handleSort('text')}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span>Tarea</span>
+                                <SortIcon field="text" />
+                              </div>
+                            </th>
+                            <th 
+                              className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                              onClick={() => handleSort('contact')}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span>Contacto</span>
+                                <SortIcon field="contact" />
+                              </div>
+                            </th>
+                            <th 
+                              className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                              onClick={() => handleSort('complete_till')}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span>Fecha límite</span>
+                                <SortIcon field="complete_till" />
+                              </div>
+                            </th>
+                            <th 
+                              className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                              onClick={() => handleSort('status')}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span>Estado</span>
+                                <SortIcon field="status" />
+                              </div>
+                            </th>
+                            <th 
+                              className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                              onClick={() => handleSort('created_at')}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span>Creada</span>
+                                <SortIcon field="created_at" />
+                              </div>
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {tasks.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="px-4 py-12 text-center text-gray-500">
+                                No hay tareas que mostrar
+                              </td>
+                            </tr>
+                          ) : (
+                            tasks.map((task) => (
+                              <TaskTableRow
+                                key={task.id}
+                                task={task}
+                                onSelect={onTaskPress}
+                              />
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </>
-      )}
-
-      {loading && (
-        <div className="flex justify-center py-8">
-          <ArrowPathIcon className="h-6 w-6 animate-spin text-gray-400" />
-        </div>
       )}
 
       {/* Paginador Inferior */}

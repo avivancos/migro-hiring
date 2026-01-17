@@ -1,0 +1,614 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reporte de Tests de Formularios</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #4CAF50;
+      padding-bottom: 10px;
+    }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+    .summary-card {
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .summary-card.total { background: #e3f2fd; }
+    .summary-card.passed { background: #e8f5e9; }
+    .summary-card.failed { background: #ffebee; }
+    .summary-card.skipped { background: #fff3e0; }
+    .summary-card h3 {
+      margin: 0 0 10px 0;
+      font-size: 2em;
+      color: #333;
+    }
+    .summary-card p {
+      margin: 0;
+      color: #666;
+    }
+    .form-section {
+      margin: 30px 0;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    .form-section.passed { border-left: 5px solid #4CAF50; }
+    .form-section.failed { border-left: 5px solid #f44336; }
+    .form-section.error { border-left: 5px solid #ff9800; }
+    .form-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .form-name {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #333;
+    }
+    .status-badge {
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      font-weight: bold;
+    }
+    .status-badge.passed { background: #4CAF50; color: white; }
+    .status-badge.failed { background: #f44336; color: white; }
+    .status-badge.error { background: #ff9800; color: white; }
+    .test-results {
+      margin-top: 15px;
+    }
+    .test-item {
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 4px;
+      background: #f9f9f9;
+    }
+    .test-item.failed {
+      background: #ffebee;
+      border-left: 3px solid #f44336;
+    }
+    .test-item h4 {
+      margin: 0 0 5px 0;
+      color: #333;
+    }
+    .test-item .error {
+      color: #d32f2f;
+      font-size: 0.9em;
+      font-family: 'Courier New', monospace;
+    }
+    .timestamp {
+      color: #999;
+      font-size: 0.9em;
+      margin-top: 30px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Reporte de Tests de Formularios</h1>
+    
+    <div class="summary">
+      <div class="summary-card total">
+        <h3>7</h3>
+        <p>Total de Tests</p>
+      </div>
+      <div class="summary-card passed">
+        <h3>0</h3>
+        <p>✅ Pasados</p>
+      </div>
+      <div class="summary-card failed">
+        <h3>0</h3>
+        <p>❌ Fallidos</p>
+      </div>
+      <div class="summary-card skipped">
+        <h3>0</h3>
+        <p>⏭️ Omitidos</p>
+      </div>
+    </div>
+    
+    
+      <div class="form-section passed">
+        <div class="form-header">
+          <div class="form-name">📋 Contact</div>
+          <span class="status-badge passed">✅ Pasado</span>
+        </div>
+        
+          <div class="test-results">
+            <p><strong>Tests:</strong> 0/1 pasados</p>
+            
+          </div>
+        
+        
+        
+          <details style="margin-top: 15px;">
+            <summary style="cursor: pointer; color: #1976d2; font-weight: bold;">📄 Ver logs de debug</summary>
+            <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; margin-top: 5px; max-height: 400px; overflow-y: auto;">
+&gt; migro-hiring@1.0.0 test
+&gt; vitest src/components/CRM/__tests__/ContactForm.test.tsx --run
+
+
+[1m[7m[36m RUN [39m[27m[22m [36mv2.1.9 [39m[90mC:/Users/agusv/Desarrollo/migro-hiring[39m
+
+[90mstderr[2m | src/components/CRM/__tests__/ContactForm.test.tsx
+[22m[39m⚠️ Tokens guardados expirados. Ejecuta: npm run test:tokens
+
+[90mstdout[2m | src/components/CRM/__tests__/ContactForm.test.tsx[2m &gt; [22m[2mContactForm - Tests Automatizados[2m &gt; [22m[2mdebe enviar el formulario con datos válidos
+[22m[39m🟢 [ContactForm] Datos limpiados antes de enviar: { name: [32m&#039;María García&#039;[39m, email: [32m&#039;maria@test.com&#039;[39m, country: [32m&#039;España&#039;[39m }
+
+[90mstdout[2m | src/components/CRM/__tests__/ContactForm.test.tsx[2m &gt; [22m[2mContactForm - Tests Automatizados[2m &gt; [22m[2mdebe guardar todos los campos al editar un contacto
+[22m[39m🟢 [ContactForm] Datos limpiados antes de enviar: {
+  name: [32m&#039;Juan Pérez García Actualizado&#039;[39m,
+  first_name: [32m&#039;Juan&#039;[39m,
+  last_name: [32m&#039;Pérez García&#039;[39m,
+  email: [32m&#039;juan.actualizado@test.com&#039;[39m,
+  phone: [32m&#039;+34987654321&#039;[39m,
+  mobile: [32m&#039;+34612345678&#039;[39m,
+  address: [32m&#039;Calle Principal 123&#039;[39m,
+  city: [32m&#039;Barcelona&#039;[39m,
+  state: [32m&#039;Madrid&#039;[39m,
+  postal_code: [32m&#039;28001&#039;[39m,
+  country: [32m&#039;España&#039;[39m,
+  company: [32m&#039;Empresa Original&#039;[39m,
+  position: [32m&#039;Director&#039;[39m,
+  company_id: [33m1[39m,
+  responsible_user_id: [32m&#039;user-id-123&#039;[39m,
+  notes: [32m&#039;Notas originales&#039;[39m,
+  grading_llamada: [32m&#039;B+&#039;[39m,
+  grading_situacion: [32m&#039;B+&#039;[39m,
+  nacionalidad: [32m&#039;Colombia&#039;[39m,
+  tiempo_espana: [32m&#039;6 años&#039;[39m,
+  lugar_residencia: [32m&#039;Barcelona&#039;[39m,
+  trabaja_b: [33mfalse[39m,
+  tiene_familiares_espana: [33mtrue[39m,
+  edad: [33m40[39m,
+  custom_fields: {
+    servicio_propuesto: [32m&#039;arraigo&#039;[39m,
+    servicio_detalle: [32m&#039;Detalle actualizado del trámite de arraigo&#039;[39m,
+    fecha_llegada_espana: [32m&#039;2020-05-20&#039;[39m
+  }
+}
+
+ [32m✓[39m src/components/CRM/__tests__/ContactForm.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 398[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 16:15:05
+[2m   Duration [22m 2.24s[2m (transform 139ms, setup 282ms, collect 555ms, tests 398ms, environment 422ms, prepare 69ms)[22m
+
+</pre>
+          </details>
+        
+      </div>
+    
+      <div class="form-section passed">
+        <div class="form-header">
+          <div class="form-name">📋 Call</div>
+          <span class="status-badge passed">✅ Pasado</span>
+        </div>
+        
+          <div class="test-results">
+            <p><strong>Tests:</strong> 0/1 pasados</p>
+            
+          </div>
+        
+        
+        
+          <details style="margin-top: 15px;">
+            <summary style="cursor: pointer; color: #1976d2; font-weight: bold;">📄 Ver logs de debug</summary>
+            <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; margin-top: 5px; max-height: 400px; overflow-y: auto;">
+&gt; migro-hiring@1.0.0 test
+&gt; vitest src/components/CRM/__tests__/CallForm.test.tsx --run
+
+
+[1m[7m[36m RUN [39m[27m[22m [36mv2.1.9 [39m[90mC:/Users/agusv/Desarrollo/migro-hiring[39m
+
+[90mstderr[2m | src/components/CRM/__tests__/CallForm.test.tsx
+[22m[39m⚠️ Tokens guardados expirados. Ejecuta: npm run test:tokens
+
+[90mstdout[2m | src/components/CRM/__tests__/CallForm.test.tsx[2m &gt; [22m[2mCallForm - Tests Automatizados[2m &gt; [22m[2mdebe renderizar el formulario
+[22m[39m🔍 [CallForm] loadUsers - Usuarios responsables obtenidos: [33m1[39m [ { id: [32m&#039;user-1&#039;[39m, name: [32m&#039;Admin Test&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m } ]
+✅ [CallForm] Tipos de llamada cargados: []
+🔍 [CallForm] No hay llamadas completadas previas, verificando datos básicos...
+🔍 [CallForm] loadUsers - formData actual: { responsible_user_id: [32m&#039;&#039;[39m }
+🔍 [CallForm] loadUsers - Buscando usuario de sesión: { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m }
+🔍 [CallForm] loadUsers - Buscando en lista de usuarios por: { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m }
+🔍 [CallForm] loadUsers - Lista de usuarios disponibles: [ { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m, name: [32m&#039;Admin Test&#039;[39m } ]
+✅ [CallForm] loadUsers - Match encontrado: {
+  session: { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m },
+  crmUser: { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m, name: [32m&#039;Admin Test&#039;[39m },
+  matchesId: [33mtrue[39m,
+  matchesEmail: [33mtrue[39m
+}
+✅ [CallForm] loadUsers - Usuario de sesión encontrado, preseleccionando: user-1 Admin Test
+
+[90mstdout[2m | src/components/CRM/__tests__/CallForm.test.tsx[2m &gt; [22m[2mCallForm - Tests Automatizados[2m &gt; [22m[2mdebe validar que el teléfono es requerido
+[22m[39m🔍 [CallForm] loadUsers - Usuarios responsables obtenidos: [33m1[39m [ { id: [32m&#039;user-1&#039;[39m, name: [32m&#039;Admin Test&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m } ]
+✅ [CallForm] Tipos de llamada cargados: []
+🔍 [CallForm] No hay llamadas completadas previas, verificando datos básicos...
+🔍 [CallForm] loadUsers - formData actual: { responsible_user_id: [32m&#039;&#039;[39m }
+🔍 [CallForm] loadUsers - Buscando usuario de sesión: { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m }
+🔍 [CallForm] loadUsers - Buscando en lista de usuarios por: { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m }
+🔍 [CallForm] loadUsers - Lista de usuarios disponibles: [ { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m, name: [32m&#039;Admin Test&#039;[39m } ]
+✅ [CallForm] loadUsers - Match encontrado: {
+  session: { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m },
+  crmUser: { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m, name: [32m&#039;Admin Test&#039;[39m },
+  matchesId: [33mtrue[39m,
+  matchesEmail: [33mtrue[39m
+}
+✅ [CallForm] loadUsers - Usuario de sesión encontrado, preseleccionando: user-1 Admin Test
+🟡 [CallForm] handleSubmit llamado
+🟡 [CallForm] formData actual: {
+  direction: [32m&#039;outbound&#039;[39m,
+  duration: [1mnull[22m,
+  durationOption: [32m&#039;&#039;[39m,
+  phone: [32m&#039;&#039;[39m,
+  call_status: [32m&#039;completed&#039;[39m,
+  call_type: [32m&#039;&#039;[39m,
+  call_result: [32m&#039;&#039;[39m,
+  record_url: [32m&#039;&#039;[39m,
+  entity_type: [32m&#039;contacts&#039;[39m,
+  entity_id: [32m&#039;contact-1&#039;[39m,
+  responsible_user_id: [32m&#039;user-1&#039;[39m,
+  resumen_llamada: [32m&#039;&#039;[39m,
+  proxima_llamada_fecha: [32m&#039;&#039;[39m,
+  proxima_accion_fecha: [32m&#039;&#039;[39m
+}
+
+[90mstderr[2m | src/components/CRM/__tests__/CallForm.test.tsx[2m &gt; [22m[2mCallForm - Tests Automatizados[2m &gt; [22m[2mdebe validar que el teléfono es requerido
+[22m[39m⚠️ [CallForm] Teléfono faltante
+
+[90mstdout[2m | src/components/CRM/__tests__/CallForm.test.tsx[2m &gt; [22m[2mCallForm - Tests Automatizados[2m &gt; [22m[2mdebe enviar el formulario con datos válidos
+[22m[39m🔍 [CallForm] loadUsers - Usuarios responsables obtenidos: [33m1[39m [ { id: [32m&#039;user-1&#039;[39m, name: [32m&#039;Admin Test&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m } ]
+✅ [CallForm] Tipos de llamada cargados: []
+🔍 [CallForm] No hay llamadas completadas previas, verificando datos básicos...
+🔍 [CallForm] loadUsers - formData actual: { responsible_user_id: [32m&#039;&#039;[39m }
+🔍 [CallForm] loadUsers - Buscando usuario de sesión: { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m }
+🔍 [CallForm] loadUsers - Buscando en lista de usuarios por: { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m }
+🔍 [CallForm] loadUsers - Lista de usuarios disponibles: [ { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m, name: [32m&#039;Admin Test&#039;[39m } ]
+✅ [CallForm] loadUsers - Match encontrado: {
+  session: { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m },
+  crmUser: { id: [32m&#039;user-1&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m, name: [32m&#039;Admin Test&#039;[39m },
+  matchesId: [33mtrue[39m,
+  matchesEmail: [33mtrue[39m
+}
+✅ [CallForm] loadUsers - Usuario de sesión encontrado, preseleccionando: user-1 Admin Test
+🟡 [CallForm] handleSubmit llamado
+🟡 [CallForm] formData actual: {
+  direction: [32m&#039;outbound&#039;[39m,
+  duration: [33m450[39m,
+  durationOption: [32m&#039;5_to_10&#039;[39m,
+  phone: [32m&#039;+34123456789&#039;[39m,
+  call_status: [32m&#039;completed&#039;[39m,
+  call_type: [32m&#039;&#039;[39m,
+  call_result: [32m&#039;&#039;[39m,
+  record_url: [32m&#039;&#039;[39m,
+  entity_type: [32m&#039;contacts&#039;[39m,
+  entity_id: [32m&#039;contact-1&#039;[39m,
+  responsible_user_id: [32m&#039;user-1&#039;[39m,
+  resumen_llamada: [32m&#039;Resumen de la llamada de prueba&#039;[39m,
+  proxima_llamada_fecha: [32m&#039;&#039;[39m,
+  proxima_accion_fecha: [32m&#039;&#039;[39m
+}
+🟡 [CallForm] Validación de teléfono OK
+🟡 [CallForm] submitData (sin durationOption): {
+  direction: [32m&#039;outbound&#039;[39m,
+  duration: [33m450[39m,
+  phone: [32m&#039;+34123456789&#039;[39m,
+  call_status: [32m&#039;completed&#039;[39m,
+  call_type: [32m&#039;&#039;[39m,
+  call_result: [32m&#039;&#039;[39m,
+  record_url: [32m&#039;&#039;[39m,
+  entity_type: [32m&#039;contacts&#039;[39m,
+  entity_id: [32m&#039;contact-1&#039;[39m,
+  responsible_user_id: [32m&#039;user-1&#039;[39m,
+  resumen_llamada: [32m&#039;Resumen de la llamada de prueba&#039;[39m,
+  proxima_llamada_fecha: [32m&#039;&#039;[39m,
+  proxima_accion_fecha: [32m&#039;&#039;[39m
+}
+🟡 [CallForm] callDataWithStartedAt: {
+  direction: [32m&#039;outbound&#039;[39m,
+  duration: [33m450[39m,
+  phone: [32m&#039;+34123456789&#039;[39m,
+  call_status: [32m&#039;completed&#039;[39m,
+  call_type: [32m&#039;&#039;[39m,
+  call_result: [32m&#039;&#039;[39m,
+  record_url: [32m&#039;&#039;[39m,
+  entity_type: [32m&#039;contacts&#039;[39m,
+  entity_id: [32m&#039;contact-1&#039;[39m,
+  responsible_user_id: [32m&#039;user-1&#039;[39m,
+  resumen_llamada: [32m&#039;Resumen de la llamada de prueba&#039;[39m,
+  proxima_llamada_fecha: [32m&#039;&#039;[39m,
+  proxima_accion_fecha: [32m&#039;&#039;[39m,
+  started_at: [32m&#039;2026-01-17T15:15:10.252Z&#039;[39m
+}
+🟡 [CallForm] Llamando a onSubmit con callDataWithStartedAt...
+🟡 [CallForm] Datos finales a enviar: {
+  direction: [32m&#039;outbound&#039;[39m,
+  duration: [33m450[39m,
+  phone: [32m&#039;+34123456789&#039;[39m,
+  call_status: [32m&#039;completed&#039;[39m,
+  call_type: [32m&#039;&#039;[39m,
+  call_result: [32m&#039;&#039;[39m,
+  record_url: [32m&#039;&#039;[39m,
+  entity_type: [32m&#039;contacts&#039;[39m,
+  entity_id: [32m&#039;contact-1&#039;[39m,
+  responsible_user_id: [32m&#039;user-1&#039;[39m,
+  resumen_llamada: [32m&#039;[PRIMERA LLAMADA]\nResumen de la llamada de prueba&#039;[39m,
+  started_at: [32m&#039;2026-01-17T15:15:10.252Z&#039;[39m
+}
+✅ [CallForm] onSubmit completado exitosamente
+🟢 [CallForm] Marcando initial_contact_completed = true para contacto: contact-1
+🟢 [CallForm] Actualizando contacto con datos de primera llamada: { initial_contact_completed: [33mtrue[39m }
+✅ [CallForm] Contacto actualizado exitosamente, incluyendo initial_contact_completed
+🟡 [CallForm] handleSubmit finalizado (loading = false)
+
+[90mstdout[2m | src/components/CRM/__tests__/CallForm.test.tsx[2m &gt; [22m[2mCallForm - Tests Automatizados[2m &gt; [22m[2mdebe guardar todos los campos al editar una llamada
+[22m[39m🔍 [CallForm] loadUsers - Usuarios responsables obtenidos: [33m1[39m [ { id: [32m&#039;user-1&#039;[39m, name: [32m&#039;Admin Test&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m } ]
+✅ [CallForm] Tipos de llamada cargados: []
+🔍 [CallForm] No hay llamadas completadas previas, verificando datos básicos...
+🔍 [CallForm] loadUsers - formData actual: { responsible_user_id: [32m&#039;user-1&#039;[39m }
+✅ [CallForm] loadUsers - Llamada existente con responsable asignado, manteniendo: user-1
+
+ [32m✓[39m src/components/CRM/__tests__/CallForm.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 361[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 16:15:08
+[2m   Duration [22m 2.19s[2m (transform 163ms, setup 226ms, collect 462ms, tests 361ms, environment 457ms, prepare 154ms)[22m
+
+</pre>
+          </details>
+        
+      </div>
+    
+      <div class="form-section passed">
+        <div class="form-header">
+          <div class="form-name">📋 Note</div>
+          <span class="status-badge passed">✅ Pasado</span>
+        </div>
+        
+          <div class="test-results">
+            <p><strong>Tests:</strong> 0/1 pasados</p>
+            
+          </div>
+        
+        
+        
+          <details style="margin-top: 15px;">
+            <summary style="cursor: pointer; color: #1976d2; font-weight: bold;">📄 Ver logs de debug</summary>
+            <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; margin-top: 5px; max-height: 400px; overflow-y: auto;">
+&gt; migro-hiring@1.0.0 test
+&gt; vitest src/components/CRM/__tests__/NoteForm.test.tsx --run
+
+
+[1m[7m[36m RUN [39m[27m[22m [36mv2.1.9 [39m[90mC:/Users/agusv/Desarrollo/migro-hiring[39m
+
+[90mstderr[2m | src/components/CRM/__tests__/NoteForm.test.tsx
+[22m[39m⚠️ Tokens guardados expirados. Ejecuta: npm run test:tokens
+
+ [32m✓[39m src/components/CRM/__tests__/NoteForm.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[90m 143[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 16:15:11
+[2m   Duration [22m 1.76s[2m (transform 104ms, setup 228ms, collect 185ms, tests 143ms, environment 513ms, prepare 150ms)[22m
+
+</pre>
+          </details>
+        
+      </div>
+    
+      <div class="form-section passed">
+        <div class="form-header">
+          <div class="form-name">📋 Task</div>
+          <span class="status-badge passed">✅ Pasado</span>
+        </div>
+        
+          <div class="test-results">
+            <p><strong>Tests:</strong> 0/1 pasados</p>
+            
+          </div>
+        
+        
+        
+          <details style="margin-top: 15px;">
+            <summary style="cursor: pointer; color: #1976d2; font-weight: bold;">📄 Ver logs de debug</summary>
+            <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; margin-top: 5px; max-height: 400px; overflow-y: auto;">
+&gt; migro-hiring@1.0.0 test
+&gt; vitest src/components/CRM/__tests__/TaskForm.test.tsx --run
+
+
+[1m[7m[36m RUN [39m[27m[22m [36mv2.1.9 [39m[90mC:/Users/agusv/Desarrollo/migro-hiring[39m
+
+[90mstderr[2m | src/components/CRM/__tests__/TaskForm.test.tsx
+[22m[39m⚠️ Tokens guardados expirados. Ejecuta: npm run test:tokens
+
+[90mstdout[2m | src/components/CRM/__tests__/TaskForm.test.tsx[2m &gt; [22m[2mTaskForm - Tests Automatizados[2m &gt; [22m[2mdebe renderizar el formulario
+[22m[39m✅ [TaskForm] Usuario de sesión encontrado, preseleccionando: user-1 Admin Test
+
+[90mstdout[2m | src/components/CRM/__tests__/TaskForm.test.tsx[2m &gt; [22m[2mTaskForm - Tests Automatizados[2m &gt; [22m[2mdebe validar campos requeridos
+[22m[39m✅ [TaskForm] Usuario de sesión encontrado, preseleccionando: user-1 Admin Test
+
+[90mstdout[2m | src/components/CRM/__tests__/TaskForm.test.tsx[2m &gt; [22m[2mTaskForm - Tests Automatizados[2m &gt; [22m[2mdebe enviar el formulario con datos válidos
+[22m[39m✅ [TaskForm] Usuario de sesión encontrado, preseleccionando: user-1 Admin Test
+
+ [32m✓[39m src/components/CRM/__tests__/TaskForm.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[90m 217[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 16:15:13
+[2m   Duration [22m 1.93s[2m (transform 127ms, setup 207ms, collect 444ms, tests 217ms, environment 460ms, prepare 122ms)[22m
+
+</pre>
+          </details>
+        
+      </div>
+    
+      <div class="form-section passed">
+        <div class="form-header">
+          <div class="form-name">📋 Lead</div>
+          <span class="status-badge passed">✅ Pasado</span>
+        </div>
+        
+          <div class="test-results">
+            <p><strong>Tests:</strong> 0/1 pasados</p>
+            
+          </div>
+        
+        
+        
+          <details style="margin-top: 15px;">
+            <summary style="cursor: pointer; color: #1976d2; font-weight: bold;">📄 Ver logs de debug</summary>
+            <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; margin-top: 5px; max-height: 400px; overflow-y: auto;">
+&gt; migro-hiring@1.0.0 test
+&gt; vitest src/components/CRM/__tests__/LeadForm.test.tsx --run
+
+
+[1m[7m[36m RUN [39m[27m[22m [36mv2.1.9 [39m[90mC:/Users/agusv/Desarrollo/migro-hiring[39m
+
+[90mstderr[2m | src/components/CRM/__tests__/LeadForm.test.tsx
+[22m[39m⚠️ Tokens guardados expirados. Ejecuta: npm run test:tokens
+
+[90mstdout[2m | src/components/CRM/__tests__/LeadForm.test.tsx[2m &gt; [22m[2mLeadForm - Tests Automatizados[2m &gt; [22m[2mdebe renderizar el formulario
+[22m[39mUsuarios responsables cargados en LeadForm: [ { id: [32m&#039;user-1&#039;[39m, name: [32m&#039;Admin Test&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m } ]
+✅ [LeadForm] Usuario de sesión encontrado, preseleccionando: user-1 Admin Test
+
+[90mstdout[2m | src/components/CRM/__tests__/LeadForm.test.tsx[2m &gt; [22m[2mLeadForm - Tests Automatizados[2m &gt; [22m[2mdebe validar que el nombre es requerido
+[22m[39mUsuarios responsables cargados en LeadForm: [ { id: [32m&#039;user-1&#039;[39m, name: [32m&#039;Admin Test&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m } ]
+✅ [LeadForm] Usuario de sesión encontrado, preseleccionando: user-1 Admin Test
+
+[90mstdout[2m | src/components/CRM/__tests__/LeadForm.test.tsx[2m &gt; [22m[2mLeadForm - Tests Automatizados[2m &gt; [22m[2mdebe enviar el formulario con datos válidos
+[22m[39mUsuarios responsables cargados en LeadForm: [ { id: [32m&#039;user-1&#039;[39m, name: [32m&#039;Admin Test&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m } ]
+✅ [LeadForm] Usuario de sesión encontrado, preseleccionando: user-1 Admin Test
+
+[90mstdout[2m | src/components/CRM/__tests__/LeadForm.test.tsx[2m &gt; [22m[2mLeadForm - Tests Automatizados[2m &gt; [22m[2mdebe guardar todos los campos al editar un lead
+[22m[39mUsuarios responsables cargados en LeadForm: [ { id: [32m&#039;user-1&#039;[39m, name: [32m&#039;Admin Test&#039;[39m, email: [32m&#039;admin@test.com&#039;[39m } ]
+
+ [32m✓[39m src/components/CRM/__tests__/LeadForm.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[90m 211[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 16:15:16
+[2m   Duration [22m 1.90s[2m (transform 102ms, setup 222ms, collect 389ms, tests 211ms, environment 444ms, prepare 393ms)[22m
+
+</pre>
+          </details>
+        
+      </div>
+    
+      <div class="form-section passed">
+        <div class="form-header">
+          <div class="form-name">📋 Company</div>
+          <span class="status-badge passed">✅ Pasado</span>
+        </div>
+        
+          <div class="test-results">
+            <p><strong>Tests:</strong> 0/1 pasados</p>
+            
+          </div>
+        
+        
+        
+          <details style="margin-top: 15px;">
+            <summary style="cursor: pointer; color: #1976d2; font-weight: bold;">📄 Ver logs de debug</summary>
+            <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; margin-top: 5px; max-height: 400px; overflow-y: auto;">
+&gt; migro-hiring@1.0.0 test
+&gt; vitest src/components/CRM/__tests__/CompanyForm.test.tsx --run
+
+
+[1m[7m[36m RUN [39m[27m[22m [36mv2.1.9 [39m[90mC:/Users/agusv/Desarrollo/migro-hiring[39m
+
+[90mstderr[2m | src/components/CRM/__tests__/CompanyForm.test.tsx
+[22m[39m⚠️ Tokens guardados expirados. Ejecuta: npm run test:tokens
+
+[90mstdout[2m | src/components/CRM/__tests__/CompanyForm.test.tsx[2m &gt; [22m[2mCompanyForm - Tests Automatizados[2m &gt; [22m[2mdebe renderizar el formulario
+[22m[39m✅ [CompanyForm] Usuario de sesión encontrado, preseleccionando: user-1 Admin Test
+
+[90mstdout[2m | src/components/CRM/__tests__/CompanyForm.test.tsx[2m &gt; [22m[2mCompanyForm - Tests Automatizados[2m &gt; [22m[2mdebe validar que el nombre es requerido
+[22m[39m✅ [CompanyForm] Usuario de sesión encontrado, preseleccionando: user-1 Admin Test
+
+[90mstdout[2m | src/components/CRM/__tests__/CompanyForm.test.tsx[2m &gt; [22m[2mCompanyForm - Tests Automatizados[2m &gt; [22m[2mdebe enviar el formulario con datos válidos
+[22m[39m✅ [CompanyForm] Usuario de sesión encontrado, preseleccionando: user-1 Admin Test
+
+ [32m✓[39m src/components/CRM/__tests__/CompanyForm.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[90m 292[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m4 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m 16:15:19
+[2m   Duration [22m 1.96s[2m (transform 170ms, setup 308ms, collect 275ms, tests 292ms, environment 423ms, prepare 132ms)[22m
+
+</pre>
+          </details>
+        
+      </div>
+    
+      <div class="form-section passed">
+        <div class="form-header">
+          <div class="form-name">📋 Expediente</div>
+          <span class="status-badge passed">✅ Pasado</span>
+        </div>
+        
+          <div class="test-results">
+            <p><strong>Tests:</strong> 0/1 pasados</p>
+            
+          </div>
+        
+        
+        
+          <details style="margin-top: 15px;">
+            <summary style="cursor: pointer; color: #1976d2; font-weight: bold;">📄 Ver logs de debug</summary>
+            <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; margin-top: 5px; max-height: 400px; overflow-y: auto;">
+&gt; migro-hiring@1.0.0 test
+&gt; vitest src/components/expedientes/__tests__/ExpedienteForm.test.tsx --run
+
+
+[1m[7m[36m RUN [39m[27m[22m [36mv2.1.9 [39m[90mC:/Users/agusv/Desarrollo/migro-hiring[39m
+
+[90mstderr[2m | src/components/expedientes/__tests__/ExpedienteForm.test.tsx
+[22m[39m⚠️ Tokens guardados expirados. Ejecuta: npm run test:tokens
+
+ [32m✓[39m src/components/expedientes/__tests__/ExpedienteForm.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[90m 270[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 16:15:22
+[2m   Duration [22m 2.78s[2m (transform 183ms, setup 302ms, collect 587ms, tests 270ms, environment 753ms, prepare 636ms)[22m
+
+</pre>
+          </details>
+        
+      </div>
+    
+    
+    <div class="timestamp">
+      Generado el 17/1/2026, 16:15:04
+    </div>
+  </div>
+</body>
+</html>
+  

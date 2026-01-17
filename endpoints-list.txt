@@ -1,0 +1,16 @@
+await expedienteApi.delete('1', false);
+const { data } = await api.get('/admin/call-types');
+const { data } = await api.get('/admin/hiring/list', {
+const { data } = await api.get('/crm/call-types');
+const { data } = await api.get('/users/', { params: requestParams });
+const { data } = await api.get('/users/audit-logs', { params });
+const { data } = await api.get('/users/export', { params });
+const { data } = await api.get('/users/me');
+const { data } = await api.post('/admin/call-types', callType);
+const { data } = await api.post('/users/', userData);
+const { data } = await api.post('/users/me/photo-avatar', formData, {
+const response = await api.get('/users/export', {
+const response = await api.get('/users/me');
+const response = await api.get('/users/me');
+const response = await api.get('/users/me');
+const userResponse = await api.get('/users/me');

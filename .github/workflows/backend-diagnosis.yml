@@ -1,0 +1,84 @@
+name: Diagnóstico Backend
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'URL base de la API'
+        required: false
+        default: 'https://api.migro.es/api'
+  schedule:
+    # Ejecutar diariamente a las 2:00 AM UTC
+    - cron: '0 2 * * *'
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/DIAGNOSTICO_ERROR_AUTH_LOCAL.md'
+      - 'scripts/diagnose-backend.*'
+      - '.github/workflows/backend-diagnosis.yml'
+
+jobs:
+  diagnose:
+    name: Diagnóstico Backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Hacer ejecutable script de diagnóstico
+        run: chmod +x scripts/diagnose-backend.sh
+
+      - name: Ejecutar diagnóstico del backend
+        run: ./scripts/diagnose-backend.sh
+        env:
+          VITE_API_BASE_URL: ${{ github.event.inputs.api_url || 'https://api.migro.es/api' }}
+
+      - name: Subir resultados de diagnóstico
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-diagnosis-results
+          path: |
+            backend-error-report-*.json
+            backend-error-report-*.txt
+            backend-diagnosis-*.log
+          retention-days: 30
+
+      - name: Publicar reporte si hay errores
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const glob = require('glob');
+            
+            // Buscar archivos de reporte
+            const reportFiles = glob.sync('backend-error-report-*.txt');
+            
+            if (reportFiles.length > 0) {
+              const reportContent = fs.readFileSync(reportFiles[0], 'utf8');
+              
+              core.summary
+                .addHeading('📋 Reporte de Diagnóstico del Backend', 2)
+                .addRaw(reportContent)
+                .write();
+              
+              console.log('✅ Reporte publicado en GitHub Actions Summary');
+            }
+
+      - name: Comentar en PR si hay errores
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ **Diagnóstico del backend detectó problemas**\n\n' +
+                    'Por favor, revisa los logs del diagnóstico y consulta [docs/DIAGNOSTICO_ERROR_AUTH_LOCAL.md](docs/DIAGNOSTICO_ERROR_AUTH_LOCAL.md) para más información sobre cómo resolver problemas comunes.\n\n' +
+                    'Si estos problemas son esperados (por ejemplo, el backend no está disponible en este momento), puedes ignorar este mensaje.'
+            });
