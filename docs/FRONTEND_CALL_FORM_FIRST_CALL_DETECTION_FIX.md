@@ -11,6 +11,8 @@
 
 Se corrigió el problema donde el sistema siempre marcaba las llamadas como "[PRIMERA LLAMADA]" en el resumen, incluso cuando se trataba de llamadas de seguimiento. El problema se debía a que la lógica solo verificaba si faltaban datos básicos del contacto, sin considerar si ya existían llamadas previas completadas.
 
+**Actualización**: Ahora el sistema también agrega el prefijo `[SEGUIMIENTO]` cuando la llamada NO es primera llamada (es decir, cuando ya hay llamadas previas completadas).
+
 ---
 
 ## 🐛 Problema Identificado
@@ -38,12 +40,24 @@ Esta lógica era incorrecta porque:
 
 ### Cambios en `CallForm.tsx`
 
+Se realizaron dos cambios principales:
+
+### 1. Modificación de `loadSelectedContact`
+
 Se modificó la función `loadSelectedContact` para que:
 
 1. **Primero verifique si hay llamadas previas completadas** para el contacto/lead
 2. **Si hay llamadas previas completadas**, `isFirstCall = false` (NO es primera llamada)
 3. **Si no hay llamadas previas**, entonces verifique si faltan datos básicos como indicador adicional
 4. **Si estamos editando una llamada existente**, excluirla del conteo de llamadas previas
+
+### 2. Modificación de `handleSubmit`
+
+Se actualizó la lógica de agregado de prefijos en el resumen:
+
+1. **Si es primera llamada** (`isFirstCall = true`): Se agrega prefijo `[PRIMERA LLAMADA]`
+2. **Si NO es primera llamada** (`isFirstCall = false`): Se agrega prefijo `[SEGUIMIENTO]`
+3. **Validación de prefijos**: Se verifica que el resumen no tenga ya un prefijo para evitar duplicados
 
 ### Código Corregido
 
@@ -84,6 +98,30 @@ try {
 setIsFirstCall(isFirst);
 ```
 
+### Lógica de Prefijos en `handleSubmit`
+
+```typescript
+// ✅ Lógica actualizada para agregar prefijos
+if (callDataWithStartedAt.call_status === 'completed' && (formData.entity_type === 'contacts' || formData.entity_type === 'leads')) {
+  if (!callDataWithStartedAt.resumen_llamada) {
+    callDataWithStartedAt.resumen_llamada = '';
+  }
+  
+  // Verificar si el resumen ya tiene algún prefijo para evitar duplicados
+  const hasPrefix = callDataWithStartedAt.resumen_llamada.trim().startsWith('[');
+  
+  if (!hasPrefix) {
+    if (isFirstCall) {
+      // Si es primera llamada, agregar prefijo [PRIMERA LLAMADA]
+      callDataWithStartedAt.resumen_llamada = '[PRIMERA LLAMADA]\n' + callDataWithStartedAt.resumen_llamada;
+    } else {
+      // Si no es primera llamada, agregar prefijo [SEGUIMIENTO]
+      callDataWithStartedAt.resumen_llamada = '[SEGUIMIENTO]\n' + callDataWithStartedAt.resumen_llamada;
+    }
+  }
+}
+```
+
 ---
 
 ## 🔄 Flujo de Verificación
@@ -97,9 +135,13 @@ setIsFirstCall(isFirst);
    - `limit`: 100 (para obtener todas las llamadas relevantes)
 3. **Excluir llamada actual** si estamos editando una llamada existente (`call?.id`)
 4. **Verificar si hay llamadas completadas previas**:
-   - Si **SÍ hay**: `isFirstCall = false` → NO se agrega prefijo `[PRIMERA LLAMADA]`
+   - Si **SÍ hay**: `isFirstCall = false` → Se agrega prefijo `[SEGUIMIENTO]`
    - Si **NO hay**: Verificar datos básicos → `isFirstCall = !hasBasicData`
 5. **Manejo de errores**: Si falla la verificación de llamadas, usar fallback de datos básicos
+6. **Agregar prefijo en `handleSubmit`**:
+   - Si `isFirstCall = true` → `[PRIMERA LLAMADA]`
+   - Si `isFirstCall = false` → `[SEGUIMIENTO]`
+   - Solo si el resumen no tiene ya un prefijo (evita duplicados)
 
 ---
 
@@ -113,10 +155,10 @@ setIsFirstCall(isFirst);
 
 ### Comportamiento Nuevo (Correcto)
 
-- ✅ Contacto con llamadas previas completadas → Sin prefijo (correcto)
-- ✅ Llamada de seguimiento → Sin prefijo (correcto)
+- ✅ Contacto con llamadas previas completadas → `[SEGUIMIENTO]` (correcto)
+- ✅ Llamada de seguimiento → `[SEGUIMIENTO]` (correcto)
 - ✅ Contacto nuevo sin llamadas previas → `[PRIMERA LLAMADA]` (correcto)
-- ✅ Contacto sin llamadas previas pero con datos básicos → Sin prefijo (correcto)
+- ✅ Contacto sin llamadas previas pero con datos básicos → `[PRIMERA LLAMADA]` (correcto, si faltan datos básicos)
 
 ---
 
@@ -125,13 +167,13 @@ setIsFirstCall(isFirst);
 ### Caso 1: Contacto con llamadas previas completadas
 - **Estado inicial**: Contacto tiene 2 llamadas completadas previas
 - **Acción**: Registrar nueva llamada
-- **Resultado esperado**: `isFirstCall = false`, NO se agrega `[PRIMERA LLAMADA]`
+- **Resultado esperado**: `isFirstCall = false`, se agrega `[SEGUIMIENTO]`
 - **Resultado obtenido**: ✅ Correcto
 
 ### Caso 2: Llamada de seguimiento
 - **Estado inicial**: Contacto tiene 1 llamada completada previa
 - **Acción**: Registrar llamada de seguimiento
-- **Resultado esperado**: `isFirstCall = false`, NO se agrega `[PRIMERA LLAMADA]`
+- **Resultado esperado**: `isFirstCall = false`, se agrega `[SEGUIMIENTO]`
 - **Resultado obtenido**: ✅ Correcto
 
 ### Caso 3: Contacto nuevo sin llamadas previas
@@ -176,8 +218,10 @@ setIsFirstCall(isFirst);
 ## ✅ Verificación
 
 - ✅ No se agrega `[PRIMERA LLAMADA]` a llamadas de seguimiento
-- ✅ Se mantiene el prefijo para contactos realmente nuevos
+- ✅ Se agrega `[SEGUIMIENTO]` a llamadas que NO son primera llamada
+- ✅ Se mantiene el prefijo `[PRIMERA LLAMADA]` para contactos realmente nuevos
 - ✅ La lógica funciona correctamente al editar llamadas existentes
+- ✅ No se duplican prefijos si el resumen ya tiene uno
 - ✅ No hay errores de linting
 - ✅ El fallback funciona si falla la verificación de llamadas
 

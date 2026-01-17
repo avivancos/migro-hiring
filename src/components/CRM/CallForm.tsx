@@ -504,14 +504,26 @@ export const CallForm = memo(function CallForm({
         delete callDataWithStartedAt.proxima_accion_fecha;
       }
 
-      // Informar al backend si es primera llamada agregando información en el resumen
+      // Informar al backend si es primera llamada o seguimiento agregando información en el resumen
       // Solo si la llamada está completada (no tiene sentido para llamadas fallidas/no contestadas)
       // Los leads ahora son contactos unificados, así que siempre tratamos como contacto
-      if (callDataWithStartedAt.call_status === 'completed' && isFirstCall && (formData.entity_type === 'contacts' || formData.entity_type === 'leads')) {
+      if (callDataWithStartedAt.call_status === 'completed' && (formData.entity_type === 'contacts' || formData.entity_type === 'leads')) {
         if (!callDataWithStartedAt.resumen_llamada) {
           callDataWithStartedAt.resumen_llamada = '';
         }
-        callDataWithStartedAt.resumen_llamada = '[PRIMERA LLAMADA]\n' + callDataWithStartedAt.resumen_llamada;
+        
+        // Verificar si el resumen ya tiene algún prefijo para evitar duplicados
+        const hasPrefix = callDataWithStartedAt.resumen_llamada.trim().startsWith('[');
+        
+        if (!hasPrefix) {
+          if (isFirstCall) {
+            // Si es primera llamada, agregar prefijo [PRIMERA LLAMADA]
+            callDataWithStartedAt.resumen_llamada = '[PRIMERA LLAMADA]\n' + callDataWithStartedAt.resumen_llamada;
+          } else {
+            // Si no es primera llamada, agregar prefijo [SEGUIMIENTO]
+            callDataWithStartedAt.resumen_llamada = '[SEGUIMIENTO]\n' + callDataWithStartedAt.resumen_llamada;
+          }
+        }
       }
 
       console.log('🟡 [CallForm] Llamando a onSubmit con callDataWithStartedAt...');
