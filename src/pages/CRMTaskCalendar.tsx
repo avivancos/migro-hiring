@@ -25,26 +25,23 @@ export function CRMTaskCalendar() {
   const isInitialMount = useRef(true);
   const lastLoadParams = useRef<{ dateStr: string; view: string } | null>(null);
 
-  // Leer parámetros de URL
-  const view = useMemo(() => {
-    const viewParam = searchParams.get('view');
-    if (viewParam === 'month' || viewParam === 'week' || viewParam === 'day') {
-      return viewParam;
-    }
-    return 'month';
-  }, [searchParams]);
+  const formatLocalDate = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
-  // Memoizar la fecha como string para evitar recreaciones innecesarias
-  const currentDateStr = useMemo(() => {
-    const dateParam = searchParams.get('date');
-    if (dateParam) {
-      // Validar formato YYYY-MM-DD
-      if (/^\d{4}-\d{2}-\d{2}$/.test(dateParam)) {
-        return dateParam;
-      }
-    }
-    return new Date().toISOString().split('T')[0];
-  }, [searchParams]);
+  // Leer parámetros de URL (sin memo para evitar valores stale)
+  const viewParam = searchParams.get('view');
+  const view: ViewMode = viewParam === 'month' || viewParam === 'week' || viewParam === 'day'
+    ? viewParam
+    : 'month';
+
+  const dateParam = searchParams.get('date');
+  const currentDateStr = dateParam && /^\d{4}-\d{2}-\d{2}$/.test(dateParam)
+    ? dateParam
+    : formatLocalDate(new Date());
 
   const currentDate = useMemo(() => {
     try {
@@ -88,9 +85,21 @@ export function CRMTaskCalendar() {
     
     // Solo cargar si los parámetros realmente cambiaron
     if (loadKey !== lastKey) {
+      console.log('📅 [CRMTaskCalendar] Parámetros cambiaron, cargando datos:', {
+        loadKey,
+        lastKey,
+        currentDateStr,
+        view,
+      });
       lastLoadParams.current = { dateStr: currentDateStr, view };
       loadData();
+    } else {
+      console.log('📅 [CRMTaskCalendar] Parámetros no cambiaron, omitiendo carga:', {
+        loadKey,
+        lastKey,
+      });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDateStr, view]);
 
   const loadUsers = async () => {
@@ -148,7 +157,7 @@ export function CRMTaskCalendar() {
         }),
         // Cargar notas usando el endpoint normal con filtros de fecha
         crmService.getNotes({
-          limit: 1000, // Cargar muchas notas para el rango de fechas
+          limit: 100, // Máximo permitido por el backend (le=100)
         }).then(response => response.items || []).catch((err) => {
           console.warn('⚠️ [CRMTaskCalendar] Error cargando notas:', err);
           return [];
@@ -353,6 +362,12 @@ export function CRMTaskCalendar() {
   };
 
   const navigateDate = (direction: 'prev' | 'next') => {
+    // Validar que currentDate sea válido antes de navegar
+    if (!currentDate || isNaN(currentDate.getTime())) {
+      console.error('❌ [CRMTaskCalendar] Error: currentDate inválido al navegar');
+      return;
+    }
+
     const newDate = new Date(currentDate);
     if (view === 'month') {
       newDate.setMonth(newDate.getMonth() + (direction === 'next' ? 1 : -1));
@@ -361,34 +376,62 @@ export function CRMTaskCalendar() {
     } else {
       newDate.setDate(newDate.getDate() + (direction === 'next' ? 1 : -1));
     }
+
+    // Validar que la nueva fecha sea válida
+    if (isNaN(newDate.getTime())) {
+      console.error('❌ [CRMTaskCalendar] Error: Nueva fecha inválida después de navegar');
+      return;
+    }
+
     // Actualizar URL (el useEffect se encargará de actualizar el estado)
     const params = new URLSearchParams();
     params.set('view', view);
-    params.set('date', newDate.toISOString().split('T')[0]);
+    params.set('date', formatLocalDate(newDate));
     setSearchParams(params, { replace: true });
+    
+    console.log('📅 [CRMTaskCalendar] Navegando:', {
+      direction,
+      view,
+      fromDate: formatLocalDate(currentDate),
+      toDate: formatLocalDate(newDate),
+    });
   };
 
   const goToToday = () => {
     const today = new Date();
     const params = new URLSearchParams();
     params.set('view', view);
-    params.set('date', today.toISOString().split('T')[0]);
+    params.set('date', formatLocalDate(today));
     setSearchParams(params, { replace: true });
   };
 
   const handleViewChange = (newView: ViewMode) => {
     const params = new URLSearchParams();
     params.set('view', newView);
-    params.set('date', currentDate.toISOString().split('T')[0]);
+    params.set('date', formatLocalDate(currentDate));
     setSearchParams(params, { replace: true });
   };
 
   const getTasksForDate = (date: Date): Task[] => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatLocalDate(date);
+    const todayStr = formatLocalDate(new Date());
+    
     return tasks.filter(task => {
       if (!task.complete_till) return false;
-      const taskDate = new Date(task.complete_till).toISOString().split('T')[0];
-      return taskDate === dateStr;
+      
+      // Filtrar tareas completadas (aunque el backend ya las filtra, añadimos validación adicional)
+      if (task.is_completed) return false;
+      
+      const taskDate = formatLocalDate(new Date(task.complete_till));
+      
+      // Solo mostrar tareas del día solicitado
+      if (taskDate !== dateStr) return false;
+      
+      // No mostrar tareas programadas en fechas pasadas (solo futuras o del día actual)
+      // Permite mostrar el día actual para que los usuarios vean sus tareas de hoy
+      if (taskDate < todayStr) return false;
+      
+      return true;
     });
   };
 
@@ -403,7 +446,7 @@ export function CRMTaskCalendar() {
   };
 
   const getCallsForDate = (date: Date): Call[] => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatLocalDate(date);
     const filtered = calls.filter(call => {
       // Usar created_at como fecha de referencia (cuando se graba en el sistema)
       const callCreatedAt = call.created_at || call.started_at;
@@ -412,7 +455,7 @@ export function CRMTaskCalendar() {
         return false;
       }
       try {
-        const callDate = new Date(callCreatedAt).toISOString().split('T')[0];
+        const callDate = formatLocalDate(new Date(callCreatedAt));
         return callDate === dateStr;
       } catch (err) {
         console.warn('⚠️ [CRMTaskCalendar] Error parseando fecha de llamada:', call.id, callCreatedAt, err);
@@ -434,11 +477,11 @@ export function CRMTaskCalendar() {
   };
 
   const getNotesForDate = (date: Date): Note[] => {
-    const dateStr = date.toISOString().split('T')[0];
+    const dateStr = formatLocalDate(date);
     return notes.filter(note => {
       if (!note.created_at) return false;
       try {
-        const noteDate = new Date(note.created_at).toISOString().split('T')[0];
+        const noteDate = formatLocalDate(new Date(note.created_at));
         return noteDate === dateStr;
       } catch (err) {
         console.warn('⚠️ [CRMTaskCalendar] Error parseando fecha de nota:', note.id, note.created_at, err);
@@ -632,11 +675,12 @@ export function CRMTaskCalendar() {
                   className={`p-2 border rounded min-h-[100px] cursor-pointer hover:bg-gray-50 transition-colors ${
                     isToday ? 'bg-blue-50 border-blue-300' : 'bg-white border-gray-200'
                   }`}
+                  data-testid={`calendar-day-${formatLocalDate(date)}`}
                   onClick={() => {
                     // Al hacer clic en un día, cambiar a vista diaria y mostrar ese día
                     const params = new URLSearchParams();
                     params.set('view', 'day');
-                    params.set('date', date.toISOString().split('T')[0]);
+                    params.set('date', formatLocalDate(date));
                     setSearchParams(params, { replace: true });
                   }}
                 >
@@ -723,11 +767,12 @@ export function CRMTaskCalendar() {
               className={`border rounded p-3 cursor-pointer hover:bg-gray-50 transition-colors ${
                 isToday ? 'bg-blue-50 border-blue-300' : ''
               }`}
+              data-testid={`calendar-weekday-${formatLocalDate(date)}`}
               onClick={() => {
                 // Al hacer clic en un día, cambiar a vista diaria y mostrar ese día
                 const params = new URLSearchParams();
                 params.set('view', 'day');
-                params.set('date', date.toISOString().split('T')[0]);
+                params.set('date', formatLocalDate(date));
                 setSearchParams(params, { replace: true });
               }}
             >
@@ -824,6 +869,16 @@ export function CRMTaskCalendar() {
   };
 
   const renderDayView = () => {
+    // Validar que currentDate sea válido
+    if (!currentDate || isNaN(currentDate.getTime())) {
+      console.error('❌ [CRMTaskCalendar] Fecha inválida en vista diaria:', currentDate);
+      return (
+        <div className="text-center py-12 text-red-500">
+          Error: Fecha inválida. Por favor, intenta nuevamente.
+        </div>
+      );
+    }
+
     const dayTasks = getTasksForDate(currentDate);
     const dayCalls = getCallsForDate(currentDate);
     const dayNotes = getNotesForDate(currentDate);
@@ -1062,13 +1117,23 @@ export function CRMTaskCalendar() {
         <CardContent className="pt-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
-              <Button variant="outline" onClick={() => navigateDate('prev')}>
+              <Button
+                variant="outline"
+                onClick={() => navigateDate('prev')}
+                aria-label="Anterior"
+                data-testid="calendar-prev"
+              >
                 <ChevronLeftIcon width={18} height={18} />
               </Button>
               <Button variant="outline" onClick={goToToday}>
                 Hoy
               </Button>
-              <Button variant="outline" onClick={() => navigateDate('next')}>
+              <Button
+                variant="outline"
+                onClick={() => navigateDate('next')}
+                aria-label="Siguiente"
+                data-testid="calendar-next"
+              >
                 <ChevronRightIcon width={18} height={18} />
               </Button>
               <div className="text-lg font-semibold">{getViewTitle()}</div>

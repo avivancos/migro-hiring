@@ -1,6 +1,17 @@
 import { expect, afterEach, vi, beforeEach } from 'vitest';
+import { JSDOM } from 'jsdom';
 import { cleanup } from '@testing-library/react';
+import { configure } from '@testing-library/dom';
 import * as matchers from '@testing-library/jest-dom/matchers';
+
+if (typeof document === 'undefined') {
+  const dom = new JSDOM('<!doctype html><html><body></body></html>');
+  (global as any).window = dom.window;
+  (global as any).document = dom.window.document;
+  (global as any).navigator = dom.window.navigator;
+}
+
+configure({ document: global.document });
 
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers);

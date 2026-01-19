@@ -86,6 +86,15 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 - [x] Botón para descartar oportunidad con motivo (marca `lost` y agrega motivo en notas).
   - [x] Documentación backend: `docs/BACKEND_OPPORTUNITY_DISCARD_ENDPOINT.md` ✅
   - [x] Documentación frontend: `docs/FRONTEND_OPPORTUNITY_DISCARD_BUTTON.md` ✅
+- [x] Calendario CRM: fechas normalizadas a local (evita desfase UTC al hacer clic en días).
+  - [x] Documentación: `docs/CALENDAR_LOCAL_DATE_FIX.md` ✅
+- [x] Calendario CRM: navegación diaria no se actualizaba por `searchParams` stale.
+  - [x] Documentación: `docs/CALENDAR_SEARCHPARAMS_STALE_FIX.md` ✅
+- [x] Calendario CRM: tests de integración para navegación y links.
+  - [x] Documentación: `docs/CALENDAR_INTEGRATION_TESTS.md` ✅
+- [x] Tests: fix JSDOM en entorno Docker.
+  - [x] Documentación: `docs/TEST_SETUP_JSDOM_FIX.md` ✅
+- [ ] Verificar en entorno local la URL de calendario diario (`view=day`) con fecha explícita.
 - [x] Corrección de bugs críticos: Comparación case-insensitive de IDs y conversión incorrecta de URL de Pili.
   - [x] Bug 1: Eliminada conversión a lowercase en comparación de IDs de usuario (4 lugares en `CRMContactDetail.tsx`) ✅
   - [x] Bug 2: Corregida conversión de localhost a host.docker.internal para `VITE_PILI_API_URL` (debe usar localhost porque se ejecuta en el navegador) ✅
