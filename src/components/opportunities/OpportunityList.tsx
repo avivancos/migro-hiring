@@ -24,12 +24,14 @@ interface OpportunityListProps {
   filters?: OpportunityFiltersType;
   onOpportunitySelect?: (id: string) => void;
   availableAgents?: Array<{ id: string; name: string }>;
+  loadingAgents?: boolean;
 }
 
 export function OpportunityList({
   filters: initialFilters = {},
   onOpportunitySelect,
   availableAgents = [],
+  loadingAgents = false,
 }: OpportunityListProps) {
   // Estado de vista (tabla o cards) con persistencia en localStorage
   // Por defecto siempre es 'table' (definido en constante)
@@ -71,6 +73,25 @@ export function OpportunityList({
     isLoading,
     error,
   } = useOpportunities(filters);
+
+  const responsibleNameById = React.useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const agent of availableAgents) {
+      if (agent.id) {
+        map[agent.id] = agent.name?.trim() || '';
+      }
+    }
+    return map;
+  }, [availableAgents]);
+
+  const resolveResponsibleName = React.useCallback((opportunity: typeof rawOpportunities[number]) => {
+    const directName = opportunity.assigned_to?.name?.trim() || opportunity.assigned_to?.email?.trim();
+    if (directName) return directName;
+    if (opportunity.assigned_to_id) {
+      return responsibleNameById[opportunity.assigned_to_id] || '';
+    }
+    return '';
+  }, [responsibleNameById]);
   
   // Oportunidades filtradas localmente (por filtros rápidos)
   const [filteredOpportunities, setFilteredOpportunities] = React.useState<typeof rawOpportunities>(rawOpportunities);
@@ -129,8 +150,8 @@ export function OpportunityList({
           bValue = statusOrder[b.status] || 0;
           break;
         case 'responsible':
-          aValue = a.assigned_to?.name || '';
-          bValue = b.assigned_to?.name || '';
+          aValue = resolveResponsibleName(a);
+          bValue = resolveResponsibleName(b);
           break;
         case 'created_at':
           aValue = new Date(a.created_at).getTime();
@@ -164,6 +185,13 @@ export function OpportunityList({
     return sortOrder === 'asc' 
       ? <ArrowUpIcon className="w-4 h-4 text-primary" />
       : <ArrowDownIcon className="w-4 h-4 text-primary" />;
+  };
+
+  const handleSortKeyDown = (event: React.KeyboardEvent, field: SortField) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleSort(field);
+    }
   };
 
   const handlePageChange = (newPage: number) => {
@@ -260,6 +288,7 @@ export function OpportunityList({
         filters={filters}
         onFiltersChange={setFilters}
         availableAgents={availableAgents}
+        loadingAgents={loadingAgents}
         opportunities={rawOpportunities}
         onFilteredOpportunitiesChange={handleFilteredOpportunitiesChange}
       />
@@ -387,41 +416,53 @@ export function OpportunityList({
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th 
-                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                            onClick={() => handleSort('contact')}
-                          >
-                            <div className="flex items-center gap-2">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <button
+                              type="button"
+                              className="flex items-center gap-2 w-full text-left hover:text-gray-700"
+                              onClick={() => handleSort('contact')}
+                              onKeyDown={(event) => handleSortKeyDown(event, 'contact')}
+                              aria-sort={sortField === 'contact' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+                            >
                               <span>Contacto</span>
                               <SortIcon field="contact" />
-                            </div>
+                            </button>
                           </th>
-                          <th 
-                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                            onClick={() => handleSort('score')}
-                          >
-                            <div className="flex items-center gap-2">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <button
+                              type="button"
+                              className="flex items-center gap-2 w-full text-left hover:text-gray-700"
+                              onClick={() => handleSort('score')}
+                              onKeyDown={(event) => handleSortKeyDown(event, 'score')}
+                              aria-sort={sortField === 'score' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+                            >
                               <span>Score</span>
                               <SortIcon field="score" />
-                            </div>
+                            </button>
                           </th>
-                          <th 
-                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                            onClick={() => handleSort('priority')}
-                          >
-                            <div className="flex items-center gap-2">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <button
+                              type="button"
+                              className="flex items-center gap-2 w-full text-left hover:text-gray-700"
+                              onClick={() => handleSort('priority')}
+                              onKeyDown={(event) => handleSortKeyDown(event, 'priority')}
+                              aria-sort={sortField === 'priority' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+                            >
                               <span>Prioridad</span>
                               <SortIcon field="priority" />
-                            </div>
+                            </button>
                           </th>
-                          <th 
-                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                            onClick={() => handleSort('status')}
-                          >
-                            <div className="flex items-center gap-2">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <button
+                              type="button"
+                              className="flex items-center gap-2 w-full text-left hover:text-gray-700"
+                              onClick={() => handleSort('status')}
+                              onKeyDown={(event) => handleSortKeyDown(event, 'status')}
+                              aria-sort={sortField === 'status' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+                            >
                               <span>Estado</span>
                               <SortIcon field="status" />
-                            </div>
+                            </button>
                           </th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Contacto
@@ -429,14 +470,17 @@ export function OpportunityList({
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Razón
                           </th>
-                          <th 
-                            className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                            onClick={() => handleSort('responsible')}
-                          >
-                            <div className="flex items-center gap-2">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <button
+                              type="button"
+                              className="flex items-center gap-2 w-full text-left hover:text-gray-700"
+                              onClick={() => handleSort('responsible')}
+                              onKeyDown={(event) => handleSortKeyDown(event, 'responsible')}
+                              aria-sort={sortField === 'responsible' ? (sortOrder === 'asc' ? 'ascending' : 'descending') : 'none'}
+                            >
                               <span>Responsable</span>
                               <SortIcon field="responsible" />
-                            </div>
+                            </button>
                           </th>
                         </tr>
                       </thead>
@@ -446,6 +490,7 @@ export function OpportunityList({
                             key={opportunity.id}
                             opportunity={opportunity}
                             onSelect={onOpportunitySelect}
+                            responsibleNameById={responsibleNameById}
                           />
                         ))}
                       </tbody>

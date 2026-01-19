@@ -13,6 +13,7 @@ import { getDetectionReasonBadges } from '@/utils/opportunity';
 interface OpportunityTableRowProps {
   opportunity: LeadOpportunity;
   onSelect?: (id: string) => void;
+  responsibleNameById?: Record<string, string>;
 }
 
 const statusConfig = {
@@ -48,11 +49,15 @@ const getContactName = (opportunity: LeadOpportunity): string => {
 };
 
 // Componente memoizado - solo se re-renderiza si cambian las props
-export const OpportunityTableRow = memo<OpportunityTableRowProps>(({ opportunity, onSelect }) => {
+export const OpportunityTableRow = memo<OpportunityTableRowProps>(({ opportunity, onSelect, responsibleNameById }) => {
   const navigate = useNavigate();
   const contact = opportunity.contact;
   const statusInfo = statusConfig[opportunity.status];
   const contactName = getContactName(opportunity);
+  const responsibleName =
+    opportunity.assigned_to?.name?.trim() ||
+    opportunity.assigned_to?.email?.trim() ||
+    (opportunity.assigned_to_id ? responsibleNameById?.[opportunity.assigned_to_id] : undefined);
 
   const handleClick = () => {
     if (onSelect) {
@@ -142,11 +147,11 @@ export const OpportunityTableRow = memo<OpportunityTableRowProps>(({ opportunity
 
       {/* Responsable */}
       <td className="px-4 py-3">
-        {opportunity.assigned_to ? (
+        {opportunity.assigned_to || opportunity.assigned_to_id ? (
           <div className="flex items-center gap-2">
             <UserIcon className="w-4 h-4 text-gray-400" />
             <span className="text-sm text-gray-600 truncate max-w-[120px]">
-              {opportunity.assigned_to.name || 'Sin asignar'}
+              {responsibleName || (opportunity.assigned_to_id ? `Usuario ${opportunity.assigned_to_id.substring(0, 8)}...` : 'Sin asignar')}
             </span>
           </div>
         ) : (
@@ -158,6 +163,7 @@ export const OpportunityTableRow = memo<OpportunityTableRowProps>(({ opportunity
 }, (prevProps, nextProps) => {
   // Comparación optimizada: solo re-renderizar si cambian datos relevantes
   if (prevProps.opportunity.id !== nextProps.opportunity.id) return false;
+  if (prevProps.responsibleNameById !== nextProps.responsibleNameById) return false;
   
   const relevantFields = [
     'opportunity_score', 'priority', 'status', 'assigned_to_id',

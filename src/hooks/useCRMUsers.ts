@@ -19,23 +19,25 @@ export function useCRMUsers(filters?: { role?: string; isActive?: boolean; onlyR
       setLoading(true);
       setError(null);
       
-      // Si se solicita solo responsables, incluir lawyers, agents y admins
+      // Si se solicita solo responsables, usar endpoint optimizado
       if (filters?.onlyResponsibles || (filters?.role && (filters.role === 'lawyer' || filters.role === 'agent' || filters.role === 'admin'))) {
-        // Cargar todos los usuarios activos y filtrar por roles responsables
-        const allUsers = await crmService.getUsers(filters?.isActive ?? true, true);
+        // Cargar usuarios responsables desde endpoint optimizado
+        const allUsers = await crmService.getResponsibleUsers(filters?.isActive ?? true, true);
         
-        // Filtrar solo usuarios que pueden ser responsables: lawyers, agents y admins
-        const responsibleUsers = allUsers.filter((u) => 
-          u.role_name === 'lawyer' || 
-          u.role_name === 'agent' || 
-          u.role_name === 'admin'
-        );
-        
-        // Si se especifica un rol específico además, filtrar por ese rol
+        // El endpoint ya devuelve responsables; filtrar por rol solo si se pide y está disponible
         const filtered = filters?.role && (filters.role === 'lawyer' || filters.role === 'agent' || filters.role === 'admin')
-          ? responsibleUsers.filter((u) => u.role_name === filters.role)
-          : responsibleUsers;
+          ? allUsers.filter((u) => !u.role_name || u.role_name === filters.role)
+          : allUsers;
         
+        console.info('🐛 [useCRMUsers] Responsables cargados:', {
+          total: allUsers.length,
+          sample: allUsers.slice(0, 5).map((u) => ({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            role: u.role_name,
+          })),
+        });
         setUsers(filtered);
       } else {
         // Para otros casos, usar el endpoint general
@@ -46,6 +48,15 @@ export function useCRMUsers(filters?: { role?: string; isActive?: boolean; onlyR
           ? allUsers.filter((u) => u.role_name === filters.role)
           : allUsers;
         
+        console.info('🐛 [useCRMUsers] Usuarios CRM cargados:', {
+          total: allUsers.length,
+          sample: allUsers.slice(0, 5).map((u) => ({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            role: u.role_name,
+          })),
+        });
         setUsers(filtered);
       }
     } catch (err) {

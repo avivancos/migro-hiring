@@ -86,6 +86,18 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 - [x] Botón para descartar oportunidad con motivo (marca `lost` y agrega motivo en notas).
   - [x] Documentación backend: `docs/BACKEND_OPPORTUNITY_DISCARD_ENDPOINT.md` ✅
   - [x] Documentación frontend: `docs/FRONTEND_OPPORTUNITY_DISCARD_BUTTON.md` ✅
+- [x] Oportunidades: select de responsables siempre visible y nombre en tabla con fallback por `assigned_to_id`.
+  - [x] Documentación: `docs/FRONTEND_OPPORTUNITIES_RESPONSIBLES_FIX.md` ✅
+- [x] Oportunidades: encabezados de tabla ordenables con botones y `aria-sort`.
+  - [x] Documentación: `docs/FRONTEND_OPPORTUNITIES_TABLE_SORT_HEADERS.md` ✅
+- [x] Oportunidades: logs de depuracion para select de responsables.
+  - [x] Documentación: `docs/FRONTEND_OPPORTUNITIES_RESPONSIBLES_DEBUG_LOGS.md` ✅
+- [x] Limpieza de cache y dist ejecutada en Docker.
+  - [x] Documentación: `docs/FRONTEND_CLEAN_CACHE_DIST.md` ✅
+- [x] Rebuild y reinicio de frontend en Docker.
+  - [x] Documentación: `docs/FRONTEND_DOCKER_REBUILD_RESTART.md` ✅
+- [x] Dev server en Docker en puerto 5174.
+  - [x] Documentación: `docs/FRONTEND_DEV_SERVER_PORT_5174.md` ✅
 - [x] Calendario CRM: fechas normalizadas a local (evita desfase UTC al hacer clic en días).
   - [x] Documentación: `docs/CALENDAR_LOCAL_DATE_FIX.md` ✅
 - [x] Calendario CRM: navegación diaria no se actualizaba por `searchParams` stale.

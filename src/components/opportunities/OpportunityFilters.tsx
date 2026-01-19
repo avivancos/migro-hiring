@@ -15,6 +15,7 @@ interface OpportunityFiltersProps {
   filters: OpportunityFiltersType;
   onFiltersChange: (filters: OpportunityFiltersType) => void;
   availableAgents?: Array<{ id: string; name: string }>;
+  loadingAgents?: boolean;
   opportunities?: LeadOpportunity[]; // Oportunidades para filtrado local
   onFilteredOpportunitiesChange?: (filtered: LeadOpportunity[]) => void; // Callback para oportunidades filtradas
 }
@@ -23,6 +24,7 @@ export function OpportunityFilters({
   filters,
   onFiltersChange,
   availableAgents = [],
+  loadingAgents = false,
   opportunities = [],
   onFilteredOpportunitiesChange,
 }: OpportunityFiltersProps) {
@@ -140,6 +142,15 @@ export function OpportunityFilters({
   };
 
   const hasActiveFilters = activeFiltersCount > 0;
+  
+  useEffect(() => {
+    if (!loadingAgents) {
+      console.info('🐛 [OpportunityFilters] Select responsables:', {
+        total: availableAgents.length,
+        sample: availableAgents.slice(0, 5),
+      });
+    }
+  }, [availableAgents, loadingAgents]);
 
   return (
     <Card>
@@ -301,25 +312,31 @@ export function OpportunityFilters({
                 </div>
 
                 {/* Agente asignado */}
-                {availableAgents.length > 0 && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-2 block">Asignado a</Label>
-                    <select
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                      value={filters.assigned_to || ''}
-                      onChange={(e) =>
-                        updateFilter('assigned_to', e.target.value || undefined)
-                      }
-                    >
-                      <option value="">Todos</option>
-                      {availableAgents.map((agent) => (
-                        <option key={agent.id} value={agent.id}>
-                          {agent.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+                <div>
+                  <Label className="text-sm font-medium text-gray-700 mb-2 block">Asignado a</Label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                    value={filters.assigned_to || ''}
+                    onChange={(e) =>
+                      updateFilter('assigned_to', e.target.value || undefined)
+                    }
+                    disabled={loadingAgents}
+                  >
+                    <option value="">
+                      {loadingAgents ? 'Cargando responsables...' : 'Todos'}
+                    </option>
+                    {availableAgents.map((agent) => (
+                      <option key={agent.id} value={agent.id}>
+                        {agent.name}
+                      </option>
+                    ))}
+                    {!loadingAgents && availableAgents.length === 0 && (
+                      <option value="" disabled>
+                        Sin responsables disponibles
+                      </option>
+                    )}
+                  </select>
+                </div>
 
                 {/* Score range */}
                 <div>
