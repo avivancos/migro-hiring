@@ -167,7 +167,7 @@ export function OpportunityList({
     });
 
     return sorted;
-  }, [filteredOpportunities, sortField, sortOrder]);
+  }, [filteredOpportunities, sortField, sortOrder, resolveResponsibleName]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {

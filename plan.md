@@ -98,6 +98,9 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [x] Documentación: `docs/FRONTEND_DOCKER_REBUILD_RESTART.md` ✅
 - [x] Dev server en Docker en puerto 5174.
   - [x] Documentación: `docs/FRONTEND_DEV_SERVER_PORT_5174.md` ✅
+- [x] Fix: deps de sort por responsable y filtro por rol estricto.
+  - [x] Documentación: `docs/FRONTEND_OPPORTUNITIES_RESPONSIBLE_SORT_DEP_FIX.md` ✅
+  - [x] Verificado: `resolveResponsibleName` en deps y filtro por rol estricto. ✅
 - [x] Calendario CRM: fechas normalizadas a local (evita desfase UTC al hacer clic en días).
   - [x] Documentación: `docs/CALENDAR_LOCAL_DATE_FIX.md` ✅
 - [x] Calendario CRM: navegación diaria no se actualizaba por `searchParams` stale.
