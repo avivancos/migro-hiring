@@ -26,7 +26,7 @@ export function useCRMUsers(filters?: { role?: string; isActive?: boolean; onlyR
         
         // El endpoint ya devuelve responsables; filtrar por rol solo si se pide y está disponible
         const filtered = filters?.role && (filters.role === 'lawyer' || filters.role === 'agent' || filters.role === 'admin')
-          ? allUsers.filter((u) => u.role_name === filters.role)
+          ? allUsers.filter((u) => !u.role_name || u.role_name === filters.role)
           : allUsers;
         
         console.info('🐛 [useCRMUsers] Responsables cargados:', {
@@ -45,7 +45,7 @@ export function useCRMUsers(filters?: { role?: string; isActive?: boolean; onlyR
         
         // Filtrar por rol si se especifica
         const filtered = filters?.role
-          ? allUsers.filter((u) => u.role_name === filters.role)
+          ? allUsers.filter((u) => !u.role_name || u.role_name === filters.role)
           : allUsers;
         
         console.info('🐛 [useCRMUsers] Usuarios CRM cargados:', {

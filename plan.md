@@ -101,6 +101,8 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 - [x] Fix: deps de sort por responsable y filtro por rol estricto.
   - [x] Documentación: `docs/FRONTEND_OPPORTUNITIES_RESPONSIBLE_SORT_DEP_FIX.md` ✅
   - [x] Verificado: `resolveResponsibleName` en deps y filtro por rol estricto. ✅
+- [x] Fix: filtro por rol permite usuarios sin `role_name`.
+  - [x] Documentación: `docs/FRONTEND_CRM_USERS_ROLE_NAME_OPTIONAL_FILTER.md` ✅
 - [x] Calendario CRM: fechas normalizadas a local (evita desfase UTC al hacer clic en días).
   - [x] Documentación: `docs/CALENDAR_LOCAL_DATE_FIX.md` ✅
 - [x] Calendario CRM: navegación diaria no se actualizaba por `searchParams` stale.
