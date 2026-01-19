@@ -94,6 +94,10 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [x] Documentación: `docs/CALENDAR_INTEGRATION_TESTS.md` ✅
 - [x] Tests: fix JSDOM en entorno Docker.
   - [x] Documentación: `docs/TEST_SETUP_JSDOM_FIX.md` ✅
+- [x] Calendario CRM: permitir ver tareas de fechas pasadas.
+  - [x] Documentación: `docs/CALENDAR_TASKS_PAST_DATE_VISIBILITY.md` ✅
+- [x] Tests: no reemplazar `window` en setup.
+  - [x] Documentación: `docs/TEST_SETUP_WINDOW_PRESERVE.md` ✅
 - [ ] Verificar en entorno local la URL de calendario diario (`view=day`) con fecha explícita.
 - [x] Corrección de bugs críticos: Comparación case-insensitive de IDs y conversión incorrecta de URL de Pili.
   - [x] Bug 1: Eliminada conversión a lowercase en comparación de IDs de usuario (4 lugares en `CRMContactDetail.tsx`) ✅

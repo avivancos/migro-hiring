@@ -414,7 +414,6 @@ export function CRMTaskCalendar() {
 
   const getTasksForDate = (date: Date): Task[] => {
     const dateStr = formatLocalDate(date);
-    const todayStr = formatLocalDate(new Date());
     
     return tasks.filter(task => {
       if (!task.complete_till) return false;
@@ -426,10 +425,6 @@ export function CRMTaskCalendar() {
       
       // Solo mostrar tareas del día solicitado
       if (taskDate !== dateStr) return false;
-      
-      // No mostrar tareas programadas en fechas pasadas (solo futuras o del día actual)
-      // Permite mostrar el día actual para que los usuarios vean sus tareas de hoy
-      if (taskDate < todayStr) return false;
       
       return true;
     });

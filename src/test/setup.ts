@@ -1,7 +1,6 @@
 import { expect, afterEach, vi, beforeEach } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { cleanup } from '@testing-library/react';
-import { configure } from '@testing-library/dom';
 import * as matchers from '@testing-library/jest-dom/matchers';
 
 if (typeof document === 'undefined') {
@@ -11,7 +10,6 @@ if (typeof document === 'undefined') {
   (global as any).navigator = dom.window.navigator;
 }
 
-configure({ document: global.document });
 
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers);
@@ -55,14 +53,19 @@ const localStorageMock = {
 };
 global.localStorage = localStorageMock as any;
 
-// Mock window.CloudTalk
-(global as any).window = {
-  ...global.window,
-  CloudTalk: undefined,
-  location: {
-    href: '',
-  },
-};
+// Mock window.CloudTalk (sin reemplazar el objeto window)
+if (typeof window !== 'undefined') {
+  (window as any).CloudTalk = undefined;
+  if (!window.location) {
+    Object.defineProperty(window, 'location', {
+      value: { href: '' },
+      writable: true,
+      configurable: true,
+    });
+  } else {
+    window.location.href = '';
+  }
+}
 
 // Mock navigator.clipboard para user-event
 // Necesario porque user-event intenta acceder a navigator.clipboard
