@@ -139,6 +139,21 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [x] Bug 2: Verificación null para propiedades de contract (líneas 439-446) ✅
   - [x] Bug 3: Eliminado password hardcodeado en 7 lugares de contractsService.ts ✅
   - [x] Documentación: `docs/FRONTEND_ADMIN_CONTRACT_BUGS_FIX.md` ✅
+- [x] Corrección de código muerto en CRMContactList.
+  - [x] Eliminado useEffect con condición lógica imposible (líneas 112-125) ✅
+  - [x] Documentación: `docs/FRONTEND_CRM_CONTACT_LIST_DEAD_CODE_FIX.md` ✅
+- [x] Mejoras en solicitud de contrato desde oportunidad.
+  - [x] Agregado campo de subida de archivo para copia de pasaporte ✅
+  - [x] Pre-llenado y verificación del grading desde el contacto ✅
+  - [x] Opciones de pago mejoradas: "Aplazada" y "En dos pagos" ✅
+  - [x] Documentación: `docs/FRONTEND_OPPORTUNITY_REQUEST_CONTRACT_ENHANCEMENTS.md` ✅
+- [ ] **BACKEND**: Sistema de cobertura de compañero con notificaciones por email.
+  - [ ] Agregar campo `coverage_user_id` en llamadas, tareas, pipeline y oportunidades ✅
+  - [ ] Crear modelo `NotificationSchedule` para tareas programadas de notificación ✅
+  - [ ] Implementar función para crear notificaciones (24h, 1h, 15min antes) ✅
+  - [ ] Integrar creación de notificaciones en endpoints de llamadas/tareas/pipeline ✅
+  - [ ] Crear job programado para enviar emails cada 5 minutos ✅
+  - [ ] Documentación: `docs/BACKEND_COVERAGE_USER_NOTIFICATIONS.md` ✅
 - [ ] Verificar en entorno local la URL de calendario diario (`view=day`) con fecha explícita.
 - [x] Corrección de bugs críticos: Comparación case-insensitive de IDs y conversión incorrecta de URL de Pili.
   - [x] Bug 1: Eliminada conversión a lowercase en comparación de IDs de usuario (4 lugares en `CRMContactDetail.tsx`) ✅

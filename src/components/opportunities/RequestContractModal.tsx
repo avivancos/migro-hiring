@@ -1,13 +1,13 @@
 // Modal para solicitar un código de contratación (hiring code)
 // Se muestra cuando el agente quiere solicitar un contrato para avanzar con la venta
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
-import { DocumentTextIcon, ExclamationCircleIcon } from '@heroicons/react/24/outline';
+import { DocumentTextIcon, ExclamationCircleIcon, PhotoIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 import { api } from '@/services/api';
 import type { LeadOpportunity } from '@/types/opportunity';
@@ -28,7 +28,7 @@ interface RequestContractForm {
   contract_template: string;
   service_name: string;
   grade: 'A' | 'B' | 'C';
-  payment_type: 'two_payments' | 'subscription';
+  payment_type: 'deferred' | 'two_payments';
   expires_in_days: number;
   currency: string;
   // Datos del cliente (obligatorios)
@@ -38,7 +38,26 @@ interface RequestContractForm {
   client_address: string;
   client_province: string;
   client_postal_code: string;
+  passport_file?: File; // Archivo de copia de pasaporte
 }
+
+// Función helper para mapear grading del contacto al grade del contrato
+const mapContactGradingToContractGrade = (grading?: 'A' | 'B+' | 'B-' | 'C' | 'D'): 'A' | 'B' | 'C' => {
+  if (!grading) return 'B';
+  
+  switch (grading) {
+    case 'A':
+      return 'A';
+    case 'B+':
+    case 'B-':
+      return 'B';
+    case 'C':
+    case 'D':
+      return 'C';
+    default:
+      return 'B';
+  }
+};
 
 export function RequestContractModal({
   isOpen,
@@ -53,21 +72,29 @@ export function RequestContractModal({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [hiringCode, setHiringCode] = useState<string | null>(null);
+  const passportFileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Determinar el grade inicial desde el contacto
+  const initialGrade = contact 
+    ? mapContactGradingToContractGrade(contact.grading_situacion || contact.grading_llamada)
+    : 'B';
+  
   const [formData, setFormData] = useState<RequestContractForm>({
     agent_signature: '',
     contract_template: 'standard',
     service_name: opportunity?.pipeline_stage?.current_stage || '',
-    grade: 'B',
+    grade: initialGrade,
     payment_type: 'two_payments',
     expires_in_days: 30,
     currency: 'EUR',
     // Pre-llenar datos del cliente desde el contacto si están disponibles
     client_name: contact?.name || '',
-    client_passport: '',
-    client_nie: '',
+    client_passport: contact?.custom_fields?.passport || '',
+    client_nie: contact?.custom_fields?.nie || '',
     client_address: contact?.address || '',
     client_province: contact?.state || '',
     client_postal_code: contact?.postal_code || '',
+    passport_file: undefined,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -89,8 +116,8 @@ export function RequestContractModal({
       return;
     }
 
-    if (!formData.client_passport?.trim() && !formData.client_nie?.trim()) {
-      setError('Debe proporcionar al menos un número de pasaporte o NIE');
+    if (!formData.client_passport?.trim() && !formData.client_nie?.trim() && !formData.passport_file) {
+      setError('Debe proporcionar al menos un número de pasaporte, NIE o copia de pasaporte');
       return;
     }
 
@@ -121,40 +148,56 @@ export function RequestContractModal({
       };
 
       // Convertir payment_type al formato del backend
-      const backendPaymentType = formData.payment_type === 'two_payments' ? 'one_time' : 'subscription';
+      // 'deferred' -> 'subscription' (aplazada)
+      // 'two_payments' -> 'one_time' (en dos pagos)
+      const backendPaymentType = formData.payment_type === 'deferred' ? 'subscription' : 'one_time';
 
-      const requestBody = {
-        agent_signature: formData.agent_signature,
-        contract_template: formData.contract_template,
-        service_name: formData.service_name,
-        grade: formData.grade,
-        amount: gradePricing[formData.grade],
-        payment_type: backendPaymentType,
-        expires_in_days: formData.expires_in_days,
-        currency: formData.currency,
-        // Datos del cliente (obligatorios)
-        client_name: formData.client_name,
-        client_email: contact?.email || '',
-        client_passport: formData.client_passport || undefined,
-        client_nie: formData.client_nie || undefined,
-        client_address: formData.client_address,
-        client_province: formData.client_province,
-        client_postal_code: formData.client_postal_code,
-      };
+      // El backend ahora solo acepta FormData (multipart/form-data)
+      // Siempre usar FormData, incluso cuando no hay archivo
+      const formDataToSend = new FormData();
+      formDataToSend.append('agent_signature', formData.agent_signature);
+      formDataToSend.append('contract_template', formData.contract_template);
+      formDataToSend.append('service_name', formData.service_name);
+      formDataToSend.append('grade', formData.grade);
+      formDataToSend.append('amount', gradePricing[formData.grade].toString());
+      formDataToSend.append('payment_type', backendPaymentType);
+      formDataToSend.append('expires_in_days', formData.expires_in_days.toString());
+      formDataToSend.append('currency', formData.currency);
+      formDataToSend.append('client_name', formData.client_name);
+      formDataToSend.append('client_email', contact?.email || '');
+      if (formData.client_passport) {
+        formDataToSend.append('client_passport', formData.client_passport);
+      }
+      if (formData.client_nie) {
+        formDataToSend.append('client_nie', formData.client_nie);
+      }
+      formDataToSend.append('client_address', formData.client_address);
+      formDataToSend.append('client_province', formData.client_province);
+      formDataToSend.append('client_postal_code', formData.client_postal_code);
+      
+      // Agregar archivo solo si existe
+      if (formData.passport_file) {
+        formDataToSend.append('passport_file', formData.passport_file);
+      }
 
       const response = await api.post(
         `/pipelines/stages/${entityType}/${entityId}/request-hiring-code`,
-        requestBody
+        formDataToSend,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
       );
 
       const result = response.data;
       setHiringCode(result.hiring_code);
       setSuccess(true);
       
-      // Llamar al callback de éxito
       if (onSuccess) {
         onSuccess(result.hiring_code);
       }
+
     } catch (err: any) {
       setError(err.response?.data?.detail || err.message || 'Error al solicitar el código de contratación');
     } finally {
@@ -167,22 +210,55 @@ export function RequestContractModal({
       setSuccess(false);
       setError(null);
       setHiringCode(null);
+      const initialGrade = contact 
+        ? mapContactGradingToContractGrade(contact.grading_situacion || contact.grading_llamada)
+        : 'B';
       setFormData({
         agent_signature: '',
         contract_template: 'standard',
         service_name: opportunity?.pipeline_stage?.current_stage || '',
-        grade: 'B',
+        grade: initialGrade,
         payment_type: 'two_payments',
         expires_in_days: 30,
         currency: 'EUR',
         client_name: contact?.name || '',
-        client_passport: '',
-        client_nie: '',
+        client_passport: contact?.custom_fields?.passport || '',
+        client_nie: contact?.custom_fields?.nie || '',
         client_address: contact?.address || '',
         client_province: contact?.state || '',
         client_postal_code: contact?.postal_code || '',
+        passport_file: undefined,
       });
+      if (passportFileInputRef.current) {
+        passportFileInputRef.current.value = '';
+      }
       onClose();
+    }
+  };
+
+  const handlePassportFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validar tipo de archivo
+      const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+      if (!validTypes.includes(file.type)) {
+        setError('El archivo debe ser una imagen (JPG, PNG) o PDF');
+        return;
+      }
+      // Validar tamaño (máximo 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        setError('El archivo no debe exceder 10MB');
+        return;
+      }
+      setFormData({ ...formData, passport_file: file });
+      setError(null);
+    }
+  };
+
+  const removePassportFile = () => {
+    setFormData({ ...formData, passport_file: undefined });
+    if (passportFileInputRef.current) {
+      passportFileInputRef.current.value = '';
     }
   };
 
@@ -315,7 +391,12 @@ export function RequestContractModal({
         {/* Grado del cliente */}
         <div>
           <Label htmlFor="grade" className="text-sm font-medium text-gray-700">
-            Grado del Cliente <span className="text-red-500">*</span>
+            Grading <span className="text-red-500">*</span>
+            {contact && (contact.grading_situacion || contact.grading_llamada) && (
+              <span className="ml-2 text-xs text-gray-500 font-normal">
+                (Pre-llenado desde contacto: {contact.grading_situacion || contact.grading_llamada})
+              </span>
+            )}
           </Label>
           <select
             id="grade"
@@ -330,24 +411,29 @@ export function RequestContractModal({
             <option value="B">Grado B - 400 EUR</option>
             <option value="C">Grado C - 600 EUR</option>
           </select>
+          {contact && (contact.grading_situacion || contact.grading_llamada) && (
+            <p className="text-xs text-gray-500 mt-1">
+              El grading se ha pre-llenado desde el contacto. Verifica que sea correcto.
+            </p>
+          )}
         </div>
 
         {/* Tipo de pago */}
         <div>
           <Label htmlFor="payment_type" className="text-sm font-medium text-gray-700">
-            Tipo de Pago <span className="text-red-500">*</span>
+            Forma de Pago <span className="text-red-500">*</span>
           </Label>
           <select
             id="payment_type"
             value={formData.payment_type}
             onChange={(e) =>
-              setFormData({ ...formData, payment_type: e.target.value as 'two_payments' | 'subscription' })
+              setFormData({ ...formData, payment_type: e.target.value as 'deferred' | 'two_payments' })
             }
             disabled={loading}
             className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
           >
-            <option value="two_payments">Dos Pagos</option>
-            <option value="subscription">Suscripción</option>
+            <option value="two_payments">En dos pagos</option>
+            <option value="deferred">Aplazada</option>
           </select>
         </div>
 
@@ -388,7 +474,7 @@ export function RequestContractModal({
               onChange={(e) =>
                 setFormData({ ...formData, client_passport: e.target.value })
               }
-              placeholder="Ej: XMarkIcon1234567Z"
+              placeholder="Ej: X1234567Z"
               disabled={loading}
               className="mt-1"
             />
@@ -404,15 +490,69 @@ export function RequestContractModal({
               onChange={(e) =>
                 setFormData({ ...formData, client_nie: e.target.value })
               }
-              placeholder="Ej: XMarkIcon1234567Z"
+              placeholder="Ej: X1234567Z"
               disabled={loading}
               className="mt-1"
             />
           </div>
         </div>
-        <p className="text-xs text-gray-500 -mt-2">
-          * Debe proporcionar al menos uno de los dos (Pasaporte o NIE)
-        </p>
+
+        {/* Copia de Pasaporte (Archivo) */}
+        <div>
+          <Label htmlFor="passport_file" className="text-sm font-medium text-gray-700">
+            Copia de Pasaporte (Archivo)
+          </Label>
+          <div className="mt-1">
+            <input
+              ref={passportFileInputRef}
+              id="passport_file"
+              type="file"
+              accept="image/jpeg,image/png,image/jpg,application/pdf"
+              onChange={handlePassportFileChange}
+              disabled={loading}
+              className="hidden"
+            />
+            {!formData.passport_file ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => passportFileInputRef.current?.click()}
+                disabled={loading}
+                className="w-full"
+              >
+                <PhotoIcon className="h-4 w-4 mr-2" />
+                Seleccionar archivo (JPG, PNG o PDF - máx. 10MB)
+              </Button>
+            ) : (
+              <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <PhotoIcon className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {formData.passport_file.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {(formData.passport_file.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={removePassportFile}
+                  disabled={loading}
+                  className="h-8 w-8 p-0"
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            * Debe proporcionar al menos uno: número de pasaporte, NIE o copia de pasaporte
+          </p>
+        </div>
 
         {/* Dirección completa */}
         <div>

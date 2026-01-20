@@ -79,6 +79,9 @@ export function CRMContactList() {
   const [gradingLlamada, setGradingLlamada] = useState<'A' | 'B+' | 'B-' | 'C' | 'D' | ''>(getGradingFromUrl(searchParams.get('grading_llamada')));
   const [gradingSituacion, setGradingSituacion] = useState<'A' | 'B+' | 'B-' | 'C' | 'D' | ''>(getGradingFromUrl(searchParams.get('grading_situacion')));
   const [nacionalidad, setNacionalidad] = useState(searchParams.get('nacionalidad') || '');
+  const [nacionalidadFilter, setNacionalidadFilter] = useState<'todos' | 'irregulares'>(
+    searchParams.get('nacionalidad_filter') === 'irregulares' ? 'irregulares' : 'todos'
+  );
   const [responsibleUserId, setResponsibleUserId] = useState(searchParams.get('responsible_user_id') || '');
   const [empadronado, setEmpadronado] = useState<string>(searchParams.get('empadronado') || '');
   const [tieneIngresos, setTieneIngresos] = useState<string>(searchParams.get('tiene_ingresos') || '');
@@ -108,21 +111,6 @@ export function CRMContactList() {
     // Asegurar que siempre usamos el currentUserId, nunca un valor diferente
     setResponsibleUserId(checked ? currentUserId : '');
   };
-
-  // Validar que si el switch está activo, el responsibleUserId coincida exactamente con currentUserId
-  useEffect(() => {
-    if (currentUserId) {
-      // Si el switch debería estar activo pero el responsibleUserId no coincide, corregirlo
-      if (isMyContacts && responsibleUserId !== currentUserId) {
-        console.warn('⚠️ [CRMContactList] Inconsistencia detectada, corrigiendo responsibleUserId:', {
-          currentUserId,
-          responsibleUserId,
-          isMyContacts,
-        });
-        setResponsibleUserId(currentUserId);
-      }
-    }
-  }, [currentUserId, responsibleUserId, isMyContacts]);
   
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -150,6 +138,7 @@ export function CRMContactList() {
     if (gradingLlamada) params.set('grading_llamada', gradingLlamada);
     if (gradingSituacion) params.set('grading_situacion', gradingSituacion);
     if (nacionalidad) params.set('nacionalidad', nacionalidad);
+    if (nacionalidadFilter !== 'todos') params.set('nacionalidad_filter', nacionalidadFilter);
     if (responsibleUserId) params.set('responsible_user_id', responsibleUserId);
     if (empadronado) params.set('empadronado', empadronado);
     if (tieneIngresos) params.set('tiene_ingresos', tieneIngresos);
@@ -177,13 +166,13 @@ export function CRMContactList() {
         isUpdatingUrlRef.current = false;
       }, 0);
     }
-  }, [searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, fechaModificacionDesde, fechaModificacionHasta, sortField, sortOrder, viewMode, pagination.skip, pagination.limit, setSearchParams]);
+  }, [searchTerm, gradingLlamada, gradingSituacion, nacionalidad, nacionalidadFilter, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, fechaModificacionDesde, fechaModificacionHasta, sortField, sortOrder, viewMode, pagination.skip, pagination.limit, setSearchParams]);
 
   // Resetear paginación cuando cambian los filtros (excepto cuando cambia explícitamente la paginación)
-  const prevFiltersRef = useRef({ searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder });
+  const prevFiltersRef = useRef({ searchTerm, gradingLlamada, gradingSituacion, nacionalidad, nacionalidadFilter, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder });
   
   useEffect(() => {
-    const currentFilters = { searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder };
+    const currentFilters = { searchTerm, gradingLlamada, gradingSituacion, nacionalidad, nacionalidadFilter, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder };
     const filtersChanged = JSON.stringify(prevFiltersRef.current) !== JSON.stringify(currentFilters);
     
     if (filtersChanged && pagination.skip !== 0) {
@@ -192,7 +181,7 @@ export function CRMContactList() {
     }
     
     prevFiltersRef.current = currentFilters;
-  }, [searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder]);
+  }, [searchTerm, gradingLlamada, gradingSituacion, nacionalidad, nacionalidadFilter, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder]);
 
   // Sincronizar searchTerm desde URL solo una vez al montar
   useEffect(() => {
@@ -304,9 +293,16 @@ export function CRMContactList() {
         filters.search = searchTerm;
       }
       
-      if (gradingLlamada) filters.grading_llamada = gradingLlamada as 'A' | 'B+' | 'B-' | 'C' | 'D';
-      if (gradingSituacion) filters.grading_situacion = gradingSituacion as 'A' | 'B+' | 'B-' | 'C' | 'D';
-      if (nacionalidad) filters.nacionalidad = nacionalidad;
+    if (gradingLlamada) filters.grading_llamada = gradingLlamada as 'A' | 'B+' | 'B-' | 'C' | 'D';
+    if (gradingSituacion) filters.grading_situacion = gradingSituacion as 'A' | 'B+' | 'B-' | 'C' | 'D';
+    // Aplicar filtro de nacionalidad: si es "irregulares", filtrar por nacionalidad vacía/null
+    // Si es una nacionalidad específica del select, usar esa
+    if (nacionalidadFilter === 'irregulares') {
+      // Para irregulares, no establecer nacionalidad en el filtro del backend
+      // Se filtrará localmente después
+    } else if (nacionalidad) {
+      filters.nacionalidad = nacionalidad;
+    }
       if (empadronado) filters.empadronado = empadronado === 'true';
       if (tieneIngresos) filters.tiene_ingresos = tieneIngresos === 'true';
       if (ultimaLlamadaDesde) filters.ultima_llamada_desde = ultimaLlamadaDesde;
@@ -322,6 +318,13 @@ export function CRMContactList() {
       
       // Todos los usuarios ven todos los contactos sin filtrar
       let filteredContacts = response.items || [];
+      
+      // Aplicar filtro de nacionalidad "irregulares" localmente
+      if (nacionalidadFilter === 'irregulares') {
+        filteredContacts = filteredContacts.filter(contact => {
+          return !contact.nacionalidad || contact.nacionalidad.trim() === '';
+        });
+      }
       
       // Si el switch "Solo mis contactos" está activo, filtrar adicionalmente en el frontend
       // para excluir contactos sin asignación o asignados a otros usuarios
@@ -441,7 +444,7 @@ export function CRMContactList() {
       setLoading(false);
       isLoadingRef.current = false;
     }
-  }, [pagination.skip, pagination.limit, responsibleUserId, searchTerm, gradingLlamada, gradingSituacion, nacionalidad, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder, userIsAdmin, userIsAgent, currentUserId, isMyContacts]);
+  }, [pagination.skip, pagination.limit, responsibleUserId, searchTerm, gradingLlamada, gradingSituacion, nacionalidad, nacionalidadFilter, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder, userIsAdmin, userIsAgent, currentUserId, isMyContacts]);
 
   // Mantener la referencia actualizada
   useEffect(() => {
@@ -467,7 +470,7 @@ export function CRMContactList() {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder, pagination.skip, pagination.limit]);
+  }, [isAuthenticated, searchTerm, gradingLlamada, gradingSituacion, nacionalidad, nacionalidadFilter, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder, pagination.skip, pagination.limit]);
 
   const filteredAndSortedContacts = useMemo(() => {
     let filtered = [...contacts];
@@ -580,6 +583,7 @@ export function CRMContactList() {
     setGradingLlamada('');
     setGradingSituacion('');
     setNacionalidad('');
+    setNacionalidadFilter('todos');
     setResponsibleUserId('');
     setEmpadronado('');
     setTieneIngresos('');
@@ -594,7 +598,7 @@ export function CRMContactList() {
     setPagination({ skip: 0, limit: pagination.limit });
   };
 
-  const hasActiveFilters = searchTerm || gradingLlamada || gradingSituacion || nacionalidad || responsibleUserId || empadronado || tieneIngresos || ultimaLlamadaDesde || ultimaLlamadaHasta || proximaLlamadaDesde || proximaLlamadaHasta || fechaModificacionDesde || fechaModificacionHasta;
+  const hasActiveFilters = searchTerm || gradingLlamada || gradingSituacion || nacionalidad || nacionalidadFilter !== 'todos' || responsibleUserId || empadronado || tieneIngresos || ultimaLlamadaDesde || ultimaLlamadaHasta || proximaLlamadaDesde || proximaLlamadaHasta || fechaModificacionDesde || fechaModificacionHasta;
 
   const getGradingVariant = (grading?: 'A' | 'B+' | 'B-' | 'C' | 'D'): "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "error" | "info" | "neutral" => {
     switch (grading) {
