@@ -37,6 +37,7 @@ export function OpportunityFilters({
   const [filterSinSituacion, setFilterSinSituacion] = useState(false);
   const [filterIntentosDisponibles, setFilterIntentosDisponibles] = useState<number | null>(null);
   const [filterConInfoAsignada, setFilterConInfoAsignada] = useState<boolean | null>(null);
+  const [filterNacionalidadIrregulares, setFilterNacionalidadIrregulares] = useState(false);
   const isMyOpportunities = Boolean(currentUserId) && filters.assigned_to === currentUserId;
 
   const updateFilter = (key: keyof OpportunityFiltersType, value: any) => {
@@ -91,8 +92,16 @@ export function OpportunityFilters({
       }
     }
 
+    // Filtro: Nacionalidad irregulares (sin nacionalidad o vacía)
+    if (filterNacionalidadIrregulares) {
+      result = result.filter(opp => {
+        const contact = opp.contact;
+        return !contact?.nacionalidad || contact.nacionalidad.trim() === '';
+      });
+    }
+
     return result;
-  }, [opportunities, filterSinSituacion, filterIntentosDisponibles, filterConInfoAsignada]);
+  }, [opportunities, filterSinSituacion, filterIntentosDisponibles, filterConInfoAsignada, filterNacionalidadIrregulares]);
 
   // Ref para mantener referencia estable al callback
   const callbackRef = React.useRef(onFilteredOpportunitiesChange);
@@ -112,7 +121,7 @@ export function OpportunityFilters({
     }
     
     // Verificar si hay filtros activos
-    const hasActiveFilters = filterSinSituacion || filterIntentosDisponibles !== null || filterConInfoAsignada !== null;
+    const hasActiveFilters = filterSinSituacion || filterIntentosDisponibles !== null || filterConInfoAsignada !== null || filterNacionalidadIrregulares;
     
     // Comparar por IDs para evitar actualizaciones innecesarias
     const currentIds = filtered.map(o => o.id).sort().join(',');
@@ -129,7 +138,7 @@ export function OpportunityFilters({
         callbackRef.current(opportunities);
       }
     }
-  }, [filtered, opportunities, filterSinSituacion, filterIntentosDisponibles, filterConInfoAsignada]);
+  }, [filtered, opportunities, filterSinSituacion, filterIntentosDisponibles, filterConInfoAsignada, filterNacionalidadIrregulares]);
 
   const activeFiltersCount =
     (filters.status ? 1 : 0) +
@@ -140,13 +149,15 @@ export function OpportunityFilters({
     (filters.max_score !== undefined ? 1 : 0) +
     (filterSinSituacion ? 1 : 0) +
     (filterIntentosDisponibles !== null ? 1 : 0) +
-    (filterConInfoAsignada !== null ? 1 : 0);
+    (filterConInfoAsignada !== null ? 1 : 0) +
+    (filterNacionalidadIrregulares ? 1 : 0);
 
   const clearAllFilters = () => {
     onFiltersChange({});
     setFilterSinSituacion(false);
     setFilterIntentosDisponibles(null);
     setFilterConInfoAsignada(null);
+    setFilterNacionalidadIrregulares(false);
     setIsOpen(false);
   };
 
@@ -209,16 +220,28 @@ export function OpportunityFilters({
           {/* Filtros Rápidos - Tags */}
           <div className="pt-4 border-t">
             <Label className="text-sm font-medium text-gray-700 mb-3 block">Filtros Rápidos</Label>
-            <div className="flex items-center gap-2 mb-3 text-sm text-gray-600">
-              <Switch
-                id="crm-my-opportunities-switch"
-                checked={isMyOpportunities}
-                onCheckedChange={handleMyOpportunitiesToggle}
-                disabled={!currentUserId}
-              />
-              <Label htmlFor="crm-my-opportunities-switch" className="cursor-pointer">
-                Solo mis oportunidades
-              </Label>
+            <div className="flex flex-col sm:flex-row gap-3 mb-3">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Switch
+                  id="crm-my-opportunities-switch"
+                  checked={isMyOpportunities}
+                  onCheckedChange={handleMyOpportunitiesToggle}
+                  disabled={!currentUserId}
+                />
+                <Label htmlFor="crm-my-opportunities-switch" className="cursor-pointer">
+                  Solo mis oportunidades
+                </Label>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Switch
+                  id="crm-opportunities-nacionalidad-irregulares-switch"
+                  checked={filterNacionalidadIrregulares}
+                  onCheckedChange={setFilterNacionalidadIrregulares}
+                />
+                <Label htmlFor="crm-opportunities-nacionalidad-irregulares-switch" className="cursor-pointer">
+                  Solo irregulares
+                </Label>
+              </div>
             </div>
             <div className="flex flex-wrap gap-2">
               {/* Tag: Sin situación conocida */}

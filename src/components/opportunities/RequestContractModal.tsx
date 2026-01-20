@@ -180,14 +180,10 @@ export function RequestContractModal({
         formDataToSend.append('passport_file', formData.passport_file);
       }
 
+      // No establecer Content-Type explícitamente - axios lo genera automáticamente con el boundary correcto
       const response = await api.post(
         `/pipelines/stages/${entityType}/${entityId}/request-hiring-code`,
-        formDataToSend,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
+        formDataToSend
       );
 
       const result = response.data;

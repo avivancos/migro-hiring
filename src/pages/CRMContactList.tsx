@@ -82,7 +82,7 @@ export function CRMContactList() {
   const [nacionalidadFilter, setNacionalidadFilter] = useState<'todos' | 'irregulares'>(
     searchParams.get('nacionalidad_filter') === 'irregulares' ? 'irregulares' : 'todos'
   );
-  const [responsibleUserId, setResponsibleUserId] = useState(searchParams.get('responsible_user_id') || '');
+  const [responsibleUserId, setResponsibleUserId] = useState<string | undefined>(searchParams.get('responsible_user_id') || undefined);
   const [empadronado, setEmpadronado] = useState<string>(searchParams.get('empadronado') || '');
   const [tieneIngresos, setTieneIngresos] = useState<string>(searchParams.get('tiene_ingresos') || '');
   const [ultimaLlamadaDesde, setUltimaLlamadaDesde] = useState<string>(searchParams.get('ultima_llamada_desde') || '');
@@ -106,10 +106,11 @@ export function CRMContactList() {
       checked,
       currentUserId,
       previousResponsibleUserId: responsibleUserId,
-      willSetTo: checked ? currentUserId : '',
+      willSetTo: checked ? currentUserId : undefined,
     });
     // Asegurar que siempre usamos el currentUserId, nunca un valor diferente
-    setResponsibleUserId(checked ? currentUserId : '');
+    // Usar undefined en lugar de '' para consistencia con OpportunityFilters
+    setResponsibleUserId(checked ? currentUserId : undefined);
   };
   
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -379,10 +380,11 @@ export function CRMContactList() {
           proxima_llamada_hasta: filters.proxima_llamada_hasta,
         });
         
-        // Si el switch "Solo mis contactos" está activo y filtramos adicionalmente en el frontend,
+        // Si el switch "Solo mis contactos" o "Solo irregulares" está activo y filtramos adicionalmente en el frontend,
         // usar la cantidad de contactos filtrados en lugar del total del API
-        // (porque excluimos contactos sin asignación que el backend podría incluir)
-        const realTotal = isMyContacts ? filteredContacts.length : totalCount;
+        // (porque excluimos contactos sin asignación que el backend podría incluir, o filtramos por nacionalidad vacía)
+        const needsFrontendFilteredCount = isMyContacts || nacionalidadFilter === 'irregulares';
+        const realTotal = needsFrontendFilteredCount ? filteredContacts.length : totalCount;
         
         console.log('📊 [CRMContactList] Total count:', {
           fromAPI: totalCount,
@@ -391,16 +393,18 @@ export function CRMContactList() {
           isAdmin: userIsAdmin,
           isAgent: userIsAgent,
           isMyContacts,
-          usingFrontendFilteredCount: isMyContacts,
+          nacionalidadFilter,
+          usingFrontendFilteredCount: needsFrontendFilteredCount,
         });
         
         setTotalContacts(realTotal);
       } catch (countError) {
         console.warn('⚠️ [CRMContactList] Error getting total count, using response total:', countError);
-        // Si el switch "Solo mis contactos" está activo, usar la cantidad de contactos filtrados
-        // (porque excluimos contactos sin asignación que el backend podría incluir)
+        // Si el switch "Solo mis contactos" o "Solo irregulares" está activo, usar la cantidad de contactos filtrados
+        // (porque excluimos contactos sin asignación que el backend podría incluir, o filtramos por nacionalidad vacía)
         // Para otros casos, usar el total de la respuesta
-        const fallbackTotal = isMyContacts ? filteredContacts.length : (response.total ?? response.items?.length ?? 0);
+        const needsFrontendFilteredCount = isMyContacts || nacionalidadFilter === 'irregulares';
+        const fallbackTotal = needsFrontendFilteredCount ? filteredContacts.length : (response.total ?? response.items?.length ?? 0);
         console.log('📊 [CRMContactList] Using fallback total:', {
           fallbackTotal,
           filteredCount: filteredContacts.length,
@@ -584,7 +588,7 @@ export function CRMContactList() {
     setGradingSituacion('');
     setNacionalidad('');
     setNacionalidadFilter('todos');
-    setResponsibleUserId('');
+    setResponsibleUserId(undefined);
     setEmpadronado('');
     setTieneIngresos('');
     setUltimaLlamadaDesde('');
@@ -1109,7 +1113,7 @@ export function CRMContactList() {
                     <span className="sm:inline">Filtros</span>
                     {hasActiveFilters && (
                       <span className="ml-1 sm:ml-2 bg-primary text-primary-foreground rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center text-[10px] sm:text-xs">
-                        {[searchTerm, gradingLlamada, gradingSituacion, nacionalidad, responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, fechaModificacionDesde, fechaModificacionHasta].filter(Boolean).length}
+                        {[searchTerm, gradingLlamada, gradingSituacion, nacionalidad, nacionalidadFilter !== 'todos' ? 'irregulares' : '', responsibleUserId, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, fechaModificacionDesde, fechaModificacionHasta].filter(Boolean).length}
                       </span>
                     )}
                   </Button>
@@ -1126,16 +1130,34 @@ export function CRMContactList() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
-                <Switch
-                  id="crm-my-contacts-switch"
-                  checked={isMyContacts}
-                  onCheckedChange={handleMyContactsToggle}
-                  disabled={!currentUserId}
-                />
-                <Label htmlFor="crm-my-contacts-switch" className="cursor-pointer">
-                  Solo mis contactos
-                </Label>
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                  <Switch
+                    id="crm-my-contacts-switch"
+                    checked={isMyContacts}
+                    onCheckedChange={handleMyContactsToggle}
+                    disabled={!currentUserId}
+                  />
+                  <Label htmlFor="crm-my-contacts-switch" className="cursor-pointer">
+                    Solo mis contactos
+                  </Label>
+                </div>
+                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                  <Switch
+                    id="crm-nacionalidad-filter-switch"
+                    checked={nacionalidadFilter === 'irregulares'}
+                    onCheckedChange={(checked) => {
+                      setNacionalidadFilter(checked ? 'irregulares' : 'todos');
+                      // Limpiar el select de nacionalidad cuando se activa el filtro de irregulares
+                      if (checked) {
+                        setNacionalidad('');
+                      }
+                    }}
+                  />
+                  <Label htmlFor="crm-nacionalidad-filter-switch" className="cursor-pointer">
+                    Solo irregulares
+                  </Label>
+                </div>
               </div>
 
               {showFilters && (
@@ -1185,8 +1207,15 @@ export function CRMContactList() {
                       </Label>
                       <select
                         value={nacionalidad}
-                        onChange={(e) => setNacionalidad(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px]"
+                        onChange={(e) => {
+                          setNacionalidad(e.target.value);
+                          // Si se selecciona una nacionalidad específica, desactivar el filtro de irregulares
+                          if (e.target.value) {
+                            setNacionalidadFilter('todos');
+                          }
+                        }}
+                        disabled={nacionalidadFilter === 'irregulares'}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px] disabled:bg-gray-100 disabled:cursor-not-allowed"
                       >
                         <option value="">Todas</option>
                         {uniqueNacionalidades.map(nac => (
@@ -1200,8 +1229,8 @@ export function CRMContactList() {
                         Responsable
                       </Label>
                       <select
-                        value={responsibleUserId}
-                        onChange={(e) => setResponsibleUserId(e.target.value)}
+                        value={responsibleUserId || ''}
+                        onChange={(e) => setResponsibleUserId(e.target.value || undefined)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px]"
                       >
                         <option value="">Todos</option>

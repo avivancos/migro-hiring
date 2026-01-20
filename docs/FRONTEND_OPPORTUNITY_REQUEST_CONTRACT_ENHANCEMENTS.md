@@ -144,15 +144,19 @@ const mapContactGradingToContractGrade = (grading?: 'A' | 'B+' | 'B-' | 'C' | 'D
 
 ## Notas Técnicas
 
-### Backend
-- El endpoint `/pipelines/stages/{entity_type}/{entity_id}/request-hiring-code` debe soportar:
-  - JSON normal (sin archivo)
-  - FormData con archivo (multipart/form-data)
-  - Campo `passport_file` en FormData
+### Backend ✅ IMPLEMENTADO
+- El endpoint `/pipelines/stages/{entity_type}/{entity_id}/request-hiring-code` ahora:
+  - ✅ **Solo acepta FormData** (multipart/form-data) - **Breaking Change**
+  - ✅ Ya NO acepta JSON
+  - ✅ Procesa el campo `passport_file` opcional
+  - ✅ Sube archivos a Cloudinary
+  - ✅ Pre-llena grading desde contacto
+  - ✅ Almacena URL del archivo en notas del pipeline stage
 
-### Frontend
-- El componente detecta automáticamente si hay archivo y usa el formato apropiado
-- Si el backend no acepta archivos aún, el frontend está preparado para cuando se implemente
+### Frontend ⚠️ ACTUALIZACIÓN REQUERIDA
+- El componente debe **siempre enviar FormData**, incluso cuando no hay archivo
+- **Estado actual**: Envía JSON cuando no hay archivo (debe cambiarse)
+- **Cambio requerido**: Ver `src/components/opportunities/RequestContractModal.tsx`
 
 ---
 

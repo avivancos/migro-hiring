@@ -225,43 +225,63 @@ Por ahora, la URL está disponible en las notas del pipeline stage y se incluye 
 
 ---
 
-## ✅ Validaciones Requeridas
+## ✅ Validaciones Implementadas
 
-### Validación de Archivo
+### Validación de Archivo ✅
 
 ```python
-def validate_passport_file(file: UploadFile) -> None:
-    """Validar archivo de pasaporte"""
-    
-    # Tipo de archivo
-    allowed_types = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']
-    if file.content_type not in allowed_types:
-        raise HTTPException(
-            status_code=400,
-            detail="Tipo de archivo no permitido. Solo se aceptan JPG, PNG o PDF"
-        )
-    
-    # Tamaño (10MB máximo)
-    if file.size and file.size > 10 * 1024 * 1024:
-        raise HTTPException(
-            status_code=400,
-            detail="El archivo no debe exceder 10MB"
-        )
+# Validar tipo de archivo
+allowed_types = ["image/jpeg", "image/jpg", "image/png", "application/pdf"]
+if passport_file.content_type not in allowed_types:
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=f"Tipo de archivo no permitido. Formatos aceptados: JPG, PNG, PDF.",
+    )
+
+# Validar tamaño (10MB máximo)
+MAX_FILE_SIZE = 10 * 1024 * 1024
+file_content = await passport_file.read()
+if len(file_content) > MAX_FILE_SIZE:
+    raise HTTPException(
+        status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+        detail="El archivo es demasiado grande. Tamaño máximo: 10MB",
+    )
 ```
 
-### Validación de Campos
+### Validación de Campos ✅
 
-El frontend requiere **al menos uno de**:
+El backend valida que **al menos uno de**:
 - `client_passport` (número)
 - `client_nie` (número)
 - `passport_file` (archivo)
 
 ```python
-if not client_passport and not client_nie and not passport_file:
+if not client_passport and not client_nie and not passport_file_url:
     raise HTTPException(
-        status_code=400,
-        detail="Debe proporcionar al menos uno: número de pasaporte, NIE o copia de pasaporte"
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Debe proporcionar al menos uno de: número de pasaporte, NIE o copia de pasaporte",
     )
+```
+
+### Pre-llenado de Grading ✅
+
+El backend pre-llena el grading desde el contacto si está disponible:
+
+```python
+def map_contact_grading_to_contract_grade(grading: Optional[str]) -> Optional[str]:
+    """Mapea el grading del contacto al formato del contrato."""
+    if not grading:
+        return None
+    
+    grading_map = {
+        "A": "A",      # Sin cambios
+        "B+": "B",     # B+ y B- se mapean a B
+        "B-": "B",
+        "C": "C",      # Sin cambios
+        "D": "C",      # D se mapea a C
+    }
+    
+    return grading_map.get(grading, None)
 ```
 
 ---
@@ -339,26 +359,25 @@ curl -X POST "http://localhost:8000/api/pipelines/stages/leads/{entity_id}/reque
   -F "passport_file=@/path/to/passport.pdf"
 ```
 
-### Test 2: Solicitud sin archivo (JSON)
+### Test 2: Solicitud sin archivo (FormData)
 ```bash
 curl -X POST "http://localhost:8000/api/pipelines/stages/leads/{entity_id}/request-hiring-code" \
   -H "Authorization: Bearer {token}" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "agent_signature": "Juan Pérez",
-    "contract_template": "standard",
-    "service_name": "Visado",
-    "grade": "B",
-    "payment_type": "one_time",
-    "amount": 40000,
-    "client_name": "María García",
-    "client_email": "maria@ejemplo.com",
-    "client_passport": "X1234567Z",
-    "client_address": "Calle Mayor 123",
-    "client_province": "Madrid",
-    "client_postal_code": "28001"
-  }'
+  -F "agent_signature=Juan Pérez" \
+  -F "contract_template=standard" \
+  -F "service_name=Visado" \
+  -F "grade=B" \
+  -F "payment_type=one_time" \
+  -F "amount=40000" \
+  -F "client_name=María García" \
+  -F "client_email=maria@ejemplo.com" \
+  -F "client_passport=X1234567Z" \
+  -F "client_address=Calle Mayor 123" \
+  -F "client_province=Madrid" \
+  -F "client_postal_code=28001"
 ```
+
+**Nota**: El endpoint ya NO acepta JSON. Siempre debe enviarse como FormData.
 
 ---
 
@@ -375,20 +394,35 @@ curl -X POST "http://localhost:8000/api/pipelines/stages/leads/{entity_id}/reque
 
 ## 📋 Checklist de Implementación
 
-- [ ] Endpoint acepta FormData (multipart/form-data)
-- [ ] Endpoint mantiene compatibilidad con JSON
-- [ ] Validación de tipo de archivo (JPG, PNG, PDF)
-- [ ] Validación de tamaño (máximo 10MB)
-- [ ] Almacenamiento del archivo (S3, sistema de archivos, etc.)
-- [ ] Campo `passport_file_url` en base de datos
-- [ ] Campo `passport_file_url` en respuesta del endpoint
-- [ ] Validación: al menos uno de pasaporte/NIE/archivo
-- [ ] Manejo de errores para archivos inválidos
-- [ ] Tests unitarios y de integración
+- [x] Endpoint acepta FormData (multipart/form-data) ✅
+- [x] Endpoint ya NO acepta JSON (breaking change) ✅
+- [x] Validación de tipo de archivo (JPG, PNG, PDF) ✅
+- [x] Validación de tamaño (máximo 10MB) ✅
+- [x] Almacenamiento del archivo en Cloudinary ✅
+- [x] URL del archivo almacenada en notas del pipeline stage ✅
+- [x] Validación: al menos uno de pasaporte/NIE/archivo ✅
+- [x] Manejo de errores para archivos inválidos ✅
+- [x] Pre-llenado de grading desde contacto ✅
+- [x] Email al administrador incluye enlace al archivo ✅
+- [ ] Tests unitarios y de integración (pendiente)
+- [ ] Campo `client_passport_file_url` en tabla hiring_codes (opcional, futuro)
 
 ---
 
 ## 🔗 Referencias
 
 - Documentación frontend: `docs/FRONTEND_OPPORTUNITY_REQUEST_CONTRACT_ENHANCEMENTS.md`
-- Endpoint actual: `POST /api/pipelines/stages/{entity_type}/{entity_id}/request-hiring-code`
+- Endpoint: `POST /api/pipelines/stages/{entity_type}/{entity_id}/request-hiring-code`
+- Archivo de implementación: `app/api/endpoints/pipelines.py`
+
+---
+
+## ⚠️ Actualización Requerida en Frontend
+
+El frontend debe actualizarse para **siempre enviar FormData**, incluso cuando no hay archivo.
+
+**Estado actual del frontend**: 
+- ✅ Envía FormData cuando hay archivo
+- ❌ Envía JSON cuando no hay archivo (debe cambiarse)
+
+**Cambio requerido**: El frontend debe enviar FormData siempre, con o sin archivo.
