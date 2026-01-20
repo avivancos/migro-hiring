@@ -14,6 +14,20 @@ import type {
 } from '@/types/contracts';
 import type { StripeBillingPortalSession, StripeBillingSummary } from '@/types/stripe';
 
+const getAdminPasswordHeader = (): Record<string, string> => {
+  const envPassword = import.meta.env.VITE_ADMIN_PASSWORD;
+  const storedPassword = typeof window !== 'undefined'
+    ? window.sessionStorage.getItem('admin_password')
+    : null;
+  const password = storedPassword || envPassword;
+
+  if (!password) {
+    throw new Error('X-Admin-Password no configurado. Define VITE_ADMIN_PASSWORD o sessionStorage admin_password.');
+  }
+
+  return { 'X-Admin-Password': password };
+};
+
 /**
  * Normalize hiring code response to Contract format
  */
@@ -93,7 +107,7 @@ export const contractsService = {
       const { data } = await api.get<Contract[]>('/admin/contracts/', {
         params,
         headers: {
-          'X-Admin-Password': 'Pomelo2005.1',
+          ...getAdminPasswordHeader(),
         },
       });
       
@@ -157,7 +171,7 @@ export const contractsService = {
       // Try admin endpoint first
       const { data: adminData } = await api.get<Contract>(`/admin/contracts/${code}`, {
         headers: {
-          'X-Admin-Password': 'Pomelo2005.1',
+          ...getAdminPasswordHeader(),
         },
       });
       
@@ -222,7 +236,7 @@ export const contractsService = {
   async getStripeBillingSummary(code: string): Promise<StripeBillingSummary> {
     const { data } = await api.get<StripeBillingSummary>(`/admin/contracts/${code}/stripe/summary`, {
       headers: {
-        'X-Admin-Password': 'Pomelo2005.1',
+        ...getAdminPasswordHeader(),
       },
     });
     return data;
@@ -235,7 +249,7 @@ export const contractsService = {
   async createStripeBillingPortalSession(code: string): Promise<StripeBillingPortalSession> {
     const { data } = await api.post<StripeBillingPortalSession>(`/admin/contracts/${code}/stripe/portal`, {}, {
       headers: {
-        'X-Admin-Password': 'Pomelo2005.1',
+        ...getAdminPasswordHeader(),
       },
     });
     return data;
@@ -290,7 +304,7 @@ export const contractsService = {
     
     const { data } = await api.post<Contract>('/admin/contracts/', body, {
       headers: {
-        'X-Admin-Password': 'Pomelo2005.1',
+        ...getAdminPasswordHeader(),
       },
     });
     
@@ -350,7 +364,7 @@ export const contractsService = {
     try {
       const { data } = await api.patch<Contract>(`/admin/contracts/${code}`, body, {
         headers: {
-          'X-Admin-Password': 'Pomelo2005.1',
+          ...getAdminPasswordHeader(),
         },
       });
       return normalizeHiringCode(data);
@@ -360,7 +374,7 @@ export const contractsService = {
         console.warn('⚠️ PATCH no disponible, intentando con PUT...');
         const { data } = await api.put<Contract>(`/admin/contracts/${code}`, body, {
           headers: {
-            'X-Admin-Password': 'Pomelo2005.1',
+            ...getAdminPasswordHeader(),
           },
         });
         return normalizeHiringCode(data);
@@ -377,7 +391,7 @@ export const contractsService = {
   async deleteContract(code: string): Promise<void> {
     await api.delete(`/admin/contracts/${code}`, {
       headers: {
-        'X-Admin-Password': 'Pomelo2005.1',
+        ...getAdminPasswordHeader(),
       },
     });
   },
@@ -389,7 +403,7 @@ export const contractsService = {
   async expireContract(code: string): Promise<Contract> {
     const { data } = await api.post<Contract>(`/admin/contracts/${code}/expire`, {}, {
       headers: {
-        'X-Admin-Password': 'Pomelo2005.1',
+        ...getAdminPasswordHeader(),
       },
     });
     return normalizeHiringCode(data);

@@ -52,6 +52,21 @@ export function AdminContractDetail() {
   const [stripeError, setStripeError] = useState<string | null>(null);
   const [billingPortalLoading, setBillingPortalLoading] = useState(false);
 
+  const loadStripeSummary = useCallback(async (hiringCode: string) => {
+    setStripeLoading(true);
+    setStripeError(null);
+    try {
+      const data = await contractsService.getStripeBillingSummary(hiringCode);
+      setStripeSummary(data);
+    } catch (error: any) {
+      console.error('Error cargando informacion Stripe:', error);
+      setStripeSummary(null);
+      setStripeError(error?.response?.data?.detail || error?.message || 'No se pudo cargar la informacion de Stripe');
+    } finally {
+      setStripeLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (code && code !== 'create') {
       loadContract();
@@ -83,26 +98,11 @@ export function AdminContractDetail() {
 
   useEffect(() => {
     if (!contract?.hiring_code) return;
-    const shouldLoadStripe = contract.payment_type === 'subscription' || !!contract.subscription_id;
+    const shouldLoadStripe = contract?.payment_type === 'subscription' || !!contract?.subscription_id;
     if (shouldLoadStripe) {
       loadStripeSummary(contract.hiring_code);
     }
   }, [contract?.hiring_code, contract?.payment_type, contract?.subscription_id, loadStripeSummary]);
-
-  const loadStripeSummary = useCallback(async (hiringCode: string) => {
-    setStripeLoading(true);
-    setStripeError(null);
-    try {
-      const data = await contractsService.getStripeBillingSummary(hiringCode);
-      setStripeSummary(data);
-    } catch (error: any) {
-      console.error('Error cargando informacion Stripe:', error);
-      setStripeSummary(null);
-      setStripeError(error?.response?.data?.detail || error?.message || 'No se pudo cargar la informacion de Stripe');
-    } finally {
-      setStripeLoading(false);
-    }
-  }, []);
 
   const handleOpenBillingPortal = async () => {
     if (!contract?.hiring_code) return;
@@ -438,12 +438,12 @@ export function AdminContractDetail() {
 
   const formatStripeAmount = (amount?: number, currency?: string) => {
     if (amount === undefined || amount === null) return 'Monto no disponible';
-    const fallbackCurrency = currency || contract.currency || 'eur';
+    const fallbackCurrency = currency || contract?.currency || 'eur';
     return formatCurrency(amount, fallbackCurrency);
   };
 
-  const isExpired = contract.expires_at && new Date(contract.expires_at) < new Date();
-  const showStripeSection = contract.payment_type === 'subscription' || !!contract.subscription_id;
+  const isExpired = contract ? !!contract.expires_at && new Date(contract.expires_at) < new Date() : false;
+  const showStripeSection = contract ? (contract.payment_type === 'subscription' || !!contract.subscription_id) : false;
   const stripeSubscription = stripeSummary?.subscription || null;
   const stripeCustomer = stripeSummary?.customer || null;
   const stripePaymentMethod = stripeSummary?.default_payment_method || null;

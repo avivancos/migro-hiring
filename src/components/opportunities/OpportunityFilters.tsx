@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import type { OpportunityFilters as OpportunityFiltersType } from '@/types/opportunity';
 import type { LeadOpportunity } from '@/types/opportunity';
 import { FunnelIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
@@ -18,6 +19,7 @@ interface OpportunityFiltersProps {
   loadingAgents?: boolean;
   opportunities?: LeadOpportunity[]; // Oportunidades para filtrado local
   onFilteredOpportunitiesChange?: (filtered: LeadOpportunity[]) => void; // Callback para oportunidades filtradas
+  currentUserId?: string;
 }
 
 export function OpportunityFilters({
@@ -27,6 +29,7 @@ export function OpportunityFilters({
   loadingAgents = false,
   opportunities = [],
   onFilteredOpportunitiesChange,
+  currentUserId,
 }: OpportunityFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
   
@@ -34,12 +37,18 @@ export function OpportunityFilters({
   const [filterSinSituacion, setFilterSinSituacion] = useState(false);
   const [filterIntentosDisponibles, setFilterIntentosDisponibles] = useState<number | null>(null);
   const [filterConInfoAsignada, setFilterConInfoAsignada] = useState<boolean | null>(null);
+  const isMyOpportunities = Boolean(currentUserId) && filters.assigned_to === currentUserId;
 
   const updateFilter = (key: keyof OpportunityFiltersType, value: any) => {
     onFiltersChange({
       ...filters,
       [key]: value,
     });
+  };
+  
+  const handleMyOpportunitiesToggle = (checked: boolean) => {
+    if (!currentUserId) return;
+    updateFilter('assigned_to', checked ? currentUserId : undefined);
   };
 
   // clearFilter está preparado para uso futuro
@@ -200,6 +209,17 @@ export function OpportunityFilters({
           {/* Filtros Rápidos - Tags */}
           <div className="pt-4 border-t">
             <Label className="text-sm font-medium text-gray-700 mb-3 block">Filtros Rápidos</Label>
+            <div className="flex items-center gap-2 mb-3 text-sm text-gray-600">
+              <Switch
+                id="crm-my-opportunities-switch"
+                checked={isMyOpportunities}
+                onCheckedChange={handleMyOpportunitiesToggle}
+                disabled={!currentUserId}
+              />
+              <Label htmlFor="crm-my-opportunities-switch" className="cursor-pointer">
+                Solo mis oportunidades
+              </Label>
+            </div>
             <div className="flex flex-wrap gap-2">
               {/* Tag: Sin situación conocida */}
               <button

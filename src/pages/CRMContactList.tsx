@@ -49,6 +49,7 @@ export function CRMContactList() {
   const { isAuthenticated, user } = useAuth();
   const userIsAgent = user ? isAgent(user.role) : false;
   const userIsAdmin = user ? isAdminOrSuperuser(user.role, user.is_superuser) : false;
+  const currentUserId = user?.id || '';
   const [loading, setLoading] = useState(true);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [users, setUsers] = useState<CRMUser[]>([]);
@@ -91,6 +92,37 @@ export function CRMContactList() {
   // Ordenamiento
   const [sortField, setSortField] = useState<SortField>((searchParams.get('sort_by') as SortField) || 'created_at');
   const [sortOrder, setSortOrder] = useState<SortOrder>((searchParams.get('sort_order') as SortOrder) || 'desc');
+
+  const isMyContacts = Boolean(currentUserId) && responsibleUserId === currentUserId;
+  const handleMyContactsToggle = (checked: boolean) => {
+    if (!currentUserId) {
+      console.warn('⚠️ [CRMContactList] No hay currentUserId disponible para filtrar');
+      return;
+    }
+    console.log('🔄 [CRMContactList] Toggle "Solo mis contactos":', {
+      checked,
+      currentUserId,
+      previousResponsibleUserId: responsibleUserId,
+      willSetTo: checked ? currentUserId : '',
+    });
+    // Asegurar que siempre usamos el currentUserId, nunca un valor diferente
+    setResponsibleUserId(checked ? currentUserId : '');
+  };
+
+  // Validar que si el switch está activo, el responsibleUserId coincida exactamente con currentUserId
+  useEffect(() => {
+    if (currentUserId) {
+      // Si el switch debería estar activo pero el responsibleUserId no coincide, corregirlo
+      if (isMyContacts && responsibleUserId !== currentUserId) {
+        console.warn('⚠️ [CRMContactList] Inconsistencia detectada, corrigiendo responsibleUserId:', {
+          currentUserId,
+          responsibleUserId,
+          isMyContacts,
+        });
+        setResponsibleUserId(currentUserId);
+      }
+    }
+  }, [currentUserId, responsibleUserId, isMyContacts]);
   
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -255,7 +287,16 @@ export function CRMContactList() {
       // Todos los usuarios pueden ver todos los contactos sin restricciones
       // Solo aplicar filtro por responsable si se selecciona manualmente
       if (responsibleUserId) {
-        filters.responsible_user_id = responsibleUserId;
+        // Validación: si el switch está activo, asegurar que siempre usemos el currentUserId
+        const finalResponsibleUserId = isMyContacts && currentUserId ? currentUserId : responsibleUserId;
+        filters.responsible_user_id = finalResponsibleUserId;
+        console.log('🔍 [CRMContactList] Aplicando filtro por responsable:', {
+          responsible_user_id_from_state: responsibleUserId,
+          currentUserId,
+          isMyContacts,
+          final_responsible_user_id: finalResponsibleUserId,
+          willFilterBy: filters.responsible_user_id,
+        });
       }
       
       // Búsqueda normal para todos los usuarios
@@ -282,9 +323,40 @@ export function CRMContactList() {
       // Todos los usuarios ven todos los contactos sin filtrar
       let filteredContacts = response.items || [];
       
+      // Si el switch "Solo mis contactos" está activo, filtrar adicionalmente en el frontend
+      // para excluir contactos sin asignación o asignados a otros usuarios
+      if (isMyContacts && currentUserId) {
+        const beforeFilter = filteredContacts.length;
+        filteredContacts = filteredContacts.filter(contact => {
+          // Solo incluir contactos que tienen responsible_user_id y coincide con currentUserId
+          const hasMatchingResponsible = contact.responsible_user_id === currentUserId;
+          
+          if (!hasMatchingResponsible) {
+            console.log('🚫 [CRMContactList] Excluyendo contacto:', {
+              contact_id: contact.id,
+              contact_name: contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim(),
+              contact_responsible_user_id: contact.responsible_user_id,
+              currentUserId,
+              reason: !contact.responsible_user_id ? 'sin asignación' : 'asignado a otro usuario',
+            });
+          }
+          
+          return hasMatchingResponsible;
+        });
+        
+        console.log('🔍 [CRMContactList] Filtrado adicional "Solo mis contactos":', {
+          antes: beforeFilter,
+          despues: filteredContacts.length,
+          excluidos: beforeFilter - filteredContacts.length,
+          currentUserId,
+        });
+      }
+      
       console.log('📋 [CRMContactList] Contactos cargados:', {
         totalCargados: response.items?.length || 0,
-        totalFiltrados: filteredContacts.length
+        totalFiltrados: filteredContacts.length,
+        isMyContacts,
+        currentUserId,
       });
       
       // Obtener el total real de contactos usando el endpoint de count (sin paginación)
@@ -304,9 +376,10 @@ export function CRMContactList() {
           proxima_llamada_hasta: filters.proxima_llamada_hasta,
         });
         
-        // Si filtramos por oportunidades (solo para agentes), el total real es el número de contactos filtrados
-        // Para admins, usar el totalCount completo del API
-        const realTotal = totalCount;
+        // Si el switch "Solo mis contactos" está activo y filtramos adicionalmente en el frontend,
+        // usar la cantidad de contactos filtrados en lugar del total del API
+        // (porque excluimos contactos sin asignación que el backend podría incluir)
+        const realTotal = isMyContacts ? filteredContacts.length : totalCount;
         
         console.log('📊 [CRMContactList] Total count:', {
           fromAPI: totalCount,
@@ -314,14 +387,23 @@ export function CRMContactList() {
           realTotal: realTotal,
           isAdmin: userIsAdmin,
           isAgent: userIsAgent,
+          isMyContacts,
+          usingFrontendFilteredCount: isMyContacts,
         });
         
         setTotalContacts(realTotal);
       } catch (countError) {
         console.warn('⚠️ [CRMContactList] Error getting total count, using response total:', countError);
-        // Si filtramos por oportunidades (solo para agentes), usar el número total de contact_ids únicos
-        // Para admins, usar el total de la respuesta
-        const fallbackTotal = response.total ?? response.items?.length ?? 0;
+        // Si el switch "Solo mis contactos" está activo, usar la cantidad de contactos filtrados
+        // (porque excluimos contactos sin asignación que el backend podría incluir)
+        // Para otros casos, usar el total de la respuesta
+        const fallbackTotal = isMyContacts ? filteredContacts.length : (response.total ?? response.items?.length ?? 0);
+        console.log('📊 [CRMContactList] Using fallback total:', {
+          fallbackTotal,
+          filteredCount: filteredContacts.length,
+          responseTotal: response.total,
+          isMyContacts,
+        });
         setTotalContacts(fallbackTotal);
       }
       
@@ -359,7 +441,7 @@ export function CRMContactList() {
       setLoading(false);
       isLoadingRef.current = false;
     }
-  }, [pagination.skip, pagination.limit, responsibleUserId, searchTerm, gradingLlamada, gradingSituacion, nacionalidad, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder, userIsAdmin, userIsAgent]);
+  }, [pagination.skip, pagination.limit, responsibleUserId, searchTerm, gradingLlamada, gradingSituacion, nacionalidad, empadronado, tieneIngresos, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, sortField, sortOrder, userIsAdmin, userIsAgent, currentUserId, isMyContacts]);
 
   // Mantener la referencia actualizada
   useEffect(() => {
@@ -1038,6 +1120,18 @@ export function CRMContactList() {
                     </Button>
                   )}
                 </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
+                <Switch
+                  id="crm-my-contacts-switch"
+                  checked={isMyContacts}
+                  onCheckedChange={handleMyContactsToggle}
+                  disabled={!currentUserId}
+                />
+                <Label htmlFor="crm-my-contacts-switch" className="cursor-pointer">
+                  Solo mis contactos
+                </Label>
               </div>
 
               {showFilters && (

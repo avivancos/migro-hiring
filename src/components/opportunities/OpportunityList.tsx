@@ -11,6 +11,7 @@ import type { OpportunityFilters as OpportunityFiltersType } from '@/types/oppor
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
+import { useAuth } from '@/providers/AuthProvider';
 import { ArrowDownIcon, ArrowUpIcon, ArrowsUpDownIcon, ChevronLeftIcon, ChevronRightIcon, ListBulletIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 
 type ViewMode = 'cards' | 'table';
@@ -33,6 +34,8 @@ export function OpportunityList({
   availableAgents = [],
   loadingAgents = false,
 }: OpportunityListProps) {
+  const { user } = useAuth();
+  const currentUserId = user?.id;
   // Estado de vista (tabla o cards) con persistencia en localStorage
   // Por defecto siempre es 'table' (definido en constante)
   const [viewMode, setViewMode] = React.useState<ViewMode>(() => {
@@ -289,6 +292,7 @@ export function OpportunityList({
         onFiltersChange={setFilters}
         availableAgents={availableAgents}
         loadingAgents={loadingAgents}
+        currentUserId={currentUserId}
         opportunities={rawOpportunities}
         onFilteredOpportunitiesChange={handleFilteredOpportunitiesChange}
       />

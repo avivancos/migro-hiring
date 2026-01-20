@@ -125,6 +125,20 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [x] Documentación: `docs/BACKEND_CONTACT_TIMELINE_PROMPT.md` ✅
 - [x] Admin contratos: seccion Stripe con suscripcion, facturas y transacciones.
   - [x] Documentacion: `docs/FRONTEND_ADMIN_CONTRACT_STRIPE_BILLING_SECTION.md` ✅
+- [x] Admin contratos: remover password hardcodeado en Stripe.
+  - [x] Documentación: `docs/FRONTEND_ADMIN_CONTRACT_STRIPE_PASSWORD_FIX.md` ✅
+- [x] CRM: filtros rápidos tipo switch para "mis contactos" y "mis oportunidades".
+  - [x] Documentación: `docs/FRONTEND_CRM_MY_CONTACTS_OPPORTUNITIES_SWITCH.md` ✅
+  - [x] Corrección: Filtrado adicional en frontend para excluir contactos sin asignación ✅
+  - [ ] **BACKEND**: Mejorar filtrado por `responsible_user_id` para excluir contactos sin asignación.
+    - [ ] Documentación: `docs/BACKEND_CONTACTS_RESPONSIBLE_USER_ID_FILTER.md` ✅
+- [ ] Tests integracion frontend adicionales (CRM/Contratos/Pagos).
+  - [x] Propuesta y alcance: `docs/FRONTEND_INTEGRATION_TESTS_PROPOSAL.md` ✅
+- [x] Corrección de bugs críticos en AdminContractDetail y contractsService.
+  - [x] Bug 1: Optional chaining en useEffect de Stripe (línea 101) ✅
+  - [x] Bug 2: Verificación null para propiedades de contract (líneas 439-446) ✅
+  - [x] Bug 3: Eliminado password hardcodeado en 7 lugares de contractsService.ts ✅
+  - [x] Documentación: `docs/FRONTEND_ADMIN_CONTRACT_BUGS_FIX.md` ✅
 - [ ] Verificar en entorno local la URL de calendario diario (`view=day`) con fecha explícita.
 - [x] Corrección de bugs críticos: Comparación case-insensitive de IDs y conversión incorrecta de URL de Pili.
   - [x] Bug 1: Eliminada conversión a lowercase en comparación de IDs de usuario (4 lugares en `CRMContactDetail.tsx`) ✅
