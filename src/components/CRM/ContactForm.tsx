@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { Contact, Company } from '@/types/crm';
 import { crmService } from '@/services/crmService';
+import { sanitizeString, sanitizeXSS, isValidEmailStrict, isValidName, containsXSS } from '@/utils/validators';
 
 interface ContactFormProps {
   contact?: Contact;
@@ -78,35 +79,60 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
     setLoading(true);
 
     try {
+      // Validaciones antes de procesar
+      
+      // 1. Validar nombre: no vacío después de trim, no exceder 255 caracteres
+      const trimmedName = formData.name?.trim() || '';
+      if (!isValidName(trimmedName, 255)) {
+        alert('El nombre es requerido y no puede exceder 255 caracteres');
+        setLoading(false);
+        return;
+      }
+      
+      // 2. Validar email si está presente (validación estricta)
+      if (formData.email?.trim()) {
+        const trimmedEmail = formData.email.trim();
+        // Validar formato estricto (rechaza emails como test..test@test.com)
+        if (!isValidEmailStrict(trimmedEmail)) {
+          alert('El formato del email no es válido');
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // 3. Sanitizar XSS en todos los campos de texto (no rechazar, solo sanitizar)
+      // Nota: El test espera que el formulario se envíe incluso con XSS, pero sanitizado
+      
       // Limpiar datos antes de enviar: eliminar campos vacíos, undefined, null innecesarios
       const cleanedData: any = {};
       
-      // Campos requeridos siempre se envían
-      if (formData.name) cleanedData.name = formData.name.trim();
+      // Campos requeridos siempre se envían (ya validado arriba)
+      // Sanitizar XSS y caracteres peligrosos
+      cleanedData.name = sanitizeString(sanitizeXSS(trimmedName));
       
-      // Campos opcionales solo si tienen valor
-      if (formData.first_name?.trim()) cleanedData.first_name = formData.first_name.trim();
-      if (formData.last_name?.trim()) cleanedData.last_name = formData.last_name.trim();
-      if (formData.email?.trim()) cleanedData.email = formData.email.trim();
-      if (formData.phone?.trim()) cleanedData.phone = formData.phone.trim();
-      if (formData.mobile?.trim()) cleanedData.mobile = formData.mobile.trim();
-      if (formData.address?.trim()) cleanedData.address = formData.address.trim();
-      if (formData.city?.trim()) cleanedData.city = formData.city.trim();
-      if (formData.state?.trim()) cleanedData.state = formData.state.trim();
-      if (formData.postal_code?.trim()) cleanedData.postal_code = formData.postal_code.trim();
-      if (formData.country?.trim()) cleanedData.country = formData.country.trim();
+      // Campos opcionales solo si tienen valor (sanitizar todos)
+      if (formData.first_name?.trim()) cleanedData.first_name = sanitizeString(sanitizeXSS(formData.first_name.trim()));
+      if (formData.last_name?.trim()) cleanedData.last_name = sanitizeString(sanitizeXSS(formData.last_name.trim()));
+      if (formData.email?.trim()) cleanedData.email = sanitizeString(sanitizeXSS(formData.email.trim()));
+      if (formData.phone?.trim()) cleanedData.phone = sanitizeString(sanitizeXSS(formData.phone.trim()));
+      if (formData.mobile?.trim()) cleanedData.mobile = sanitizeString(sanitizeXSS(formData.mobile.trim()));
+      if (formData.address?.trim()) cleanedData.address = sanitizeString(sanitizeXSS(formData.address.trim()));
+      if (formData.city?.trim()) cleanedData.city = sanitizeString(sanitizeXSS(formData.city.trim()));
+      if (formData.state?.trim()) cleanedData.state = sanitizeString(sanitizeXSS(formData.state.trim()));
+      if (formData.postal_code?.trim()) cleanedData.postal_code = sanitizeString(sanitizeXSS(formData.postal_code.trim()));
+      if (formData.country?.trim()) cleanedData.country = sanitizeString(sanitizeXSS(formData.country.trim()));
       // company puede ser string o Company
       if (typeof formData.company === 'string' && formData.company.trim()) {
-        cleanedData.company = formData.company.trim();
+        cleanedData.company = sanitizeString(sanitizeXSS(formData.company.trim()));
       } else if (formData.company && typeof formData.company === 'object') {
         // Si es un objeto Company, usar el ID
         cleanedData.company_id = formData.company.id;
       }
-      if (formData.position?.trim()) cleanedData.position = formData.position.trim();
+      if (formData.position?.trim()) cleanedData.position = sanitizeString(sanitizeXSS(formData.position.trim()));
       if (formData.company_id) cleanedData.company_id = formData.company_id;
       // responsible_user_id se obtiene del contacto original si existe
       if (contact?.responsible_user_id) cleanedData.responsible_user_id = contact.responsible_user_id;
-      if (formData.notes?.trim()) cleanedData.notes = formData.notes.trim();
+      if (formData.notes?.trim()) cleanedData.notes = sanitizeString(sanitizeXSS(formData.notes.trim()));
       
       // Campos Migro específicos
       // Los gradings deben enviarse siempre si hay un valor seleccionado o si el contacto original tenía un valor
@@ -127,9 +153,9 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
         // El contacto original tenía un valor pero ahora está vacío, enviar null para eliminar
         cleanedData.grading_situacion = null;
       }
-      if (formData.nacionalidad?.trim()) cleanedData.nacionalidad = formData.nacionalidad.trim();
-      if (formData.tiempo_espana?.trim()) cleanedData.tiempo_espana = formData.tiempo_espana.trim();
-      if (formData.lugar_residencia?.trim()) cleanedData.lugar_residencia = formData.lugar_residencia.trim();
+      if (formData.nacionalidad?.trim()) cleanedData.nacionalidad = sanitizeString(sanitizeXSS(formData.nacionalidad.trim()));
+      if (formData.tiempo_espana?.trim()) cleanedData.tiempo_espana = sanitizeString(sanitizeXSS(formData.tiempo_espana.trim()));
+      if (formData.lugar_residencia?.trim()) cleanedData.lugar_residencia = sanitizeString(sanitizeXSS(formData.lugar_residencia.trim()));
       if (formData.empadronado !== undefined) cleanedData.empadronado = formData.empadronado;
       if (formData.tiene_ingresos !== undefined) cleanedData.tiene_ingresos = formData.tiene_ingresos;
       if (formData.trabaja_b !== undefined) cleanedData.trabaja_b = formData.trabaja_b;
@@ -143,7 +169,7 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
         
         // Actualizar o eliminar servicio_propuesto
         if (formData.servicio_propuesto?.trim()) {
-          cleanedData.custom_fields.servicio_propuesto = formData.servicio_propuesto.trim();
+          cleanedData.custom_fields.servicio_propuesto = sanitizeString(sanitizeXSS(formData.servicio_propuesto.trim()));
         } else if (contact?.custom_fields?.servicio_propuesto) {
           // Si el campo estaba lleno y ahora está vacío, eliminarlo
           delete cleanedData.custom_fields.servicio_propuesto;
@@ -151,7 +177,7 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
         
         // Actualizar o eliminar servicio_detalle
         if (formData.servicio_detalle?.trim()) {
-          cleanedData.custom_fields.servicio_detalle = formData.servicio_detalle.trim();
+          cleanedData.custom_fields.servicio_detalle = sanitizeString(sanitizeXSS(formData.servicio_detalle.trim()));
         } else if (contact?.custom_fields?.servicio_detalle) {
           // Si el campo estaba lleno y ahora está vacío, eliminarlo
           delete cleanedData.custom_fields.servicio_detalle;
@@ -159,7 +185,7 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
         
         // Actualizar o eliminar fecha_llegada_espana
         if (formData.fecha_llegada_espana?.trim()) {
-          cleanedData.custom_fields.fecha_llegada_espana = formData.fecha_llegada_espana.trim();
+          cleanedData.custom_fields.fecha_llegada_espana = sanitizeString(formData.fecha_llegada_espana.trim());
         } else if (contact?.custom_fields?.fecha_llegada_espana) {
           // Si el campo estaba lleno y ahora está vacío, eliminarlo
           delete cleanedData.custom_fields.fecha_llegada_espana;
@@ -235,7 +261,31 @@ export const ContactForm = memo(function ContactForm({ contact, onSubmit, onCanc
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => handleChange('email', e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  handleChange('email', value);
+                  // Validación estricta de email para que checkValidity() funcione
+                  const input = e.target as HTMLInputElement;
+                  if (value && value.trim()) {
+                    if (!isValidEmailStrict(value.trim())) {
+                      input.setCustomValidity('El formato del email no es válido');
+                    } else {
+                      input.setCustomValidity('');
+                    }
+                  } else {
+                    input.setCustomValidity('');
+                  }
+                }}
+                onBlur={(e) => {
+                  // Validar al perder el foco también
+                  const input = e.target as HTMLInputElement;
+                  const value = input.value?.trim();
+                  if (value && !isValidEmailStrict(value)) {
+                    input.setCustomValidity('El formato del email no es válido');
+                  } else {
+                    input.setCustomValidity('');
+                  }
+                }}
                 placeholder="juan@example.com"
               />
             </div>

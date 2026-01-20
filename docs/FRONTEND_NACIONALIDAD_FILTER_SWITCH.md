@@ -9,14 +9,14 @@
 
 ## 📋 Resumen Ejecutivo
 
-Se ha implementado un switch rápido para filtrar contactos y oportunidades por nacionalidad, permitiendo filtrar rápidamente entre "irregulares" (sin nacionalidad) y "todos".
+Se ha implementado un switch rápido para filtrar contactos y oportunidades por nacionalidad, permitiendo filtrar rápidamente entre "Solo nacionalidad" (con nacionalidad) y "todos".
 
 ---
 
 ## 🎯 Objetivo
 
 Agregar un switch rápido en las vistas de contactos y oportunidades que permita filtrar rápidamente:
-- **Irregulares**: Contactos/oportunidades sin nacionalidad o con nacionalidad vacía
+- **Solo nacionalidad**: Contactos/oportunidades que tienen nacionalidad registrada
 - **Todos**: Mostrar todos los contactos/oportunidades sin filtrar por nacionalidad
 
 ---
@@ -29,24 +29,24 @@ Agregar un switch rápido en las vistas de contactos y oportunidades que permita
 
 1. **Nuevo estado para el filtro de nacionalidad:**
    ```typescript
-   const [nacionalidadFilter, setNacionalidadFilter] = useState<'todos' | 'irregulares'>(
-     searchParams.get('nacionalidad_filter') === 'irregulares' ? 'irregulares' : 'todos'
+   const [nacionalidadFilter, setNacionalidadFilter] = useState<'todos' | 'nacionalidad'>(
+     searchParams.get('nacionalidad_filter') === 'nacionalidad' ? 'nacionalidad' : 'todos'
    );
    ```
 
 2. **Switch rápido agregado en la UI:**
    - Ubicado junto al switch "Solo mis contactos"
-   - Permite activar/desactivar el filtro de irregulares
+   - Permite activar/desactivar el filtro de nacionalidad
    - Cuando se activa, deshabilita el select de nacionalidad específica
 
 3. **Lógica de filtrado:**
-   - Si `nacionalidadFilter === 'irregulares'`, se filtran localmente los contactos sin nacionalidad o con nacionalidad vacía
+   - Si `nacionalidadFilter === 'nacionalidad'`, se filtran localmente los contactos que tienen nacionalidad registrada
    - El filtro se aplica después de recibir los datos del backend
    - Se sincroniza con la URL mediante el parámetro `nacionalidad_filter`
 
 4. **Integración con el select de nacionalidad:**
-   - Cuando se activa el switch de irregulares, se limpia el select de nacionalidad
-   - Cuando se selecciona una nacionalidad específica, se desactiva el switch de irregulares
+   - Cuando se activa el switch de nacionalidad, se limpia el select de nacionalidad
+   - Cuando se selecciona una nacionalidad específica, se desactiva el switch de nacionalidad
    - Ambos filtros son mutuamente excluyentes
 
 5. **Cálculo del total:**
@@ -59,15 +59,15 @@ Agregar un switch rápido en las vistas de contactos y oportunidades que permita
 
 1. **Nuevo estado para el filtro:**
    ```typescript
-   const [filterNacionalidadIrregulares, setFilterNacionalidadIrregulares] = useState(false);
+   const [filterNacionalidad, setFilterNacionalidad] = useState(false);
    ```
 
 2. **Switch rápido agregado:**
    - Ubicado junto al switch "Solo mis oportunidades"
-   - Permite activar/desactivar el filtro de irregulares
+   - Permite activar/desactivar el filtro de nacionalidad
 
 3. **Lógica de filtrado:**
-   - Filtra oportunidades cuyo contacto asociado no tiene nacionalidad o tiene nacionalidad vacía
+   - Filtra oportunidades cuyo contacto asociado tiene nacionalidad registrada
    - Se aplica localmente en el `useMemo` que procesa las oportunidades
    - El filtro se aplica sobre `opp.contact?.nacionalidad`
 
@@ -81,13 +81,13 @@ Agregar un switch rápido en las vistas de contactos y oportunidades que permita
 
 ### Filtrado de Contactos
 
-El filtro de irregulares se aplica localmente después de recibir los datos del backend:
+El filtro de nacionalidad se aplica localmente después de recibir los datos del backend:
 
 ```typescript
-// Aplicar filtro de nacionalidad "irregulares" localmente
-if (nacionalidadFilter === 'irregulares') {
+// Aplicar filtro de nacionalidad "Solo nacionalidad" localmente
+if (nacionalidadFilter === 'nacionalidad') {
   filteredContacts = filteredContacts.filter(contact => {
-    return !contact.nacionalidad || contact.nacionalidad.trim() === '';
+    return contact.nacionalidad && contact.nacionalidad.trim() !== '';
   });
 }
 ```
@@ -97,11 +97,11 @@ if (nacionalidadFilter === 'irregulares') {
 El filtro se aplica en el `useMemo` que procesa las oportunidades:
 
 ```typescript
-// Filtro: Nacionalidad irregulares (sin nacionalidad o vacía)
-if (filterNacionalidadIrregulares) {
+// Filtro: Solo nacionalidad (con nacionalidad)
+if (filterNacionalidad) {
   result = result.filter(opp => {
     const contact = opp.contact;
-    return !contact?.nacionalidad || contact.nacionalidad.trim() === '';
+    return contact?.nacionalidad && contact.nacionalidad.trim() !== '';
   });
 }
 ```
@@ -129,17 +129,19 @@ const [nacionalidadFilter, setNacionalidadFilter] = useState<'todos' | 'irregula
 ### Contactos
 
 - **Ubicación**: Junto al switch "Solo mis contactos", en la sección de filtros rápidos
-- **Etiqueta**: "Solo irregulares"
+- **Etiqueta**: "Solo nacionalidad"
 - **Comportamiento**:
-  - Al activarse, deshabilita el select de nacionalidad específica
+  - Al activarse, muestra solo contactos con nacionalidad registrada
+  - Deshabilita el select de nacionalidad específica
   - Al desactivarse, permite usar el select de nacionalidad nuevamente
   - Se incluye en el contador de filtros activos
 
 ### Oportunidades
 
 - **Ubicación**: Junto al switch "Solo mis oportunidades", en la sección de filtros rápidos
-- **Etiqueta**: "Solo irregulares"
+- **Etiqueta**: "Solo nacionalidad"
 - **Comportamiento**:
+  - Al activarse, muestra solo oportunidades cuyo contacto tiene nacionalidad registrada
   - Funciona independientemente de otros filtros
   - Se incluye en el contador de filtros activos
 
@@ -149,7 +151,7 @@ const [nacionalidadFilter, setNacionalidadFilter] = useState<'todos' | 'irregula
 
 ### Filtrado Local vs Backend
 
-- **Contactos**: El filtro se aplica localmente porque requiere verificar si la nacionalidad está vacía o es null, lo cual es más eficiente en el frontend
+- **Contactos**: El filtro se aplica localmente porque requiere verificar si la nacionalidad existe y no está vacía, lo cual es más eficiente en el frontend
 - **Oportunidades**: El filtro se aplica localmente porque ya se tienen los datos del contacto expandido
 
 ### Rendimiento
@@ -170,19 +172,19 @@ const [nacionalidadFilter, setNacionalidadFilter] = useState<'todos' | 'irregula
 
 ### Casos de Prueba
 
-1. **Activar filtro de irregulares:**
-   - ✅ Solo muestra contactos/oportunidades sin nacionalidad
+1. **Activar filtro de nacionalidad:**
+   - ✅ Solo muestra contactos/oportunidades con nacionalidad registrada
    - ✅ Deshabilita el select de nacionalidad (en contactos)
    - ✅ Actualiza el contador de filtros activos
 
-2. **Desactivar filtro de irregulares:**
+2. **Desactivar filtro de nacionalidad:**
    - ✅ Muestra todos los contactos/oportunidades
    - ✅ Habilita el select de nacionalidad (en contactos)
    - ✅ Actualiza el contador de filtros activos
 
 3. **Interacción con select de nacionalidad:**
-   - ✅ Al seleccionar una nacionalidad, se desactiva el switch de irregulares
-   - ✅ Al activar el switch de irregulares, se limpia el select de nacionalidad
+   - ✅ Al seleccionar una nacionalidad, se desactiva el switch de nacionalidad
+   - ✅ Al activar el switch de nacionalidad, se limpia el select de nacionalidad
 
 4. **Sincronización con URL:**
    - ✅ El estado se guarda en la URL
@@ -198,8 +200,8 @@ const [nacionalidadFilter, setNacionalidadFilter] = useState<'todos' | 'irregula
 
 ## 📝 Notas Adicionales
 
-- El término "irregulares" se refiere a contactos sin nacionalidad registrada, lo cual es común en el contexto de migración
-- El filtro es útil para identificar contactos que pueden necesitar asistencia con documentación
+- El filtro "Solo nacionalidad" muestra únicamente contactos/oportunidades que tienen nacionalidad registrada
+- El filtro es útil para identificar contactos con documentación completa
 - El filtro se aplica de forma consistente en ambas vistas (contactos y oportunidades)
 
 ---
@@ -208,7 +210,7 @@ const [nacionalidadFilter, setNacionalidadFilter] = useState<'todos' | 'irregula
 
 - Considerar agregar un filtro similar para otros campos relevantes
 - Evaluar si el filtro debería aplicarse también en el backend para mejor rendimiento con grandes volúmenes de datos
-- Considerar agregar estadísticas sobre el porcentaje de contactos irregulares
+- Considerar agregar estadísticas sobre el porcentaje de contactos con/sin nacionalidad
 
 ---
 

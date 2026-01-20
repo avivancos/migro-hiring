@@ -37,7 +37,7 @@ export function OpportunityFilters({
   const [filterSinSituacion, setFilterSinSituacion] = useState(false);
   const [filterIntentosDisponibles, setFilterIntentosDisponibles] = useState<number | null>(null);
   const [filterConInfoAsignada, setFilterConInfoAsignada] = useState<boolean | null>(null);
-  const [filterNacionalidadIrregulares, setFilterNacionalidadIrregulares] = useState(false);
+  const [filterNacionalidad, setFilterNacionalidad] = useState(false);
   const isMyOpportunities = Boolean(currentUserId) && filters.assigned_to === currentUserId;
 
   const updateFilter = (key: keyof OpportunityFiltersType, value: any) => {
@@ -92,16 +92,16 @@ export function OpportunityFilters({
       }
     }
 
-    // Filtro: Nacionalidad irregulares (sin nacionalidad o vacía)
-    if (filterNacionalidadIrregulares) {
+    // Filtro: Solo nacionalidad (con nacionalidad)
+    if (filterNacionalidad) {
       result = result.filter(opp => {
         const contact = opp.contact;
-        return !contact?.nacionalidad || contact.nacionalidad.trim() === '';
+        return contact?.nacionalidad && contact.nacionalidad.trim() !== '';
       });
     }
 
     return result;
-  }, [opportunities, filterSinSituacion, filterIntentosDisponibles, filterConInfoAsignada, filterNacionalidadIrregulares]);
+  }, [opportunities, filterSinSituacion, filterIntentosDisponibles, filterConInfoAsignada, filterNacionalidad]);
 
   // Ref para mantener referencia estable al callback
   const callbackRef = React.useRef(onFilteredOpportunitiesChange);
@@ -121,7 +121,7 @@ export function OpportunityFilters({
     }
     
     // Verificar si hay filtros activos
-    const hasActiveFilters = filterSinSituacion || filterIntentosDisponibles !== null || filterConInfoAsignada !== null || filterNacionalidadIrregulares;
+    const hasActiveFilters = filterSinSituacion || filterIntentosDisponibles !== null || filterConInfoAsignada !== null || filterNacionalidad;
     
     // Comparar por IDs para evitar actualizaciones innecesarias
     const currentIds = filtered.map(o => o.id).sort().join(',');
@@ -138,7 +138,7 @@ export function OpportunityFilters({
         callbackRef.current(opportunities);
       }
     }
-  }, [filtered, opportunities, filterSinSituacion, filterIntentosDisponibles, filterConInfoAsignada, filterNacionalidadIrregulares]);
+  }, [filtered, opportunities, filterSinSituacion, filterIntentosDisponibles, filterConInfoAsignada, filterNacionalidad]);
 
   const activeFiltersCount =
     (filters.status ? 1 : 0) +
@@ -150,14 +150,14 @@ export function OpportunityFilters({
     (filterSinSituacion ? 1 : 0) +
     (filterIntentosDisponibles !== null ? 1 : 0) +
     (filterConInfoAsignada !== null ? 1 : 0) +
-    (filterNacionalidadIrregulares ? 1 : 0);
+    (filterNacionalidad ? 1 : 0);
 
   const clearAllFilters = () => {
     onFiltersChange({});
     setFilterSinSituacion(false);
     setFilterIntentosDisponibles(null);
     setFilterConInfoAsignada(null);
-    setFilterNacionalidadIrregulares(false);
+    setFilterNacionalidad(false);
     setIsOpen(false);
   };
 
@@ -234,12 +234,12 @@ export function OpportunityFilters({
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Switch
-                  id="crm-opportunities-nacionalidad-irregulares-switch"
-                  checked={filterNacionalidadIrregulares}
-                  onCheckedChange={setFilterNacionalidadIrregulares}
+                  id="crm-opportunities-nacionalidad-switch"
+                  checked={filterNacionalidad}
+                  onCheckedChange={setFilterNacionalidad}
                 />
-                <Label htmlFor="crm-opportunities-nacionalidad-irregulares-switch" className="cursor-pointer">
-                  Solo irregulares
+                <Label htmlFor="crm-opportunities-nacionalidad-switch" className="cursor-pointer">
+                  Solo nacionalidad
                 </Label>
               </div>
             </div>
