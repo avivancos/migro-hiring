@@ -7,23 +7,38 @@
 Unificar la línea de tiempo de un contacto (eventos pasados y futuros) para evitar
 lógica duplicada en frontend.
 
-### Parámetros (query)
-- `limit` (int, default `50`, max `200`): cantidad de eventos.
-- `page` (int, default `1`): paginación basada en página.
-- `skip` (int, opcional): offset legacy (anula `page` si se envía).
-- `include_future` (bool, default `true`): incluye eventos futuros.
-- `include_related` (bool, default `true`): incluye eventos relacionados (oportunidades).
+### Query params
+- `limit` (int, default `50`, max `200`).
+- `page` (int, default `1`).
+- `skip` (int, opcional, legacy; si viene, anula `page`).
+- `include_future` (bool, default `true`).
+- `include_related` (bool, default `true`).
+
+### Tipos de eventos (type)
+- `contact_created`
+- `call`
+- `call_scheduled`
+- `task`
+- `task_due`
+- `note`
+- `opportunity`
 
 ### Fuentes de eventos
-- **Contacto**: `contacts.created_at` → `contact_created`
-- **Llamadas**: `calls.started_at || calls.created_at` → `call`
-- **Llamadas programadas**: `calls.proxima_accion_fecha`, `calls.proxima_llamada_fecha` → `call_scheduled`
-- **Tareas**: `tasks.created_at` → `task`
-- **Vencimiento de tareas**: `tasks.complete_till` → `task_due`
-- **Notas**: `notes.created_at` → `note`
-- **Oportunidades**: `lead_opportunities.detected_at || created_at` → `opportunity`
+- `contacts.created_at` → `contact_created`
+- `calls.started_at || calls.created_at` → `call`
+- `calls.proxima_accion_fecha`, `calls.proxima_llamada_fecha` → `call_scheduled`
+- `tasks.created_at` → `task`
+- `tasks.complete_till` → `task_due`
+- `notes.created_at` → `note`
+- `lead_opportunities.detected_at || created_at` → `opportunity`
 
-### Respuesta (ejemplo)
+### Reglas importantes
+- Ordenado por `date` descendente.
+- `is_future` viene calculado por backend (UTC).
+- `entity_id` siempre es el `contact_id`; el origen real está en `metadata.source_*`.
+- `include_related` hoy incluye oportunidades.
+
+### Ejemplo de respuesta
 ```json
 {
   "items": [
@@ -49,8 +64,3 @@ lógica duplicada en frontend.
   "total": 123
 }
 ```
-
-### Notas
-- `is_future` se calcula comparando contra `now()` en UTC.
-- `entity_id` siempre es el `contact_id`; el origen real está en `metadata.source_*`.
-- `include_related` actualmente agrega oportunidades asociadas al contacto.

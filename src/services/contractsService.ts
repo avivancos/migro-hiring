@@ -12,6 +12,7 @@ import type {
   ContractAnnexCreateRequest,
   ContractAnnexUpdateRequest,
 } from '@/types/contracts';
+import type { StripeBillingPortalSession, StripeBillingSummary } from '@/types/stripe';
 
 /**
  * Normalize hiring code response to Contract format
@@ -212,6 +213,32 @@ export const contractsService = {
    */
   async getContractByCode(code: string): Promise<Contract> {
     return this.getContract(code);
+  },
+
+  /**
+   * Get Stripe billing summary for a hiring code
+   * Requires admin password header
+   */
+  async getStripeBillingSummary(code: string): Promise<StripeBillingSummary> {
+    const { data } = await api.get<StripeBillingSummary>(`/admin/contracts/${code}/stripe/summary`, {
+      headers: {
+        'X-Admin-Password': 'Pomelo2005.1',
+      },
+    });
+    return data;
+  },
+
+  /**
+   * Create Stripe billing portal session for a hiring code
+   * Requires admin password header
+   */
+  async createStripeBillingPortalSession(code: string): Promise<StripeBillingPortalSession> {
+    const { data } = await api.post<StripeBillingPortalSession>(`/admin/contracts/${code}/stripe/portal`, {}, {
+      headers: {
+        'X-Admin-Password': 'Pomelo2005.1',
+      },
+    });
+    return data;
   },
 
   /**

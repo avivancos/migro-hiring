@@ -1,5 +1,5 @@
 // Admin Contract Detail - Detalle de contrato con UI mobile-first
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,11 +19,12 @@ import {
   KYC_STATUS_COLORS,
   GRADE_COLORS,
 } from '@/types/contracts';
-import { formatDate, formatCurrency } from '@/utils/formatters';
+import { formatDate, formatDateTime, formatCurrency } from '@/utils/formatters';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { EditContractModal } from '@/components/contracts/EditContractModal';
 import { ContractAnnexes } from '@/components/contracts/ContractAnnexes';
 import { config } from '@/config/constants';
+import type { StripeBillingSummary } from '@/types/stripe';
 
 export function AdminContractDetail() {
   const navigate = useNavigate();
@@ -46,6 +47,10 @@ export function AdminContractDetail() {
     subscription_status: '',
     first_payment_amount: '',
   });
+  const [stripeSummary, setStripeSummary] = useState<StripeBillingSummary | null>(null);
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [stripeError, setStripeError] = useState<string | null>(null);
+  const [billingPortalLoading, setBillingPortalLoading] = useState(false);
 
   useEffect(() => {
     if (code && code !== 'create') {
@@ -73,6 +78,47 @@ export function AdminContractDetail() {
       setContract(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!contract?.hiring_code) return;
+    const shouldLoadStripe = contract.payment_type === 'subscription' || !!contract.subscription_id;
+    if (shouldLoadStripe) {
+      loadStripeSummary(contract.hiring_code);
+    }
+  }, [contract?.hiring_code, contract?.payment_type, contract?.subscription_id, loadStripeSummary]);
+
+  const loadStripeSummary = useCallback(async (hiringCode: string) => {
+    setStripeLoading(true);
+    setStripeError(null);
+    try {
+      const data = await contractsService.getStripeBillingSummary(hiringCode);
+      setStripeSummary(data);
+    } catch (error: any) {
+      console.error('Error cargando informacion Stripe:', error);
+      setStripeSummary(null);
+      setStripeError(error?.response?.data?.detail || error?.message || 'No se pudo cargar la informacion de Stripe');
+    } finally {
+      setStripeLoading(false);
+    }
+  }, []);
+
+  const handleOpenBillingPortal = async () => {
+    if (!contract?.hiring_code) return;
+    setBillingPortalLoading(true);
+    try {
+      const session = await contractsService.createStripeBillingPortalSession(contract.hiring_code);
+      if (session?.url) {
+        window.open(session.url, '_blank');
+      } else {
+        alert('No se recibio URL del portal de facturacion');
+      }
+    } catch (error: any) {
+      console.error('Error creando portal de facturacion:', error);
+      alert(error?.response?.data?.detail || error?.message || 'No se pudo abrir el portal de facturacion');
+    } finally {
+      setBillingPortalLoading(false);
     }
   };
 
@@ -383,7 +429,24 @@ export function AdminContractDetail() {
     );
   };
 
+  const formatStripeDate = (value?: string | number, withTime: boolean = false) => {
+    if (value === undefined || value === null) return 'Fecha no disponible';
+    const dateValue = typeof value === 'number' ? new Date(value * 1000) : new Date(value);
+    if (Number.isNaN(dateValue.getTime())) return 'Fecha no disponible';
+    return withTime ? formatDateTime(dateValue) : formatDate(dateValue);
+  };
+
+  const formatStripeAmount = (amount?: number, currency?: string) => {
+    if (amount === undefined || amount === null) return 'Monto no disponible';
+    const fallbackCurrency = currency || contract.currency || 'eur';
+    return formatCurrency(amount, fallbackCurrency);
+  };
+
   const isExpired = contract.expires_at && new Date(contract.expires_at) < new Date();
+  const showStripeSection = contract.payment_type === 'subscription' || !!contract.subscription_id;
+  const stripeSubscription = stripeSummary?.subscription || null;
+  const stripeCustomer = stripeSummary?.customer || null;
+  const stripePaymentMethod = stripeSummary?.default_payment_method || null;
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -706,6 +769,223 @@ export function AdminContractDetail() {
                       {formatCurrency(contract.first_payment_amount, contract.currency)}
                     </div>
                   </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {showStripeSection && (
+            <Card>
+              <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCardIcon width={20} height={20} />
+                  Suscripcion y facturacion (Stripe)
+                </CardTitle>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="default"
+                    onClick={handleOpenBillingPortal}
+                    disabled={billingPortalLoading}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    {billingPortalLoading ? 'Abriendo...' : 'Actualizar datos de pago'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => contract?.hiring_code && loadStripeSummary(contract.hiring_code)}
+                    disabled={stripeLoading}
+                  >
+                    Recargar
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {stripeLoading && (
+                  <LoadingSpinner size="sm" text="Cargando informacion de Stripe..." />
+                )}
+                {!stripeLoading && stripeError && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                    {stripeError}
+                    <div className="mt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => contract?.hiring_code && loadStripeSummary(contract.hiring_code)}
+                      >
+                        Reintentar
+                      </Button>
+                    </div>
+                  </div>
+                )}
+                {!stripeLoading && !stripeError && !stripeSummary && (
+                  <div className="text-sm text-gray-600">
+                    Aun no hay informacion de Stripe disponible para este contrato.
+                  </div>
+                )}
+                {!stripeLoading && !stripeError && stripeSummary && (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <div>
+                          <label className="text-sm font-medium text-gray-500">Suscripcion activa</label>
+                          <div className="text-sm text-gray-900 mt-1 font-mono break-all">
+                            {stripeSubscription?.id || contract.subscription_id || 'No disponible'}
+                          </div>
+                          {stripeSubscription?.status && (
+                            <div className="text-sm text-gray-600 mt-1">
+                              Estado: <Badge variant="outline">{stripeSubscription.status}</Badge>
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          Periodo actual: {formatStripeDate(stripeSubscription?.current_period_start)} - {formatStripeDate(stripeSubscription?.current_period_end)}
+                        </div>
+                        {stripeSubscription?.cancel_at_period_end !== undefined && (
+                          <div className="text-sm text-gray-600">
+                            Cancela al final del periodo: {stripeSubscription.cancel_at_period_end ? 'Si' : 'No'}
+                          </div>
+                        )}
+                        {(stripeSubscription?.id || contract.subscription_id) && (
+                          <a
+                            href={`https://dashboard.stripe.com/subscriptions/${stripeSubscription?.id || contract.subscription_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-green-600 hover:text-green-700 inline-flex items-center gap-1 mt-1"
+                          >
+                            Ver suscripcion en Stripe <ArrowTopRightOnSquareIcon width={14} height={14} />
+                          </a>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <div>
+                          <label className="text-sm font-medium text-gray-500">Cliente Stripe</label>
+                          <div className="text-sm text-gray-900 mt-1 font-mono break-all">
+                            {stripeCustomer?.id || 'No disponible'}
+                          </div>
+                          {stripeCustomer?.email && (
+                            <div className="text-sm text-gray-600 mt-1">
+                              {stripeCustomer.email}
+                            </div>
+                          )}
+                        </div>
+                        {stripePaymentMethod && (
+                          <div className="text-sm text-gray-600">
+                            Metodo de pago: {stripePaymentMethod.brand || 'Tarjeta'} ****{stripePaymentMethod.last4 || '----'}
+                            {stripePaymentMethod.exp_month && stripePaymentMethod.exp_year && (
+                              <span> (exp {stripePaymentMethod.exp_month}/{stripePaymentMethod.exp_year})</span>
+                            )}
+                          </div>
+                        )}
+                        {stripeCustomer?.id && (
+                          <a
+                            href={`https://dashboard.stripe.com/customers/${stripeCustomer.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-green-600 hover:text-green-700 inline-flex items-center gap-1 mt-1"
+                          >
+                            Ver cliente en Stripe <ArrowTopRightOnSquareIcon width={14} height={14} />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-2">Facturas</h4>
+                      {stripeSummary.invoices && stripeSummary.invoices.length > 0 ? (
+                        <div className="space-y-2">
+                          {stripeSummary.invoices.map((invoice) => (
+                            <div key={invoice.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                              <div className="text-sm text-gray-700">
+                                <div className="font-medium text-gray-900">
+                                  {invoice.number || invoice.id}
+                                </div>
+                                <div className="text-xs text-gray-600">
+                                  {invoice.status ? `Estado: ${invoice.status}` : 'Estado no disponible'} · {formatStripeDate(invoice.created)}
+                                </div>
+                                <div className="text-xs text-gray-600">
+                                  Total: {formatStripeAmount(invoice.amount_paid ?? invoice.amount_due, invoice.currency)}
+                                </div>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {invoice.hosted_invoice_url && (
+                                  <a
+                                    href={invoice.hosted_invoice_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-green-600 hover:text-green-700 inline-flex items-center gap-1"
+                                  >
+                                    Ver factura <ArrowTopRightOnSquareIcon width={12} height={12} />
+                                  </a>
+                                )}
+                                {invoice.invoice_pdf && (
+                                  <a
+                                    href={invoice.invoice_pdf}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-green-600 hover:text-green-700 inline-flex items-center gap-1"
+                                  >
+                                    Descargar PDF <ArrowDownTrayIcon width={12} height={12} />
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-gray-600">No hay facturas registradas.</div>
+                      )}
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-semibold text-gray-900 mb-2">Transacciones</h4>
+                      {stripeSummary.transactions && stripeSummary.transactions.length > 0 ? (
+                        <div className="space-y-2">
+                          {stripeSummary.transactions.map((transaction) => (
+                            <div key={transaction.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border border-gray-200 bg-white p-3">
+                              <div className="text-sm text-gray-700">
+                                <div className="font-medium text-gray-900">{transaction.id}</div>
+                                <div className="text-xs text-gray-600">
+                                  {transaction.status ? `Estado: ${transaction.status}` : 'Estado no disponible'} · {formatStripeDate(transaction.created, true)}
+                                </div>
+                                <div className="text-xs text-gray-600">
+                                  Importe: {formatStripeAmount(transaction.amount, transaction.currency)}
+                                </div>
+                                {transaction.description && (
+                                  <div className="text-xs text-gray-600">{transaction.description}</div>
+                                )}
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {transaction.charge_id && (
+                                  <a
+                                    href={`https://dashboard.stripe.com/payments/${transaction.charge_id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-green-600 hover:text-green-700 inline-flex items-center gap-1"
+                                  >
+                                    Ver pago <ArrowTopRightOnSquareIcon width={12} height={12} />
+                                  </a>
+                                )}
+                                {transaction.invoice_id && (
+                                  <a
+                                    href={`https://dashboard.stripe.com/invoices/${transaction.invoice_id}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-green-600 hover:text-green-700 inline-flex items-center gap-1"
+                                  >
+                                    Ver factura <ArrowTopRightOnSquareIcon width={12} height={12} />
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-gray-600">No hay transacciones registradas.</div>
+                      )}
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>

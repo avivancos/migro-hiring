@@ -11,3 +11,6 @@ El tipo `CRMUser` define `role_name` como opcional. Un filtro estricto por rol p
 
 ### Resultado
 No se requieren cambios de código: el filtro ya mantiene el comportamiento permisivo y evita listas vacías por ausencia de `role_name`.
+
+### Validación (2026-01-20)
+- Se confirma que el filtro actual sigue siendo permisivo y no fuerza `role_name` obligatorio.

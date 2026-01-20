@@ -117,11 +117,14 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [x] Documentación: `docs/TEST_SETUP_WINDOW_PRESERVE.md` ✅
 - [x] Verificación: filtro de rol en `useCRMUsers` mantiene `role_name` opcional.
   - [x] Documentación: `docs/FRONTEND_CRM_USERS_ROLE_FILTER_OPTIONAL.md` ✅
+  - [x] Re-verificado (2026-01-20): no hay filtro estricto por `role_name`. ✅
 - [x] CRM: Línea de tiempo unificada con eventos futuros y creación de contacto.
   - [x] Incluye llamadas, tareas, notas, oportunidades relacionadas y eventos programados.
   - [x] Documentación: `docs/CRM_CONTACT_ACTIVITY_TIMELINE.md` ✅
 - [x] Prompt backend: endpoint unificado de timeline de contacto.
   - [x] Documentación: `docs/BACKEND_CONTACT_TIMELINE_PROMPT.md` ✅
+- [x] Admin contratos: seccion Stripe con suscripcion, facturas y transacciones.
+  - [x] Documentacion: `docs/FRONTEND_ADMIN_CONTRACT_STRIPE_BILLING_SECTION.md` ✅
 - [ ] Verificar en entorno local la URL de calendario diario (`view=day`) con fecha explícita.
 - [x] Corrección de bugs críticos: Comparación case-insensitive de IDs y conversión incorrecta de URL de Pili.
   - [x] Bug 1: Eliminada conversión a lowercase en comparación de IDs de usuario (4 lugares en `CRMContactDetail.tsx`) ✅

@@ -24,6 +24,15 @@ Unificar en una sola línea temporal los eventos pasados y futuros asociados al 
 - Header con fecha, responsable (si aplica) y badge “Próximo”.
 - Acciones rápidas para navegar al contacto desde eventos de llamadas/tareas.
 
+### Mapeo de iconos y labels (propuesto)
+- `contact_created`: UserIcon — "Contacto creado"
+- `call`: PhoneIcon — "Llamada"
+- `call_scheduled`: PhoneIcon — "Llamada programada"
+- `task`: ClockIcon — "Tarea"
+- `task_due`: ClockIcon — "Vence tarea"
+- `note`: DocumentTextIcon — "Nota"
+- `opportunity`: StarIcon — "Oportunidad detectada"
+
 ### Consideraciones
 - No depende de un endpoint unificado del backend; se construye en el frontend combinando llamadas, tareas, notas y oportunidades ya disponibles.
 - Si el backend expone más eventos (pagos, contratos, etc.), se pueden agregar como tipos adicionales en la misma línea temporal.
