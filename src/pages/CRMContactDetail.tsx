@@ -269,37 +269,87 @@ export function CRMContactDetail() {
   // Crear timeline unificado de actividades
   interface TimelineItem {
     id: string;
-    type: 'call' | 'task' | 'note';
+    type: 'call' | 'task' | 'note' | 'contact_created' | 'task_due' | 'call_scheduled' | 'opportunity';
     date: string;
-    data: Call | Task | Note;
+    data: Call | Task | Note | Contact | LeadOpportunity;
+    isFuture?: boolean;
+    meta?: {
+      label?: string;
+      field?: 'proxima_accion_fecha' | 'proxima_llamada_fecha' | 'complete_till' | 'detected_at' | 'created_at';
+    };
   }
 
   // Memoizar timeline items para evitar recalcular en cada render
   const timelineItems = useMemo((): TimelineItem[] => {
     const items: TimelineItem[] = [];
+    const now = Date.now();
+
+    if (contact?.created_at) {
+      items.push({
+        id: `contact-created-${contact.id}`,
+        type: 'contact_created',
+        date: contact.created_at,
+        data: contact,
+        meta: { label: 'Contacto creado', field: 'created_at' },
+      });
+    }
 
     // Agregar llamadas
     calls.forEach(call => {
-      items.push({
-        id: `call-${call.id}`,
-        type: 'call',
-        date: call.started_at || call.created_at,
-        data: call,
+      const callDate = call.started_at || call.created_at;
+      if (callDate) {
+        items.push({
+          id: `call-${call.id}`,
+          type: 'call',
+          date: callDate,
+          data: call,
+        });
+      }
+
+      const scheduledFields: Array<{ field: 'proxima_accion_fecha' | 'proxima_llamada_fecha'; label: string; value?: string | null }> = [
+        { field: 'proxima_accion_fecha', label: 'Próxima acción', value: call.proxima_accion_fecha },
+        { field: 'proxima_llamada_fecha', label: 'Próxima llamada', value: call.proxima_llamada_fecha },
+      ];
+
+      scheduledFields.forEach(({ field, label, value }) => {
+        if (!value) return;
+        items.push({
+          id: `call-scheduled-${call.id}-${field}`,
+          type: 'call_scheduled',
+          date: value,
+          data: call,
+          isFuture: new Date(value).getTime() > now,
+          meta: { label, field },
+        });
       });
     });
 
     // Agregar tareas
     tasks.forEach(task => {
-      items.push({
-        id: `task-${task.id}`,
-        type: 'task',
-        date: task.created_at,
-        data: task,
-      });
+      if (task.created_at) {
+        items.push({
+          id: `task-${task.id}`,
+          type: 'task',
+          date: task.created_at,
+          data: task,
+        });
+      }
+
+      if (task.complete_till) {
+        items.push({
+          id: `task-due-${task.id}`,
+          type: 'task_due',
+          date: task.complete_till,
+          data: task,
+          isFuture: new Date(task.complete_till).getTime() > now,
+          meta: { label: 'Vence tarea', field: 'complete_till' },
+        });
+      }
     });
 
     // Agregar notas
     notes.forEach(note => {
+      if (!note.created_at) return;
       items.push({
         id: `note-${note.id}`,
         type: 'note',
@@ -308,9 +358,22 @@ export function CRMContactDetail() {
       });
     });
 
+    // Agregar oportunidades relacionadas
+    relatedOpportunities.forEach(opportunity => {
+      const date = opportunity.detected_at || opportunity.created_at;
+      if (!date) return;
+      items.push({
+        id: `opportunity-${opportunity.id}`,
+        type: 'opportunity',
+        date,
+        data: opportunity,
+        meta: { label: 'Oportunidad detectada', field: 'detected_at' },
+      });
+    });
+
     // Ordenar por fecha (más recientes primero)
     return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [calls, tasks, notes]);
+  }, [calls, tasks, notes, contact, relatedOpportunities]);
 
   const getGradingColor = (grading?: 'A' | 'B+' | 'B-' | 'C' | 'D'): string => {
     switch (grading) {
@@ -2025,10 +2088,24 @@ export function CRMContactDetail() {
                         const isCall = item.type === 'call';
                         const isTask = item.type === 'task';
                         const isNote = item.type === 'note';
+                        const isContactCreated = item.type === 'contact_created';
+                        const isTaskDue = item.type === 'task_due';
+                        const isCallScheduled = item.type === 'call_scheduled';
+                        const isOpportunity = item.type === 'opportunity';
                         
-                        const call = isCall ? (item.data as Call) : null;
-                        const task = isTask ? (item.data as Task) : null;
+                        const call = isCall || isCallScheduled ? (item.data as Call) : null;
+                        const task = isTask || isTaskDue ? (item.data as Task) : null;
                         const note = isNote ? (item.data as Note) : null;
+                        const contactItem = isContactCreated ? (item.data as Contact) : null;
+                        const opportunity = isOpportunity ? (item.data as LeadOpportunity) : null;
+
+                        const responsibleUserId = isCall || isCallScheduled
+                          ? call?.responsible_user_id
+                          : isTask || isTaskDue
+                          ? task?.responsible_user_id
+                          : isOpportunity
+                          ? opportunity?.assigned_to_id
+                          : undefined;
 
                         // Determinar el icono y color según el tipo
                         let IconComponent = DocumentTextIcon;
@@ -2039,14 +2116,30 @@ export function CRMContactDetail() {
                           IconComponent = PhoneIcon;
                           iconBgColor = 'bg-blue-100 text-blue-600';
                           borderColor = 'border-blue-200';
+                        } else if (isCallScheduled) {
+                          IconComponent = PhoneIcon;
+                          iconBgColor = 'bg-blue-50 text-blue-600';
+                          borderColor = 'border-blue-200';
                         } else if (isTask) {
                           IconComponent = task?.is_completed ? CheckCircleIcon : ClockIcon;
                           iconBgColor = task?.is_completed ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600';
                           borderColor = task?.is_completed ? 'border-green-200' : 'border-yellow-200';
+                        } else if (isTaskDue) {
+                          IconComponent = ClockIcon;
+                          iconBgColor = 'bg-orange-100 text-orange-600';
+                          borderColor = 'border-orange-200';
                         } else if (isNote) {
                           IconComponent = DocumentTextIcon;
                           iconBgColor = 'bg-purple-100 text-purple-600';
                           borderColor = 'border-purple-200';
+                        } else if (isContactCreated) {
+                          IconComponent = UserIcon;
+                          iconBgColor = 'bg-emerald-100 text-emerald-600';
+                          borderColor = 'border-emerald-200';
+                        } else if (isOpportunity) {
+                          IconComponent = StarIcon;
+                          iconBgColor = 'bg-indigo-100 text-indigo-600';
+                          borderColor = 'border-indigo-200';
                         }
 
                         return (
@@ -2064,15 +2157,16 @@ export function CRMContactDetail() {
                                   <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                                     <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                                     <span>{formatDate(item.date)}</span>
+                                    {item.isFuture && (
+                                      <Badge variant="outline" className="text-[10px] sm:text-xs">
+                                        Próximo
+                                      </Badge>
+                                    )}
                                   </div>
                                   <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                                     <UserIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                                     <span className="truncate">
-                                      {isCall && call?.responsible_user_id
-                                        ? getUserName(call.responsible_user_id)
-                                        : isTask && task?.responsible_user_id
-                                        ? getUserName(task.responsible_user_id)
-                                        : 'Sistema'}
+                                      {responsibleUserId ? getUserName(responsibleUserId) : 'Sistema'}
                                     </span>
                                   </div>
                                 </div>
@@ -2138,6 +2232,41 @@ export function CRMContactDetail() {
                                   </div>
                                 )}
                                 
+                                {isCallScheduled && call && (
+                                  <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-semibold text-gray-900">
+                                          {item.meta?.label || 'Llamada programada'}
+                                        </span>
+                                        {call.phone && (
+                                          <span className="text-sm text-gray-600">
+                                            <PhoneIcon className="w-3 h-3 inline mr-1" />
+                                            {call.phone}
+                                          </span>
+                                        )}
+                                      </div>
+                                      {call.entity_id && (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/crm/contacts/${call.entity_id}`);
+                                          }}
+                                          className="text-xs"
+                                        >
+                                          <ArrowTopRightOnSquareIcon className="w-3 h-3 mr-1" />
+                                          Ver contacto
+                                        </Button>
+                                      )}
+                                    </div>
+                                    <div className="text-sm text-gray-700">
+                                      Fecha programada: {formatDate(item.date)}
+                                    </div>
+                                  </div>
+                                )}
+                                
                                 {isTask && task && (
                                   <div>
                                     <div className="flex items-center justify-between mb-2">
@@ -2177,6 +2306,41 @@ export function CRMContactDetail() {
                                   </div>
                                 )}
                                 
+                                {isTaskDue && task && (
+                                  <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-semibold text-gray-900">
+                                          {item.meta?.label || 'Vence tarea'}
+                                        </span>
+                                        {task.is_completed && (
+                                          <CheckCircleIcon className="w-4 h-4 text-green-600" />
+                                        )}
+                                      </div>
+                                      {task.entity_id && task.entity_type && (
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(`/crm/contacts/${task.entity_id}`);
+                                          }}
+                                          className="text-xs"
+                                        >
+                                          <ArrowTopRightOnSquareIcon className="w-3 h-3 mr-1" />
+                                          Ver contacto
+                                        </Button>
+                                      )}
+                                    </div>
+                                    <div className="text-sm text-gray-700">
+                                      {task.text}
+                                    </div>
+                                    <div className="text-sm text-gray-600 mt-1">
+                                      Fecha límite: {formatDate(item.date)}
+                                    </div>
+                                  </div>
+                                )}
+                                
                                 {isNote && note && (
                                   <div>
                                     <div className="flex items-center justify-between mb-2">
@@ -2199,6 +2363,40 @@ export function CRMContactDetail() {
                                     <p className="text-sm text-gray-700 whitespace-pre-wrap">
                                       {note.content}
                                     </p>
+                                  </div>
+                                )}
+
+                                {isContactCreated && contactItem && (
+                                  <div>
+                                    <p className="font-semibold text-gray-900 mb-2">Contacto creado</p>
+                                    <div className="text-sm text-gray-700">
+                                      {contactItem.name}
+                                    </div>
+                                    <div className="text-xs text-gray-600 mt-1 space-y-1">
+                                      {contactItem.email && <div>Email: {contactItem.email}</div>}
+                                      {contactItem.phone && <div>Teléfono: {contactItem.phone}</div>}
+                                      {contactItem.mobile && <div>Móvil: {contactItem.mobile}</div>}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {isOpportunity && opportunity && (
+                                  <div>
+                                    <div className="flex items-center justify-between mb-2">
+                                      <p className="font-semibold text-gray-900">Oportunidad detectada</p>
+                                      <div className="flex items-center gap-2">
+                                        <OpportunityPriorityBadge priority={opportunity.priority} />
+                                        <OpportunityScore score={opportunity.opportunity_score} />
+                                      </div>
+                                    </div>
+                                    <div className="text-sm text-gray-700">
+                                      Estado: {opportunity.status}
+                                    </div>
+                                    {opportunity.notes && (
+                                      <div className="text-sm text-gray-600 mt-2 whitespace-pre-wrap">
+                                        {opportunity.notes}
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                               </div>
