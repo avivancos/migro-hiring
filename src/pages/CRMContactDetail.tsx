@@ -86,6 +86,13 @@ export function CRMContactDetail() {
         setError('Contacto no encontrado');
         setContact(null);
       } else {
+        // Debug: verificar landing_product
+        console.log('🔍 [CRMContactDetail] Contacto cargado:', {
+          id: contactData.id,
+          name: contactData.name,
+          landing_product: contactData.landing_product,
+          landing_product_type: typeof contactData.landing_product,
+        });
         setContact(contactData);
         setError(null);
       }
@@ -394,6 +401,15 @@ export function CRMContactDetail() {
 
   // Helper para obtener información del landing product
   const getLandingProductInfo = (landingProduct?: string | null): { label: string; color: string; iconColor: string } | null => {
+    // Debug: verificar el valor recibido
+    console.log('🔍 [CRMContactDetail] getLandingProductInfo llamado con:', {
+      landingProduct,
+      type: typeof landingProduct,
+      isNull: landingProduct === null,
+      isUndefined: landingProduct === undefined,
+      isEmpty: landingProduct === '',
+    });
+    
     if (!landingProduct) return null;
     
     switch (landingProduct) {
@@ -1163,16 +1179,27 @@ export function CRMContactDetail() {
                       {contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim()}
                     </h2>
                     {/* Landing Product Badge - Destacado */}
-                    {getLandingProductInfo(contact.landing_product) && (
-                      <div className="mt-2">
-                        <Badge 
-                          className={`${getLandingProductInfo(contact.landing_product)?.color} border-2 font-semibold text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-1.5 flex items-center gap-1.5 w-fit`}
-                        >
-                          <GlobeAltIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${getLandingProductInfo(contact.landing_product)?.iconColor}`} />
-                          <span>Landing: {getLandingProductInfo(contact.landing_product)?.label}</span>
-                        </Badge>
-                      </div>
-                    )}
+                    {(() => {
+                      const landingInfo = getLandingProductInfo(contact.landing_product);
+                      // Debug: verificar si el badge se renderiza
+                      if (contact.landing_product !== undefined) {
+                        console.log('🔍 [CRMContactDetail] Renderizando badge con:', {
+                          landing_product: contact.landing_product,
+                          landingInfo,
+                          willRender: !!landingInfo,
+                        });
+                      }
+                      return landingInfo ? (
+                        <div className="mt-2">
+                          <Badge 
+                            className={`${landingInfo.color} border-2 font-semibold text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-1.5 flex items-center gap-1.5 w-fit`}
+                          >
+                            <GlobeAltIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${landingInfo.iconColor}`} />
+                            <span>Landing: {landingInfo.label}</span>
+                          </Badge>
+                        </div>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
                 
