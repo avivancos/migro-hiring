@@ -6,35 +6,35 @@
 ### Bugs corregidos
 
 #### Bug 1: Header Content-Type explícito en FormData
-**Archivo**: `src/components/opportunities/RequestContractModal.tsx`
-**Líneas**: 183-191
+**Archivo**: `src/services/api.ts`
+**Líneas**: 199-210 (interceptor de requests)
 
-**Problema**: Al enviar `FormData` a axios, se establecía explícitamente el header `Content-Type: multipart/form-data`. Esto impide que axios genere automáticamente el parámetro `boundary` requerido para el formato multipart, causando que el cuerpo de la petición esté mal formado en el servidor y potencialmente falle o sea rechazado.
+**Problema**: El servicio API tiene configurado un header por defecto `Content-Type: application/json`. Cuando se envía `FormData`, axios debería automáticamente sobrescribir este header con `multipart/form-data; boundary=...`, pero si se establece explícitamente sin el boundary, el servidor no puede parsear correctamente el cuerpo de la petición, causando que falle o sea rechazado.
 
-**Solución**: Se eliminó el header explícito para permitir que axios establezca automáticamente el `Content-Type` correcto con el `boundary` generado.
+**Solución**: Se agregó lógica en el interceptor de requests de axios para detectar cuando el body es `FormData` y eliminar automáticamente el header `Content-Type`, permitiendo que axios lo establezca correctamente con el boundary generado.
 
 **Cambio**:
 ```typescript
-// Antes
-const response = await api.post(
-  `/pipelines/stages/${entityType}/${entityId}/request-hiring-code`,
-  formDataToSend,
-  {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+// Agregado en el interceptor de requests (api.ts)
+// IMPORTANTE: Si el body es FormData, eliminar Content-Type para que axios 
+// genere automáticamente el boundary correcto. Si se establece explícitamente
+// sin boundary, el servidor no puede parsear el cuerpo de la petición.
+if (config.data instanceof FormData) {
+  // Eliminar Content-Type si está presente (axios lo establecerá automáticamente con boundary)
+  if (config.headers && 'Content-Type' in config.headers) {
+    delete config.headers['Content-Type'];
   }
-);
-
-// Después
-// No establecer Content-Type explícitamente - axios lo genera automáticamente con el boundary correcto
-const response = await api.post(
-  `/pipelines/stages/${entityType}/${entityId}/request-hiring-code`,
-  formDataToSend
-);
+  // También eliminar del objeto defaults.headers si está presente
+  if (config.headers && 'content-type' in config.headers) {
+    delete config.headers['content-type'];
+  }
+}
 ```
 
-**Nota técnica**: Cuando axios detecta un objeto `FormData`, automáticamente establece el header `Content-Type` con el formato `multipart/form-data; boundary=----WebKitFormBoundary...`. Si se establece manualmente sin el boundary, el servidor no puede parsear correctamente el cuerpo de la petición.
+**Nota técnica**: 
+- Esta solución es más robusta que eliminar el header solo en componentes específicos, ya que asegura que cualquier lugar donde se use `FormData` con el servicio API funcionará correctamente
+- Cuando axios detecta un objeto `FormData`, automáticamente establece el header `Content-Type` con el formato `multipart/form-data; boundary=----WebKitFormBoundary...`
+- Si se establece manualmente sin el boundary, el servidor no puede parsear correctamente el cuerpo de la petición
 
 ---
 

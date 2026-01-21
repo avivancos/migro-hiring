@@ -489,6 +489,129 @@ export function CRMDashboardPage() {
           </Card>
         </div>
 
+        {/* Mis Contactos para Llamadas - PRIMERA SECCIÓN */}
+        <Card className="mb-4 sm:mb-6 border-2 border-blue-200 bg-blue-50">
+          <CardHeader className="p-3 sm:p-4 md:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 md:gap-0">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <PhoneIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-2">
+                  <CardTitle className="text-base sm:text-lg md:text-xl font-bold text-blue-900">
+                    Mis Contactos para Llamadas
+                  </CardTitle>
+                  <span className="text-[10px] xs:text-xs sm:text-sm font-normal text-blue-700 bg-blue-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
+                    {myLeadsForCalls.length} asignados
+                  </span>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  // Aplicar filtro "Solo mis contactos" al navegar
+                  const params = new URLSearchParams();
+                  if (user?.id) {
+                    params.set('responsible_user_id', user.id);
+                  }
+                  navigate(`/crm/contacts?${params.toString()}`);
+                }}
+                className="border-blue-300 text-blue-700 hover:bg-blue-100 w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9 md:h-10"
+              >
+                <span className="sm:inline">Ver todos mis contactos</span>
+                <ArrowRightIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:ml-2" />
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="p-3 sm:p-4 md:p-6">
+            <p className="text-[11px] xs:text-xs sm:text-sm text-blue-700 mb-3 sm:mb-4">
+              Últimos 10 contactos asignados a ti para efectuar llamadas. El sistema distribuye automáticamente los contactos entre los agentes.
+            </p>
+            {myLeadsForCalls.length > 0 ? (
+              <div className="space-y-2 sm:space-y-3">
+                {myLeadsForCalls.map((lead) => (
+                  <div
+                    key={lead.id}
+                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 md:gap-4 p-2.5 sm:p-3 md:p-4 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/crm/contacts/${lead.id}`)}
+                  >
+                    <div className="flex-1 min-w-0 w-full sm:w-auto">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+                        <h3 className="font-semibold text-gray-900 text-xs sm:text-sm md:text-base truncate">{lead.name}</h3>
+                        {lead.priority && lead.priority !== 'medium' && (
+                          <span
+                            className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(
+                              lead.priority
+                            )}`}
+                          >
+                            {formatPriority(lead.priority)}
+                          </span>
+                        )}
+                        {lead.status && (
+                          <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-300">
+                            {formatLeadStatus(lead.status)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-4 text-[10px] xs:text-xs sm:text-sm text-gray-600">
+                        {lead.contact && (
+                          <div className="flex items-center gap-1">
+                            <UsersIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <span className="truncate">
+                              {lead.contact.first_name} {lead.contact.last_name}
+                            </span>
+                          </div>
+                        )}
+                        {lead.contact?.phone && (
+                          <div className="flex items-center gap-1">
+                            <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <span>{lead.contact.phone}</span>
+                          </div>
+                        )}
+                        {lead.service_type && (
+                          <div className="flex items-center gap-1">
+                            <BuildingOffice2Icon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                            <span className="truncate">{lead.service_type}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-1">
+                          <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span>{formatDate(lead.created_at)}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 sm:gap-3 md:gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                      {lead.price > 0 && (
+                        <div className="text-right">
+                          <p className="text-sm sm:text-base md:text-lg font-bold text-green-600">
+                            {formatCurrency(lead.price, lead.currency || 'EUR', false)}
+                          </p>
+                        </div>
+                      )}
+                      <Button
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-initial text-xs sm:text-sm h-8 sm:h-9 md:h-10"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/crm/contacts/${lead.id}?action=call`);
+                        }}
+                      >
+                        <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                        <span className="sm:inline">Llamar</span>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-6 text-center">
+                <p className="text-sm text-gray-500">
+                  No hay contactos asignados
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* 1. Métricas de Productividad - Solo para agentes */}
         {userIsAgent && (
           <Card>
@@ -1106,122 +1229,6 @@ export function CRMDashboardPage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Mis Contactos para Llamadas */}
-        <Card className="mb-4 sm:mb-6 border-2 border-blue-200 bg-blue-50">
-          <CardHeader className="p-3 sm:p-4 md:p-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 md:gap-0">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                <PhoneIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1.5 sm:gap-2">
-                  <CardTitle className="text-base sm:text-lg md:text-xl font-bold text-blue-900">
-                    Mis Contactos para Llamadas
-                  </CardTitle>
-                  <span className="text-[10px] xs:text-xs sm:text-sm font-normal text-blue-700 bg-blue-100 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full">
-                    {myLeadsForCalls.length} asignados
-                  </span>
-                </div>
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate('/crm/contacts')}
-                className="border-blue-300 text-blue-700 hover:bg-blue-100 w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9 md:h-10"
-              >
-                <span className="sm:inline">Ver todos mis contactos</span>
-                <ArrowRightIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:ml-2" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="p-3 sm:p-4 md:p-6">
-            <p className="text-[11px] xs:text-xs sm:text-sm text-blue-700 mb-3 sm:mb-4">
-              Últimos 10 contactos asignados a ti para efectuar llamadas. El sistema distribuye automáticamente los contactos entre los agentes.
-            </p>
-            {myLeadsForCalls.length > 0 ? (
-              <div className="space-y-2 sm:space-y-3">
-                {myLeadsForCalls.map((lead) => (
-                  <div
-                    key={lead.id}
-                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 md:gap-4 p-2.5 sm:p-3 md:p-4 bg-white border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/crm/contacts/${lead.id}`)}
-                  >
-                    <div className="flex-1 min-w-0 w-full sm:w-auto">
-                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-                        <h3 className="font-semibold text-gray-900 text-xs sm:text-sm md:text-base truncate">{lead.name}</h3>
-                        {lead.priority && lead.priority !== 'medium' && (
-                          <span
-                            className={`text-xs px-2 py-1 rounded-full border ${getPriorityColor(
-                              lead.priority
-                            )}`}
-                          >
-                            {formatPriority(lead.priority)}
-                          </span>
-                        )}
-                        {lead.status && (
-                          <span className="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700 border border-gray-300">
-                            {formatLeadStatus(lead.status)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-4 text-[10px] xs:text-xs sm:text-sm text-gray-600">
-                        {lead.contact && (
-                          <div className="flex items-center gap-1">
-                            <UsersIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                            <span className="truncate">
-                              {lead.contact.first_name} {lead.contact.last_name}
-                            </span>
-                          </div>
-                        )}
-                        {lead.contact?.phone && (
-                          <div className="flex items-center gap-1">
-                            <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                            <span>{lead.contact.phone}</span>
-                          </div>
-                        )}
-                        {lead.service_type && (
-                          <div className="flex items-center gap-1">
-                            <BuildingOffice2Icon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                            <span className="truncate">{lead.service_type}</span>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-1">
-                          <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                          <span>{formatDate(lead.created_at)}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 sm:gap-3 md:gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                      {lead.price > 0 && (
-                        <div className="text-right">
-                          <p className="text-sm sm:text-base md:text-lg font-bold text-green-600">
-                            {formatCurrency(lead.price, lead.currency || 'EUR', false)}
-                          </p>
-                        </div>
-                      )}
-                      <Button
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700 flex-1 sm:flex-initial text-xs sm:text-sm h-8 sm:h-9 md:h-10"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/crm/contacts/${lead.id}?action=call`);
-                        }}
-                      >
-                        <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
-                        <span className="sm:inline">Llamar</span>
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="py-6 text-center">
-                <p className="text-sm text-gray-500">
-                  No hay contactos asignados
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Pipeline Kanban */}
         <div className="mb-4 sm:mb-6 md:mb-8">

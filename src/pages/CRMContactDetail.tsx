@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { crmService } from '@/services/crmService';
 import { adminService } from '@/services/adminService';
 import type { Contact, Task, Call, Note, CallCreateRequest, TaskCreateRequest, NoteCreateRequest } from '@/types/crm';
-import { ArrowLeftIcon, ArrowTopRightOnSquareIcon, BriefcaseIcon, CalendarIcon, ChartBarIcon, ClockIcon, DocumentTextIcon, EnvelopeIcon, FlagIcon, MapPinIcon, PencilIcon, PhoneIcon, PlusIcon, StarIcon, TrashIcon, UserIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ArrowTopRightOnSquareIcon, BriefcaseIcon, CalendarIcon, ChartBarIcon, ClockIcon, DocumentTextIcon, EnvelopeIcon, FlagIcon, GlobeAltIcon, MapPinIcon, PencilIcon, PhoneIcon, PlusIcon, StarIcon, TrashIcon, UserIcon, UsersIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon } from '@heroicons/react/24/solid';
 // import * as LucideIcons from 'lucide-react';
 import { CallForm } from '@/components/CRM/CallForm';
@@ -389,6 +389,32 @@ export function CRMContactDetail() {
         return 'bg-red-900 text-red-100 border-red-800';
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  // Helper para obtener información del landing product
+  const getLandingProductInfo = (landingProduct?: string | null): { label: string; color: string; iconColor: string } | null => {
+    if (!landingProduct) return null;
+    
+    switch (landingProduct) {
+      case 'situacion_irregular':
+        return {
+          label: 'Situación Irregular',
+          color: 'bg-orange-100 text-orange-800 border-orange-300',
+          iconColor: 'text-orange-600'
+        };
+      case 'nacionalidad':
+        return {
+          label: 'Nacionalidad',
+          color: 'bg-purple-100 text-purple-800 border-purple-300',
+          iconColor: 'text-purple-600'
+        };
+      default:
+        return {
+          label: landingProduct,
+          color: 'bg-blue-100 text-blue-800 border-blue-300',
+          iconColor: 'text-blue-600'
+        };
     }
   };
 
@@ -1136,6 +1162,17 @@ export function CRMContactDetail() {
                     <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 truncate">
                       {contact.name || `${contact.first_name} ${contact.last_name || ''}`.trim()}
                     </h2>
+                    {/* Landing Product Badge - Destacado */}
+                    {getLandingProductInfo(contact.landing_product) && (
+                      <div className="mt-2">
+                        <Badge 
+                          className={`${getLandingProductInfo(contact.landing_product)?.color} border-2 font-semibold text-xs sm:text-sm px-2 sm:px-3 py-1 sm:py-1.5 flex items-center gap-1.5 w-fit`}
+                        >
+                          <GlobeAltIcon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${getLandingProductInfo(contact.landing_product)?.iconColor}`} />
+                          <span>Landing: {getLandingProductInfo(contact.landing_product)?.label}</span>
+                        </Badge>
+                      </div>
+                    )}
                   </div>
                 </div>
                 

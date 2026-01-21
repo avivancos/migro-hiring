@@ -198,6 +198,20 @@ function setupApiInterceptors(instance: ReturnType<typeof axios.create>) {
       });
     }
     
+    // IMPORTANTE: Si el body es FormData, eliminar Content-Type para que axios 
+    // genere automáticamente el boundary correcto. Si se establece explícitamente
+    // sin boundary, el servidor no puede parsear el cuerpo de la petición.
+    if (config.data instanceof FormData) {
+      // Eliminar Content-Type si está presente (axios lo establecerá automáticamente con boundary)
+      if (config.headers && 'Content-Type' in config.headers) {
+        delete config.headers['Content-Type'];
+      }
+      // También eliminar del objeto defaults.headers si está presente
+      if (config.headers && 'content-type' in config.headers) {
+        delete config.headers['content-type'];
+      }
+    }
+    
     return config;
   },
   (error) => {

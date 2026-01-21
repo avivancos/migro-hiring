@@ -147,6 +147,15 @@ describe('ContactForm - Tests de Seguridad y Permisos', () => {
       }, { container });
 
       for (const xssAttempt of xssAttempts) {
+        // Establecer un nombre válido primero (requerido)
+        const nameInput = screen.getByLabelText(/nombre completo/i);
+        fireEvent.change(nameInput, { target: { value: 'Test Contact' } });
+        
+        // Esperar a que el nombre se establezca
+        await waitFor(() => {
+          expect((nameInput as HTMLInputElement).value).toBe('Test Contact');
+        }, { container, timeout: 1000 });
+        
         const emailInput = screen.getByLabelText(/email/i);
         fireEvent.change(emailInput, { target: { value: xssAttempt } });
 
