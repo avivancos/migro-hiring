@@ -92,7 +92,7 @@ export function generateCollabAgreementPDF(): Blob {
   addSpace();
 
   addText('9. VIGENCIA Y JURISDICCIÓN');
-  addText('Vigencia 12 meses renovables; Juzgados y Tribunales de Salamanca.');
+  addText('Vigencia 12 meses renovables; Juzgados y Tribunales de Salamanca o del domicilio local del DESPACHO si se pacta expresamente.');
   addSpace(8);
 
   // Footer con URL corta

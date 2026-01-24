@@ -81,11 +81,27 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [x] Documentación creada: `docs/BACKEND_CONTRACT_ANNEXES_IMPLEMENTATION.md` ✅
   - [x] Documentación creada: `docs/FRONTEND_ACCESO_AGENTES_SIN_RESTRICCIONES.md` ✅
 
+### ✅ Contrato agentes: fuero local (Enero 2026)
+- [x] Actualizado convenio de colaboración para permitir fuero en domicilio local del agente ✅
+  - [x] Plantilla principal: `src/utils/collabAgreementTemplate.ts` ✅
+  - [x] Resumen PDF: `src/utils/collabAgreementPdfGenerator.ts` ✅
+  - [x] Documentación: `docs/CONTRATO_AGENTES_FUERO_LOCAL.md` ✅
+
 ### ✅ Hotfixes recientes (Enero 2026)
 - [x] Corrección TS en `RequestContractModal` (uso de `current_stage` en vez de `name`) y callback de hiring code sin usar; build en Docker verificado.
 - [x] Botón para descartar oportunidad con motivo (marca `lost` y agrega motivo en notas).
   - [x] Documentación backend: `docs/BACKEND_OPPORTUNITY_DISCARD_ENDPOINT.md` ✅
   - [x] Documentación frontend: `docs/FRONTEND_OPPORTUNITY_DISCARD_BUTTON.md` ✅
+- [x] Docker: verificación y reinicio del contenedor frontend (`migro-hiring-prod`).
+  - [x] Documentación: `docs/FRONTEND_DOCKER_CONTAINER_RESTART.md` ✅
+- [x] Verificación de puertos locales para frontend y API.
+  - [x] Documentación: `docs/FRONTEND_API_PORTS_LOCAL.md` ✅
+- [x] Servicios locales en Docker con API en puerto 3000.
+  - [x] Documentación: `docs/LOCAL_SERVICES_API_3000.md` ✅
+- [x] Frontend dev en Docker con hot reload en 5173.
+  - [x] Documentación: `docs/FRONTEND_DEV_DOCKER_HOT_RELOAD_5173.md` ✅
+- [x] Verificación de contenedores locales de API y DB.
+  - [x] Documentación: `docs/LOCAL_API_DB_DOCKER_STATUS.md` ✅
 - [x] Oportunidades: select de responsables siempre visible y nombre en tabla con fallback por `assigned_to_id`.
   - [x] Documentación: `docs/FRONTEND_OPPORTUNITIES_RESPONSIBLES_FIX.md` ✅
 - [x] Oportunidades: encabezados de tabla ordenables con botones y `aria-sort`.
@@ -153,7 +169,9 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [ ] Implementar función para crear notificaciones (24h, 1h, 15min antes) ✅
   - [ ] Integrar creación de notificaciones en endpoints de llamadas/tareas/pipeline ✅
   - [ ] Crear job programado para enviar emails cada 5 minutos ✅
-  - [ ] Documentación: `docs/BACKEND_COVERAGE_USER_NOTIFICATIONS.md` ✅
+  - [ ] Aplicar migración DB `crm_tasks.coverage_user_id` (error 500 `/api/crm/tasks`)
+  - [x] Documentación: `docs/BACKEND_COVERAGE_USER_NOTIFICATIONS.md` ✅
+  - [x] Documentación: `docs/BACKEND_CRM_TASKS_COVERAGE_USER_ID_MIGRATION.md` ✅
 - [ ] Verificar en entorno local la URL de calendario diario (`view=day`) con fecha explícita.
 - [x] Corrección de bugs críticos: Comparación case-insensitive de IDs y conversión incorrecta de URL de Pili.
   - [x] Bug 1: Eliminada conversión a lowercase en comparación de IDs de usuario (4 lugares en `CRMContactDetail.tsx`) ✅

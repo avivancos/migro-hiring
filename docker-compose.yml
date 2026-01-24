@@ -2,10 +2,32 @@
 
 services:
   # ==========================================
-  # Servicio de Desarrollo
-  # NOTA: Para desarrollo, ejecuta directamente: npm run dev
-  # Este servicio Docker dev ha sido eliminado
+  # Servicio de Desarrollo (Vite + Hot Reload)
   # ==========================================
+  dev:
+    container_name: migro-hiring-dev
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    environment:
+      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:3000/api}
+      - VITE_STRIPE_PUBLISHABLE_KEY=${VITE_STRIPE_PUBLISHABLE_KEY:-pk_test_placeholder}
+      - VITE_APP_URL=${VITE_APP_URL:-http://localhost:5173}
+      - VITE_SHORT_URL_BASE=${VITE_SHORT_URL_BASE:-http://localhost:5173}
+      - VITE_PUBLIC_DOMAIN=${VITE_PUBLIC_DOMAIN:-localhost:5173}
+      - VITE_PILI_API_URL=${VITE_PILI_API_URL:-http://localhost:8001/api}
+      - VITE_DEBUG_MODE=${VITE_DEBUG_MODE:-true}
+      - VITE_API_TIMEOUT=${VITE_API_TIMEOUT:-30000}
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+    ports:
+      - "5173:5173"
+    networks:
+      - migro-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
 
   # ==========================================
   # Servicio de Producción (nginx)
@@ -70,4 +92,7 @@ services:
 networks:
   migro-network:
     driver: bridge
+
+volumes:
+  node_modules:
 
