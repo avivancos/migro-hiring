@@ -4,6 +4,9 @@
 Agregar una seccion en `AdminContractDetail` para consultar la suscripcion activa por hiring code,
 actualizar datos de pago y descargar facturas, con listado de transacciones desde Stripe.
 
+### Source of truth (API)
+- Ver: `docs/api/admin_contracts_stripe.md`
+
 ### Ubicacion UI
 - Pantalla: `src/pages/admin/AdminContractDetail.tsx`
 - Columna izquierda, debajo de "Informacion de Pago".
@@ -11,13 +14,17 @@ actualizar datos de pago y descargar facturas, con listado de transacciones desd
 
 ### Comportamiento
 - Carga resumen Stripe por hiring code.
-- Boton "Actualizar datos de pago" abre el Billing Portal (Stripe).
+- Boton "Gestionar pago" abre el Billing Portal (Stripe).
 - Boton "Recargar" fuerza reconsulta.
 - Muestra:
   - Suscripcion (id, estado, periodo, cancelacion).
   - Cliente Stripe y metodo de pago por defecto.
   - Facturas con links a `hosted_invoice_url` y `invoice_pdf`.
   - Transacciones con links a Stripe Dashboard (payment/invoice).
+
+### Implementacion actual (frontend)
+- Componente: `src/components/stripe/StripeBillingSection.tsx`
+- Integracion: `src/pages/admin/AdminContractDetail.tsx` (render condicional)
 
 ### Endpoints requeridos (backend)
 1) `GET /admin/contracts/{code}/stripe/summary`

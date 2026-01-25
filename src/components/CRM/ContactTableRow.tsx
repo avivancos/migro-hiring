@@ -5,12 +5,17 @@ import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Contact } from '@/types/crm';
 import { Badge } from '@/components/ui/badge';
-import { CalendarIcon, EnvelopeIcon, FlagIcon, PhoneIcon, StarIcon } from '@heroicons/react/24/outline';
+import { Button } from '@/components/ui/button';
+import { CalendarIcon, ChevronRightIcon, EnvelopeIcon, FlagIcon, PhoneIcon, StarIcon } from '@heroicons/react/24/outline';
 
 interface ContactTableRowProps {
   contact: Contact;
   visibleColumns: string[];
   onNavigate?: (id: string) => void;
+  showSelection?: boolean;
+  isSelected?: boolean;
+  selectionDisabled?: boolean;
+  onToggleSelected?: (checked: boolean) => void;
 }
 
 // Función helper para obtener variante de badge
@@ -168,10 +173,26 @@ const renderCell = (contact: Contact, columnKey: string) => {
 };
 
 // Componente memoizado - solo se re-renderiza si cambian las props
-export const ContactTableRow = memo<ContactTableRowProps>(({ contact, visibleColumns, onNavigate }) => {
+export const ContactTableRow = memo<ContactTableRowProps>(({
+  contact,
+  visibleColumns,
+  onNavigate,
+  showSelection,
+  isSelected,
+  selectionDisabled,
+  onToggleSelected,
+}) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
+    if (onNavigate) {
+      onNavigate(contact.id);
+    } else {
+      navigate(`/crm/contacts/${contact.id}`);
+    }
+  };
+
+  const handleGoToDetail = () => {
     if (onNavigate) {
       onNavigate(contact.id);
     } else {
@@ -184,7 +205,41 @@ export const ContactTableRow = memo<ContactTableRowProps>(({ contact, visibleCol
       className="hover:bg-gray-50 cursor-pointer"
       onClick={handleClick}
     >
-      {visibleColumns.map(columnKey => renderCell(contact, columnKey))}
+      {showSelection && (
+        <td
+          className="px-3 py-3 whitespace-nowrap"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <input
+            type="checkbox"
+            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            checked={Boolean(isSelected)}
+            disabled={Boolean(selectionDisabled)}
+            onChange={(e) => onToggleSelected?.(e.target.checked)}
+            aria-label={isSelected ? 'Quitar de selección' : 'Seleccionar contacto'}
+          />
+        </td>
+      )}
+      {visibleColumns.map(columnKey => {
+        if (columnKey === 'acciones') {
+          return (
+            <td key={columnKey} className="px-4 py-3 whitespace-nowrap text-right">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleGoToDetail();
+                }}
+              >
+                Ver
+                <ChevronRightIcon className="w-4 h-4 ml-1" />
+              </Button>
+            </td>
+          );
+        }
+        return renderCell(contact, columnKey);
+      })}
     </tr>
   );
 }, (prevProps, nextProps) => {
@@ -192,6 +247,9 @@ export const ContactTableRow = memo<ContactTableRowProps>(({ contact, visibleCol
   if (prevProps.contact.id !== nextProps.contact.id) return false;
   if (prevProps.visibleColumns.length !== nextProps.visibleColumns.length) return false;
   if (prevProps.visibleColumns.join(',') !== nextProps.visibleColumns.join(',')) return false;
+  if (Boolean(prevProps.showSelection) !== Boolean(nextProps.showSelection)) return false;
+  if (Boolean(prevProps.isSelected) !== Boolean(nextProps.isSelected)) return false;
+  if (Boolean(prevProps.selectionDisabled) !== Boolean(nextProps.selectionDisabled)) return false;
   
   // Comparar solo campos visibles
   const relevantFields = ['name', 'email', 'phone', 'nacionalidad', 'grading_llamada', 'grading_situacion', 'created_at', 'updated_at', 'ultima_llamada_fecha', 'proxima_llamada_fecha'];

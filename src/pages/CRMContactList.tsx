@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { crmService } from '@/services/crmService';
 import type { Contact, ContactFilters, CRMUser } from '@/types/crm';
-import { ArrowDownIcon, ArrowUpIcon, ArrowsUpDownIcon, CalendarIcon, ChevronLeftIcon, ChevronRightIcon, CogIcon, EllipsisVerticalIcon, EnvelopeIcon, FlagIcon, FunnelIcon, ListBulletIcon, MagnifyingGlassIcon, MapPinIcon, PhoneIcon, PlusIcon, Squares2X2Icon, StarIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowDownIcon, ArrowUpIcon, ArrowsUpDownIcon, CalendarIcon, ChevronLeftIcon, ChevronRightIcon, CogIcon, EllipsisVerticalIcon, EnvelopeIcon, FlagIcon, FunnelIcon, ListBulletIcon, MagnifyingGlassIcon, MapPinIcon, PhoneIcon, PlusIcon, Squares2X2Icon, StarIcon, TrashIcon, UsersIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/providers/AuthProvider';
 import { isAgent, isAdminOrSuperuser } from '@/utils/searchValidation';
 import { Modal } from '@/components/common/Modal';
@@ -54,6 +54,16 @@ export function CRMContactList() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [users, setUsers] = useState<CRMUser[]>([]);
   const [totalContacts, setTotalContacts] = useState(0);
+
+  // Selección + acciones bulk (solo admin/superuser)
+  const [selectedContactIds, setSelectedContactIds] = useState<Set<string>>(new Set<string>());
+  const [bulkActionsOpen, setBulkActionsOpen] = useState(false);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const [bulkResponsibleUserId, setBulkResponsibleUserId] = useState<string>('');
+  const [bulkDeleteConfirmStep, setBulkDeleteConfirmStep] = useState(false);
+  const [bulkDeleteConfirmed, setBulkDeleteConfirmed] = useState(false);
+  const selectAllRef = useRef<HTMLInputElement | null>(null);
   
   // Paginación
   const [pagination, setPagination] = useState({
@@ -573,6 +583,153 @@ export function CRMContactList() {
     return filtered;
   }, [contacts, searchTerm, ultimaLlamadaDesde, ultimaLlamadaHasta, proximaLlamadaDesde, proximaLlamadaHasta, fechaModificacionDesde, fechaModificacionHasta, sortField, sortOrder]);
 
+  // ===== Selección (solo admin/superuser) =====
+  const visibleContactIdSet = useMemo(() => {
+    return new Set(filteredAndSortedContacts.map(c => c.id));
+  }, [filteredAndSortedContacts]);
+
+  const selectedCount = selectedContactIds.size;
+  const selectedInViewCount = useMemo(() => {
+    let count = 0;
+    for (const id of selectedContactIds) {
+      if (visibleContactIdSet.has(id)) count++;
+    }
+    return count;
+  }, [selectedContactIds, visibleContactIdSet]);
+
+  const allInViewSelected = filteredAndSortedContacts.length > 0 && selectedInViewCount === filteredAndSortedContacts.length;
+  const someInViewSelected = selectedInViewCount > 0 && !allInViewSelected;
+
+  useEffect(() => {
+    // Si no es admin, limpiar selección
+    if (!userIsAdmin) {
+      if (selectedContactIds.size > 0) setSelectedContactIds(new Set<string>());
+      return;
+    }
+
+    // Mantener selección solo para los visibles en la página actual
+    setSelectedContactIds(prev => {
+      if (prev.size === 0) return prev;
+      const next = new Set<string>();
+      for (const id of prev) {
+        if (visibleContactIdSet.has(id)) next.add(id);
+      }
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userIsAdmin, visibleContactIdSet]);
+
+  useEffect(() => {
+    if (!selectAllRef.current) return;
+    selectAllRef.current.indeterminate = someInViewSelected;
+  }, [someInViewSelected]);
+
+  const toggleContactSelected = useCallback((contactId: string, checked: boolean) => {
+    setSelectedContactIds(prev => {
+      const next = new Set(prev);
+      if (checked) next.add(contactId);
+      else next.delete(contactId);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAllVisible = useCallback((checked: boolean) => {
+    const ids = filteredAndSortedContacts.map(c => c.id);
+    setSelectedContactIds(prev => {
+      const next = new Set(prev);
+      if (checked) {
+        ids.forEach(id => next.add(id));
+      } else {
+        ids.forEach(id => next.delete(id));
+      }
+      return next;
+    });
+  }, [filteredAndSortedContacts]);
+
+  const closeBulkModal = useCallback(() => {
+    setBulkActionsOpen(false);
+    setBulkError(null);
+    setBulkBusy(false);
+    setBulkResponsibleUserId('');
+    setBulkDeleteConfirmStep(false);
+    setBulkDeleteConfirmed(false);
+  }, []);
+
+  const runBatches = useCallback(async <T,>(items: T[], batchSize: number, worker: (item: T) => Promise<void>) => {
+    const failed: T[] = [];
+    for (let i = 0; i < items.length; i += batchSize) {
+      const batch = items.slice(i, i + batchSize);
+      // eslint-disable-next-line no-await-in-loop
+      const results = await Promise.allSettled(batch.map(item => worker(item)));
+      results.forEach((r, idx) => {
+        if (r.status === 'rejected') failed.push(batch[idx]);
+      });
+    }
+    return failed;
+  }, []);
+
+  const handleBulkReassign = useCallback(async () => {
+    if (!userIsAdmin) return;
+    const ids = Array.from(selectedContactIds);
+    if (ids.length === 0) return;
+    if (!bulkResponsibleUserId) {
+      setBulkError('Selecciona un responsable para reasignar.');
+      return;
+    }
+
+    setBulkBusy(true);
+    setBulkError(null);
+    try {
+      const failed = await runBatches(ids, 5, async (id) => {
+        await crmService.updateContact(id, { responsible_user_id: bulkResponsibleUserId });
+      });
+      await loadContactsRef.current();
+      if (failed.length > 0) {
+        setSelectedContactIds(new Set(failed));
+        setBulkError(`Fallaron ${failed.length} de ${ids.length}. Reintenta o revisa permisos.`);
+        setBulkBusy(false);
+        return;
+      }
+      setSelectedContactIds(new Set<string>());
+      closeBulkModal();
+    } catch (err: any) {
+      console.error('❌ [CRMContactList] Error en reasignación bulk:', err);
+      setBulkError('Ocurrió un error reasignando responsables. Revisa consola para detalles.');
+      setBulkBusy(false);
+    }
+  }, [userIsAdmin, selectedContactIds, bulkResponsibleUserId, runBatches, closeBulkModal]);
+
+  const handleBulkDelete = useCallback(async () => {
+    if (!userIsAdmin) return;
+    const ids = Array.from(selectedContactIds);
+    if (ids.length === 0) return;
+    if (!bulkDeleteConfirmStep || !bulkDeleteConfirmed) {
+      setBulkError('Confirma la eliminación antes de continuar.');
+      return;
+    }
+
+    setBulkBusy(true);
+    setBulkError(null);
+    try {
+      const failed = await runBatches(ids, 5, async (id) => {
+        await crmService.deleteContact(id);
+      });
+      await loadContactsRef.current();
+      if (failed.length > 0) {
+        setSelectedContactIds(new Set(failed));
+        setBulkError(`Fallaron ${failed.length} de ${ids.length}. Reintenta o revisa permisos.`);
+        setBulkBusy(false);
+        return;
+      }
+      setSelectedContactIds(new Set<string>());
+      closeBulkModal();
+    } catch (err: any) {
+      console.error('❌ [CRMContactList] Error en eliminación bulk:', err);
+      setBulkError('Ocurrió un error eliminando contactos. Revisa consola para detalles.');
+      setBulkBusy(false);
+    }
+  }, [userIsAdmin, selectedContactIds, bulkDeleteConfirmStep, bulkDeleteConfirmed, runBatches, closeBulkModal]);
+
   const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -1070,6 +1227,23 @@ export function CRMContactList() {
                 <span className="sm:inline">Columnas</span>
               </Button>
             )}
+            {userIsAdmin && viewMode === 'table' && (
+              <Button
+                variant="outline"
+                onClick={() => setBulkActionsOpen(true)}
+                disabled={selectedCount === 0}
+                title={selectedCount === 0 ? 'Selecciona contactos para habilitar acciones' : 'Acciones masivas'}
+                className="flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
+              >
+                <EllipsisVerticalIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="sm:inline">Acciones</span>
+                {selectedCount > 0 && (
+                  <span className="ml-2 bg-primary text-primary-foreground rounded-full px-2 py-0.5 text-[10px] sm:text-xs">
+                    {selectedCount}
+                  </span>
+                )}
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={() => setViewMode(viewMode === 'table' ? 'cards' : 'table')}
@@ -1449,6 +1623,22 @@ export function CRMContactList() {
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
+                            {userIsAdmin && (
+                              <th
+                                className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-sans"
+                                style={{ width: 56, minWidth: 56 }}
+                              >
+                                <input
+                                  ref={selectAllRef}
+                                  type="checkbox"
+                                  className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                  checked={allInViewSelected}
+                                  disabled={filteredAndSortedContacts.length === 0 || bulkBusy}
+                                  onChange={(e) => toggleSelectAllVisible(e.target.checked)}
+                                  aria-label={allInViewSelected ? 'Deseleccionar todos' : 'Seleccionar todos'}
+                                />
+                              </th>
+                            )}
                             {visibleColumns.map(columnKey => renderColumnHeader(columnKey))}
                           </tr>
                         </thead>
@@ -1458,6 +1648,10 @@ export function CRMContactList() {
                               key={contact.id}
                               contact={contact}
                               visibleColumns={visibleColumns}
+                              showSelection={userIsAdmin}
+                              isSelected={selectedContactIds.has(contact.id)}
+                              selectionDisabled={bulkBusy}
+                              onToggleSelected={(checked) => toggleContactSelected(contact.id, checked)}
                             />
                           ))}
                         </tbody>
@@ -1729,6 +1923,134 @@ export function CRMContactList() {
               onClick={() => setShowColumnSettings(false)}
             >
               Aplicar
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal de acciones masivas (solo admin/superuser) */}
+      <Modal
+        open={bulkActionsOpen}
+        onClose={() => {
+          if (bulkBusy) return;
+          closeBulkModal();
+        }}
+        title="Acciones masivas"
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="text-sm text-gray-600">
+            Seleccionados: <span className="font-semibold text-gray-900">{selectedCount}</span>
+          </div>
+
+          {bulkError && (
+            <div className="p-3 rounded-lg border border-red-200 bg-red-50 text-sm text-red-700">
+              {bulkError}
+            </div>
+          )}
+
+          <div className="p-4 rounded-lg border border-gray-200 space-y-3">
+            <div className="text-sm font-semibold text-gray-900">Reasignar responsable</div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700">Nuevo responsable</Label>
+              <select
+                value={bulkResponsibleUserId}
+                onChange={(e) => setBulkResponsibleUserId(e.target.value)}
+                disabled={bulkBusy}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary h-[44px] disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                <option value="">Selecciona un usuario</option>
+                {users.map(u => {
+                  const displayName = u.name?.trim() || u.email || `Usuario ${u.id?.slice(0, 8)}`;
+                  return (
+                    <option key={u.id} value={u.id}>
+                      {displayName}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            <Button
+              onClick={handleBulkReassign}
+              disabled={bulkBusy || selectedCount === 0 || !bulkResponsibleUserId}
+              className="w-full"
+            >
+              Aplicar reasignación
+            </Button>
+          </div>
+
+          <div className="p-4 rounded-lg border border-red-200 bg-red-50/40 space-y-3">
+            <div className="text-sm font-semibold text-red-800">Eliminar contactos</div>
+            {!bulkDeleteConfirmStep ? (
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  setBulkError(null);
+                  setBulkDeleteConfirmStep(true);
+                }}
+                disabled={bulkBusy || selectedCount === 0}
+                className="w-full"
+              >
+                <TrashIcon className="w-4 h-4 mr-2" />
+                Eliminar seleccionados
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-sm text-red-800">
+                  Esta acción intentará eliminar <span className="font-semibold">{selectedCount}</span> contactos. No se puede deshacer.
+                </p>
+                <label className="flex items-center gap-2 text-sm text-red-800">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-red-300 text-red-600 focus:ring-red-500"
+                    checked={bulkDeleteConfirmed}
+                    disabled={bulkBusy}
+                    onChange={(e) => setBulkDeleteConfirmed(e.target.checked)}
+                  />
+                  Entiendo y quiero eliminar estos contactos.
+                </label>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setBulkDeleteConfirmStep(false);
+                      setBulkDeleteConfirmed(false);
+                      setBulkError(null);
+                    }}
+                    disabled={bulkBusy}
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleBulkDelete}
+                    disabled={bulkBusy || !bulkDeleteConfirmed}
+                    className="flex-1"
+                  >
+                    Confirmar eliminación
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between gap-2 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setSelectedContactIds(new Set<string>())}
+              disabled={bulkBusy || selectedCount === 0}
+            >
+              Limpiar selección
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (bulkBusy) return;
+                closeBulkModal();
+              }}
+            >
+              Cerrar
             </Button>
           </div>
         </div>

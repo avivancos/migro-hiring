@@ -749,6 +749,13 @@ export function CRMContactDetail() {
   const handleTelnyxCall = async () => {
     if (!contact?.id) return;
 
+    // Evitar crear oportunidades duplicadas si todavía no se terminaron de cargar
+    // las oportunidades relacionadas (relatedOpportunities aún puede estar vacío).
+    if (loadingOpportunities) {
+      alert('Cargando oportunidades relacionadas… espera unos segundos e inténtalo de nuevo.');
+      return;
+    }
+
     const phone = contact.phone || contact.mobile;
     if (!phone) {
       alert('Este contacto no tiene teléfono/móvil para llamar.');
@@ -1543,9 +1550,15 @@ export function CRMContactDetail() {
               </Button>
               <Button
                 onClick={handleTelnyxCall}
-                disabled={startingTelnyxCall || !(contact.phone || contact.mobile)}
+                disabled={startingTelnyxCall || loadingOpportunities || !(contact.phone || contact.mobile)}
                 className="bg-blue-600 hover:bg-blue-700 text-white flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
-                title={!(contact.phone || contact.mobile) ? 'El contacto no tiene teléfono/móvil' : 'Iniciar llamada con Telnyx'}
+                title={
+                  loadingOpportunities
+                    ? 'Cargando oportunidades relacionadas…'
+                    : !(contact.phone || contact.mobile)
+                      ? 'El contacto no tiene teléfono/móvil'
+                      : 'Iniciar llamada con Telnyx'
+                }
               >
                 <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="sm:inline">{startingTelnyxCall ? 'Llamando…' : 'Llamar (Telnyx)'}</span>

@@ -96,6 +96,8 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 
 ### ✅ Hotfixes recientes (Enero 2026)
 - [x] Corrección TS en `RequestContractModal` (uso de `current_stage` en vez de `name`) y callback de hiring code sin usar; build en Docker verificado.
+- [x] CRM: deshabilitar “Llamar (Telnyx)” mientras `loadingOpportunities` para evitar oportunidades duplicadas al iniciar llamada desde contacto.
+  - [x] Documentación: `docs/FRONTEND_TELNYX_CALL_DISABLE_WHILE_LOADING_OPPORTUNITIES.md` ✅
 - [x] Botón para descartar oportunidad con motivo (marca `lost` y agrega motivo en notas).
   - [x] Documentación backend: `docs/BACKEND_OPPORTUNITY_DISCARD_ENDPOINT.md` ✅
   - [x] Documentación frontend: `docs/FRONTEND_OPPORTUNITY_DISCARD_BUTTON.md` ✅
@@ -146,8 +148,9 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [x] Documentación: `docs/CRM_CONTACT_ACTIVITY_TIMELINE.md` ✅
 - [x] Prompt backend: endpoint unificado de timeline de contacto.
   - [x] Documentación: `docs/BACKEND_CONTACT_TIMELINE_PROMPT.md` ✅
-- [x] Admin contratos: seccion Stripe con suscripcion, facturas y transacciones.
-  - [x] Documentacion: `docs/FRONTEND_ADMIN_CONTRACT_STRIPE_BILLING_SECTION.md` ✅
+- [x] Admin contratos: sección Stripe con tabs (Suscripción/Transacciones/Facturas) + componentes reutilizables.
+  - [x] Documentación UI: `docs/FRONTEND_ADMIN_CONTRACT_STRIPE_BILLING_SECTION.md` ✅
+  - [x] Documentación API: `docs/api/admin_contracts_stripe.md` ✅
 - [x] Admin contratos: remover password hardcodeado en Stripe.
   - [x] Documentación: `docs/FRONTEND_ADMIN_CONTRACT_STRIPE_PASSWORD_FIX.md` ✅
 - [x] CRM: filtros rápidos tipo switch para "mis contactos" y "mis oportunidades".
