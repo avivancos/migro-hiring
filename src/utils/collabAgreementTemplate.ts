@@ -123,7 +123,7 @@ CLÁUSULAS
 
 12. LEY APLICABLE Y JURISDICCIÓN
 12.1. Este Convenio se rige por la legislación española.
-12.2. Las partes, con renuncia expresa a cualquier otro fuero que pudiera corresponderles, se someten a los Juzgados y Tribunales de Salamanca o, alternativamente, a los Juzgados y Tribunales del domicilio local de EL DESPACHO (${collaboratorCity}, ${collaboratorProvince}) cuando así se acuerde entre las partes y se haga constar en el encabezado. Con carácter previo, intentarán resolver amistosamente cualquier controversia derivada del Convenio.
+12.2. Las partes, con renuncia expresa a cualquier otro fuero que pudiera corresponderles, se someten a los Juzgados y Tribunales de Salamanca o, alternativamente, a los Juzgados y Tribunales del domicilio local de EL DESPACHO, cuando así se acuerde entre las partes y se haga constar en el encabezado. Con carácter previo, intentarán resolver amistosamente cualquier controversia derivada del Convenio.
 
 13. NO COMPETENCIA Y COMPETENCIA DESLEAL (5 AÑOS)
 13.1. EL DESPACHO se obliga a no realizar actos de competencia desleal frente a MIGRO, incluyendo a título enunciativo y no limitativo: desviación de clientela remitida por MIGRO, confusión sobre el origen empresarial, aprovechamiento de la reputación ajena, imitación sistemática desleal, denigración o violación de secretos de negocio.
@@ -138,7 +138,7 @@ CLÁUSULAS
 14.5. Medidas y remedios. En caso de infracción de esta cláusula, MIGRO podrá exigir el cese inmediato, la adopción de medidas cautelares y la indemnización íntegra de daños y perjuicios, sin perjuicio de otras acciones que en Derecho procedan.
 
 15. FUERO ESPECÍFICO
-15.1. Las partes acuerdan de forma expresa que, para cualquier controversia derivada de la interpretación, ejecución o cumplimiento del presente Convenio, serán competentes los Juzgados y Tribunales de Salamanca capital o, si se pacta expresamente, los del domicilio local de EL DESPACHO. Esta cláusula se entenderá sin perjuicio de lo dispuesto en la cláusula 12.2 respecto al sometimiento previo a negociación amistosa.
+15.1. Las partes acuerdan de forma expresa que, para cualquier controversia derivada de la interpretación, ejecución o cumplimiento del presente Convenio, serán competentes los Juzgados y Tribunales de Salamanca capital o, si se pacta expresamente, los del domicilio local de EL DESPACHO (según encabezado). Esta cláusula se entenderá sin perjuicio de lo dispuesto en la cláusula 12.2 respecto al sometimiento previo a negociación amistosa.
 
 Y en prueba de conformidad, firman el presente Convenio, por duplicado y a un solo efecto, en el lugar y fecha indicados en el encabezamiento.
 

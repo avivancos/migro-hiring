@@ -1,0 +1,20 @@
+---
+description: Prohibición de inspeccionar contenedores/archivos fuera del proyecto actual
+alwaysApply: true
+---
+
+# Alcance estricto: solo proyecto/entorno actual
+
+## Regla
+
+- No inspeccionar ni interactuar con **contenedores externos** (Docker u otros) que no pertenezcan al entorno actual del proyecto.
+- No leer, listar, modificar ni borrar **archivos fuera del workspace** `c:\Users\agusv\Desarrollo\migro-hiring`.
+- Si se necesita información externa/local, pedir que el usuario:
+  - pegue el contenido relevante en el chat, o
+  - lo copie dentro del repo (p.ej. en `docs/`), o
+  - proporcione una ruta **dentro** del workspace.
+
+## Ejemplos
+
+- ✅ Permitido: leer `src/`, `backend_implementation/`, `docs/`, `package.json`.
+- ❌ Prohibido: leer `C:\Users\agusv\Desktop\...`, `C:\Users\agusv\.ssh\...`, o inspeccionar contenedores ajenos al proyecto.

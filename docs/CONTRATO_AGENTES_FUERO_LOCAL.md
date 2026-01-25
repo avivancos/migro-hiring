@@ -17,5 +17,6 @@ Permitir que el convenio de colaboración de agentes contemple, además de Salam
 - Fuero específico: Salamanca o fuero local del despacho/agente con pacto expreso.
 
 ## Notas
-- La plantilla usa `collaboratorCity` y `collaboratorProvince` para reflejar el domicilio local.
-- El PDF de resumen refleja la misma lógica en forma abreviada.
+- El **domicilio local** del colaborador queda reflejado en el **encabezado** del convenio (p. ej. ciudad/provincia en la identificación de EL DESPACHO).
+- Para evitar que aparezcan placeholders literales en el documento final, la cláusula de jurisdicción referencia el “domicilio local de EL DESPACHO (según encabezado)” en lugar de repetir ciudad/provincia dentro de la cláusula.
+- El PDF de resumen refleja la misma lógica en forma abreviada (“según encabezado”).
