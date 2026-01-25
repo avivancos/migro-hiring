@@ -46,6 +46,12 @@ function renderPdf(rawContent: string, title: string, footerUrl = 'contratacion.
   addText(title, 12, 'center');
   addSpace(2);
 
+  // Guardrail: evitar que placeholders de template se impriman literal en el PDF
+  // (si por error se consume contenido sin interpolación previa).
+  rawContent = rawContent
+    .replace(/\$\{collaboratorCity\}/g, '[Ciudad]')
+    .replace(/\$\{collaboratorProvince\}/g, '[Provincia]');
+
   // Preprocesar contenido: eliminar título MD duplicado y normalizar caracteres problemáticos
   let cleaned = rawContent
     .replace(/^#\s.*$/m, '') // eliminar línea título MD

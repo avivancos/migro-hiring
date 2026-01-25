@@ -136,7 +136,7 @@ Esta reducción responde a los costes asumidos por MIGRO en cualificación de Le
 15.1. Las partes acuerdan de forma expresa que, para cualquier controversia derivada de la interpretación, ejecución o cumplimiento del presente Convenio, serán competentes los Juzgados y Tribunales de Salamanca capital o, si se pacta expresamente, los del domicilio local de EL ABOGADO (según encabezado). Esta cláusula se entenderá sin perjuicio de lo dispuesto en la cláusula 12.2 respecto al sometimiento previo a negociación amistosa.
 
 16. REGISTRO DE MODIFICACIONES
-16.1. Última modificación: 25/01/2026.
+16.1. Última modificación: 25/1/2026.
 16.2. Cambios introducidos en esta fecha:
 - Actualización de jurisdicción y fuero: se incorpora la opción de fuero en el domicilio local de EL ABOGADO (según encabezado) si se pacta expresamente, manteniendo Salamanca como referencia general.
 - Inclusión de la cláusula 5 bis (Ventas Aplazadas) con planes 480 € y 680 € (IVA incluido) y reparto económico de 220 € / 320 € al ABOGADO.
@@ -160,34 +160,5 @@ Firma: ____________________________                     Firma: _________________
 
 Código de contratación colaborador: ____________________________
 
-
-
-
-15. FUERO ESPECÍFICO
-
-15.1. Las partes acuerdan de forma expresa que, para cualquier controversia derivada de la interpretación, ejecución o cumplimiento del presente Convenio, serán exclusivamente competentes los Juzgados y Tribunales de Salamanca capital. Esta cláusula se entenderá sin perjuicio de lo dispuesto en la cláusula 12.2 respecto al sometimiento previo a negociación amistosa.
-
-
-
-Y en prueba de conformidad, firman el presente Convenio, por duplicado y a un solo efecto, en el lugar y fecha indicados en el encabezamiento.
-
-
-
-
-
-Por EL ABOGADO                                          Por MIGRO SERVICIOS Y REMESAS S.L.
-
-
-Nombre: ___________________________                     Nombre: ___________________________
-
-DNI/NIE: ___________________________                    DNI/NIE: ___________________________
-
-Cargo: ____________________________                     Cargo: ____________________________
-
-Firma: ____________________________                     Firma: ____________________________
-
-
-
-Código de contratación colaborador: ____________________________
 
 

@@ -425,5 +425,17 @@ export const opportunityApi = {
     );
     return data;
   },
+
+  /**
+   * Iniciar llamada (Telnyx) desde una oportunidad
+   * Endpoint: POST /api/crm/opportunities/{opportunity_id}/call
+   */
+  async startCall(id: string): Promise<any> {
+    const { data } = await api.post(
+      `${CRM_BASE_PATH}/opportunities/${id}/call`,
+      {}
+    );
+    return data;
+  },
 };
 

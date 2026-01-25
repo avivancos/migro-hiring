@@ -44,6 +44,7 @@ export function CRMOpportunityDetail() {
   const [discardReason, setDiscardReason] = useState('trabaja con otro abogado');
   const [customDiscardReason, setCustomDiscardReason] = useState('');
   const [isDiscarding, setIsDiscarding] = useState(false);
+  const [startingTelnyxCall, setStartingTelnyxCall] = useState(false);
   
   // Cargar usuarios responsables usando el hook optimizado
   const { users: filteredUsers, loading: loadingUsers } = useCRMUsers({ isActive: true, onlyResponsibles: true });
@@ -199,6 +200,30 @@ export function CRMOpportunityDetail() {
     }
   };
 
+  const handleTelnyxCall = async () => {
+    if (!opportunity) return;
+
+    const phone = opportunity.contact?.phone || opportunity.contact?.mobile;
+    if (!phone) {
+      alert('Este contacto no tiene teléfono/móvil para llamar.');
+      return;
+    }
+
+    setStartingTelnyxCall(true);
+    try {
+      await opportunityApi.startCall(opportunity.id);
+      alert('Llamada iniciada con Telnyx.');
+      if (id) {
+        queryClient.invalidateQueries({ queryKey: ['opportunity', id] });
+      }
+    } catch (err: any) {
+      console.error('❌ [CRMOpportunityDetail] Error iniciando llamada Telnyx:', err);
+      alert(err?.response?.data?.detail || err?.message || 'No se pudo iniciar la llamada con Telnyx');
+    } finally {
+      setStartingTelnyxCall(false);
+    }
+  };
+
   // Obtener datos del intento seleccionado
   const selectedAttemptData = selectedAttempt
     ? opportunity.first_call_attempts?.[selectedAttempt.toString()] || null
@@ -322,15 +347,27 @@ export function CRMOpportunityDetail() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Información del Contacto</CardTitle>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/crm/contacts/${opportunity.contact_id}`)}
-                    className="flex items-center gap-2"
-                  >
-                    <UserIcon className="h-4 w-4" />
-                    Ver Contacto Completo
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      onClick={handleTelnyxCall}
+                      disabled={startingTelnyxCall || !(contact.phone || contact.mobile)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                      title={!(contact.phone || contact.mobile) ? 'El contacto no tiene teléfono/móvil' : 'Iniciar llamada con Telnyx'}
+                    >
+                      <PhoneIcon className="h-4 w-4" />
+                      {startingTelnyxCall ? 'Llamando…' : 'Llamar (Telnyx)'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/crm/contacts/${opportunity.contact_id}`)}
+                      className="flex items-center gap-2"
+                    >
+                      <UserIcon className="h-4 w-4" />
+                      Ver Contacto Completo
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">

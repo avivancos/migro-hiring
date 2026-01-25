@@ -56,6 +56,7 @@ export function CRMContactDetail() {
   const [loadingOpportunities, setLoadingOpportunities] = useState(false);
   const [creatingOpportunity, setCreatingOpportunity] = useState(false);
   const [assigningOpportunity, setAssigningOpportunity] = useState(false);
+  const [startingTelnyxCall, setStartingTelnyxCall] = useState(false);
   const { isAdmin, user } = useAuth();
   
   // Ref para evitar recargas innecesarias
@@ -742,6 +743,59 @@ export function CRMContactDetail() {
         }
       }
       alert('Error al crear la llamada');
+    }
+  };
+
+  const handleTelnyxCall = async () => {
+    if (!contact?.id) return;
+
+    const phone = contact.phone || contact.mobile;
+    if (!phone) {
+      alert('Este contacto no tiene teléfono/móvil para llamar.');
+      return;
+    }
+
+    setStartingTelnyxCall(true);
+    try {
+      // El endpoint de Telnyx está asociado a una Oportunidad.
+      // Si no hay oportunidad enlazada, la creamos y luego iniciamos la llamada.
+      let opportunityId = relatedOpportunities[0]?.id;
+
+      if (!opportunityId) {
+        const newOpportunity = await opportunityApi.create({
+          contact_id: contact.id,
+          opportunity_score: 50,
+          detection_reason: 'Oportunidad creada automáticamente para iniciar llamada Telnyx',
+          priority: 'medium',
+          assigned_to_id: user?.id || contact.responsible_user_id,
+        });
+
+        opportunityId = newOpportunity.id;
+        setRelatedOpportunities([newOpportunity]);
+      }
+
+      await opportunityApi.startCall(opportunityId);
+
+      // Llevar al usuario a la pestaña de llamadas y refrescar para que aparezca el registro
+      setActiveTab('calls');
+      setTimeout(() => {
+        crmService
+          .getContactCalls(contact.id, { limit: 50 })
+          .then((callsData) => {
+            const sortedCalls = (callsData.items || []).sort((a, b) => {
+              const dateA = new Date(a.started_at || a.created_at).getTime();
+              const dateB = new Date(b.started_at || b.created_at).getTime();
+              return dateB - dateA;
+            });
+            setCalls(sortedCalls);
+          })
+          .catch(() => null);
+      }, 1000);
+    } catch (err: any) {
+      console.error('❌ [CRMContactDetail] Error iniciando llamada Telnyx:', err);
+      alert(err?.response?.data?.detail || err?.message || 'No se pudo iniciar la llamada con Telnyx');
+    } finally {
+      setStartingTelnyxCall(false);
     }
   };
 
@@ -1486,6 +1540,15 @@ export function CRMContactDetail() {
               >
                 <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
                 <span className="sm:inline">Nueva Llamada</span>
+              </Button>
+              <Button
+                onClick={handleTelnyxCall}
+                disabled={startingTelnyxCall || !(contact.phone || contact.mobile)}
+                className="bg-blue-600 hover:bg-blue-700 text-white flex-1 sm:flex-initial text-sm sm:text-base h-9 sm:h-10"
+                title={!(contact.phone || contact.mobile) ? 'El contacto no tiene teléfono/móvil' : 'Iniciar llamada con Telnyx'}
+              >
+                <PhoneIcon className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-2" />
+                <span className="sm:inline">{startingTelnyxCall ? 'Llamando…' : 'Llamar (Telnyx)'}</span>
               </Button>
               <Button
                 variant="outline"

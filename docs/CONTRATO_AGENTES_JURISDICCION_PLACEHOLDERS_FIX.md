@@ -3,7 +3,7 @@
 ## Contexto
 Se detectó un riesgo de que el texto de jurisdicción mostrara placeholders de template (por ejemplo, `${collaboratorCity}` / `${collaboratorProvince}`) si el contenido se consumía como texto sin interpolación, lo que degradaría la validez/precisión del documento legal.
 
-Además, para el documento “publicado” (fuente `src/legal/colab_agreement.md`), se actualizó el changelog para que la última modificación refleje el deploy del **25/01/2026** y se alineó la jurisdicción con el “fuero local (según encabezado)”.
+Además, para el documento “publicado” (fuente `src/legal/colab_agreement.md`), se actualizó el changelog para que la última modificación refleje el deploy del **25/1/2026** y se alineó la jurisdicción con el “fuero local (según encabezado)”.
 
 ## Decisión
 Dado que el **domicilio del colaborador** ya figura en el **encabezado** del convenio (identificación de EL DESPACHO), se ajustó la redacción para **no repetir ciudad/provincia dentro de la cláusula** y, en su lugar, referenciar:

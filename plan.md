@@ -88,8 +88,11 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 - [x] Actualizado convenio de colaboración para permitir fuero en domicilio local del agente ✅
   - [x] Plantilla principal: `src/utils/collabAgreementTemplate.ts` ✅
   - [x] Resumen PDF: `src/utils/collabAgreementPdfGenerator.ts` ✅
+  - [x] PDF (desde MD): guardrail anti-placeholders `${collaboratorCity}`/`${collaboratorProvince}` en `src/utils/collabAgreementPdfFromMd.ts` ✅
+  - [x] Publicado (MD): eliminado bloque duplicado de cláusula 15 + firmas en `src/legal/colab_agreement.md` ✅
   - [x] Documentación: `docs/CONTRATO_AGENTES_FUERO_LOCAL.md` ✅
   - [x] Fix: evitar placeholders literales en jurisdicción (referencia “según encabezado”) ✅
+  - [x] Documentación: `docs/CONTRATO_AGENTES_PDF_PLACEHOLDERS_GUARDRAIL.md` ✅
 
 ### ✅ Hotfixes recientes (Enero 2026)
 - [x] Corrección TS en `RequestContractModal` (uso de `current_stage` en vez de `name`) y callback de hiring code sin usar; build en Docker verificado.
