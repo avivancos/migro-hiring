@@ -118,7 +118,7 @@ Esta reducción responde a los costes asumidos por MIGRO en cualificación de Le
 
 12. LEY APLICABLE Y JURISDICCIÓN
 12.1. Este Convenio se rige por la legislación española.
-12.2. Las partes, con renuncia expresa a cualquier otro fuero que pudiera corresponderles, se someten a los Juzgados y Tribunales de Salamanca. Con carácter previo, intentarán resolver amistosamente cualquier controversia derivada del Convenio.
+12.2. Las partes, con renuncia expresa a cualquier otro fuero que pudiera corresponderles, se someten a los Juzgados y Tribunales de Salamanca o, alternativamente, a los Juzgados y Tribunales del domicilio local de EL ABOGADO (según encabezado) cuando así se acuerde entre las partes y se haga constar en el encabezado. Con carácter previo, intentarán resolver amistosamente cualquier controversia derivada del Convenio.
 
 13. NO COMPETENCIA Y COMPETENCIA DESLEAL (5 AÑOS)
 13.1. EL ABOGADO se obliga a no realizar actos de competencia desleal frente a MIGRO, incluyendo a título enunciativo y no limitativo: desviación de clientela remitida por MIGRO, confusión sobre el origen empresarial, aprovechamiento de la reputación ajena, imitación sistemática desleal, denigración o violación de secretos de negocio.
@@ -133,11 +133,12 @@ Esta reducción responde a los costes asumidos por MIGRO en cualificación de Le
 14.5. Medidas y remedios. En caso de infracción de esta cláusula, MIGRO podrá exigir el cese inmediato, la adopción de medidas cautelares y la indemnización íntegra de daños y perjuicios, sin perjuicio de otras acciones que en Derecho procedan.
 
 15. FUERO ESPECÍFICO
-15.1. Las partes acuerdan de forma expresa que, para cualquier controversia derivada de la interpretación, ejecución o cumplimiento del presente Convenio, serán exclusivamente competentes los Juzgados y Tribunales de Salamanca capital. Esta cláusula se entenderá sin perjuicio de lo dispuesto en la cláusula 12.2 respecto al sometimiento previo a negociación amistosa.
+15.1. Las partes acuerdan de forma expresa que, para cualquier controversia derivada de la interpretación, ejecución o cumplimiento del presente Convenio, serán competentes los Juzgados y Tribunales de Salamanca capital o, si se pacta expresamente, los del domicilio local de EL ABOGADO (según encabezado). Esta cláusula se entenderá sin perjuicio de lo dispuesto en la cláusula 12.2 respecto al sometimiento previo a negociación amistosa.
 
 16. REGISTRO DE MODIFICACIONES
-16.1. Última modificación: 25/11/2025.
+16.1. Última modificación: 25/01/2026.
 16.2. Cambios introducidos en esta fecha:
+- Actualización de jurisdicción y fuero: se incorpora la opción de fuero en el domicilio local de EL ABOGADO (según encabezado) si se pacta expresamente, manteniendo Salamanca como referencia general.
 - Inclusión de la cláusula 5 bis (Ventas Aplazadas) con planes 480 € y 680 € (IVA incluido) y reparto económico de 220 € / 320 € al ABOGADO.
 - Inclusión de los conceptos de “llamada transferida” y “venta transferida”, reglas de registro y atribución del cierre (Cláusulas 3.8–3.10).
 - Inclusión de la cláusula 3.7 sobre la interacción con Closer de Ventas: uso recomendado, sin penalización y coste asumido por MIGRO; referencia al Anexo I.
