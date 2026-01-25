@@ -98,12 +98,19 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 - [x] Corrección TS en `RequestContractModal` (uso de `current_stage` en vez de `name`) y callback de hiring code sin usar; build en Docker verificado.
 - [x] Agentes de ventas: actualizar reuniones diarias a 13:30–13:45 y 20:30–20:45 (hora España) + ajuste fin de jornada.
   - [x] Documentación: `docs/AGENTES_VENTAS_REUNIONES_DIARIAS_HORARIOS.md` ✅
+- [x] Agentes de ventas: roles del equipo (supervisor / operador 1ª llamada / closer) + reparto de comisión 60 USD (30/20/10).
+  - [x] Documentación: `docs/AGENTES_VENTAS_ROLES_Y_REPARTO_COMISIONES.md` ✅
+- [x] SEO: `getPageTitle()` soporta ruta dinámica `/clientes/:code` (evita título fallback en `/clientes/ABC123`).
+  - [x] Documentación: `docs/FRONTEND_PAGE_TITLES_CLIENTES_DYNAMIC_ROUTE.md` ✅
 - [x] CRM: deshabilitar “Llamar (Telnyx)” mientras `loadingOpportunities` para evitar oportunidades duplicadas al iniciar llamada desde contacto.
   - [x] Documentación: `docs/FRONTEND_TELNYX_CALL_DISABLE_WHILE_LOADING_OPPORTUNITIES.md` ✅
 - [x] CRM: `ContactTableRow` memo re-renderiza cuando cambian callbacks (evita closures stale en selección/navegación).
   - [x] Documentación: `docs/FRONTEND_CRM_CONTACT_TABLE_ROW_MEMO_CALLBACKS_FIX.md` ✅
 - [x] CRM: `ContactTableRow` memo compara correctamente columnas de llamadas (`ultima_llamada`/`proxima_llamada`) mapeando a `*_fecha` (evita datos stale).
   - [x] Documentación: `docs/FRONTEND_CRM_CONTACT_TABLE_ROW_VISIBLE_COLUMNS_FIELDS_FIX.md` ✅
+- [x] Auth: login OTP (email o teléfono) para Admin/CRM (`/auth/login-otp`) + servicios y documentación.
+  - [x] Documentación frontend: `docs/FRONTEND_AUTH_LOGIN_OTP.md` ✅
+  - [x] Documentación backend (endpoints requeridos): `docs/BACKEND_AUTH_LOGIN_OTP.md` ✅
 - [x] Botón para descartar oportunidad con motivo (marca `lost` y agrega motivo en notas).
   - [x] Documentación backend: `docs/BACKEND_OPPORTUNITY_DISCARD_ENDPOINT.md` ✅
   - [x] Documentación frontend: `docs/FRONTEND_OPPORTUNITY_DISCARD_BUTTON.md` ✅

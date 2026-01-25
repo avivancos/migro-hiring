@@ -5,6 +5,7 @@ export const PAGE_TITLES: Record<string, string> = {
   // Páginas públicas
   '/': 'Inicio - Contratación y Pago de Servicios Legales | Migro.es',
   '/clientes': 'Portal de Clientes | Migro.es',
+  '/clientes/:code': 'Portal de Clientes - Contratación | Migro.es',
   '/expirado': 'Enlace Expirado | Migro.es',
   '/404': 'Página No Encontrada | Migro.es',
   '/privacidad': 'Política de Privacidad | Migro.es',
@@ -17,11 +18,14 @@ export const PAGE_TITLES: Record<string, string> = {
   
   // Rutas de contratación
   '/contratacion': 'Contratación de Servicios | Migro.es',
+  '/contratacion/:code': 'Contratación de Servicios | Migro.es',
   '/hiring': 'Hiring Services | Migro.es',
+  '/hiring/:code': 'Contratación de Servicios | Migro.es',
   
   // Rutas de autenticación
   '/login': 'Iniciar Sesión | Migro.es',
   '/auth/login': 'Iniciar Sesión - Administración | Migro.es',
+  '/auth/login-otp': 'Iniciar Sesión (OTP) - Administración | Migro.es',
   '/contrato-old/login': 'Iniciar Sesión - Contrato | Migro.es',
   
   // Dashboard de contratación

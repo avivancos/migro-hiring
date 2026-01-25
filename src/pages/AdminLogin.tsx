@@ -158,6 +158,19 @@ export function AdminLogin() {
               {loading ? 'Verificando...' : 'Acceder'}
             </Button>
 
+            <Button
+              type="button"
+              variant="outline"
+              disabled={loading}
+              className="w-full"
+              onClick={() => {
+                const qs = searchParams.toString();
+                navigate(`/auth/login-otp${qs ? `?${qs}` : ''}`);
+              }}
+            >
+              Acceder con código (OTP)
+            </Button>
+
             <div className="text-center pt-4 border-t">
               <Button
                 type="button"

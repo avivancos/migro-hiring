@@ -61,6 +61,8 @@ function setupApiInterceptors(instance: ReturnType<typeof axios.create>) {
     // No añadir token en endpoints de autenticación pública o health checks
     const publicEndpoints = [
       '/auth/login', 
+      '/auth/otp/request',
+      '/auth/otp/verify',
       '/auth/register', 
       '/auth/refresh',
       // Pili LLM deshabilitado - movido a repositorio externo
@@ -415,7 +417,14 @@ const refreshTokenProactively = async (): Promise<string | null> => {
                              window.location.pathname === '/privacy';
         
         // Verificar si es un endpoint público de la API
-        const publicApiEndpoints = ['/auth/login', '/auth/register', '/auth/refresh', '/hiring/']; // Pili deshabilitado
+        const publicApiEndpoints = [
+          '/auth/login',
+          '/auth/otp/request',
+          '/auth/otp/verify',
+          '/auth/register',
+          '/auth/refresh',
+          '/hiring/',
+        ]; // Pili deshabilitado
         const isPublicApiEndpoint = originalRequest.url && publicApiEndpoints.some(endpoint => originalRequest.url!.includes(endpoint));
         
         if (isPublicFrontendRoute || isPublicApiEndpoint) {

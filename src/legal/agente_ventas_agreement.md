@@ -36,6 +36,12 @@ CLÁUSULAS
 
 1.6. Conocimientos legales del agente. EL AGENTE declara y garantiza que tiene suficientes conocimientos legales para ejercer la abogacía en su país de origen, o que está en proceso de terminar sus estudios que lo habilitan para ejercer la abogacía en su país de origen. Esta cualificación legal es esencial para que EL AGENTE pueda prestar servicios comerciales de calidad relacionados con servicios migratorios y de extranjería, comprendiendo adecuadamente las necesidades legales de los clientes y pudiendo realizar una cualificación precisa de los casos. EL AGENTE se compromete a mantener actualizados sus conocimientos legales y a informar a MIGRO sobre cualquier cambio en su situación académica o profesional relacionada con sus estudios o habilitación para ejercer la abogacía.
 
+1.7. Labores dentro del equipo de ventas (roles operativos). El equipo de ventas de MIGRO puede organizarse en roles complementarios. EL AGENTE podrá desempeñar uno o varios roles, según la asignación en el CRM y las necesidades del servicio:
+   (a) Supervisor comercial: realiza escuchas/auditorías de llamadas, propone mejoras del guion (script), da feedback y soporte operativo para elevar la calidad comercial y la tasa de conversión.
+   (b) Operador de primera llamada (primera llamada/entrevista introductoria): realiza la primera llamada al Lead, cualifica el caso, documenta la información en el CRM y da apoyo al seguimiento hasta el cierre.
+   (c) Closer (cierre): explica al cliente el proceso de contratación, resuelve dudas, guía el pago/contratación y coordina/agenda citas o visitas cuando corresponda, dejando trazabilidad en el CRM.
+Las funciones/roles podrán ir relevándose semanalmente entre los miembros del equipo o asignarse según se elija entre los componentes, sin perjuicio de la trazabilidad necesaria en el CRM. La atribución de tareas (y el reparto de comisiones asociado) se determinará por el registro trazable en el CRM (llamada inicial, notas, tareas y/o evento/cita agendada), así como por las reglas operativas que MIGRO establezca.
+
 2. REMUNERACIÓN Y COMISIONES
 
 2.1. Remuneración fija mensual. MIGRO abonará a EL AGENTE una remuneración fija mensual de trescientos dólares estadounidenses (300 USD), que se pagará en dos quincenas de ciento cincuenta dólares estadounidenses (150 USD) cada una.
@@ -44,13 +50,17 @@ CLÁUSULAS
 
 2.3. Formas de pago alternativas. Las partes podrán acordar por escrito una forma de pago alternativa a la establecida en la cláusula 2.2, siempre que MIGRO no asuma comisiones adicionales asociadas a dicha forma de pago. En caso de que la forma de pago alternativa implique comisiones para MIGRO, estas serán asumidas íntegramente por EL AGENTE o se descontarán del importe a pagar, según se acuerde expresamente por escrito entre las partes.
 
-2.4. Comisiones por contratación. Además de la remuneración fija, EL AGENTE percibirá una comisión de cincuenta dólares estadounidenses (50 USD) por cada contratación efectiva generada a través de su actividad comercial durante cada quincena.
+2.4. Comisiones por contratación (reparto por roles). Además de la remuneración fija, por cada contratación efectiva se devengará una comisión total de sesenta dólares estadounidenses (60 USD), distribuida por roles de la siguiente forma:
+   (a) 30 USD para el operador que realice la primera llamada y ayude al seguimiento.
+   (b) 20 USD para el resto del equipo (pool de soporte/comercial), incluyendo tareas de supervisión comercial y apoyo al cierre, según distribución interna y trazabilidad en el CRM.
+   (c) 10 USD para quien agende la visita/cita (si aplica) y deje constancia en el CRM.
+EL AGENTE tendrá derecho a percibir la(s) parte(s) que le correspondan según el rol efectivamente desempeñado y registrado. La comisión total por contratación efectiva no se incrementará por la concurrencia de varios roles: se reparte conforme a lo anterior.
 
 2.5. Contratación efectiva. A efectos del presente Convenio, se entenderá por "contratación efectiva" aquella en la que el cliente haya realizado el primer pago válido a MIGRO a través de la plataforma de contratación o aplicación móvil de MIGRO, utilizando el código de contratación (Hiring Code) o canal habilitado correspondiente.
 
 2.6. Liquidación de comisiones. Las comisiones devengadas en cada quincena se liquidarán junto con el pago de la remuneración fija correspondiente a esa quincena, dentro de los cinco (5) días hábiles siguientes al término del período quincenal, mediante la misma forma de pago acordada para la remuneración fija.
 
-2.7. Facturación. EL AGENTE emitirá factura quincenal a MIGRO por la remuneración fija y las comisiones devengadas en la quincena anterior, con detalle de: código/ID de Lead o expediente, fecha de contratación efectiva y código de contratación utilizado. Todos los importes se entienden sin IVA, salvo que EL AGENTE esté sujeto a obligaciones de IVA conforme a la normativa fiscal aplicable.
+2.7. Facturación. EL AGENTE emitirá factura quincenal a MIGRO por la remuneración fija y las comisiones devengadas en la quincena anterior, con detalle de: código/ID de Lead o expediente, fecha de contratación efectiva, código de contratación utilizado y rol(es) desempeñado(s) (con su parte correspondiente). Todos los importes se entienden sin IVA, salvo que EL AGENTE esté sujeto a obligaciones de IVA conforme a la normativa fiscal aplicable.
 
 2.8. Asunción de riesgo comercial. MIGRO asumirá íntegramente el riesgo comercial de cada venta. En ningún caso EL AGENTE asumirá riesgo alguno, generándose la comisión en la quincena en la que se produzca la contratación efectiva, con independencia del cobro efectivo posterior de los plazos restantes por parte del cliente final.
 
@@ -270,6 +280,10 @@ En estas reuniones se resolverán los casos migratorios y de extranjería de cad
 18.4. Versión 1.1 - Fecha de modificación: 25/1/2026
 18.5. Cambios introducidos en Versión 1.1:
    - Ajuste del horario de reuniones diarias: se establecen dos reuniones (13:30–13:45 y 20:30–20:45, hora española) y se actualiza la finalización de la jornada tras la segunda reunión (Cláusulas 3.6 y 3.7).
+
+18.6. Versión 1.2 - Fecha de modificación: 25/1/2026
+18.7. Cambios introducidos en Versión 1.2:
+   - Especificación de roles operativos del equipo de ventas (supervisor, operador de primera llamada y closer) y actualización del esquema de comisiones por contratación con reparto 30/20/10 (Cláusulas 1.7 y 2.4).
 
 Y en prueba de conformidad, firman el presente Convenio, por duplicado y a un solo efecto, en el lugar y fecha indicados en el encabezamiento.
 

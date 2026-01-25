@@ -67,7 +67,7 @@ describe('AdminLogin - Tests Automatizados', () => {
 
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/contraseña/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /acceder/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^acceder$/i })).toBeInTheDocument();
   });
 
   it('debe mostrar error si los campos están vacíos', async () => {
@@ -79,7 +79,7 @@ describe('AdminLogin - Tests Automatizados', () => {
       </BrowserRouter>
     );
 
-    const submitButton = screen.getByRole('button', { name: /acceder/i });
+    const submitButton = screen.getByRole('button', { name: /^acceder$/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -106,7 +106,7 @@ describe('AdminLogin - Tests Automatizados', () => {
     fireEvent.change(emailInput, { target: { value: 'agusvc@gmail.com' } });
     fireEvent.change(passwordInput, { target: { value: 'pomelo2005' } });
 
-    const submitButton = screen.getByRole('button', { name: /acceder/i });
+    const submitButton = screen.getByRole('button', { name: /^acceder$/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
@@ -135,7 +135,7 @@ describe('AdminLogin - Tests Automatizados', () => {
     fireEvent.change(emailInput, { target: { value: 'agusvc@gmail.com' } });
     fireEvent.change(passwordInput, { target: { value: 'password-incorrecto' } });
 
-    const submitButton = screen.getByRole('button', { name: /acceder/i });
+    const submitButton = screen.getByRole('button', { name: /^acceder$/i });
     fireEvent.click(submitButton);
 
     await waitFor(() => {

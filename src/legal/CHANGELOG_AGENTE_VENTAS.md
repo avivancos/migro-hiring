@@ -9,6 +9,20 @@
   - Segunda reunión: 20:30 a 20:45.
 - La jornada laboral finaliza a las 20:45, una vez concluida la segunda reunión diaria.
 
+## Versión 1.2 - 25/1/2026
+
+### Roles del equipo de ventas + reparto de comisiones
+
+- Se especifican roles operativos del equipo de ventas:
+  - Supervisor comercial (escuchas/auditorías y mejoras de guion).
+  - Operador de primera llamada (entrevista introductoria + apoyo al seguimiento).
+  - Closer (explicación del proceso de contratación y coordinación/agenda de citas).
+- Los roles/funciones pueden ir relevándose semanalmente entre los miembros del equipo o asignarse según se acuerde, manteniendo trazabilidad en CRM.
+- Se actualiza la comisión por contratación efectiva a **60 USD** con reparto:
+  - 30 USD (operador primera llamada + seguimiento)
+  - 20 USD (pool resto del equipo: supervisor + apoyo al cierre)
+  - 10 USD (quien agenda la visita/cita, si aplica)
+
 ## Versión 1.0 - Enero 2025
 
 ### Creación inicial del contrato

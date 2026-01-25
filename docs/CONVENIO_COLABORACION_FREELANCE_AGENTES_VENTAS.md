@@ -36,6 +36,12 @@ En virtud de lo anterior, acuerdan las siguientes
 
 1.6. **Conocimientos legales y administrativos.** EL AGENTE declara y garantiza que tiene suficientes conocimientos legales para ejercer la abogacía en su país de origen o está en proceso de terminar los estudios que lo habilitan. Se compromete a mantener actualizados sus conocimientos y a informar a MIGRO de cualquier cambio académico o profesional relacionado.
 
+1.7. **Labores dentro del equipo de ventas (roles operativos).** El equipo de ventas puede organizarse en roles complementarios. EL AGENTE podrá desempeñar uno o varios roles, según asignación en CRM:
+   - (a) **Supervisor comercial**: escuchas/auditorías de llamadas, propuestas de mejora de guion (script), feedback y soporte operativo.
+   - (b) **Operador de primera llamada**: primera llamada/entrevista introductoria, cualificación, registro en CRM y apoyo al seguimiento.
+   - (c) **Closer (cierre)**: explicación del proceso de contratación, resolución de dudas, guía del pago/contratación y coordinación/agenda de citas, con trazabilidad en CRM.
+Las funciones/roles podrán ir relevándose semanalmente entre los miembros del equipo o asignarse según se elija entre los componentes. La atribución de tareas (y el reparto de comisiones) se determina por la trazabilidad en CRM y las reglas operativas de MIGRO.
+
 ### 2. REMUNERACIÓN Y COMISIONES
 
 2.1. **Remuneración fija mensual.** MIGRO abonará a EL AGENTE una remuneración fija mensual de trescientos dólares estadounidenses (300 USD), pagada en dos quincenas de ciento cincuenta dólares estadounidenses (150 USD) cada una.
@@ -44,13 +50,17 @@ En virtud de lo anterior, acuerdan las siguientes
 
 2.3. **Formas de pago alternativas.** Las partes podrán acordar por escrito una forma de pago alternativa, siempre que MIGRO no asuma comisiones adicionales. De existir comisiones, las asumirá EL AGENTE o se descontarán del pago, según acuerdo expreso.
 
-2.4. **Comisiones por contratación.** Además de la remuneración fija, EL AGENTE percibirá una comisión de cincuenta dólares estadounidenses (50 USD) por cada contratación efectiva generada durante cada quincena.
+2.4. **Comisiones por contratación (reparto por roles).** Además de la remuneración fija, por cada contratación efectiva se devengará una comisión total de sesenta dólares estadounidenses (60 USD), distribuida por roles:
+   - (a) **30 USD** para el operador que realice la primera llamada y ayude al seguimiento.
+   - (b) **20 USD** para el resto del equipo (pool de soporte/comercial), incluyendo supervisión y apoyo al cierre, según trazabilidad en CRM.
+   - (c) **10 USD** para quien agende la visita/cita (si aplica) y lo registre en el CRM.
+EL AGENTE percibirá la(s) parte(s) que le correspondan según el rol efectivamente desempeñado y registrado. La comisión total por contratación efectiva no se incrementa por la concurrencia de varios roles: se reparte conforme a lo anterior.
 
 2.5. **Contratación efectiva.** Se entenderá por contratación efectiva aquella en la que el cliente haya realizado el primer pago válido a MIGRO a través de la plataforma de contratación o app móvil, utilizando el código de contratación (Hiring Code) o canal habilitado correspondiente.
 
 2.6. **Liquidación de comisiones.** Las comisiones devengadas en cada quincena se liquidarán junto con la remuneración fija correspondiente, dentro de los cinco (5) días hábiles siguientes al término del período quincenal, mediante la misma forma de pago acordada.
 
-2.7. **Facturación.** EL AGENTE emitirá factura quincenal a MIGRO por la remuneración fija y las comisiones devengadas en la quincena anterior, detallando: código/ID de Lead o expediente, fecha de contratación efectiva y código de contratación utilizado. Todos los importes se entienden sin IVA, salvo que EL AGENTE esté sujeto a obligaciones de IVA aplicables.
+2.7. **Facturación.** EL AGENTE emitirá factura quincenal a MIGRO por la remuneración fija y las comisiones devengadas en la quincena anterior, detallando: código/ID de Lead o expediente, fecha de contratación efectiva, código de contratación utilizado y rol(es) desempeñado(s) (con su parte). Todos los importes se entienden sin IVA, salvo que EL AGENTE esté sujeto a obligaciones de IVA aplicables.
 
 2.8. **Asunción de riesgo comercial.** MIGRO asumirá íntegramente el riesgo comercial de cada venta. La comisión se genera en la quincena en la que se produzca la contratación efectiva, con independencia del cobro posterior de plazos al cliente final.
 

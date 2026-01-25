@@ -3,6 +3,8 @@ import { api } from './api';
 import TokenStorage from '@/utils/tokenStorage';
 import type {
   LoginRequest,
+  OtpRequest,
+  OtpVerifyRequest,
   UserRegister,
   TokenPair,
   OAuthTokenResponse,
@@ -35,6 +37,38 @@ export const authService = {
       refresh_expires_in: data.refresh_expires_in || 2592000, // 30 días por defecto
     });
     
+    return data;
+  },
+
+  /**
+   * Solicitar OTP (email o teléfono)
+   * Endpoint esperado: POST /auth/otp/request
+   */
+  async requestOtp(identifier: string): Promise<{ message?: string } | void> {
+    const { data } = await api.post<{ message?: string }>('/auth/otp/request', {
+      identifier,
+    } as OtpRequest);
+    return data;
+  },
+
+  /**
+   * Verificar OTP e iniciar sesión (retorna TokenPair)
+   * Endpoint esperado: POST /auth/otp/verify
+   */
+  async verifyOtp(identifier: string, code: string): Promise<TokenPair> {
+    const { data } = await api.post<TokenPair>('/auth/otp/verify', {
+      identifier,
+      code,
+    } as OtpVerifyRequest);
+
+    TokenStorage.saveTokens({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      token_type: data.token_type || 'bearer',
+      expires_in: data.expires_in || 1209600,
+      refresh_expires_in: data.refresh_expires_in || 2592000,
+    });
+
     return data;
   },
 

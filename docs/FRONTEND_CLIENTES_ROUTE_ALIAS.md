@@ -15,6 +15,14 @@
 
 Para evitar confusión en usuarios no autenticados, el botón de “Buscar Contactos” del home solo se muestra si hay sesión activa.
 
+## Login de clientes (OTP)
+En `/clientes` el login es **sin contraseña**:
+- El usuario ingresa **email o teléfono**.
+- Se solicita un código OTP al backend (`POST /auth/otp/request`).
+- Se verifica el código (`POST /auth/otp/verify`) y se guardan tokens.
+
+Backend: ver `docs/BACKEND_TELNYX_OTP_SMS_REQUIREMENTS.md` para implementar SMS con Telnyx (y email OTP).
+
 ## Detalles técnicos
 - Se añadió `/clientes` a la lista de rutas públicas en `src/providers/AuthProvider.tsx` para evitar verificaciones de sesión innecesarias en el portal cliente.
 - Se añadió título SEO para `/clientes` en `src/config/pageTitles.ts`.

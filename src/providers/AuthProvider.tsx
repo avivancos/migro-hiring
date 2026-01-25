@@ -13,6 +13,8 @@ interface AuthContextType {
   isLoading: boolean;
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
+  requestOtp: (identifier: string) => Promise<void>;
+  loginOtp: (identifier: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -52,6 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       '/colaboradores',
       '/closer',
       '/auth/login',
+      '/auth/login-otp',
     ];
     
     return publicRoutes.some(route => 
@@ -226,48 +229,64 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(null);
   };
 
+  const loadAndSetUser = async () => {
+    const response = await api.get('/users/me');
+    const userData = response.data;
+
+    const mappedUser: User = {
+      id: userData.id,
+      email: userData.email,
+      full_name: userData.full_name,
+      first_name: userData.first_name,
+      last_name: userData.last_name,
+      phone_number: userData.phone_number,
+      avatar_url: userData.avatar_url,
+      photo_avatar_url: userData.photo_avatar_url,
+      bio: userData.bio,
+      is_active: userData.is_active,
+      is_verified: userData.is_verified,
+      is_superuser: userData.is_superuser || userData.role === 'admin' || userData.role === 'superuser',
+      role: userData.role,
+      fcm_registered: userData.fcm_registered || false,
+      last_login: userData.last_login,
+      email_verified_at: userData.email_verified_at,
+      created_at: userData.created_at,
+      updated_at: userData.updated_at,
+    };
+
+    setUser(mappedUser);
+
+    localStorage.setItem('admin_user', JSON.stringify({
+      id: mappedUser.id,
+      email: mappedUser.email,
+      name: mappedUser.full_name || mappedUser.email,
+      is_admin: mappedUser.is_superuser || mappedUser.role === 'admin' || mappedUser.role === 'superuser',
+      is_superuser: mappedUser.is_superuser,
+      role: mappedUser.role,
+    }));
+  };
+
   const login = async (email: string, password: string) => {
     try {
       await authService.login(email, password);
+
+      await loadAndSetUser();
       
-      // Obtener información del usuario
-      const response = await api.get('/users/me');
-      const userData = response.data;
-      
-      const mappedUser: User = {
-        id: userData.id,
-        email: userData.email,
-        full_name: userData.full_name,
-        first_name: userData.first_name,
-        last_name: userData.last_name,
-        phone_number: userData.phone_number,
-        avatar_url: userData.avatar_url,
-        photo_avatar_url: userData.photo_avatar_url,
-        bio: userData.bio,
-        is_active: userData.is_active,
-        is_verified: userData.is_verified,
-        is_superuser: userData.is_superuser || userData.role === 'admin' || userData.role === 'superuser',
-        role: userData.role,
-        fcm_registered: userData.fcm_registered || false,
-        last_login: userData.last_login,
-        email_verified_at: userData.email_verified_at,
-        created_at: userData.created_at,
-        updated_at: userData.updated_at,
-      };
-      
-      setUser(mappedUser);
-      
-      // Guardar también en formato admin_user para compatibilidad
-      // admin_token ya está guardado por TokenStorage.saveTokens()
-      localStorage.setItem('admin_user', JSON.stringify({
-        id: mappedUser.id,
-        email: mappedUser.email,
-        name: mappedUser.full_name || mappedUser.email,
-        is_admin: mappedUser.is_superuser || mappedUser.role === 'admin' || mappedUser.role === 'superuser',
-        is_superuser: mappedUser.is_superuser,
-        role: mappedUser.role,
-      }));
-      
+    } catch (error: unknown) {
+      clearAuth();
+      throw error;
+    }
+  };
+
+  const requestOtp = async (identifier: string) => {
+    // No modifica sesión: solo dispara el envío del código.
+    await authService.requestOtp(identifier);
+  };
+
+  const loginOtp = async (identifier: string, code: string) => {
+    try {
+      await authService.verifyOtp(identifier, code);
+      await loadAndSetUser();
     } catch (error: unknown) {
       clearAuth();
       throw error;
@@ -308,6 +327,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         isLoading,
         isAdmin,
         login,
+        requestOtp,
+        loginOtp,
         logout,
         refreshUser,
       }}

@@ -5,6 +5,25 @@ export interface LoginRequest {
   password: string;
 }
 
+// OTP (One-Time Password) login
+export interface OtpRequest {
+  /**
+   * Email o teléfono (idealmente en formato E.164 si es teléfono).
+   */
+  identifier: string;
+}
+
+export interface OtpVerifyRequest {
+  /**
+   * Email o teléfono usado al solicitar el OTP.
+   */
+  identifier: string;
+  /**
+   * Código OTP (habitualmente 6 dígitos).
+   */
+  code: string;
+}
+
 export interface UserRegister {
   email: string;
   password: string;

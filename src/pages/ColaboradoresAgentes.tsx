@@ -144,7 +144,7 @@ export function ColaboradoresAgentes() {
             <h3 className="font-semibold text-green-700 mb-2">💰 Remuneración</h3>
             <ul className="text-sm space-y-1 text-gray-700">
               <li>• Fijo mensual: 300 USD (150 USD/quincena)</li>
-              <li>• Comisiones: 50 USD por contratación efectiva</li>
+              <li>• Comisiones: 60 USD por contratación efectiva (30/20/10 por roles)</li>
               <li>• Pago estándar: USDC mediante Binance</li>
               <li>• Formas alternativas negociables (sin comisiones para MIGRO)</li>
               <li>• Pago quincenal en 5 días hábiles</li>
@@ -164,7 +164,7 @@ export function ColaboradoresAgentes() {
           </div>
           
           <div className="p-4 border border-gray-200 rounded-md">
-            <h3 className="font-semibold text-green-700 mb-2">📞 Reunión diaria</h3>
+            <h3 className="font-semibold text-green-700 mb-2">📞 Reuniones diarias</h3>
             <ul className="text-sm space-y-1 text-gray-700">
               <li>• Primera reunión diaria: 13:30 a 13:45 (hora española)</li>
               <li>• Segunda reunión diaria: 20:30 a 20:45 (hora española)</li>

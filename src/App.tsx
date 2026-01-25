@@ -12,6 +12,7 @@ import { Login } from '@/pages/Login';
 import { NotFound } from '@/pages/NotFound';
 import { Expired } from '@/pages/Expired';
 import { AdminLogin } from '@/pages/AdminLogin';
+import { AdminLoginOtp } from '@/pages/AdminLoginOtp';
 import { AdminDashboard } from '@/pages/AdminDashboard';
 import { PrivacyPolicy } from '@/pages/PrivacyPolicy';
 import { BorradorPDF } from '@/pages/BorradorPDF';
@@ -100,6 +101,7 @@ function AppContent() {
           
           {/* Rutas de autenticación unificadas */}
           <Route path="/auth/login" element={<AdminLogin />} />
+          <Route path="/auth/login-otp" element={<AdminLoginOtp />} />
           
           {/* Servicio de contratación y firma - Dashboard */}
           <Route path="/contrato/dashboard" element={<AdminDashboard />} />

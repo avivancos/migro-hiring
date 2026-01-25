@@ -2,7 +2,7 @@
 
 **Fecha**: Enero 2025  
 **Módulo**: Legal - Contratos  
-**Versión**: 1.0  
+**Versión**: 1.2  
 **Estado**: ✅ Implementado
 
 ---
@@ -59,10 +59,11 @@ Crear un contrato completo que regule la relación de colaboración freelance en
   - Formas de pago alternativas negociables por escrito
   - Condición: MIGRO no asumirá comisiones adicionales
 
-- **Comisiones**: 50 USD por cada contratación efectiva
-  - Generadas en la quincena de trabajo
-  - Liquidadas junto con la remuneración fija
-  - Pagadas mediante la misma forma acordada para la remuneración fija
+- **Comisiones por contratación (reparto por roles)**: 60 USD por cada contratación efectiva
+  - **30 USD**: operador que realiza la primera llamada y ayuda al seguimiento
+  - **20 USD**: resto del equipo (pool de soporte/comercial: supervisor + apoyo al cierre), según trazabilidad en CRM
+  - **10 USD**: quien agenda la visita/cita (si aplica) y lo registra en el CRM
+  - Liquidación junto con la remuneración fija quincenal
 
 - **Asunción de riesgo**: MIGRO asume íntegramente el riesgo comercial
   - Los agentes no asumen riesgo alguno
@@ -268,5 +269,5 @@ Para consultas sobre el contrato o su implementación, contactar con el equipo l
 
 ---
 
-**Última actualización**: Enero 2025  
+**Última actualización**: 25/1/2026  
 **Mantenido por**: Equipo Legal y Desarrollo MIGRO
