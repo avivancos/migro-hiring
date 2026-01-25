@@ -15,7 +15,7 @@ export function ColaboradoresAgentes() {
 
   const versionInfo = useMemo(() => {
     const raw = (agenteVentasMd as unknown as string) || '';
-    const anchor = '16. REGISTRO DE MODIFICACIONES';
+    const anchor = '18. REGISTRO DE MODIFICACIONES';
     const start = raw.indexOf(anchor);
     if (start === -1) return { version: '1.0', date: 'Enero 2025' };
     
@@ -166,8 +166,8 @@ export function ColaboradoresAgentes() {
           <div className="p-4 border border-gray-200 rounded-md">
             <h3 className="font-semibold text-green-700 mb-2">📞 Reunión diaria</h3>
             <ul className="text-sm space-y-1 text-gray-700">
-              <li>• Todos los días laborales a las 20:15</li>
-              <li>• Finaliza a las 20:30</li>
+              <li>• Primera reunión diaria: 13:30 a 13:45 (hora española)</li>
+              <li>• Segunda reunión diaria: 20:30 a 20:45 (hora española)</li>
               <li>• Resolución de casos y soporte comercial</li>
             </ul>
           </div>

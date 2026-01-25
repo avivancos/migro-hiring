@@ -1,4 +1,7 @@
-// Home page - Landing para la aplicación de contratación
+// Clientes Portal - Landing pública para clientes
+//
+// Nota: esta ruta existe como "slug" /clientes para el portal cliente.
+// Desde aquí se inicia el flujo de contratación usando un hiring code.
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -7,18 +10,15 @@ import { Layout } from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { fadeIn, slideUp, staggerContainer, staggerItem } from '@/utils/animations';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { useAuth } from '@/providers/AuthProvider';
 
-export function Home() {
+export function ClientesPortal() {
   const navigate = useNavigate();
   const [hiringCode, setHiringCode] = useState('');
-  const { isAuthenticated } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (hiringCode.trim()) {
-      navigate(`/contratacion/${hiringCode}`);
+      navigate(`/clientes/${hiringCode}`);
     }
   };
 
@@ -43,29 +43,25 @@ export function Home() {
 
   return (
     <Layout>
-      <motion.div 
+      <motion.div
         className="max-w-5xl mx-auto px-4 py-12"
         initial="hidden"
         animate="visible"
         variants={fadeIn}
       >
         {/* Hero Section */}
-        <motion.div 
-          className="text-center mb-16"
-          variants={slideUp}
-        >
+        <motion.div className="text-center mb-16" variants={slideUp}>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Sistema de Contratación
+            Portal de Clientes
             <span className="block text-primary mt-2">Migro</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Completa tu proceso de contratación de servicios legales de forma autónoma,
-            segura y 100% digital.
+            Completa tu proceso de contratación de forma autónoma, segura y 100% digital.
           </p>
         </motion.div>
 
         {/* Features */}
-        <motion.div 
+        <motion.div
           className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
           variants={staggerContainer}
         >
@@ -109,28 +105,12 @@ export function Home() {
           </Card>
         </motion.div>
 
-        {/* Acceso CRM (solo usuarios autenticados) */}
-        {isAuthenticated && (
-          <motion.div className="mt-8 text-center" variants={fadeIn}>
-            <Button
-              onClick={() => navigate('/crm/contacts')}
-              size="lg"
-              className="bg-green-600 hover:bg-green-700 text-white"
-            >
-              <MagnifyingGlassIcon className="w-5 h-5 mr-2" />
-              Buscar Contactos
-            </Button>
-          </motion.div>
-        )}
-
         {/* Info */}
-        <motion.div 
-          className="mt-12 text-center text-sm text-gray-500"
-          variants={fadeIn}
-        >
+        <motion.div className="mt-12 text-center text-sm text-gray-500" variants={fadeIn}>
           <p>¿No tienes un código? Contacta con tu asesor de Migro</p>
         </motion.div>
       </motion.div>
     </Layout>
   );
 }
+

@@ -1,5 +1,14 @@
 # CHANGELOG - CONVENIO DE COLABORACIÓN FREELANCE ENTRE AGENTE DE VENTAS Y MIGRO
 
+## Versión 1.1 - 25/1/2026
+
+### Ajuste de reuniones diarias (hora española)
+
+- Se establecen dos (2) reuniones diarias obligatorias:
+  - Primera reunión: 13:30 a 13:45.
+  - Segunda reunión: 20:30 a 20:45.
+- La jornada laboral finaliza a las 20:45, una vez concluida la segunda reunión diaria.
+
 ## Versión 1.0 - Enero 2025
 
 ### Creación inicial del contrato
@@ -19,9 +28,9 @@ Este documento establece el convenio de colaboración freelance entre agentes de
    - Composición diaria: 4 horas de minutos telefónicos + 2 horas de trabajo operativo y gestión
    - Llamadas fallidas contabilizadas como 2 minutos
 
-3. **Reunión diaria obligatoria:**
-   - Todos los días laborales a las 20:15 horas (hora española)
-   - Finaliza a las 20:30 horas
+3. **Reuniones diarias obligatorias:**
+   - Primera reunión: 13:30 a 13:45 (hora española)
+   - Segunda reunión: 20:30 a 20:45 (hora española)
    - Resolución de casos migratorios y soporte para concretar ventas
 
 4. **Registro en CRM:**
@@ -117,9 +126,9 @@ Este documento establece el convenio de colaboración freelance entre agentes de
 
 #### Reuniones y formación telemática:
 
-- **Reunión diaria obligatoria**: Todos los días laborales a las 20:15 horas (hora española), finaliza a las 20:30 horas. Se realiza siempre de forma telemática mediante Google Meet
+- **Reuniones diarias obligatorias**: Todos los días laborales (hora española), se realizan dos reuniones (13:30–13:45 y 20:30–20:45). Se realizan siempre de forma telemática mediante Google Meet
 - **Formación**: Se realiza siempre de forma telemática mediante Google Meet
-- **Comunicaciones**: Las reuniones de seguimiento y la reunión diaria obligatoria se realizan siempre mediante Google Meet
+- **Comunicaciones**: Las reuniones de seguimiento y las reuniones diarias obligatorias se realizan siempre mediante Google Meet
 
 #### Modificaciones del Convenio:
 

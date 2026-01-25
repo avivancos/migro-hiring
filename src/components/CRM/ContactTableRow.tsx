@@ -250,14 +250,40 @@ export const ContactTableRow = memo<ContactTableRowProps>(({
   if (Boolean(prevProps.showSelection) !== Boolean(nextProps.showSelection)) return false;
   if (Boolean(prevProps.isSelected) !== Boolean(nextProps.isSelected)) return false;
   if (Boolean(prevProps.selectionDisabled) !== Boolean(nextProps.selectionDisabled)) return false;
+  // IMPORTANT: si cambian callbacks del padre (closures), debemos re-renderizar
+  // para no quedarnos con referencias stale (selección/navegación incorrecta).
+  if (prevProps.onNavigate !== nextProps.onNavigate) return false;
+  if (Boolean(nextProps.showSelection) && prevProps.onToggleSelected !== nextProps.onToggleSelected) return false;
   
-  // Comparar solo campos visibles
-  const relevantFields = ['name', 'email', 'phone', 'nacionalidad', 'grading_llamada', 'grading_situacion', 'created_at', 'updated_at', 'ultima_llamada_fecha', 'proxima_llamada_fecha'];
-  const visibleFields = nextProps.visibleColumns.filter(col => relevantFields.includes(col));
-  
-  for (const field of visibleFields) {
-    const prevValue = (prevProps.contact as any)[field];
-    const nextValue = (nextProps.contact as any)[field];
+  // Comparar solo campos visibles (mapeando keys de columna -> campos reales del contacto)
+  // Nota: algunas columnas renderizan valores basados en nombres distintos (p. ej. 'ultima_llamada' usa 'ultima_llamada_fecha').
+  const columnToContactFields: Record<string, Array<keyof Contact>> = {
+    name: ['name', 'first_name', 'last_name'],
+    email: ['email'],
+    phone: ['phone'],
+    nacionalidad: ['nacionalidad'],
+    grading_llamada: ['grading_llamada'],
+    grading_situacion: ['grading_situacion'],
+    created_at: ['created_at'],
+    updated_at: ['updated_at'],
+    ultima_llamada: ['ultima_llamada_fecha'],
+    proxima_llamada: ['proxima_llamada_fecha'],
+    // defensivo: si en algún punto se usan keys ya alineadas a fields
+    ultima_llamada_fecha: ['ultima_llamada_fecha'],
+    proxima_llamada_fecha: ['proxima_llamada_fecha'],
+  };
+
+  const fieldsToCompare = new Set<keyof Contact>();
+  for (const col of nextProps.visibleColumns) {
+    if (col === 'acciones') continue;
+    const fields = columnToContactFields[col];
+    if (!fields) continue;
+    for (const field of fields) fieldsToCompare.add(field);
+  }
+
+  for (const field of fieldsToCompare) {
+    const prevValue = prevProps.contact[field];
+    const nextValue = nextProps.contact[field];
     if (prevValue !== nextValue) return false;
   }
   

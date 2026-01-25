@@ -113,12 +113,12 @@ Crear un contrato completo que regule la relación de colaboración freelance en
 
 - **Recuperación de horas**: Se permite trabajar los sábados para recuperar horas no atendidas durante la semana
 
-- **Horario flexible**: Recomendado realizar 6 horas seguidas desde las 12:00-13:00 horas (hora española), pudiendo cumplir el tiempo restante hasta las 20:15 con descansos
+- **Horario flexible**: Recomendado realizar 6 horas seguidas desde las 12:00-13:00 horas (hora española), pudiendo cumplir el tiempo restante hasta las 20:30 con descansos
 
-### Reunión Diaria Obligatoria
+### Reuniones Diarias Obligatorias
 
-- **Horario**: Todos los días laborales (lunes a viernes) a las 20:15 horas (hora española)
-- **Duración**: Finaliza a las 20:30 horas
+- **Primera reunión**: 13:30 a 13:45 (hora española)
+- **Segunda reunión**: 20:30 a 20:45 (hora española)
 - **Objetivo**: 
   - Resolver casos migratorios y de extranjería de cada agente
   - Dar soporte efectivo para concretar oportunidades de venta en contratos

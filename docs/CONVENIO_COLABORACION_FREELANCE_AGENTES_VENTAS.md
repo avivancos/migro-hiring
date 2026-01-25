@@ -74,11 +74,14 @@ En virtud de lo anterior, acuerdan las siguientes
    - (a) Se contabilizan todas las llamadas realizadas, incluyendo las con conversación efectiva.
    - (b) Una llamada fallida se contabiliza como dos (2) minutos para el cómputo del mínimo diario telefónico.
 
-3.5. **Horario flexible.** Horario flexible recomendado: seis (6) horas seguidas desde las 12:00 o 13:00 (hora española), pudiendo completar hasta las 20:15 con descansos intermedios.
+3.5. **Horario flexible.** Horario flexible recomendado: seis (6) horas seguidas desde las 12:00 o 13:00 (hora española), pudiendo completar hasta las 20:30 con descansos intermedios.
 
-3.6. **Reunión diaria obligatoria.** De lunes a viernes, a las 20:15 (hora española), se realizará reunión diaria obligatoria (finaliza 20:30) para resolver casos y dar soporte a cierres. Siempre telemática por Google Meet.
+3.6. **Reuniones diarias obligatorias.** De lunes a viernes (hora española) se realizarán dos reuniones diarias obligatorias, siempre telemáticas por Google Meet:
+   - Primera reunión: 13:30 a 13:45.
+   - Segunda reunión: 20:30 a 20:45.
+   En estas reuniones se resolverán casos y se dará soporte efectivo para concretar cierres.
 
-3.7. **Finalización de la jornada.** La jornada finaliza a las 20:30 (hora española), tras la reunión diaria.
+3.7. **Finalización de la jornada.** La jornada finaliza a las 20:45 (hora española), tras la segunda reunión diaria.
 
 3.8. **Medición y control.** El cumplimiento se medirá vía CRM de MIGRO y sus herramientas de productividad.
 
@@ -205,7 +208,7 @@ En virtud de lo anterior, acuerdan las siguientes
 
 ### 13. COMUNICACIONES Y REPORTING
 
-13.1. Las comunicaciones se realizarán preferentemente por correo electrónico a las direcciones designadas. Reuniones de seguimiento y reunión diaria obligatoria siempre telemáticas vía Google Meet. La formación se realizará telemáticamente por Google Meet.
+13.1. Las comunicaciones se realizarán preferentemente por correo electrónico a las direcciones designadas. Reuniones de seguimiento y reuniones diarias obligatorias siempre telemáticas vía Google Meet. La formación se realizará telemáticamente por Google Meet.
 
 13.2. EL AGENTE mantendrá actualizado su registro de actividad en el CRM de forma continua y en tiempo real, conforme a la cláusula 4.
 

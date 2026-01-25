@@ -4,6 +4,7 @@
 export const PAGE_TITLES: Record<string, string> = {
   // Páginas públicas
   '/': 'Inicio - Contratación y Pago de Servicios Legales | Migro.es',
+  '/clientes': 'Portal de Clientes | Migro.es',
   '/expirado': 'Enlace Expirado | Migro.es',
   '/404': 'Página No Encontrada | Migro.es',
   '/privacidad': 'Política de Privacidad | Migro.es',

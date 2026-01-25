@@ -19,6 +19,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -40,6 +41,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isPublicRoute = useCallback((pathname: string): boolean => {
     const publicRoutes = [
       '/',
+      '/clientes',
       '/contratacion/',
       '/hiring/',
       '/expirado',
@@ -114,13 +116,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         role: mappedUser.role,
       }));
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error verificando autenticación:', error);
+      const err = error as { response?: { status?: number } };
       
       // Solo limpiar tokens si es un error de autenticación (401/403) y no hay refresh token disponible
       // Si hay refresh token, el interceptor de axios debería manejarlo
       // NO limpiar en errores temporales (500, 404, timeout, etc.)
-      if (error.response?.status === 401 || error.response?.status === 403) {
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
         const refreshToken = TokenStorage.getRefreshToken();
         if (!refreshToken || TokenStorage.isRefreshTokenExpired()) {
           // Solo limpiar si realmente no hay forma de refrescar
@@ -265,7 +268,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         role: mappedUser.role,
       }));
       
-    } catch (error: any) {
+    } catch (error: unknown) {
       clearAuth();
       throw error;
     }

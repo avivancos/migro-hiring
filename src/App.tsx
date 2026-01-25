@@ -6,6 +6,7 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { useTokenRefresh } from '@/hooks/useTokenRefresh';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Home } from '@/pages/Home';
+import { ClientesPortal } from '@/pages/ClientesPortal';
 import { HiringFlow } from '@/pages/HiringFlow';
 import { Login } from '@/pages/Login';
 import { NotFound } from '@/pages/NotFound';
@@ -77,6 +78,9 @@ function AppContent() {
     <Routes>
           {/* Public routes - NO requieren autenticación */}
           <Route path="/" element={<Home />} />
+          {/* Portal cliente (slug) */}
+          <Route path="/clientes" element={<ClientesPortal />} />
+          <Route path="/clientes/:code" element={<HiringFlow />} />
           <Route path="/contratacion/:code" element={<HiringFlow />} />
           <Route path="/hiring/:code" element={<HiringFlow />} /> {/* Alias en inglés */}
           <Route path="/expirado" element={<Expired />} />

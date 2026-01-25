@@ -74,11 +74,14 @@ CLÁUSULAS
    (a) Se contabilizarán todas las llamadas realizadas, incluyendo las que resulten en conversación efectiva con el cliente.
    (b) Una llamada fallida (que no responde o no comunica) se contabilizará como dos (2) minutos de llamada para efectos del cumplimiento del mínimo diario de cuatro (4) horas telefónicas.
 
-3.5. Horario flexible. El horario efectivo podrá ser flexible, pero se recomienda realizar seis (6) horas seguidas desde las 12:00 o 13:00 horas del mediodía (hora española), pudiendo cumplir el tiempo restante efectivo hasta las 20:15 horas (hora española) con descansos intermedios.
+3.5. Horario flexible. El horario efectivo podrá ser flexible, pero se recomienda realizar seis (6) horas seguidas desde las 12:00 o 13:00 horas del mediodía (hora española), pudiendo cumplir el tiempo restante efectivo hasta las 20:30 horas (hora española) con descansos intermedios.
 
-3.6. Reunión diaria obligatoria. Todos los días laborales (lunes a viernes), a las 20:15 horas (hora española), se realizará una reunión diaria obligatoria que finalizará a las 20:30 horas (hora española). En esta reunión se resolverán los casos migratorios y de extranjería de cada agente y se dará soporte efectivo para concretar las oportunidades de venta en contratos. La reunión se realizará siempre de forma telemática mediante Google Meet.
+3.6. Reuniones diarias obligatorias. Todos los días laborales (lunes a viernes) se realizarán dos (2) reuniones diarias obligatorias (hora española), siempre de forma telemática mediante Google Meet:
+   (a) Primera reunión: 13:30 a 13:45.
+   (b) Segunda reunión: 20:30 a 20:45.
+En estas reuniones se resolverán los casos migratorios y de extranjería de cada agente y se dará soporte efectivo para concretar las oportunidades de venta en contratos.
 
-3.7. Finalización de la jornada. La jornada laboral finalizará a las 20:30 horas (hora española), una vez concluida la reunión diaria.
+3.7. Finalización de la jornada. La jornada laboral finalizará a las 20:45 horas (hora española), una vez concluida la segunda reunión diaria.
 
 3.8. Medición y control. El cumplimiento de las obligaciones de trabajo se medirá y controlará a través del CRM de MIGRO y las herramientas de medición y productividad del CRM de MIGRO, que registrarán automáticamente las llamadas realizadas, su duración, las tareas completadas y el tiempo de trabajo operativo.
 
@@ -205,7 +208,7 @@ CLÁUSULAS
 
 13. COMUNICACIONES Y REPORTING
 
-13.1. Las comunicaciones entre las partes se realizarán preferentemente por correo electrónico a las direcciones designadas en la firma. Las reuniones de seguimiento y la reunión diaria obligatoria se realizarán siempre de forma telemática mediante Google Meet. La formación también se realizará siempre de forma telemática mediante Google Meet.
+13.1. Las comunicaciones entre las partes se realizarán preferentemente por correo electrónico a las direcciones designadas en la firma. Las reuniones de seguimiento y las reuniones diarias obligatorias se realizarán siempre de forma telemática mediante Google Meet. La formación también se realizará siempre de forma telemática mediante Google Meet.
 
 13.2. EL AGENTE deberá mantener actualizado su registro de actividad en el CRM de MIGRO de forma continua y en tiempo real, conforme a lo establecido en la cláusula 4.
 
@@ -263,6 +266,10 @@ CLÁUSULAS
    - Inclusión de obligación de integración plena en el proyecto y trabajo en equipo con el resto de agentes, con prioridad de venta al gestor de la primera llamada de entrevista e introductoria (Cláusula 1.5)
    - Establecimiento de requisito de conocimientos legales: el agente tiene suficientes conocimientos legales para ejercer la abogacía en su país de origen o está en proceso de terminar sus estudios que lo habilitan (Cláusula 1.6)
    - Inclusión en la formación de terminología legal y reglamento de extranjería y migraciones que se usen en España (Cláusula 6.2)
+
+18.4. Versión 1.1 - Fecha de modificación: 25/1/2026
+18.5. Cambios introducidos en Versión 1.1:
+   - Ajuste del horario de reuniones diarias: se establecen dos reuniones (13:30–13:45 y 20:30–20:45, hora española) y se actualiza la finalización de la jornada tras la segunda reunión (Cláusulas 3.6 y 3.7).
 
 Y en prueba de conformidad, firman el presente Convenio, por duplicado y a un solo efecto, en el lugar y fecha indicados en el encabezamiento.
 

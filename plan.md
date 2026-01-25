@@ -96,8 +96,14 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 
 ### ✅ Hotfixes recientes (Enero 2026)
 - [x] Corrección TS en `RequestContractModal` (uso de `current_stage` en vez de `name`) y callback de hiring code sin usar; build en Docker verificado.
+- [x] Agentes de ventas: actualizar reuniones diarias a 13:30–13:45 y 20:30–20:45 (hora España) + ajuste fin de jornada.
+  - [x] Documentación: `docs/AGENTES_VENTAS_REUNIONES_DIARIAS_HORARIOS.md` ✅
 - [x] CRM: deshabilitar “Llamar (Telnyx)” mientras `loadingOpportunities` para evitar oportunidades duplicadas al iniciar llamada desde contacto.
   - [x] Documentación: `docs/FRONTEND_TELNYX_CALL_DISABLE_WHILE_LOADING_OPPORTUNITIES.md` ✅
+- [x] CRM: `ContactTableRow` memo re-renderiza cuando cambian callbacks (evita closures stale en selección/navegación).
+  - [x] Documentación: `docs/FRONTEND_CRM_CONTACT_TABLE_ROW_MEMO_CALLBACKS_FIX.md` ✅
+- [x] CRM: `ContactTableRow` memo compara correctamente columnas de llamadas (`ultima_llamada`/`proxima_llamada`) mapeando a `*_fecha` (evita datos stale).
+  - [x] Documentación: `docs/FRONTEND_CRM_CONTACT_TABLE_ROW_VISIBLE_COLUMNS_FIELDS_FIX.md` ✅
 - [x] Botón para descartar oportunidad con motivo (marca `lost` y agrega motivo en notas).
   - [x] Documentación backend: `docs/BACKEND_OPPORTUNITY_DISCARD_ENDPOINT.md` ✅
   - [x] Documentación frontend: `docs/FRONTEND_OPPORTUNITY_DISCARD_BUTTON.md` ✅
