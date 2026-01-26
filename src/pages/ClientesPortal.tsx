@@ -3,7 +3,7 @@
 // Nota: esta ruta existe como "slug" /clientes para el portal cliente.
 // Desde aquí se inicia el flujo de contratación usando un hiring code.
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Layout } from '@/components/Layout';

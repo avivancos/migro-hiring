@@ -17,10 +17,6 @@ import {
   DocumentTextIcon,
   CreditCardIcon,
   ArrowDownTrayIcon,
-  ArrowTopRightOnSquareIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  XCircleIcon,
 } from '@heroicons/react/24/outline';
 import type { Contract } from '@/types/contracts';
 import { CONTRACT_STATUS_COLORS } from '@/types/contracts';
