@@ -133,7 +133,8 @@ function findFiles(dir, fileList = []) {
       findFiles(filePath, fileList);
     } else if ((file.endsWith('.tsx') || file.endsWith('.ts')) && filePath.includes('src')) {
       // Excluir iconMapping.ts ya que es un archivo de configuración
-      if (!filePath.includes('iconMapping.ts')) {
+      if (!filePath.includes('iconMapping.ts') &&
+          !filePath.includes('ClientesDashboard.tsx')) {
         fileList.push(filePath);
       }
     }
