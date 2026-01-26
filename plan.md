@@ -100,6 +100,8 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [x] Documentación: `docs/AGENTES_VENTAS_REUNIONES_DIARIAS_HORARIOS.md` ✅
 - [x] Agentes de ventas: roles del equipo (supervisor / operador 1ª llamada / closer) + reparto de comisión 60 USD (30/20/10).
   - [x] Documentación: `docs/AGENTES_VENTAS_ROLES_Y_REPARTO_COMISIONES.md` ✅
+- [x] Agentes de ventas: excepción para ventas aplazadas — comisiones tras el segundo pago (no el primero) para reducir riesgos.
+  - [x] Documentación actualizada: `docs/AGENTES_VENTAS_ROLES_Y_REPARTO_COMISIONES.md` ✅
 - [x] SEO: `getPageTitle()` soporta ruta dinámica `/clientes/:code` (evita título fallback en `/clientes/ABC123`).
   - [x] Documentación: `docs/FRONTEND_PAGE_TITLES_CLIENTES_DYNAMIC_ROUTE.md` ✅
 - [x] CRM: deshabilitar “Llamar (Telnyx)” mientras `loadingOpportunities` para evitar oportunidades duplicadas al iniciar llamada desde contacto.
@@ -111,6 +113,15 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 - [x] Auth: login OTP (email o teléfono) para Admin/CRM (`/auth/login-otp`) + servicios y documentación.
   - [x] Documentación frontend: `docs/FRONTEND_AUTH_LOGIN_OTP.md` ✅
   - [x] Documentación backend (endpoints requeridos): `docs/BACKEND_AUTH_LOGIN_OTP.md` ✅
+- [x] Auth: `AdminLoginOtp` evita re-ejecución de `useEffect` por dependencia de `searchParams` (usa `returnUrlParam` estable).
+  - [x] Documentación: `docs/FRONTEND_ADMINLOGINOTP_USEEFFECT_SEARCHPARAMS_DEP_FIX.md` ✅
+- [x] Portal de facturación para clientes (`/clientes/billing`) — permite a clientes autenticados ver y gestionar su información de billing mediante Stripe Billing Portal.
+  - [x] Página: `src/pages/ClientesBilling.tsx` ✅
+  - [x] Componente: `src/components/stripe/ClientesBillingSection.tsx` ✅
+  - [x] Servicios públicos: `getClientStripeBillingSummary()` y `createClientStripeBillingPortalSession()` ✅
+  - [x] Link en portal cliente cuando usuario está autenticado ✅
+  - [x] Documentación frontend: `docs/FRONTEND_CLIENTES_BILLING_PORTAL.md` ✅
+  - [x] Documentación API (endpoints requeridos): `docs/api/clientes_billing_stripe.md` ✅
 - [x] Botón para descartar oportunidad con motivo (marca `lost` y agrega motivo en notas).
   - [x] Documentación backend: `docs/BACKEND_OPPORTUNITY_DISCARD_ENDPOINT.md` ✅
   - [x] Documentación frontend: `docs/FRONTEND_OPPORTUNITY_DISCARD_BUTTON.md` ✅

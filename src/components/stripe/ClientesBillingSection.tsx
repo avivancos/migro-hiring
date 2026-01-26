@@ -10,7 +10,7 @@ import { StripeSubscriptionCard } from '@/components/stripe/StripeSubscriptionCa
 import { StripeDefaultPaymentMethodCard } from '@/components/stripe/StripeDefaultPaymentMethodCard';
 import { StripeInvoicesTable } from '@/components/stripe/StripeInvoicesTable';
 import { StripeTransactionsTable } from '@/components/stripe/StripeTransactionsTable';
-import { ManageBillingButton } from '@/components/stripe/ManageBillingButton';
+import { getErrorMessage } from '@/services/api';
 
 type StripeUiErrorKind = 'not_found' | 'not_configured' | 'stripe_error' | 'unknown';
 
@@ -19,7 +19,7 @@ interface StripeUiError {
   message: string;
 }
 
-interface StripeBillingSectionProps {
+interface ClientesBillingSectionProps {
   hiringCode: string;
 }
 
@@ -64,18 +64,18 @@ function parseStripeError(err: unknown): StripeUiError {
   return { kind: 'unknown', message: detailStr || 'No se pudo cargar la información de Stripe.' };
 }
 
-export function StripeBillingSection({ hiringCode }: StripeBillingSectionProps) {
+export function ClientesBillingSection({ hiringCode }: ClientesBillingSectionProps) {
   const [summary, setSummary] = useState<StripeBillingSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<StripeUiError | null>(null);
   const [tab, setTab] = useState<'subscription' | 'transactions' | 'invoices'>('subscription');
+  const [portalLoading, setPortalLoading] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      // Usar método que intenta cliente primero, luego admin
-      const data = await contractsService.getStripeBillingSummary(hiringCode);
+      const data = await contractsService.getClientStripeBillingSummary(hiringCode);
       setSummary(data);
     } catch (err: unknown) {
       setSummary(null);
@@ -89,6 +89,22 @@ export function StripeBillingSection({ hiringCode }: StripeBillingSectionProps) 
     if (hiringCode) load();
   }, [hiringCode, load]);
 
+  const handleOpenPortal = async () => {
+    setPortalLoading(true);
+    try {
+      const session = await contractsService.createClientStripeBillingPortalSession(hiringCode);
+      if (session?.url) {
+        window.location.href = session.url;
+      } else {
+        alert('No se recibió URL del portal de facturación');
+      }
+    } catch (error: unknown) {
+      alert(getErrorMessage(error) || 'No se pudo abrir el portal de facturación');
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
   const subscription = useMemo(() => summary?.subscription ?? null, [summary]);
   const customer = useMemo(() => summary?.customer ?? null, [summary]);
   const paymentMethod = useMemo(() => summary?.default_payment_method ?? null, [summary]);
@@ -98,13 +114,17 @@ export function StripeBillingSection({ hiringCode }: StripeBillingSectionProps) 
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <CardTitle className="flex items-center gap-2">
           <CreditCardIcon width={20} height={20} />
-          Suscripción & facturación (Stripe)
+          Suscripción & facturación
         </CardTitle>
         <div className="flex flex-wrap gap-2">
-          <ManageBillingButton
-            hiringCode={hiringCode}
+          <Button
+            size="sm"
+            onClick={handleOpenPortal}
+            disabled={portalLoading || loading}
             className="bg-green-600 hover:bg-green-700 text-white"
-          />
+          >
+            {portalLoading ? 'Abriendo...' : 'Gestionar pago'}
+          </Button>
           <Button size="sm" variant="outline" onClick={load} disabled={loading}>
             <ArrowPathIcon width={16} height={16} className="mr-2" />
             Recargar
@@ -113,7 +133,7 @@ export function StripeBillingSection({ hiringCode }: StripeBillingSectionProps) 
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {loading && <LoadingSpinner size="sm" text="Cargando información de Stripe..." />}
+        {loading && <LoadingSpinner size="sm" text="Cargando información de facturación..." />}
 
         {!loading && error && (
           <div
@@ -133,7 +153,7 @@ export function StripeBillingSection({ hiringCode }: StripeBillingSectionProps) 
         )}
 
         {!loading && !error && !summary && (
-          <div className="text-sm text-gray-600">Aún no hay información de Stripe disponible.</div>
+          <div className="text-sm text-gray-600">Aún no hay información de facturación disponible.</div>
         )}
 
         {!loading && !error && summary && (
@@ -157,21 +177,11 @@ export function StripeBillingSection({ hiringCode }: StripeBillingSectionProps) 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <StripeSubscriptionCard subscription={subscription} />
-                    {(subscription?.id || null) && (
-                      <a
-                        href={`https://dashboard.stripe.com/subscriptions/${subscription?.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-green-600 hover:text-green-700 inline-flex items-center gap-1 mt-1"
-                      >
-                        Ver suscripción en Stripe
-                      </a>
-                    )}
                   </div>
 
                   <div className="space-y-2">
                     <div>
-                      <label className="text-sm font-medium text-gray-500">Cliente Stripe</label>
+                      <label className="text-sm font-medium text-gray-500">Cliente</label>
                       <div className="text-sm text-gray-900 mt-1 font-mono break-all">
                         {customer?.id || 'No disponible'}
                       </div>
@@ -183,16 +193,6 @@ export function StripeBillingSection({ hiringCode }: StripeBillingSectionProps) 
                         <StripeDefaultPaymentMethodCard paymentMethod={paymentMethod} />
                       </div>
                     </div>
-                    {customer?.id && (
-                      <a
-                        href={`https://dashboard.stripe.com/customers/${customer.id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-green-600 hover:text-green-700 inline-flex items-center gap-1 mt-1"
-                      >
-                        Ver cliente en Stripe
-                      </a>
-                    )}
                   </div>
                 </div>
               </TabsContent>
@@ -211,4 +211,3 @@ export function StripeBillingSection({ hiringCode }: StripeBillingSectionProps) 
     </Card>
   );
 }
-

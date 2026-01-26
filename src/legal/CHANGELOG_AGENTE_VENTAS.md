@@ -23,6 +23,13 @@
   - 20 USD (pool resto del equipo: supervisor + apoyo al cierre)
   - 10 USD (quien agenda la visita/cita, si aplica)
 
+## Versión 1.3 - 25/1/2026
+
+### Excepción para ventas aplazadas (reducción de riesgos)
+
+- En contrataciones con pago aplazado (planes de pago en varios plazos), las comisiones se generarán tras el **segundo pago válido** del cliente a MIGRO (no tras el primero), con el objetivo de reducir riesgos comerciales.
+- El reparto por roles (30/20/10) se mantiene igual, pero el devengo se retrasa hasta el segundo pago en ventas aplazadas.
+
 ## Versión 1.0 - Enero 2025
 
 ### Creación inicial del contrato

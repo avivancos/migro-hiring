@@ -3,7 +3,7 @@
 // Nota: esta ruta existe como "slug" /clientes para el portal cliente.
 // Desde aquí se inicia el flujo de contratación usando un hiring code.
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Layout } from '@/components/Layout';
@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { fadeIn, slideUp, staggerContainer, staggerItem } from '@/utils/animations';
 import { useAuth } from '@/providers/AuthProvider';
 import { getErrorMessage } from '@/services/api';
+import { ClientesDashboard } from '@/pages/ClientesDashboard';
 
 function normalizeIdentifier(raw: string): string {
   // Email: mantener (trim)
@@ -116,6 +117,17 @@ export function ClientesPortal() {
     },
   ];
 
+  // Si está autenticado, mostrar dashboard directamente
+  if (isAuthenticated && user && !isLoading) {
+    return (
+      <Layout>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <ClientesDashboard />
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <motion.div
@@ -143,8 +155,16 @@ export function ClientesPortal() {
             </CardHeader>
             <CardContent className="space-y-4">
               {isAuthenticated && user ? (
-                <div className="text-sm text-gray-700">
-                  Sesión iniciada como <span className="font-medium">{user.email}</span>.
+                <div className="space-y-3">
+                  <div className="text-sm text-gray-700">
+                    Sesión iniciada como <span className="font-medium">{user.email}</span>.
+                  </div>
+                  <Button
+                    onClick={() => navigate('/clientes/billing')}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    Ver facturación y pagos
+                  </Button>
                 </div>
               ) : (
                 <form

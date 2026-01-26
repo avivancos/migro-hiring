@@ -31,14 +31,19 @@ export function AdminLoginOtp() {
   const [loading, setLoading] = useState(false);
 
   const normalizedIdentifier = useMemo(() => normalizeIdentifier(identifier), [identifier]);
+  const searchParamsString = searchParams.toString();
+  const returnUrlParam = useMemo(
+    () => new URLSearchParams(searchParamsString).get('returnUrl'),
+    [searchParamsString],
+  );
 
   // Si ya está autenticado, redirigir
   useEffect(() => {
     if (isAuthenticated && isAdmin) {
-      const returnUrl = searchParams.get('returnUrl') || '/admin/dashboard';
+      const returnUrl = returnUrlParam || '/admin/dashboard';
       navigate(returnUrl, { replace: true });
     }
-  }, [isAuthenticated, isAdmin, navigate, searchParams]);
+  }, [isAuthenticated, isAdmin, navigate, returnUrlParam]);
 
   const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -216,7 +221,7 @@ export function AdminLoginOtp() {
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate(`/auth/login${searchParams.toString() ? `?${searchParams.toString()}` : ''}`)}
+                onClick={() => navigate(`/auth/login${searchParamsString ? `?${searchParamsString}` : ''}`)}
                 className="text-gray-600"
               >
                 Volver a login con contraseña

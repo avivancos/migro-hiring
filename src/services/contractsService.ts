@@ -14,20 +14,6 @@ import type {
 } from '@/types/contracts';
 import type { StripeBillingPortalSession, StripeBillingSummary } from '@/types/stripe';
 
-const getAdminPasswordHeader = (): Record<string, string> => {
-  const envPassword = import.meta.env.VITE_ADMIN_PASSWORD;
-  const storedPassword = typeof window !== 'undefined'
-    ? window.sessionStorage.getItem('admin_password')
-    : null;
-  const password = storedPassword || envPassword;
-
-  if (!password) {
-    throw new Error('X-Admin-Password no configurado. Define VITE_ADMIN_PASSWORD o sessionStorage admin_password.');
-  }
-
-  return { 'X-Admin-Password': password };
-};
-
 /**
  * Normalize hiring code response to Contract format
  */
@@ -90,7 +76,7 @@ function normalizeHiringCode(hiringCode: any): Contract {
 export const contractsService = {
   /**
    * Get all contracts (hiring codes) with filters and pagination
-   * Uses /admin/contracts/ endpoint with X-Admin-Password header
+   * Uses /admin/contracts/ endpoint with JWT authentication
    */
   async getContracts(filters?: ContractFilters): Promise<ContractListResponse> {
     try {
@@ -103,12 +89,9 @@ export const contractsService = {
         params.status_filter = filters.status;
       }
       
-      // Use the contracts endpoint with admin password
+      // Use the contracts endpoint with JWT authentication
       const { data } = await api.get<Contract[]>('/admin/contracts/', {
         params,
-        headers: {
-          ...getAdminPasswordHeader(),
-        },
       });
       
       // Normalize to Contract format
@@ -163,17 +146,13 @@ export const contractsService = {
 
   /**
    * Get contract by hiring code
-   * Uses /admin/contracts/{code} endpoint with X-Admin-Password header
+   * Uses /admin/contracts/{code} endpoint with JWT authentication
    * Falls back to public /hiring/{code} endpoint to get complete data (service_name, service_description)
    */
   async getContract(code: string): Promise<Contract> {
     try {
       // Try admin endpoint first
-      const { data: adminData } = await api.get<Contract>(`/admin/contracts/${code}`, {
-        headers: {
-          ...getAdminPasswordHeader(),
-        },
-      });
+      const { data: adminData } = await api.get<Contract>(`/admin/contracts/${code}`);
       
       // Get public endpoint data to ensure we have service_name and service_description
       try {
@@ -230,34 +209,92 @@ export const contractsService = {
   },
 
   /**
+   * Get contracts for the authenticated client (JWT auth, no admin password)
+   * Backend endpoint: GET /client/contracts or /me/contracts
+   */
+  async getClientContracts(): Promise<Contract[]> {
+    try {
+      // Intentar endpoint de cliente primero
+      const { data } = await api.get<Contract[]>('/client/contracts');
+      return (Array.isArray(data) ? data : []).map((hc) => normalizeHiringCode(hc));
+    } catch (err: unknown) {
+      // Si no existe, intentar con /me/contracts
+      try {
+        const { data } = await api.get<Contract[]>('/me/contracts');
+        return (Array.isArray(data) ? data : []).map((hc) => normalizeHiringCode(hc));
+      } catch {
+        // Si ambos fallan, retornar array vacío (backend aún no implementado)
+        console.warn('⚠️ Endpoints /client/contracts y /me/contracts no disponibles aún');
+        return [];
+      }
+    }
+  },
+
+  /**
    * Get Stripe billing summary for a hiring code
-   * Requires admin password header
+   * Uses JWT authentication
    */
   async getStripeBillingSummary(code: string): Promise<StripeBillingSummary> {
-    const { data } = await api.get<StripeBillingSummary>(`/admin/contracts/${code}/stripe/summary`, {
-      headers: {
-        ...getAdminPasswordHeader(),
-      },
-    });
+    // Intentar endpoint de cliente primero (para usuarios autenticados como clientes)
+    try {
+      const { data } = await api.get<StripeBillingSummary>(`/clientes/contracts/${code}/stripe/summary`);
+      return data;
+    } catch {
+      // Fallback a endpoint admin si el cliente no existe
+      try {
+        const { data } = await api.get<StripeBillingSummary>(`/admin/contracts/${code}/stripe/summary`);
+        return data;
+      } catch {
+        throw new Error('No se pudo obtener la información de facturación');
+      }
+    }
+  },
+
+  /**
+   * Get Stripe billing summary for a hiring code (client endpoint only)
+   * Uses JWT authentication - specifically for client portal
+   * Backend endpoint: GET /clientes/contracts/{code}/stripe/summary
+   * Note: This method does NOT fallback to admin endpoint
+   */
+  async getClientStripeBillingSummary(code: string): Promise<StripeBillingSummary> {
+    const { data } = await api.get<StripeBillingSummary>(`/clientes/contracts/${code}/stripe/summary`);
     return data;
   },
 
   /**
    * Create Stripe billing portal session for a hiring code
-   * Requires admin password header
+   * Uses JWT authentication
    */
   async createStripeBillingPortalSession(code: string): Promise<StripeBillingPortalSession> {
-    const { data } = await api.post<StripeBillingPortalSession>(`/admin/contracts/${code}/stripe/portal`, {}, {
-      headers: {
-        ...getAdminPasswordHeader(),
-      },
-    });
+    // Intentar endpoint de cliente primero (para usuarios autenticados como clientes)
+    try {
+      const { data } = await api.post<StripeBillingPortalSession>(`/clientes/contracts/${code}/stripe/portal`, {});
+      return data;
+    } catch {
+      // Fallback a endpoint admin si el cliente no existe
+      try {
+        const { data } = await api.post<StripeBillingPortalSession>(`/admin/contracts/${code}/stripe/portal`, {});
+        return data;
+      } catch {
+        throw new Error('No se pudo crear la sesión del portal de facturación');
+      }
+    }
+  },
+
+  /**
+   * Create Stripe billing portal session for a hiring code (client endpoint only)
+   * Uses JWT authentication - specifically for client portal
+   * Backend endpoint: POST /clientes/contracts/{code}/stripe/portal
+   * Note: This method does NOT fallback to admin endpoint
+   */
+  async createClientStripeBillingPortalSession(code: string): Promise<StripeBillingPortalSession> {
+    const { data } = await api.post<StripeBillingPortalSession>(`/clientes/contracts/${code}/stripe/portal`, {});
     return data;
   },
 
   /**
    * Create a new contract (hiring code)
-   * Uses /admin/contracts/ endpoint with X-Admin-Password header
+   * Uses /admin/contracts/ endpoint with JWT authentication
    */
   async createContract(request: ContractCreateRequest): Promise<Contract> {
     const body: any = {
@@ -302,18 +339,14 @@ export const contractsService = {
       body.client_postal_code = request.client_postal_code;
     }
     
-    const { data } = await api.post<Contract>('/admin/contracts/', body, {
-      headers: {
-        ...getAdminPasswordHeader(),
-      },
-    });
+    const { data } = await api.post<Contract>('/admin/contracts/', body);
     
     return normalizeHiringCode(data);
   },
 
   /**
    * Update contract
-   * Uses PATCH /admin/contracts/{code} endpoint with X-Admin-Password header
+   * Uses PATCH /admin/contracts/{code} endpoint with JWT authentication
    */
   async updateContract(code: string, request: ContractUpdateRequest): Promise<Contract> {
     const body: any = {};
@@ -362,21 +395,13 @@ export const contractsService = {
     
     // Intentar primero con PATCH, si falla con 405, intentar con PUT
     try {
-      const { data } = await api.patch<Contract>(`/admin/contracts/${code}`, body, {
-        headers: {
-          ...getAdminPasswordHeader(),
-        },
-      });
+      const { data } = await api.patch<Contract>(`/admin/contracts/${code}`, body);
       return normalizeHiringCode(data);
     } catch (error: any) {
       // Si el error es 405 (Method Not Allowed), intentar con PUT
       if (error?.response?.status === 405) {
         console.warn('⚠️ PATCH no disponible, intentando con PUT...');
-        const { data } = await api.put<Contract>(`/admin/contracts/${code}`, body, {
-          headers: {
-            ...getAdminPasswordHeader(),
-          },
-        });
+        const { data } = await api.put<Contract>(`/admin/contracts/${code}`, body);
         return normalizeHiringCode(data);
       }
       // Si es otro error, relanzarlo
@@ -386,26 +411,18 @@ export const contractsService = {
 
   /**
    * Delete contract
-   * Uses /admin/contracts/{code} DELETE endpoint with X-Admin-Password header
+   * Uses /admin/contracts/{code} DELETE endpoint with JWT authentication
    */
   async deleteContract(code: string): Promise<void> {
-    await api.delete(`/admin/contracts/${code}`, {
-      headers: {
-        ...getAdminPasswordHeader(),
-      },
-    });
+    await api.delete(`/admin/contracts/${code}`);
   },
 
   /**
    * Expire contract manually
-   * Uses /admin/contracts/{code}/expire endpoint with X-Admin-Password header
+   * Uses /admin/contracts/{code}/expire endpoint with JWT authentication
    */
   async expireContract(code: string): Promise<Contract> {
-    const { data } = await api.post<Contract>(`/admin/contracts/${code}/expire`, {}, {
-      headers: {
-        ...getAdminPasswordHeader(),
-      },
-    });
+    const { data } = await api.post<Contract>(`/admin/contracts/${code}/expire`, {});
     return normalizeHiringCode(data);
   },
 
@@ -500,7 +517,6 @@ export const contractsService = {
    */
   async getAnnexes(hiringCode: string): Promise<ContractAnnex[]> {
     // El interceptor de axios agregará automáticamente el token JWT
-    // No usar X-Admin-Password porque el backend requiere JWT
     const { data } = await api.get<ContractAnnex[]>(`/admin/hiring/${hiringCode}/annexes`);
     return data;
   },
@@ -511,7 +527,6 @@ export const contractsService = {
    */
   async createAnnex(request: ContractAnnexCreateRequest): Promise<ContractAnnex> {
     // El interceptor de axios agregará automáticamente el token JWT
-    // No usar X-Admin-Password porque el backend requiere JWT
     const { data } = await api.post<ContractAnnex>(
       `/admin/hiring/${request.hiring_code}/annexes`,
       {
@@ -529,7 +544,6 @@ export const contractsService = {
    */
   async updateAnnex(annexId: string, request: ContractAnnexUpdateRequest): Promise<ContractAnnex> {
     // El interceptor de axios agregará automáticamente el token JWT
-    // No usar X-Admin-Password porque el backend requiere JWT
     const { data } = await api.patch<ContractAnnex>(
       `/admin/hiring/annexes/${annexId}`,
       request
@@ -543,7 +557,6 @@ export const contractsService = {
    */
   async deleteAnnex(annexId: string): Promise<void> {
     // El interceptor de axios agregará automáticamente el token JWT
-    // No usar X-Admin-Password porque el backend requiere JWT
     await api.delete(`/admin/hiring/annexes/${annexId}`);
   },
 };

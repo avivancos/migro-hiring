@@ -7,6 +7,7 @@ import { useTokenRefresh } from '@/hooks/useTokenRefresh';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { Home } from '@/pages/Home';
 import { ClientesPortal } from '@/pages/ClientesPortal';
+import { ClientesBilling } from '@/pages/ClientesBilling';
 import { HiringFlow } from '@/pages/HiringFlow';
 import { Login } from '@/pages/Login';
 import { NotFound } from '@/pages/NotFound';
@@ -81,6 +82,7 @@ function AppContent() {
           <Route path="/" element={<Home />} />
           {/* Portal cliente (slug) */}
           <Route path="/clientes" element={<ClientesPortal />} />
+          <Route path="/clientes/billing" element={<ClientesBilling />} />
           <Route path="/clientes/:code" element={<HiringFlow />} />
           <Route path="/contratacion/:code" element={<HiringFlow />} />
           <Route path="/hiring/:code" element={<HiringFlow />} /> {/* Alias en inglés */}

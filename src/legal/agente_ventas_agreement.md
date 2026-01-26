@@ -55,8 +55,9 @@ Las funciones/roles podrán ir relevándose semanalmente entre los miembros del 
    (b) 20 USD para el resto del equipo (pool de soporte/comercial), incluyendo tareas de supervisión comercial y apoyo al cierre, según distribución interna y trazabilidad en el CRM.
    (c) 10 USD para quien agende la visita/cita (si aplica) y deje constancia en el CRM.
 EL AGENTE tendrá derecho a percibir la(s) parte(s) que le correspondan según el rol efectivamente desempeñado y registrado. La comisión total por contratación efectiva no se incrementará por la concurrencia de varios roles: se reparte conforme a lo anterior.
+Excepción para ventas aplazadas: en contrataciones con pago aplazado (planes de pago en varios plazos), las comisiones se generarán tras el segundo pago válido del cliente a MIGRO, con el objetivo de reducir riesgos comerciales. Esta excepción no afecta al reparto por roles (30/20/10), que se mantiene igual.
 
-2.5. Contratación efectiva. A efectos del presente Convenio, se entenderá por "contratación efectiva" aquella en la que el cliente haya realizado el primer pago válido a MIGRO a través de la plataforma de contratación o aplicación móvil de MIGRO, utilizando el código de contratación (Hiring Code) o canal habilitado correspondiente.
+2.5. Contratación efectiva. A efectos del presente Convenio, se entenderá por "contratación efectiva" aquella en la que el cliente haya realizado el primer pago válido a MIGRO a través de la plataforma de contratación o aplicación móvil de MIGRO, utilizando el código de contratación (Hiring Code) o canal habilitado correspondiente. Excepción: en contrataciones con pago aplazado (planes de pago en varios plazos), la contratación efectiva se entenderá cumplida cuando el cliente haya realizado el segundo pago válido a MIGRO, con el objetivo de reducir riesgos comerciales.
 
 2.6. Liquidación de comisiones. Las comisiones devengadas en cada quincena se liquidarán junto con el pago de la remuneración fija correspondiente a esa quincena, dentro de los cinco (5) días hábiles siguientes al término del período quincenal, mediante la misma forma de pago acordada para la remuneración fija.
 
@@ -284,6 +285,10 @@ En estas reuniones se resolverán los casos migratorios y de extranjería de cad
 18.6. Versión 1.2 - Fecha de modificación: 25/1/2026
 18.7. Cambios introducidos en Versión 1.2:
    - Especificación de roles operativos del equipo de ventas (supervisor, operador de primera llamada y closer) y actualización del esquema de comisiones por contratación con reparto 30/20/10 (Cláusulas 1.7 y 2.4).
+
+18.8. Versión 1.3 - Fecha de modificación: 25/1/2026
+18.9. Cambios introducidos en Versión 1.3:
+   - Excepción para ventas aplazadas: las comisiones se generarán tras el segundo pago (no el primero) para reducir riesgos comerciales (Cláusulas 2.4 y 2.5).
 
 Y en prueba de conformidad, firman el presente Convenio, por duplicado y a un solo efecto, en el lugar y fecha indicados en el encabezamiento.
 

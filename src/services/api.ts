@@ -86,9 +86,6 @@ function setupApiInterceptors(instance: ReturnType<typeof axios.create>) {
                             isPublicHiringEndpoint ||
                             isAnnexesGetEndpoint;
     
-    // No añadir token si ya tiene X-Admin-Password (autenticación alternativa)
-    const hasAdminPassword = config.headers && 'X-Admin-Password' in config.headers;
-    
     // Log de depuración para endpoints de anexos
     if (config.url?.includes('/annexes')) {
       console.log('🔍 [api.ts] Endpoint de anexos:', {
@@ -96,11 +93,10 @@ function setupApiInterceptors(instance: ReturnType<typeof axios.create>) {
         method: config.method,
         isAnnexesGetEndpoint,
         isPublicEndpoint,
-        hasAdminPassword,
       });
     }
     
-    if (!isPublicEndpoint && !hasAdminPassword) {
+    if (!isPublicEndpoint) {
       let token = TokenStorage.getAccessToken();
       
       // Log de depuración para endpoints de anexos

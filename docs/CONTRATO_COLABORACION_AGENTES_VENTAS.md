@@ -64,6 +64,7 @@ Crear un contrato completo que regule la relación de colaboración freelance en
   - **20 USD**: resto del equipo (pool de soporte/comercial: supervisor + apoyo al cierre), según trazabilidad en CRM
   - **10 USD**: quien agenda la visita/cita (si aplica) y lo registra en el CRM
   - Liquidación junto con la remuneración fija quincenal
+  - **Excepción ventas aplazadas**: en contrataciones con pago aplazado, las comisiones se generarán tras el segundo pago (no el primero) para reducir riesgos comerciales
 
 - **Asunción de riesgo**: MIGRO asume íntegramente el riesgo comercial
   - Los agentes no asumen riesgo alguno

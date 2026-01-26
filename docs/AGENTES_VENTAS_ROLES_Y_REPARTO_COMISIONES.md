@@ -19,6 +19,9 @@ Por cada **contratación efectiva** se devenga una comisión total de **60 USD**
 - **20 USD**: resto del equipo (pool de soporte/comercial: supervisor + apoyo al cierre), según trazabilidad en CRM.
 - **10 USD**: quien agenda la visita/cita (si aplica) y lo registra en el CRM.
 
+### Excepción: ventas aplazadas
+En contrataciones con **pago aplazado** (planes de pago en varios plazos), las comisiones se generarán tras el **segundo pago válido** del cliente a MIGRO (no tras el primero), con el objetivo de reducir riesgos comerciales. El reparto por roles (30/20/10) se mantiene igual, pero el devengo se retrasa hasta el segundo pago.
+
 ## Source of truth (contrato)
 - `src/legal/agente_ventas_agreement.md`:
   - Roles: cláusula `1.7`

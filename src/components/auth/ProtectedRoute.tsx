@@ -6,6 +6,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { routePermissionService } from '@/services/routePermissionService';
 import { localDatabase } from '@/services/localDatabase';
+import { Button } from '@/components/ui/button';
 import type { UserRole } from '@/types/user';
 
 interface ProtectedRouteProps {
@@ -23,10 +24,11 @@ export function ProtectedRoute({
   redirectTo,
   useDynamicPermissions = true, // Por defecto activado
 }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, isAdmin, user } = useAuth();
+  const { isAuthenticated, isLoading, isAdmin, user, refreshUser } = useAuth();
   const location = useLocation();
   const [hasDynamicPermission, setHasDynamicPermission] = useState<boolean | null>(null);
   const [isCheckingPermission, setIsCheckingPermission] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Verificar permiso dinámico si está habilitado y el usuario no es admin
   useEffect(() => {
@@ -106,7 +108,7 @@ export function ProtectedRoute({
 
   // Verificar permisos de admin si se requiere
   if (requireAdmin && !isAdmin) {
-    // DEBUG: Log información de acceso denegado
+    // DEBUG: Log información de acceso denegado con datos completos
     console.error('🚫 [ProtectedRoute] Acceso denegado - Detalles:', {
       requireAdmin,
       isAdmin,
@@ -114,24 +116,62 @@ export function ProtectedRoute({
         email: user.email,
         role: user.role,
         is_superuser: user.is_superuser,
+        is_active: user.is_active,
+        full_user_object: user, // Objeto completo para debug
       } : null,
       isAuthenticated,
       isLoading,
       location: location.pathname,
+      localStorage_admin_user: localStorage.getItem('admin_user'),
     });
     
+    const handleRefresh = async () => {
+      setIsRefreshing(true);
+      try {
+        await refreshUser();
+        // Esperar un momento para que se actualice el estado
+        setTimeout(() => {
+          setIsRefreshing(false);
+        }, 1000);
+      } catch (error) {
+        console.error('Error refrescando usuario:', error);
+        setIsRefreshing(false);
+      }
+    };
+    
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Acceso Denegado</h2>
           <p className="text-gray-600 mb-4">No tienes permisos de administrador</p>
           {user && (
-            <div className="mt-4 text-sm text-gray-500">
-              <p>Email: {user.email}</p>
-              <p>Rol: {user.role || 'N/A'}</p>
-              <p>is_superuser: {String(user.is_superuser)}</p>
+            <div className="mt-4 mb-6 p-4 bg-gray-100 rounded-lg text-sm text-gray-700 text-left">
+              <p><strong>Email:</strong> {user.email}</p>
+              <p><strong>Rol:</strong> {user.role || 'N/A'}</p>
+              <p><strong>is_superuser:</strong> {String(user.is_superuser)}</p>
+              <p className="mt-2 text-xs text-gray-500">
+                Si eres administrador, es posible que necesites cerrar sesión y volver a iniciar sesión 
+                para actualizar tus permisos.
+              </p>
             </div>
           )}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              variant="outline"
+            >
+              {isRefreshing ? 'Refrescando...' : 'Refrescar permisos'}
+            </Button>
+            <Button
+              onClick={() => {
+                window.location.href = '/auth/login';
+              }}
+              variant="default"
+            >
+              Ir al login
+            </Button>
+          </div>
         </div>
       </div>
     );

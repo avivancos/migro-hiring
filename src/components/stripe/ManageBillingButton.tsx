@@ -14,6 +14,7 @@ export function ManageBillingButton({ hiringCode, className }: ManageBillingButt
   const handleClick = async () => {
     setLoading(true);
     try {
+      // Usar método que intenta cliente primero, luego admin
       const session = await contractsService.createStripeBillingPortalSession(hiringCode);
       if (session?.url) {
         window.location.href = session.url;

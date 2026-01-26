@@ -55,8 +55,9 @@ Las funciones/roles podrán ir relevándose semanalmente entre los miembros del 
    - (b) **20 USD** para el resto del equipo (pool de soporte/comercial), incluyendo supervisión y apoyo al cierre, según trazabilidad en CRM.
    - (c) **10 USD** para quien agende la visita/cita (si aplica) y lo registre en el CRM.
 EL AGENTE percibirá la(s) parte(s) que le correspondan según el rol efectivamente desempeñado y registrado. La comisión total por contratación efectiva no se incrementa por la concurrencia de varios roles: se reparte conforme a lo anterior.
+**Excepción para ventas aplazadas**: en contrataciones con pago aplazado (planes de pago en varios plazos), las comisiones se generarán tras el segundo pago válido del cliente a MIGRO, con el objetivo de reducir riesgos comerciales. Esta excepción no afecta al reparto por roles (30/20/10), que se mantiene igual.
 
-2.5. **Contratación efectiva.** Se entenderá por contratación efectiva aquella en la que el cliente haya realizado el primer pago válido a MIGRO a través de la plataforma de contratación o app móvil, utilizando el código de contratación (Hiring Code) o canal habilitado correspondiente.
+2.5. **Contratación efectiva.** Se entenderá por contratación efectiva aquella en la que el cliente haya realizado el primer pago válido a MIGRO a través de la plataforma de contratación o app móvil, utilizando el código de contratación (Hiring Code) o canal habilitado correspondiente. **Excepción**: en contrataciones con pago aplazado (planes de pago en varios plazos), la contratación efectiva se entenderá cumplida cuando el cliente haya realizado el segundo pago válido a MIGRO, con el objetivo de reducir riesgos comerciales.
 
 2.6. **Liquidación de comisiones.** Las comisiones devengadas en cada quincena se liquidarán junto con la remuneración fija correspondiente, dentro de los cinco (5) días hábiles siguientes al término del período quincenal, mediante la misma forma de pago acordada.
 

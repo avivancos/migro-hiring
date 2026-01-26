@@ -79,6 +79,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await api.get('/users/me');
       const userData = response.data;
       
+      // DEBUG: Log datos del backend
+      console.log('🔍 [AuthProvider] Datos del backend /users/me:', {
+        email: userData.email,
+        role: userData.role,
+        is_superuser: userData.is_superuser,
+        raw_data: userData,
+      });
       
       // Mapear a tipo User
       const mappedUser: User = {
@@ -101,6 +108,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         created_at: userData.created_at,
         updated_at: userData.updated_at,
       };
+      
+      // DEBUG: Log usuario mapeado
+      console.log('✅ [AuthProvider] Usuario mapeado:', {
+        email: mappedUser.email,
+        role: mappedUser.role,
+        is_superuser: mappedUser.is_superuser,
+        isAdmin: mappedUser.is_superuser || mappedUser.role === 'admin' || mappedUser.role === 'superuser',
+      });
       
       
       setUser(mappedUser);
@@ -233,6 +248,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const response = await api.get('/users/me');
     const userData = response.data;
 
+    // DEBUG: Log datos del backend en loadAndSetUser
+    console.log('🔍 [AuthProvider] loadAndSetUser - Datos del backend /users/me:', {
+      email: userData.email,
+      role: userData.role,
+      is_superuser: userData.is_superuser,
+      raw_data: userData,
+    });
+
     const mappedUser: User = {
       id: userData.id,
       email: userData.email,
@@ -254,16 +277,32 @@ export function AuthProvider({ children }: AuthProviderProps) {
       updated_at: userData.updated_at,
     };
 
+    // DEBUG: Log usuario mapeado en loadAndSetUser
+    console.log('✅ [AuthProvider] loadAndSetUser - Usuario mapeado:', {
+      email: mappedUser.email,
+      role: mappedUser.role,
+      is_superuser: mappedUser.is_superuser,
+      isAdmin: mappedUser.is_superuser || mappedUser.role === 'admin' || mappedUser.role === 'superuser',
+    });
+
     setUser(mappedUser);
 
+    const is_admin = mappedUser.is_superuser || mappedUser.role === 'admin' || mappedUser.role === 'superuser';
+    
     localStorage.setItem('admin_user', JSON.stringify({
       id: mappedUser.id,
       email: mappedUser.email,
       name: mappedUser.full_name || mappedUser.email,
-      is_admin: mappedUser.is_superuser || mappedUser.role === 'admin' || mappedUser.role === 'superuser',
+      is_admin: is_admin,
       is_superuser: mappedUser.is_superuser,
       role: mappedUser.role,
     }));
+    
+    console.log('💾 [AuthProvider] loadAndSetUser - Guardado en localStorage:', {
+      is_admin,
+      is_superuser: mappedUser.is_superuser,
+      role: mappedUser.role,
+    });
   };
 
   const login = async (email: string, password: string) => {
@@ -308,6 +347,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const isAdmin = user ? (user.is_superuser || user.role === 'admin' || user.role === 'superuser') : false;
+  
+  // DEBUG: Log cálculo de isAdmin
+  if (user) {
+    console.log('🔍 [AuthProvider] Cálculo de isAdmin:', {
+      email: user.email,
+      role: user.role,
+      is_superuser: user.is_superuser,
+      isAdmin_calculated: isAdmin,
+      check_role_admin: user.role === 'admin',
+      check_role_superuser: user.role === 'superuser',
+      check_is_superuser: user.is_superuser,
+    });
+  }
   
   // Si hay tokens válidos, considerar autenticado incluso si el usuario no está cargado todavía
   // Esto evita redirecciones prematuras al login durante la verificación inicial

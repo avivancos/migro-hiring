@@ -1,3 +1,6 @@
+// Client Stripe Billing Section - Versión para clientes autenticados (JWT)
+// Similar a StripeBillingSection pero usa endpoints de cliente (/client/contracts/...)
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CreditCardIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +13,6 @@ import { StripeSubscriptionCard } from '@/components/stripe/StripeSubscriptionCa
 import { StripeDefaultPaymentMethodCard } from '@/components/stripe/StripeDefaultPaymentMethodCard';
 import { StripeInvoicesTable } from '@/components/stripe/StripeInvoicesTable';
 import { StripeTransactionsTable } from '@/components/stripe/StripeTransactionsTable';
-import { ManageBillingButton } from '@/components/stripe/ManageBillingButton';
 
 type StripeUiErrorKind = 'not_found' | 'not_configured' | 'stripe_error' | 'unknown';
 
@@ -19,7 +21,7 @@ interface StripeUiError {
   message: string;
 }
 
-interface StripeBillingSectionProps {
+interface ClientStripeBillingSectionProps {
   hiringCode: string;
 }
 
@@ -36,14 +38,9 @@ function parseStripeError(err: unknown): StripeUiError {
   const detailLower = detailStr.toLowerCase();
 
   if (status === 404) {
-    const isContractMissing =
-      detailLower.includes('contrato') ||
-      detailLower.includes('contract') ||
-      detailLower.includes('no encontrado') ||
-      detailLower.includes('not found');
     return {
       kind: 'not_found',
-      message: isContractMissing ? 'Contrato no encontrado.' : 'Sin datos de Stripe para este contrato.',
+      message: 'Sin datos de Stripe para este contrato.',
     };
   }
 
@@ -64,7 +61,7 @@ function parseStripeError(err: unknown): StripeUiError {
   return { kind: 'unknown', message: detailStr || 'No se pudo cargar la información de Stripe.' };
 }
 
-export function StripeBillingSection({ hiringCode }: StripeBillingSectionProps) {
+export function ClientStripeBillingSection({ hiringCode }: ClientStripeBillingSectionProps) {
   const [summary, setSummary] = useState<StripeBillingSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<StripeUiError | null>(null);
@@ -74,8 +71,7 @@ export function StripeBillingSection({ hiringCode }: StripeBillingSectionProps) 
     setLoading(true);
     setError(null);
     try {
-      // Usar método que intenta cliente primero, luego admin
-      const data = await contractsService.getStripeBillingSummary(hiringCode);
+      const data = await contractsService.getClientStripeBillingSummary(hiringCode);
       setSummary(data);
     } catch (err: unknown) {
       setSummary(null);
@@ -93,6 +89,26 @@ export function StripeBillingSection({ hiringCode }: StripeBillingSectionProps) 
   const customer = useMemo(() => summary?.customer ?? null, [summary]);
   const paymentMethod = useMemo(() => summary?.default_payment_method ?? null, [summary]);
 
+  const handleManageBilling = async () => {
+    setLoading(true);
+    try {
+      const session = await contractsService.createClientStripeBillingPortalSession(hiringCode);
+      if (session?.url) {
+        window.location.href = session.url;
+      } else {
+        alert('No se recibió URL del portal de facturación');
+      }
+    } catch (err: unknown) {
+      const e = err as HttpErrorLike;
+      const detail = e?.response?.data?.detail;
+      const message =
+        typeof detail === 'string' ? detail : 'Error al abrir el portal de facturación';
+      alert(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -101,10 +117,15 @@ export function StripeBillingSection({ hiringCode }: StripeBillingSectionProps) 
           Suscripción & facturación (Stripe)
         </CardTitle>
         <div className="flex flex-wrap gap-2">
-          <ManageBillingButton
-            hiringCode={hiringCode}
+          <Button
+            size="sm"
+            variant="default"
+            onClick={handleManageBilling}
+            disabled={loading}
             className="bg-green-600 hover:bg-green-700 text-white"
-          />
+          >
+            {loading ? 'Abriendo...' : 'Gestionar pago'}
+          </Button>
           <Button size="sm" variant="outline" onClick={load} disabled={loading}>
             <ArrowPathIcon width={16} height={16} className="mr-2" />
             Recargar
@@ -211,4 +232,3 @@ export function StripeBillingSection({ hiringCode }: StripeBillingSectionProps) 
     </Card>
   );
 }
-
