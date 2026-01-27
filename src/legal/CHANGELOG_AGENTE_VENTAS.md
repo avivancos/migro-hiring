@@ -30,6 +30,11 @@
 - En contrataciones con pago aplazado (planes de pago en varios plazos), las comisiones se generarán tras el **segundo pago válido** del cliente a MIGRO (no tras el primero), con el objetivo de reducir riesgos comerciales.
 - El reparto por roles (30/20/10) se mantiene igual, pero el devengo se retrasa hasta el segundo pago en ventas aplazadas.
 
+### Actualización de jurisdicción y fuero
+
+- Se incorpora la opción de fuero en el domicilio local de EL AGENTE (según encabezado) si se pacta expresamente, manteniendo Salamanca como referencia general.
+- Las cláusulas 14.2 y 15.1 ahora permiten elegir entre los Juzgados y Tribunales de Salamanca o los del domicilio local del agente.
+
 ## Versión 1.0 - Enero 2025
 
 ### Creación inicial del contrato

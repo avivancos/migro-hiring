@@ -22,11 +22,12 @@ type SortOrder = 'asc' | 'desc';
 type ViewMode = 'cards' | 'table';
 
 // Tipos para redimensionamiento de columnas
-type ColumnKey = 'name' | 'email' | 'phone' | 'nacionalidad' | 'grading_llamada' | 'grading_situacion' | 'created_at' | 'updated_at' | 'ultima_llamada' | 'proxima_llamada' | 'acciones';
+type ColumnKey = 'name' | 'responsable' | 'email' | 'phone' | 'nacionalidad' | 'grading_llamada' | 'grading_situacion' | 'created_at' | 'updated_at' | 'ultima_llamada' | 'proxima_llamada' | 'acciones';
 type ColumnWidths = Record<ColumnKey, number>;
 
 const DEFAULT_COLUMN_WIDTHS: ColumnWidths = {
   name: 200,
+  responsable: 200,
   email: 200,
   phone: 150,
   nacionalidad: 140,
@@ -796,6 +797,15 @@ export function CRMContactList() {
     return Array.from(new Set(nacionalidades)).sort();
   }, [contacts]);
 
+  const responsibleLabelById = useMemo(() => {
+    const map: Record<string, string> = {};
+    users.forEach(user => {
+      const displayName = user.name?.trim() || user.email || `Usuario ${user.id?.slice(0, 8)}`;
+      if (user.id) map[user.id] = displayName;
+    });
+    return map;
+  }, [users]);
+
   // Estado para anchos de columnas redimensionables
   const [columnWidths, setColumnWidths] = useState<ColumnWidths>(() => {
     try {
@@ -810,7 +820,7 @@ export function CRMContactList() {
   });
   
   // Estado para orden de columnas
-  const defaultColumnOrder: ColumnKey[] = ['name', 'email', 'phone', 'nacionalidad', 'grading_llamada', 'grading_situacion', 'created_at', 'updated_at', 'ultima_llamada', 'proxima_llamada', 'acciones'];
+  const defaultColumnOrder: ColumnKey[] = ['name', 'responsable', 'email', 'phone', 'nacionalidad', 'grading_llamada', 'grading_situacion', 'created_at', 'updated_at', 'ultima_llamada', 'proxima_llamada', 'acciones'];
   const [columnOrder, setColumnOrder] = useState<ColumnKey[]>(() => {
     try {
       const saved = localStorage.getItem(COLUMN_ORDER_STORAGE_KEY);
@@ -847,6 +857,7 @@ export function CRMContactList() {
   // Nombres de las columnas para mostrar
   const columnLabels: Record<ColumnKey, string> = {
     name: 'Nombre',
+    responsable: 'Responsable',
     email: 'Email',
     phone: 'Teléfono',
     nacionalidad: 'Nacionalidad',
@@ -923,6 +934,7 @@ export function CRMContactList() {
   const renderColumnHeader = (columnKey: ColumnKey) => {
     const labels: Record<ColumnKey, string> = {
       name: 'Nombre',
+      responsable: 'Responsable',
       email: 'Email',
       phone: 'Teléfono',
       nacionalidad: 'Nacionalidad',
@@ -937,6 +949,7 @@ export function CRMContactList() {
 
     const classNameMap: Record<ColumnKey, string> = {
       name: '',
+      responsable: '',
       email: 'hidden lg:table-cell',
       phone: '',
       nacionalidad: 'hidden xl:table-cell',
@@ -964,8 +977,8 @@ export function CRMContactList() {
       <ResizableHeader
         key={columnKey}
         columnKey={columnKey}
-        onSort={isSortable ? () => handleSort(columnKey) : undefined}
-        sortField={isSortable ? columnKey : undefined}
+        onSort={isSortable ? () => handleSort(columnKey as SortField) : undefined}
+        sortField={isSortable ? (columnKey as SortField) : undefined}
         className={classNameMap[columnKey]}
       >
         {labels[columnKey]}
@@ -978,6 +991,7 @@ export function CRMContactList() {
   const renderColumnCell = (contact: Contact, columnKey: ColumnKey) => {
     const classNameMap: Record<ColumnKey, string> = {
       name: 'px-3 sm:px-6 py-4 overflow-hidden',
+      responsable: 'px-3 sm:px-6 py-4 overflow-hidden',
       email: 'px-3 sm:px-6 py-4 hidden lg:table-cell overflow-hidden',
       phone: 'px-3 sm:px-6 py-4 overflow-hidden',
       nacionalidad: 'px-3 sm:px-6 py-4 hidden xl:table-cell overflow-hidden',
@@ -1003,6 +1017,14 @@ export function CRMContactList() {
                 </div>
               </div>
             </div>
+          </td>
+        );
+      case 'responsable':
+        return (
+          <td key={columnKey} className={classNameMap[columnKey]} style={style}>
+            <span className="text-sm text-gray-700 truncate block">
+              {contact.responsible_user_id || 'Sin asignar'}
+            </span>
           </td>
         );
       case 'email':
@@ -1648,6 +1670,7 @@ export function CRMContactList() {
                               key={contact.id}
                               contact={contact}
                               visibleColumns={visibleColumns}
+                              responsibleLabelById={responsibleLabelById}
                               showSelection={userIsAdmin}
                               isSelected={selectedContactIds.has(contact.id)}
                               selectionDisabled={bulkBusy}

@@ -227,11 +227,11 @@ EL AGENTE percibirá la(s) parte(s) que le correspondan según el rol efectivame
 
 14.1. Este Convenio se rige por la legislación española.
 
-14.2. Las partes, con renuncia expresa a cualquier otro fuero, se someten a los Juzgados y Tribunales de Salamanca. Con carácter previo, intentarán resolver amistosamente cualquier controversia.
+14.2. Las partes, con renuncia expresa a cualquier otro fuero, se someten a los Juzgados y Tribunales de Salamanca o, alternativamente, a los Juzgados y Tribunales del domicilio local de EL AGENTE, cuando así se acuerde entre las partes y se haga constar en el encabezado. Con carácter previo, intentarán resolver amistosamente cualquier controversia.
 
 ### 15. FUERO ESPECÍFICO
 
-15.1. Para cualquier controversia derivada de la interpretación, ejecución o cumplimiento, serán exclusivamente competentes los Juzgados y Tribunales de Salamanca capital, sin perjuicio de lo dispuesto en la cláusula 14.2 sobre negociación amistosa.
+15.1. Para cualquier controversia derivada de la interpretación, ejecución o cumplimiento, serán competentes los Juzgados y Tribunales de Salamanca capital o, si se pacta expresamente, los del domicilio local de EL AGENTE (según encabezado), sin perjuicio de lo dispuesto en la cláusula 14.2 sobre negociación amistosa.
 
 ### 16. INTEGRIDAD DEL CONVENIO Y COMPROMISO DE COLABORACIÓN
 

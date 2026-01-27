@@ -12,6 +12,7 @@ interface ContactTableRowProps {
   contact: Contact;
   visibleColumns: string[];
   onNavigate?: (id: string) => void;
+  responsibleLabelById?: Record<string, string>;
   showSelection?: boolean;
   isSelected?: boolean;
   selectionDisabled?: boolean;
@@ -51,7 +52,7 @@ const formatDate = (dateString?: string): string => {
 };
 
 // Función helper para renderizar celda
-const renderCell = (contact: Contact, columnKey: string) => {
+const renderCell = (contact: Contact, columnKey: string, responsibleLabelById?: Record<string, string>) => {
   switch (columnKey) {
     case 'name':
       return (
@@ -72,6 +73,16 @@ const renderCell = (contact: Contact, columnKey: string) => {
           ) : (
             <span className="text-sm text-gray-400">N/A</span>
           )}
+        </td>
+      );
+    case 'responsable':
+      return (
+        <td key={columnKey} className="px-4 py-3 whitespace-nowrap">
+          <span className="text-sm text-gray-700">
+            {contact.responsible_user_id
+              ? (responsibleLabelById?.[contact.responsible_user_id] || contact.responsible_user_id)
+              : 'Sin asignar'}
+          </span>
         </td>
       );
     case 'phone':
@@ -177,6 +188,7 @@ export const ContactTableRow = memo<ContactTableRowProps>(({
   contact,
   visibleColumns,
   onNavigate,
+  responsibleLabelById,
   showSelection,
   isSelected,
   selectionDisabled,
@@ -238,7 +250,7 @@ export const ContactTableRow = memo<ContactTableRowProps>(({
             </td>
           );
         }
-        return renderCell(contact, columnKey);
+        return renderCell(contact, columnKey, responsibleLabelById);
       })}
     </tr>
   );
@@ -254,11 +266,13 @@ export const ContactTableRow = memo<ContactTableRowProps>(({
   // para no quedarnos con referencias stale (selección/navegación incorrecta).
   if (prevProps.onNavigate !== nextProps.onNavigate) return false;
   if (Boolean(nextProps.showSelection) && prevProps.onToggleSelected !== nextProps.onToggleSelected) return false;
+  if (prevProps.responsibleLabelById !== nextProps.responsibleLabelById) return false;
   
   // Comparar solo campos visibles (mapeando keys de columna -> campos reales del contacto)
   // Nota: algunas columnas renderizan valores basados en nombres distintos (p. ej. 'ultima_llamada' usa 'ultima_llamada_fecha').
   const columnToContactFields: Record<string, Array<keyof Contact>> = {
     name: ['name', 'first_name', 'last_name'],
+    responsable: ['responsible_user_id'],
     email: ['email'],
     phone: ['phone'],
     nacionalidad: ['nacionalidad'],

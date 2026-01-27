@@ -227,11 +227,11 @@ En estas reuniones se resolverán los casos migratorios y de extranjería de cad
 
 14.1. Este Convenio se rige por la legislación española.
 
-14.2. Las partes, con renuncia expresa a cualquier otro fuero que pudiera corresponderles, se someten a los Juzgados y Tribunales de Salamanca. Con carácter previo, intentarán resolver amistosamente cualquier controversia derivada del Convenio.
+14.2. Las partes, con renuncia expresa a cualquier otro fuero que pudiera corresponderles, se someten a los Juzgados y Tribunales de Salamanca o, alternativamente, a los Juzgados y Tribunales del domicilio local de EL AGENTE, cuando así se acuerde entre las partes y se haga constar en el encabezado. Con carácter previo, intentarán resolver amistosamente cualquier controversia derivada del Convenio.
 
 15. FUERO ESPECÍFICO
 
-15.1. Las partes acuerdan de forma expresa que, para cualquier controversia derivada de la interpretación, ejecución o cumplimiento del presente Convenio, serán exclusivamente competentes los Juzgados y Tribunales de Salamanca capital. Esta cláusula se entenderá sin perjuicio de lo dispuesto en la cláusula 14.2 respecto al sometimiento previo a negociación amistosa.
+15.1. Las partes acuerdan de forma expresa que, para cualquier controversia derivada de la interpretación, ejecución o cumplimiento del presente Convenio, serán competentes los Juzgados y Tribunales de Salamanca capital o, si se pacta expresamente, los del domicilio local de EL AGENTE (según encabezado). Esta cláusula se entenderá sin perjuicio de lo dispuesto en la cláusula 14.2 respecto al sometimiento previo a negociación amistosa.
 
 16. INTEGRIDAD DEL CONVENIO Y COMPROMISO DE COLABORACIÓN
 
@@ -289,6 +289,7 @@ En estas reuniones se resolverán los casos migratorios y de extranjería de cad
 18.8. Versión 1.3 - Fecha de modificación: 25/1/2026
 18.9. Cambios introducidos en Versión 1.3:
    - Excepción para ventas aplazadas: las comisiones se generarán tras el segundo pago (no el primero) para reducir riesgos comerciales (Cláusulas 2.4 y 2.5).
+   - Actualización de jurisdicción y fuero: se incorpora la opción de fuero en el domicilio local de EL AGENTE (según encabezado) si se pacta expresamente, manteniendo Salamanca como referencia general (Cláusulas 14.2 y 15.1).
 
 Y en prueba de conformidad, firman el presente Convenio, por duplicado y a un solo efecto, en el lugar y fecha indicados en el encabezamiento.
 

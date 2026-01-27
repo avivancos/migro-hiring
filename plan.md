@@ -46,6 +46,13 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
 
 ## 📋 Tareas Pendientes
 
+### ✅ Contratos agentes colaboradores (Enero 2026)
+- [x] Generación de contratos (DOCX + PDF) con fecha 28/01/2026 ✅
+  - Script actualizado: `generate_agent_contracts.py`
+  - Salida: `src/legal/contratos_agentes/`
+  - Documentación: `docs/CONTRATOS_AGENTES_COLABORADORES_2026_01_28.md` ✅
+  - Ajuste: firmas en tabla con domicilios + CURP Erick ✅
+
 ### 🤖 Reglas del agente (Enero 2026)
 - [x] Prohibir inspección de contenedores/archivos fuera del proyecto actual (regla en `.cursor/rules/scope-only-current-project.mdc`) ✅
 
@@ -83,6 +90,8 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [x] Agregada referencia a sistema de anexos al contrato ✅
   - [x] Documentación creada: `docs/BACKEND_CONTRACT_ANNEXES_IMPLEMENTATION.md` ✅
   - [x] Documentación creada: `docs/FRONTEND_ACCESO_AGENTES_SIN_RESTRICCIONES.md` ✅
+- [x] Guía de no cache en frontend para diagnostico auth ✅
+  - [x] Documentación: `docs/FRONTEND_AUTH_NO_CACHE_GUIDE.md` ✅
 
 ### ✅ Contrato agentes: fuero local (Enero 2026)
 - [x] Actualizado convenio de colaboración para permitir fuero en domicilio local del agente ✅
@@ -102,6 +111,8 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [x] Documentación: `docs/AGENTES_VENTAS_ROLES_Y_REPARTO_COMISIONES.md` ✅
 - [x] Agentes de ventas: excepción para ventas aplazadas — comisiones tras el segundo pago (no el primero) para reducir riesgos.
   - [x] Documentación actualizada: `docs/AGENTES_VENTAS_ROLES_Y_REPARTO_COMISIONES.md` ✅
+- [x] Agentes de ventas: actualización de jurisdicción — opción de fuero en domicilio local del agente (según encabezado) si se pacta expresamente.
+  - [x] Documentación: `docs/AGENTES_VENTAS_JURISDICCION_FUERO_LOCAL.md` ✅
 - [x] SEO: `getPageTitle()` soporta ruta dinámica `/clientes/:code` (evita título fallback en `/clientes/ABC123`).
   - [x] Documentación: `docs/FRONTEND_PAGE_TITLES_CLIENTES_DYNAMIC_ROUTE.md` ✅
 - [x] CRM: deshabilitar “Llamar (Telnyx)” mientras `loadingOpportunities` para evitar oportunidades duplicadas al iniciar llamada desde contacto.
@@ -110,6 +121,8 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [x] Documentación: `docs/FRONTEND_CRM_CONTACT_TABLE_ROW_MEMO_CALLBACKS_FIX.md` ✅
 - [x] CRM: `ContactTableRow` memo compara correctamente columnas de llamadas (`ultima_llamada`/`proxima_llamada`) mapeando a `*_fecha` (evita datos stale).
   - [x] Documentación: `docs/FRONTEND_CRM_CONTACT_TABLE_ROW_VISIBLE_COLUMNS_FIELDS_FIX.md` ✅
+- [x] CRM: columna "Responsable" en tabla de contactos (vista tabla).
+  - [x] Documentación: `docs/FRONTEND_CRM_CONTACTS_RESPONSABLE_COLUMN.md` ✅
 - [x] Auth: login OTP (email o teléfono) para Admin/CRM (`/auth/login-otp`) + servicios y documentación.
   - [x] Documentación frontend: `docs/FRONTEND_AUTH_LOGIN_OTP.md` ✅
   - [x] Documentación backend (endpoints requeridos): `docs/BACKEND_AUTH_LOGIN_OTP.md` ✅
@@ -143,6 +156,10 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [x] Documentación: `docs/FRONTEND_OPPORTUNITIES_RESPONSIBLES_DEBUG_LOGS.md` ✅
 - [x] Limpieza de cache y dist ejecutada en Docker.
   - [x] Documentación: `docs/FRONTEND_CLEAN_CACHE_DIST.md` ✅
+- [x] Limpieza de build (dist y caches) en Docker (2026-01-27).
+  - [x] Documentación: `docs/FRONTEND_BUILD_CLEAN_2026_01_27.md` ✅
+- [x] Limpieza de build (dist y caches) en Docker (2026-01-27).
+  - [x] Documentación: `docs/FRONTEND_BUILD_CLEAN_2026_01_27.md` ✅
 - [x] Rebuild y reinicio de frontend en Docker.
   - [x] Documentación: `docs/FRONTEND_DOCKER_REBUILD_RESTART.md` ✅
 - [x] Dev server en Docker en puerto 5174.

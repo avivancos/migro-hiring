@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
-Script para generar contratos personalizados de confidencialidad para agentes vendedores
-con formato verde Migro
+Script para generar contratos personalizados de colaboración de agentes
+con formato verde Migro y exportación a PDF.
 """
 import re
 from pathlib import Path
 from datetime import datetime
+import subprocess
+from typing import Optional
 
 try:
     from docx import Document
@@ -27,29 +29,76 @@ except ImportError:
 MIGRO_GREEN = RGBColor(22, 163, 74)
 MIGRO_WHITE = RGBColor(255, 255, 255)
 
-def add_colored_header(doc, text, subtitle=""):
-    """Añade un header verde con el estilo Migro"""
-    # Crear párrafo para el header
-    header_para = doc.add_paragraph()
-    header_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    
-    # Crear run con fondo verde
-    run = header_para.add_run()
-    run.text = text
-    run.font.size = Pt(18)
-    run.font.bold = True
-    run.font.color.rgb = MIGRO_WHITE
-    run.font.name = 'Arial'
-    
-    # Aplicar fondo verde al párrafo usando shading
-    shading_elm = OxmlElement('w:shd')
-    shading_elm.set(qn('w:fill'), '16a34a')
-    header_para._element.get_or_add_pPr().append(shading_elm)
-    
-    # Añadir espacio después del header
+def normalize_spanish_date(raw_date: str) -> str:
+    """Normaliza una fecha en español (ej: 28 de enero de 2026)."""
+    return raw_date.strip().replace("  ", " ")
+
+def convert_docx_to_pdf(docx_path: Path, pdf_path: Path) -> bool:
+    """Convierte un DOCX a PDF usando docx2pdf o LibreOffice."""
+    try:
+        try:
+            from docx2pdf import convert
+        except ImportError:
+            print("Instalando docx2pdf...")
+            subprocess.check_call(["pip", "install", "docx2pdf"])
+            from docx2pdf import convert
+        convert(str(docx_path), str(pdf_path))
+        print(f"PDF generado (docx2pdf): {pdf_path}")
+        return True
+    except Exception:
+        pass
+
+    try:
+        subprocess.check_call([
+            "soffice",
+            "--headless",
+            "--convert-to",
+            "pdf",
+            "--outdir",
+            str(pdf_path.parent),
+            str(docx_path),
+        ])
+        # LibreOffice guarda con el mismo nombre base
+        generated = pdf_path.parent / f"{docx_path.stem}.pdf"
+        if generated.exists() and generated != pdf_path:
+            generated.replace(pdf_path)
+        print(f"PDF generado (LibreOffice): {pdf_path}")
+        return True
+    except Exception as exc:
+        print(f"[ERROR] No se pudo convertir a PDF ({docx_path.name}): {exc}")
+        return False
+
+def add_signature_table(doc, agent_data, representante_migro):
+    """Añade tabla de firmas con domicilios."""
+    doc.add_paragraph("Firmado electrónicamente con HelloSign.")
     doc.add_paragraph()
 
-def parse_markdown_to_docx(md_file_path, docx_file_path, agent_data):
+    table = doc.add_table(rows=5, cols=2)
+    table.autofit = False
+    for row in table.rows:
+        row.cells[0].width = Inches(3.2)
+        row.cells[1].width = Inches(3.2)
+
+    def set_cell(cell, text, bold=False):
+        cell.text = ""
+        p = cell.paragraphs[0]
+        run = p.add_run(text)
+        run.font.size = Pt(11)
+        run.font.name = "Times New Roman"
+        run.font.bold = bold
+
+    set_cell(table.cell(0, 0), "Por EL AGENTE", bold=True)
+    set_cell(table.cell(0, 1), "Por MIGRO SERVICIOS Y REMESAS S.L.", bold=True)
+    set_cell(table.cell(1, 0), f"Nombre: {agent_data['nombre']}")
+    set_cell(table.cell(1, 1), f"Nombre: {representante_migro['nombre']}")
+    set_cell(table.cell(2, 0), f"{agent_data.get('tipo_doc', 'DNI/NIE')}: {agent_data.get('documento', '')}")
+    set_cell(table.cell(2, 1), f"NIF: {representante_migro['nif']}")
+    set_cell(table.cell(3, 0), f"Domicilio: {agent_data.get('domicilio', '')}")
+    set_cell(table.cell(3, 1), "Domicilio: C/ Libreros, nº 54, 37008, Salamanca")
+    set_cell(table.cell(4, 0), "Firma: ____________________________")
+    set_cell(table.cell(4, 1), "Firma: ____________________________")
+
+def parse_markdown_to_docx(md_file_path, docx_file_path, agent_data, fecha_firma: Optional[str] = None):
     """Convierte el contrato Markdown a DOCX con datos del agente y formato verde"""
     
     # Leer el archivo Markdown
@@ -65,9 +114,14 @@ def parse_markdown_to_docx(md_file_path, docx_file_path, agent_data):
     
     # Reemplazar datos del agente
     content = content.replace('[NOMBRE DEL ASPIRANTE]', agent_data['nombre'])
+    content = content.replace('[AGENTE DE VENTAS]', agent_data['nombre'])
     
     # Reemplazar documento del agente - buscar el patrón específico
-    content = re.sub(r'con DNI/NIE \[●\]', f"con {agent_data.get('tipo_doc', 'DNI/NIE')} {agent_data.get('documento', '[●]')}", content)
+    content = re.sub(
+        r'con DNI/NIE \[●\]',
+        f"con {agent_data.get('tipo_doc', 'DNI/NIE')} {agent_data.get('documento', '[●]')}",
+        content,
+    )
     
     # Reemplazar domicilio del agente
     content = re.sub(r'domicilio en \[●\]', f"domicilio en {agent_data.get('domicilio', '[●]')}", content)
@@ -77,30 +131,8 @@ def parse_markdown_to_docx(md_file_path, docx_file_path, agent_data):
     migro_line_replacement = f'Y de otra, MIGRO SERVICIOS Y REMESAS S.L., en adelante "MIGRO", con CIF B22759765, domicilio en C/ Libreros, nº 54, 37008, Salamanca, actuando en su nombre y representación {representante_migro["nombre"]}, con NIF {representante_migro["nif"]}, en su calidad de {representante_migro["cargo"]}.'
     content = re.sub(migro_line_pattern, migro_line_replacement, content)
     
-    # Reemplazar zona de firmas completa con datos específicos
-    # Solo nombre y documento, sin domicilio ni cargo
-    nombre_agente = agent_data['nombre']
-    doc_agente = f"{agent_data.get('tipo_doc', 'DNI/NIE')}: {agent_data.get('documento', '')}"
-    
-    nombre_migro = representante_migro['nombre']
-    nif_migro = f"NIF: {representante_migro['nif']}"
-    
-    # Crear líneas con alineación adecuada
-    espacio_columna = 50  # Espacios entre las dos columnas
-    
-    def format_line(left, right, space=espacio_columna):
-        """Formatea una línea con dos columnas"""
-        left_len = len(left)
-        spaces_needed = max(1, space - left_len)
-        return f"{left}{' ' * spaces_needed}{right}"
-    
-    firma_section = f"""Por EL ASPIRANTE                                          Por MIGRO SERVICIOS Y REMESAS S.L.
-
-{format_line(f'Nombre: {nombre_agente}', f'Nombre: {nombre_migro}')}
-
-{format_line(doc_agente, nif_migro)}
-
-{format_line('Firma: ____________________________', 'Firma: ____________________________')}"""
+    # Reemplazar zona de firmas completa con marcador para tabla
+    firma_section = "[FIRMAS_TABLA]"
     
     # Buscar y reemplazar desde "Por EL ASPIRANTE" hasta el final del documento
     # Dividir el contenido en dos partes: antes y después de las firmas
@@ -109,7 +141,7 @@ def parse_markdown_to_docx(md_file_path, docx_file_path, agent_data):
     found_firma_start = False
     
     for i, line in enumerate(lines):
-        if 'Por EL ASPIRANTE' in line:
+        if 'Por EL ASPIRANTE' in line or 'Por EL AGENTE' in line:
             found_firma_start = True
             break
         before_firma.append(line)
@@ -119,19 +151,22 @@ def parse_markdown_to_docx(md_file_path, docx_file_path, agent_data):
         content = '\n'.join(before_firma) + '\n\n' + firma_section
     else:
         # Si no se encontró, intentar reemplazo con regex
-        firma_pattern = r'(Por EL ASPIRANTE.*?Firma: _{10,}.*?Firma: _{10,})'
+        firma_pattern = r'(Por EL (ASPIRANTE|AGENTE).*?Firma: _{10,}.*?Firma: _{10,})'
         content = re.sub(firma_pattern, firma_section, content, flags=re.DOTALL)
     
-    # Fecha actual
-    fecha_actual = datetime.now().strftime("%d de %B de %Y")
-    meses_es = {
-        'January': 'enero', 'February': 'febrero', 'March': 'marzo',
-        'April': 'abril', 'May': 'mayo', 'June': 'junio',
-        'July': 'julio', 'August': 'agosto', 'September': 'septiembre',
-        'October': 'octubre', 'November': 'noviembre', 'December': 'diciembre'
-    }
-    for eng, esp in meses_es.items():
-        fecha_actual = fecha_actual.replace(eng, esp)
+    # Fecha actual o fecha de firma forzada
+    if fecha_firma:
+        fecha_actual = normalize_spanish_date(fecha_firma)
+    else:
+        fecha_actual = datetime.now().strftime("%d de %B de %Y")
+        meses_es = {
+            'January': 'enero', 'February': 'febrero', 'March': 'marzo',
+            'April': 'abril', 'May': 'mayo', 'June': 'junio',
+            'July': 'julio', 'August': 'agosto', 'September': 'septiembre',
+            'October': 'octubre', 'November': 'noviembre', 'December': 'diciembre'
+        }
+        for eng, esp in meses_es.items():
+            fecha_actual = fecha_actual.replace(eng, esp)
     
     content = content.replace('[Ciudad], a [fecha].', f"Salamanca, a {fecha_actual}.")
     
@@ -274,13 +309,9 @@ def parse_markdown_to_docx(md_file_path, docx_file_path, agent_data):
             run.font.name = 'Times New Roman'
             current_paragraph = None
         
-        # Líneas de firma
-        elif 'Por EL ASPIRANTE' in line or 'Por MIGRO' in line:
-            p = doc.add_paragraph()
-            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            run = p.add_run(line)
-            run.font.size = Pt(11)
-            run.font.name = 'Times New Roman'
+        # Marcador de tabla de firmas
+        elif line == '[FIRMAS_TABLA]':
+            add_signature_table(doc, agent_data, representante_migro)
             current_paragraph = None
         
         # Líneas con guiones bajos (campos de firma)
@@ -321,65 +352,37 @@ def parse_markdown_to_docx(md_file_path, docx_file_path, agent_data):
 # Datos de los agentes
 agentes = [
     {
-        'nombre': 'Jenny Damico',
-        'documento': 'V6912470',
-        'tipo_doc': 'Pasaporte',
-        'domicilio': 'Avenida la Guairita residencias Alavila, apto 302C, los Samanes - Caracas - Venezuela',
-        'archivo': 'jenny_damico'
+        'nombre': 'Erick Ezequiel Alvarez Legorreta',
+        'documento': 'AALE950416HMCLGR00',
+        'tipo_doc': 'CURP',
+        'domicilio': 'Av de los Maestros 314, Colonia Doctores, C.P. 50060, Toluca, México',
+        'archivo': 'erick_ezequiel_alvarez_legorreta'
     },
     {
-        'nombre': 'Sonia Alejandra Cisnero',
-        'documento': '26245201',
-        'tipo_doc': 'DNI',
-        'domicilio': 'El Cano 147, San Rafael, Mendoza, Argentina',
-        'archivo': 'sonia_alejandra_cisnero'
+        'nombre': 'Gabriela Calderon Alvarado',
+        'documento': 'CAAG861227MMNLLB07',
+        'tipo_doc': 'CURP',
+        'domicilio': 'Blvd. Sauces #161, Fraccionamiento Rinconada los Sauces, Tarimbaro, Michoacán, México',
+        'archivo': 'gabriela_calderon_alvarado'
     },
     {
         'nombre': 'Brenda Montserrat Fanny Moreno Tovar',
         'documento': 'IDMEX1832667425',
         'tipo_doc': 'INE',
-        'domicilio': 'Calzada de las águilas 934 col. Ampliación las águilas CP 01759 Alcaldía Álvaro Obregón',
-        'archivo': 'brenda_montserrat_moreno_tovar'
+        'domicilio': 'Calzada de las águilas #934, Col. Ampliación las águilas, C.P. 01759, Alcaldía Álvaro Obregón, México',
+        'archivo': 'brenda_montserrat_fanny_moreno_tovar'
     },
     {
-        'nombre': 'Edwin A. Anzola B.',
-        'documento': 'V-14.644.545',
-        'tipo_doc': 'Cédula de Identidad',
-        'domicilio': 'La Candelaria, Caracas, Residencias Nobleton P1 39',
-        'archivo': 'edwin_anzola'
-    },
-    {
-        'nombre': 'Andrea Paola Perdomo Mora',
-        'documento': '1032459491',
-        'tipo_doc': 'Cédula de Ciudadanía',
-        'domicilio': 'Carrera 3A #6D 78, Barrio belen, Bogotá, Colombia',
-        'archivo': 'andrea_paola_perdomo_mora'
-    },
-    {
-        'nombre': 'Erick Ezequiel Alvarez Legorreta',
-        'documento': 'ALLGER95041615H400',
-        'tipo_doc': 'ENI',
-        'domicilio': 'Ave. de los Maestros 314 colonia Doctores, C.P. 50060, TOLUCA, ESTADO DE MÉXICO, MÉXICO',
-        'archivo': 'erick_ezequiel_alvarez_legorreta'
-    },
-    {
-        'nombre': 'Gabriela Calderon Alvarado',
-        'documento': 'CAAG861227MMNLL07',
-        'tipo_doc': 'CURP',
-        'domicilio': 'AV ADOLFO LOPEZ MATEOS SUR 21, LOC CUTO DEL PORVENIR 58880, TARIMBARO, MICH.',
-        'archivo': 'gabriela_calderon_alvarado'
-    },
-    {
-        'nombre': 'Ana Karen Piedras Jiménez',
-        'documento': 'PIJA010817MDFDMNA9',
-        'tipo_doc': 'CURP',
-        'domicilio': 'AV SAN ANTONIO 34 BARR SAN BARTOLO 54900 TULTITLAN, MEX.',
-        'archivo': 'ana_karen_piedras_jimenez'
+        'nombre': 'Sonia Alejandra Cisnero',
+        'documento': '26245201',
+        'tipo_doc': 'DNI',
+        'domicilio': 'Sebastián El Cano 147, San Rafael, Mendoza, Argentina',
+        'archivo': 'sonia_alejandra_cisnero'
     }
 ]
 
 if __name__ == "__main__":
-    md_file = Path("src/legal/confidencialidad_agentes_vendedores.md")
+    md_file = Path("src/legal/agente_ventas_agreement.md")
     
     if not md_file.exists():
         print(f"Error: No se encontró el archivo {md_file}")
@@ -394,10 +397,14 @@ if __name__ == "__main__":
     exitosos = 0
     fallidos = []
     
+    fecha_firma = "28 de enero de 2026"
+    
     for agente in agentes:
-        docx_file = output_dir / f"confidencialidad_{agente['archivo']}.docx"
+        docx_file = output_dir / f"convenio_colaboracion_{agente['archivo']}.docx"
+        pdf_file = output_dir / f"convenio_colaboracion_{agente['archivo']}.pdf"
         try:
-            parse_markdown_to_docx(md_file, docx_file, agente)
+            parse_markdown_to_docx(md_file, docx_file, agente, fecha_firma=fecha_firma)
+            convert_docx_to_pdf(docx_file, pdf_file)
             exitosos += 1
         except PermissionError as e:
             print(f"  [AVISO] Archivo bloqueado: {agente['nombre']}")
