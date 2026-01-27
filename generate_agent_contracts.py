@@ -49,6 +49,12 @@ def convert_docx_to_pdf(docx_path: Path, pdf_path: Path) -> bool:
         pass
 
     try:
+        if pdf_path.exists():
+            # Evita que un PDF corrupto previo bloquee el fallback.
+            try:
+                pdf_path.unlink()
+            except Exception:
+                pass
         subprocess.check_call([
             "soffice",
             "--headless",

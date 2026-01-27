@@ -158,8 +158,10 @@ Implementar la nueva "Guía de Estilos Visual Migro - App Admin":
   - [x] Documentación: `docs/FRONTEND_CLEAN_CACHE_DIST.md` ✅
 - [x] Limpieza de build (dist y caches) en Docker (2026-01-27).
   - [x] Documentación: `docs/FRONTEND_BUILD_CLEAN_2026_01_27.md` ✅
-- [x] Limpieza de build (dist y caches) en Docker (2026-01-27).
-  - [x] Documentación: `docs/FRONTEND_BUILD_CLEAN_2026_01_27.md` ✅
+- [x] Fix: eliminar duplicado en plan de limpieza build.
+  - [x] Documentación: `docs/PLAN_BUILD_CLEAN_DUPLICATE_ENTRY_FIX.md` ✅
+- [x] Fix: fallback LibreOffice sobreescribe PDF corrupto.
+  - [x] Documentación: `docs/GENERATE_AGENT_CONTRACTS_PDF_FALLBACK_OVERWRITE.md` ✅
 - [x] Rebuild y reinicio de frontend en Docker.
   - [x] Documentación: `docs/FRONTEND_DOCKER_REBUILD_RESTART.md` ✅
 - [x] Dev server en Docker en puerto 5174.
